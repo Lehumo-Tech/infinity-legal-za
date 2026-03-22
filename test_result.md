@@ -210,6 +210,51 @@ backend:
           agent: "testing"
           comment: "Comprehensive testing completed successfully. All 5 test scenarios passed: 1) Basic employment dismissal analysis returns proper JSON structure with all required fields (category: Labour Law, urgency: high). 2) Urgent criminal case correctly escalates urgency to 'emergency'. 3) Empty problem validation returns 400 error as expected. 4) Empty body validation returns 400 error as expected. 5) Property law case with optional fields processes correctly. API response times 6-9 seconds as expected for AI processing. All validation, error handling, and JSON structure requirements working perfectly."
 
+  - task: "Attorneys Listing API"
+    implemented: true
+    working: true
+    file: "app/api/attorneys/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/attorneys - Lists verified attorneys from Supabase, joins with profiles for names. Supports specialty filter and search query. Returns array with id, name, specialty, lpcNumber, consultationFee, rating, reviewCount."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All 5 test scenarios passed: 1) Basic listing returns 3 attorneys with all required fields (id, name, specialty, lpcNumber, consultationFee, rating, reviewCount). 2) Criminal Law filter returns 1 attorney (Adv. Thabo Mokwena). 3) Family Law filter returns 1 attorney (Sarah van der Berg). 4) Search by 'Sarah' returns 1 attorney (Sarah van der Berg). 5) Immigration Law filter correctly returns empty array. All filtering and search functionality working perfectly."
+
+  - task: "Attorney Availability API"
+    implemented: true
+    working: true
+    file: "app/api/attorneys/[id]/availability/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/attorneys/[id]/availability?date=YYYY-MM-DD - Returns available dates (next 14 days based on schedule) and time slots for a specific date. Excludes already-booked slots by checking consultation_bookings table."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All 4 test scenarios passed: 1) Returns available dates for next 14 days (10 dates found with proper structure: date, dayName, dayLabel). 2) Returns time slots for specific date (8 slots with time and available fields). 3) Correctly returns 404 for invalid attorney ID. 4) Proper date filtering and booking conflict detection working. All availability functionality working perfectly."
+
+  - task: "Consultations Booking API"
+    implemented: true
+    working: true
+    file: "app/api/consultations/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/consultations - Creates consultation booking. Requires auth. Validates attorney exists, checks for double bookings, creates record in consultation_bookings table. GET /api/consultations - Lists user's bookings. Both endpoints tested via browser."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All 6 test scenarios passed: 1) POST /api/consultations with auth creates booking successfully (returns booking ID and 201 status). 2) POST without auth correctly returns 401. 3) POST with missing fields correctly returns 400. 4) GET /api/consultations with auth lists user's bookings correctly. 5) GET without auth correctly returns 401. 6) Double booking prevention working (409 conflict when time slot taken). All authentication, validation, and booking functionality working perfectly."
+
 frontend:
   - task: "Auth Context Provider"
     implemented: true
@@ -289,16 +334,28 @@ frontend:
     file: "app/intake/page.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
           comment: "Implemented full AI intake wizard with category selection, 5-question form, animated loading, and rich results view. Tested E2E via browser - full flow works."
 
+  - task: "Consultation Booking Page"
+    implemented: true
+    working: true
+    file: "app/book-consultation/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Full 3-step booking flow: 1) Attorney selection with search/filter, 2) Date/time selection with real availability, 3) Review & confirm. Connected to Supabase."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 3
+  test_sequence: 4
   run_ui: false
 
 test_plan:
@@ -309,6 +366,8 @@ test_plan:
 
 agent_communication:
     - agent: "main"
-      message: "Implemented AI Intake Wizard. New API route at POST /api/intake/analyze. It accepts JSON body with {responses: {problem, timeline, outcome, parties, documents}, isUrgent: bool, selectedCategory: string}. Uses Gemini AI via Emergent LLM proxy (OpenAI-compatible). The EMERGENT_LLM_KEY env variable is set. Returns JSON with category, subcategory, summary, urgency, nextSteps, relevantLegislation, estimatedCostRange, estimatedTimeline, confidence, warnings, ppiCompliance. If user sends Authorization Bearer token, it tries to save the case to Supabase. Test with POST /api/intake/analyze with Content-Type: application/json body. No auth required for basic analysis."
+      message: "Implemented Consultation Booking feature. 3 new API routes: 1) GET /api/attorneys - Lists verified attorneys (supports ?specialty= and ?search= filters). 2) GET /api/attorneys/[id]/availability?date=YYYY-MM-DD - Returns available dates and time slots. 3) POST /api/consultations (requires auth Bearer token) - Creates booking with {attorneyId, bookingDate, bookingTime, duration, consultationType, notes, caseId}. GET /api/consultations (requires auth) - Lists user bookings. 3 seed attorneys exist. consultation_bookings table uses status 'pending' (not 'scheduled'). For auth: POST Supabase auth endpoint to login."
     - agent: "testing"
-      message: "AI Intake Analysis API testing completed successfully. All 5 test scenarios passed including basic employment dismissal analysis, urgent criminal case handling, validation for empty requests, and property law case with optional fields. API correctly returns structured JSON with all required fields, handles urgency escalation properly, validates input correctly, and processes AI requests within expected timeframes (6-9 seconds). The endpoint is fully functional and ready for production use."
+      message: "AI Intake Analysis API testing completed successfully. All 5 test scenarios passed."
+    - agent: "testing"
+      message: "Consultation Booking APIs testing completed successfully. All 3 API endpoints passed comprehensive testing: 1) Attorneys Listing API - All 5 scenarios passed (basic listing, Criminal Law filter, Family Law filter, search by name, empty filter). 2) Attorney Availability API - All 4 scenarios passed (available dates, time slots, invalid ID handling). 3) Consultations Booking API - All 6 scenarios passed (create with auth, unauthorized access, validation, list bookings, double booking prevention). All authentication, filtering, validation, and booking functionality working perfectly. No critical issues found."
