@@ -58,7 +58,8 @@ Guidelines:
 export async function POST(request) {
   try {
     // Rate limit: max 5 AI analyses per minute per IP
-    const ip = request.headers.get('x-forwarded-for') || 'unknown'
+    const forwarded = request.headers.get('x-forwarded-for') || ''
+    const ip = forwarded.split(',')[0]?.trim() || 'unknown'
     const rateCheck = checkRateLimit(`intake:${ip}`, 5, 60000)
     if (!rateCheck.allowed) {
       return NextResponse.json(

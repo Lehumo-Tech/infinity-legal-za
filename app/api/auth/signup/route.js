@@ -6,7 +6,8 @@ import { createNotification } from '@/lib/notifications'
 export async function POST(request) {
   try {
     // Rate limit: max 5 signups per minute per IP
-    const ip = request.headers.get('x-forwarded-for') || 'unknown'
+    const forwarded = request.headers.get('x-forwarded-for') || ''
+    const ip = forwarded.split(',')[0]?.trim() || 'unknown'
     const rateCheck = checkRateLimit(`signup:${ip}`, 5, 60000)
     if (!rateCheck.allowed) {
       return NextResponse.json(
