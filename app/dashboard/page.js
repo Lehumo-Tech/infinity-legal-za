@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 
 export default function DashboardPage() {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [cases, setCases] = useState([])
@@ -14,8 +15,14 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    checkUser()
+    setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (mounted) {
+      checkUser()
+    }
+  }, [mounted])
 
   const checkUser = async () => {
     try {
@@ -71,7 +78,7 @@ export default function DashboardPage() {
     router.push('/')
   }
 
-  if (loading) {
+  if (loading || !mounted) {
     return (
       <div className="min-h-screen bg-infinity-cream flex items-center justify-center">
         <div className="text-center">
