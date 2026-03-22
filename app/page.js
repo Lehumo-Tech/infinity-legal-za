@@ -26,12 +26,10 @@ export default function LandingPage() {
             <Link href="/login" className="text-sm text-infinity-navy/70 hover:text-infinity-navy">
               Sign In
             </Link>
-            <button
-              onClick={() => router.push('/intake')}
-              className="px-4 py-2 bg-infinity-navy text-infinity-cream rounded-md text-sm font-medium hover:bg-infinity-navy/90"
-            >
-              Get Help Now
-            </button>
+            <Link href="/apply"
+              className="px-4 py-2 bg-infinity-navy text-infinity-cream rounded-md text-sm font-medium hover:bg-infinity-navy/90">
+              Apply Now
+            </Link>
           </div>
         </div>
       </nav>
@@ -56,16 +54,16 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <button
-              onClick={() => router.push('/intake')}
+              onClick={() => router.push('/apply')}
               className="px-8 py-4 bg-infinity-navy text-infinity-cream rounded-lg text-lg font-semibold hover:bg-infinity-navy/90 shadow-lg hover:shadow-xl transition-all"
             >
-              Start Free Legal Intake →
+              Apply for Legal Services →
             </button>
             <button
-              onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => router.push('/intake')}
               className="px-8 py-4 bg-infinity-gold text-infinity-navy rounded-lg text-lg font-semibold hover:bg-infinity-gold/90"
             >
-              How It Works
+              Free AI Intake
             </button>
           </div>
 
