@@ -16,12 +16,8 @@ export default function CasesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [creating, setCreating] = useState(false)
   const [newCase, setNewCase] = useState({
-    title: '',
-    case_type: 'other',
-    description: '',
-    urgency: 'medium',
-    court_date: '',
-    court_location: ''
+    title: '', case_type: 'other', description: '', urgency: 'medium',
+    court_date: '', court_location: ''
   })
 
   useEffect(() => {
@@ -43,19 +39,13 @@ export default function CasesPage() {
   const handleCreateCase = async (e) => {
     e.preventDefault()
     if (!newCase.title) return
-
     try {
       setCreating(true)
-      await casesApi.create({
-        ...newCase,
-        court_date: newCase.court_date || null,
-        court_location: newCase.court_location || null
-      })
+      await casesApi.create({ ...newCase, court_date: newCase.court_date || null, court_location: newCase.court_location || null })
       setShowCreateModal(false)
       setNewCase({ title: '', case_type: 'other', description: '', urgency: 'medium', court_date: '', court_location: '' })
       await fetchCases()
     } catch (error) {
-      console.error('Create case error:', error)
       alert('Failed to create case: ' + error.message)
     } finally {
       setCreating(false)
@@ -71,90 +61,62 @@ export default function CasesPage() {
     }
   }
 
-  const getUrgencyColor = (urgency) => {
-    const colors = {
-      emergency: 'bg-red-100 text-red-700 border-red-200',
-      high: 'bg-orange-100 text-orange-700 border-orange-200',
-      medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-      low: 'bg-green-100 text-green-700 border-green-200'
-    }
-    return colors[urgency] || 'bg-gray-100 text-gray-700 border-gray-200'
-  }
+  const getStatusColor = (status) => ({
+    intake: 'bg-blue-50 text-blue-600',
+    matched: 'bg-purple-50 text-purple-600',
+    active: 'bg-emerald-50 text-emerald-600',
+    closed: 'bg-gray-100 text-gray-500',
+    archived: 'bg-gray-50 text-gray-400'
+  }[status] || 'bg-gray-100 text-gray-500')
 
-  const getStatusColor = (status) => {
-    const colors = {
-      intake: 'bg-blue-100 text-blue-700',
-      matched: 'bg-purple-100 text-purple-700',
-      active: 'bg-infinity-gold/10 text-infinity-navy',
-      pending: 'bg-gray-100 text-gray-700',
-      closed: 'bg-green-100 text-green-700',
-      archived: 'bg-gray-50 text-gray-500'
-    }
-    return colors[status] || 'bg-gray-100 text-gray-700'
-  }
-
-  const getCourtDateCountdown = (courtDate) => {
-    if (!courtDate) return null
-    const today = new Date()
-    const court = new Date(courtDate)
-    const diffDays = Math.ceil((court - today) / (1000 * 60 * 60 * 24))
-    
-    if (diffDays < 0) return { text: 'Past', color: 'text-red-600' }
-    if (diffDays === 0) return { text: 'Today!', color: 'text-red-600 font-bold' }
-    if (diffDays === 1) return { text: 'Tomorrow', color: 'text-orange-600 font-bold' }
-    if (diffDays <= 7) return { text: `${diffDays} days`, color: 'text-orange-600' }
-    return { text: `${diffDays} days`, color: 'text-infinity-navy/70' }
-  }
+  const getUrgencyColor = (urgency) => ({
+    emergency: 'text-red-600 bg-red-50',
+    high: 'text-orange-600 bg-orange-50',
+    medium: 'text-yellow-600 bg-yellow-50',
+    low: 'text-green-600 bg-green-50'
+  }[urgency] || 'text-gray-600 bg-gray-50')
 
   const filteredCases = cases.filter(c => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      return c.case_number?.toLowerCase().includes(q) ||
-             c.title?.toLowerCase().includes(q) ||
-             c.description?.toLowerCase().includes(q)
-    }
-    return true
+    if (!searchQuery) return true
+    const q = searchQuery.toLowerCase()
+    return c.case_number?.toLowerCase().includes(q) || c.title?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
   })
 
   const caseTypes = ['criminal', 'civil', 'family', 'other']
 
   return (
     <AttorneyLayout>
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-infinity-navy mb-1">Case Management</h1>
-          <p className="text-infinity-navy/70 text-sm">Manage and track all your legal cases</p>
+          <h1 className="text-2xl font-bold text-gray-900">Case Management</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Manage and track all your legal cases</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-5 py-2.5 bg-infinity-navy text-infinity-cream rounded-lg font-medium text-sm hover:bg-infinity-navy/90 transition-colors"
-        >
-          + New Case
+        <button onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          New Case
         </button>
       </div>
 
-      {/* Filters & Search */}
-      <div className="bg-white rounded-lg p-4 border border-infinity-gold/20 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Search cases..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-4 py-2 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy text-sm"
-          />
-          <div className="flex gap-1.5 flex-wrap">
+      {/* Filters */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-5">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="relative flex-1 w-full">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="Search cases..." value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 text-sm" />
+          </div>
+          <div className="flex gap-1 bg-gray-50 rounded-lg p-1">
             {['all', 'intake', 'matched', 'active', 'closed'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-all ${
-                  filter === f
-                    ? 'bg-infinity-navy text-infinity-cream'
-                    : 'bg-infinity-cream text-infinity-navy hover:bg-infinity-gold/10'
-                }`}
-              >
+              <button key={f} onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-all ${
+                  filter === f ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}>
                 {f}
               </button>
             ))}
@@ -163,83 +125,69 @@ export default function CasesPage() {
       </div>
 
       {/* Cases Table */}
-      <div className="bg-white rounded-lg border border-infinity-gold/20 overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-infinity-navy mx-auto mb-3"></div>
-            <p className="text-infinity-navy/50 text-sm">Loading cases...</p>
+          <div className="p-16 text-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-600 mx-auto mb-3"></div>
+            <p className="text-gray-400 text-sm">Loading cases...</p>
           </div>
         ) : filteredCases.length === 0 ? (
-          <div className="p-12 text-center">
-            <p className="text-infinity-navy/50 mb-4">No cases found</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-5 py-2 bg-infinity-navy text-infinity-cream rounded-lg text-sm hover:bg-infinity-navy/90"
-            >
-              Create Your First Case
+          <div className="p-16 text-center">
+            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20 7H4a1 1 0 00-1 1v10a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1z" />
+              </svg>
+            </div>
+            <p className="text-gray-500 text-sm mb-3">No cases found</p>
+            <button onClick={() => setShowCreateModal(true)}
+              className="text-sm text-gray-900 font-medium hover:underline">
+              Create your first case →
             </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-infinity-cream">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-infinity-navy uppercase tracking-wider">Case #</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-infinity-navy uppercase tracking-wider">Title</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-infinity-navy uppercase tracking-wider">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-infinity-navy uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-infinity-navy uppercase tracking-wider">Urgency</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-infinity-navy uppercase tracking-wider">Court Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-infinity-navy uppercase tracking-wider">Actions</th>
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Case #</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Title</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Urgency</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Court Date</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredCases.map((c) => {
-                  const countdown = getCourtDateCountdown(c.court_date)
-                  return (
-                    <tr key={c.id} className="border-t border-infinity-gold/10 hover:bg-infinity-cream/30">
-                      <td className="px-4 py-3 font-mono text-sm text-infinity-navy">{c.case_number}</td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-infinity-navy text-sm">{c.title}</div>
-                        {c.description && (
-                          <div className="text-xs text-infinity-navy/50 mt-0.5 max-w-xs truncate">{c.description}</div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-infinity-navy/70 capitalize">{c.case_type}</td>
-                      <td className="px-4 py-3">
-                        <select
-                          value={c.status}
-                          onChange={(e) => handleStatusChange(c.id, e.target.value)}
-                          className={`px-2 py-1 rounded text-xs font-medium border-0 cursor-pointer ${getStatusColor(c.status)}`}
-                        >
-                          {['intake', 'matched', 'active', 'closed', 'archived'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium border ${getUrgencyColor(c.urgency)}`}>
-                          {c.urgency}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {c.court_date ? (
-                          <div>
-                            <div className="text-sm text-infinity-navy">{new Date(c.court_date).toLocaleDateString()}</div>
-                            {countdown && <div className={`text-xs ${countdown.color}`}>{countdown.text}</div>}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-infinity-navy/40">Not set</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs text-infinity-navy/40">
-                          {new Date(c.created_at).toLocaleDateString()}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
+                {filteredCases.map((c) => (
+                  <tr key={c.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                    <td className="px-5 py-3.5 font-mono text-xs text-gray-500">{c.case_number}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="font-medium text-sm text-gray-900">{c.title || c.case_subtype || 'Untitled'}</div>
+                      {c.description && <div className="text-xs text-gray-400 mt-0.5 max-w-xs truncate">{c.description}</div>}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-gray-500 capitalize">{c.case_type}</td>
+                    <td className="px-5 py-3.5">
+                      <select value={c.status} onChange={(e) => handleStatusChange(c.id, e.target.value)}
+                        className={`px-2 py-1 rounded-full text-xs font-medium border-0 cursor-pointer ${getStatusColor(c.status)}`}>
+                        {['intake', 'matched', 'active', 'closed', 'archived'].map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getUrgencyColor(c.urgency)}`}>
+                        {c.urgency}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-gray-500">
+                      {c.court_date ? new Date(c.court_date).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-5 py-3.5 text-xs text-gray-400">
+                      {new Date(c.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -248,97 +196,69 @@ export default function CasesPage() {
 
       {/* Create Case Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-infinity-navy mb-4">Create New Case</h3>
-            
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-semibold text-gray-900">Create New Case</h3>
+              <button onClick={() => setShowCreateModal(false)} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <form onSubmit={handleCreateCase} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-infinity-navy mb-1">Case Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={newCase.title}
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Case Title *</label>
+                <input type="text" required value={newCase.title}
                   onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy text-sm"
-                  placeholder="e.g., Unfair Dismissal - John Doe"
-                />
+                  className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 text-sm"
+                  placeholder="e.g., Unfair Dismissal - John Doe" />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-infinity-navy mb-1">Case Type</label>
-                  <select
-                    value={newCase.case_type}
-                    onChange={(e) => setNewCase({ ...newCase, case_type: e.target.value })}
-                    className="w-full px-3 py-2 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy text-sm"
-                  >
-                    {caseTypes.map(t => (
-                      <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
-                    ))}
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Case Type</label>
+                  <select value={newCase.case_type} onChange={(e) => setNewCase({ ...newCase, case_type: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm">
+                    {caseTypes.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-infinity-navy mb-1">Urgency</label>
-                  <select
-                    value={newCase.urgency}
-                    onChange={(e) => setNewCase({ ...newCase, urgency: e.target.value })}
-                    className="w-full px-3 py-2 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy text-sm"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="emergency">Emergency</option>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Urgency</label>
+                  <select value={newCase.urgency} onChange={(e) => setNewCase({ ...newCase, urgency: e.target.value })}
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm">
+                    <option value="low">Low</option><option value="medium">Medium</option>
+                    <option value="high">High</option><option value="emergency">Emergency</option>
                   </select>
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-infinity-navy mb-1">Description</label>
-                <textarea
-                  value={newCase.description}
-                  onChange={(e) => setNewCase({ ...newCase, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy text-sm"
-                  placeholder="Brief case description..."
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+                <textarea value={newCase.description} onChange={(e) => setNewCase({ ...newCase, description: e.target.value })}
+                  rows={3} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm"
+                  placeholder="Brief case description..." />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-infinity-navy mb-1">Court Date</label>
-                  <input
-                    type="date"
-                    value={newCase.court_date}
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Court Date</label>
+                  <input type="date" value={newCase.court_date}
                     onChange={(e) => setNewCase({ ...newCase, court_date: e.target.value })}
-                    className="w-full px-3 py-2 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy text-sm"
-                  />
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-infinity-navy mb-1">Court Location</label>
-                  <input
-                    type="text"
-                    value={newCase.court_location}
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Court Location</label>
+                  <input type="text" value={newCase.court_location}
                     onChange={(e) => setNewCase({ ...newCase, court_location: e.target.value })}
-                    className="w-full px-3 py-2 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy text-sm"
-                    placeholder="e.g., Johannesburg High Court"
-                  />
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-sm"
+                    placeholder="e.g., Johannesburg High Court" />
                 </div>
               </div>
-
               <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border border-infinity-gold/20 text-infinity-navy rounded-lg text-sm hover:bg-infinity-cream"
-                >
+                <button type="button" onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="flex-1 px-4 py-2 bg-infinity-navy text-infinity-cream rounded-lg text-sm font-medium hover:bg-infinity-navy/90 disabled:opacity-50"
-                >
+                <button type="submit" disabled={creating}
+                  className="flex-1 px-4 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50">
                   {creating ? 'Creating...' : 'Create Case'}
                 </button>
               </div>
