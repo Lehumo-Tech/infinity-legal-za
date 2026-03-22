@@ -25,15 +25,18 @@ export default function LandingPage() {
             <span className="font-bold text-xl text-infinity-navy">Infinity Legal</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/attorney/signup" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="/pricing" className="text-sm text-infinity-navy/70 hover:text-infinity-navy">
+              Pricing
+            </Link>
+            <Link href="/attorney/signup" className="text-sm text-infinity-navy/70 hover:text-infinity-navy">
               For Attorneys
             </Link>
-            <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="/login" className="text-sm text-infinity-navy/70 hover:text-infinity-navy">
               Sign In
             </Link>
             <button
               onClick={() => router.push('/intake')}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+              className="px-4 py-2 bg-infinity-navy text-infinity-cream rounded-md text-sm font-medium hover:bg-infinity-navy/90"
             >
               Get Help Now
             </button>
