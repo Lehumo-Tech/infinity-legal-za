@@ -1,7 +1,11 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
-import CookieConsent from '../components/CookieConsent'
 import LegalDisclaimer from '../components/LegalDisclaimer'
+import dynamic from 'next/dynamic'
+
+const CookieConsent = dynamic(() => import('../components/CookieConsent'), {
+  ssr: false
+})
 
 const inter = Inter({ subsets: ['latin'] })
 
