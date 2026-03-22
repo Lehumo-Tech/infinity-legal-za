@@ -186,7 +186,7 @@ export default function PricingPage() {
               Platform Subscription Fees (R99-R349/month) are paid to Infinity Legal via PayFast.
             </li>
             <li>
-              Legal Consultation Fees (R350-R1500/consultation) are paid directly to attorney's Trust Account.
+              Legal Consultation Fees (R350-R1500/consultation) are paid directly to attorney Trust Account.
             </li>
           </ul>
         </div>
