@@ -4,20 +4,22 @@ import { useEffect, useState } from 'react'
 
 export default function CookieConsent() {
   const [show, setShow] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const consent = localStorage.getItem('cookieConsent')
     if (!consent) {
       setShow(true)
     }
   }, [])
 
+  if (!mounted || !show) return null
+
   const handleAccept = () => {
     localStorage.setItem('cookieConsent', 'accepted')
     setShow(false)
   }
-
-  if (!show) return null
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 shadow-lg z-50">

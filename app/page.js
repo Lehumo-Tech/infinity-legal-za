@@ -6,14 +6,6 @@ import Link from 'next/link'
 
 export default function LandingPage() {
   const router = useRouter()
-  const [showCookieConsent, setShowCookieConsent] = useState(false)
-
-  useEffect(() => {
-    const consent = localStorage.getItem('cookieConsent')
-    if (!consent) {
-      document.getElementById('cookie-consent')?.classList.remove('hidden')
-    }
-  }, [])
 
   return (
     <div className="min-h-screen">
