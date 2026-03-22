@@ -23,47 +23,32 @@ export default function SignupPage() {
     setError('')
 
     try {
-      // Sign up with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            phone: formData.phone,
-            role: formData.role
-          }
-        }
+      // Call our API route to create user and profile
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       })
 
-      if (authError) throw authError
+      const data = await response.json()
 
-      if (!authData.user) {
-        throw new Error('Signup failed. Please try again.')
+      if (!response.ok) {
+        throw new Error(data.error || 'Signup failed')
       }
 
-      // Wait a moment for auth to complete
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Now sign in the user
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password
+      })
 
-      // Create profile using the authenticated user's session
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([{
-          id: authData.user.id,
-          email: formData.email,
-          full_name: formData.fullName,
-          phone: formData.phone,
-          role: formData.role
-        }])
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError)
-        throw new Error('Profile creation failed: ' + profileError.message)
+      if (signInError) {
+        throw new Error('Account created but login failed: ' + signInError.message)
       }
 
       // Redirect based on role
       if (formData.role === 'attorney') {
-        router.push('/attorney/complete-profile')
+        router.push('/attorney/office')
       } else {
         router.push('/dashboard')
       }

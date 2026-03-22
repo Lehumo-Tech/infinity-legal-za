@@ -1,0 +1,122 @@
+<analysis>**original_problem_statement:**
+The user wants to build a comprehensive legal tech platform, Infinity Legal Platform, using Next.js, Tailwind, and Supabase. The platform must serve both clients and attorneys in the South African market.
+
+**PRODUCT REQUIREMENTS (V2):**
+- **Business Model:** A multi-tiered subscription model (Free, Starter, Family Protect, Premium) for clients, with platform fees processed via PayFast. Legal fees are to be paid directly to the attorney's trust account.
+- **Client-Facing Features:**
+    - AI-powered legal intake wizard (using OpenAI).
+    - A pricing page detailing the subscription tiers.
+    - A system for booking consultations with attorneys, which can use subscription credits.
+- **Attorney-Facing Features (Virtual Office):**
+    - A dashboard with key statistics.
+    - Full Case Management system (create, view, update cases with status and urgency).
+    - Document Vault with client-side compression and uploads to Supabase Storage.
+    - Task Manager with a Kanban-style board.
+    - Calendar for managing court dates, consultations, and deadlines.
+- **Security & Compliance (Non-Negotiable):**
+    - Supabase Row-Level Security (RLS) must be enabled and enforced on ALL tables.
+    - Strict separation between platform fees (PayFast) and direct-to-attorney legal fees.
+    - POPIA compliance, including consent checkboxes and disclaimers.
+    - Secure management of API keys and session timeouts.
+- **Database:** A detailed 10-table schema was provided, including , , , , , etc., with specific RLS policies for clients, attorneys, and admins.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The project has a complete Next.js 14 application structure with multiple pages and components scaffolded. The brand identity (logo and color palette) provided by the user has been implemented across the UI. Supabase credentials have been configured, and the Supabase client library is installed. A basic, non-functional authentication flow (signup/login pages) and a server-side API route for signup have been created. Several versions of the Supabase schema and RLS fix scripts have been generated.
+
+**Last working item**:
+- **Last item agent was working:** The agent was attempting to resolve a persistent new row violates row-level security policy for table profiles error that occurs during user signup. The latest fix involved creating a dedicated server-side API route () to handle user registration and profile creation securely, instead of relying on client-side logic which was being blocked by RLS.
+- **Status:** IN PROGRESS
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** both
+- **User Testing Done:** Y (and it is still failing)
+
+**All Pending/In progress Issue list**:
+-   **Issue 1: (P0)** User cannot sign up due to RLS error.
+-   **Issue 2: (P1)** Recurrent React Hydration errors.
+
+**Issues Detail:**
+-   **Issue 1: Profile creation failed: new row violates row-level security policy for table profiles**
+    -   **Attempted fixes:**
+        1.  Provided multiple SQL scripts (, ) to the user to add the correct  policy to the  table. The user reported the policy already exists, but the error persists.
+        2.  Refactored the signup logic to use a server-side API route (). This is the correct architectural approach, but it is still failing, indicating a potential flaw in the frontend implementation or the API route itself.
+    -   **Next debug checklist:**
+        1.  **Examine :** Verify that the form's submit handler is correctly making a  request to  and is NO LONGER calling  followed by a client-side .
+        2.  **Examine :** Confirm it uses the  client (which utilizes the  key) to create the user profile, which should bypass RLS. Log the inputs and outputs to trace the flow.
+        3.  **Test the API directly:** Use  to send a  request to  with mock user data to isolate whether the issue is in the backend route or the frontend call.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a critical blocker. No user can register on the platform, preventing any further feature testing or development.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** None. This is the primary blocker.
+
+-   **Issue 2: React Hydration Error**
+    -   **Attempted fixes:** The agent has wrapped client-side components (like ) in  and used  imports with . These fixes have been temporary, with the error reappearing.
+    -   **Next debug checklist:**
+        1.  Review components that render differently based on authentication status (e.g., showing Login vs. Dashboard). The server renders the logged-out state, while the client, after checking auth, renders the logged-in state, causing a mismatch.
+        2.  Implement a loading state for components that depend on user auth. Check the auth status inside a  hook and update the state, ensuring the initial render is consistent between server and client.
+    -   **Why fix this issue and what will be achieved with this?** It indicates a server/client rendering mismatch that can lead to an unstable UI and poor user experience.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None.
+
+**In progress Task List**:
+-   **Task 1: Complete Supabase Integration**
+    -   **Where to resume:** Once the signup RLS issue is resolved, the agent must connect the rest of the application's features (Attorney Office, Case Management, Document Vault, etc.) to the Supabase backend.
+    -   **What will be achieved with this?** This will transition the application from a mocked UI to a fully functional, data-persistent platform.
+    -   **Status:** BLOCKED
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on something:** Issue 1: RLS on Profile Creation.
+
+**Upcoming and Future Tasks**
+- **Upcoming Tasks (P0):**
+    - **Attorney Virtual Office:**
+        - **Document Vault ():** Implement drag-and-drop file upload to Supabase Storage, client-side compression, versioning, and watermarking.
+        - **Task Manager ():** Build the Kanban board UI and connect it to the  table for full CRUD functionality.
+        - **Calendar ():** Integrate a calendar component to display data from the  and  tables.
+    - **Consultation Booking ():** Implement attorney filtering, time slot selection, and the booking logic connected to the database.
+
+- **Future Tasks (P1):**
+    - **PayFast Integration:** Implement the full checkout flow on the  page for subscriptions, including handling ITN (Instant Transaction Notification) callbacks for verification.
+    - **AI Intake Integration:** Connect the  wizard to the OpenAI API, implement PII redaction, and save the results to the  table in Supabase.
+    - **Security Hardening:** Implement client-side encryption for sensitive database fields and configure the security middleware () for session timeouts and CSP headers.
+    - **Email/SMS Notifications:** Integrate a service (e.g., Resend) for task and calendar reminders.
+
+**Completed work in this session**
+- **Application Scaffolding:** Created the file structure for a comprehensive Next.js application, including pages for authentication, pricing, compliance, and a full Attorney Virtual Office.
+- **Branding Integration:** Applied the user's logo and brand color scheme across the entire user interface.
+- **Supabase Configuration:** Installed Supabase libraries and configured the project with user-provided API keys in the  file.
+- **Documentation:** Generated several markdown files for setup, branding, and deployment guidelines.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Framework/Stack:** Next.js 14 (App Router), Tailwind CSS.
+- **Backend/DB:** Supabase (PostgreSQL, Authentication, Storage).
+- **Core Security Model:** Supabase Row-Level Security (RLS) is a fundamental and non-negotiable requirement that is currently the main source of problems.
+
+**key DB schema**
+-   **profiles**:  - Stores user-specific data, linked to  via a trigger. The RLS policies on this table are the main blocker.
+-   **cases**:  - Core table for legal cases.
+-   **documents**:  - Manages documents related to cases, to be stored in Supabase Storage.
+-   **user_subscriptions**:  - Tracks user subscription status and benefits.
+
+**All files of reference**
+-   : The frontend signup form. It must be updated to call the new backend API endpoint instead of performing a client-side database insert.
+-   : The server-side API route created to handle user registration securely. This is the intended fix for the RLS issue.
+-   : The latest SQL script provided to the user to fix the RLS policies on the  table.
+-   : This page has recurring data fetching ( vs ) and hydration issues that appear after a user logs in.
+-   : Contains the most up-to-date database schema reflecting the full product requirements.
+
+**Areas that need refactoring**:
+- The catch-all API route at  is now obsolete and should be removed to avoid confusion. All backend logic should be in specific, named API routes.
+- All pages currently using mock data (e.g., , ) need to be refactored to fetch and mutate real data from Supabase once authentication is working.
+
+**key api endpoints**
+-   : The new, critical endpoint for user registration, designed to fix the RLS issue.
+
+**Critical Info for New Agent**
+-   **The signup process is the #1 blocker.** The violates row-level security policy error is preventing any user from registering. The last attempt to fix this was by creating a server-side API route (). Your immediate priority is to ensure the signup page correctly uses this route and that the route itself functions as expected. Do not assume the</analysis>

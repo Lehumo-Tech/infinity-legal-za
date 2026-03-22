@@ -3,51 +3,28 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  const [user, setUser] = useState(null)
-  const [profile, setProfile] = useState(null)
+  const { user, profile, loading: authLoading, signOut } = useAuth()
   const [cases, setCases] = useState([])
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (mounted) {
-      checkUser()
+    if (!authLoading && !user) {
+      router.push('/login')
+      return
     }
-  }, [mounted])
+    if (user) {
+      fetchDashboardData()
+    }
+  }, [authLoading, user])
 
-  const checkUser = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/login')
-        return
-      }
-
-      setUser(user)
-
-      // Get profile (use maybeSingle to handle edge cases)
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      if (profileError) {
-        console.error('Profile error:', profileError)
-      }
-
-      setProfile(profileData)
-
       // Get cases
       const { data: casesData } = await supabase
         .from('cases')
@@ -57,7 +34,7 @@ export default function DashboardPage() {
 
       setCases(casesData || [])
 
-      // Get subscription (use maybeSingle to handle no subscription case)
+      // Get subscription
       const { data: subData } = await supabase
         .from('user_subscriptions')
         .select('*, pricing_plans(*)')
@@ -67,18 +44,18 @@ export default function DashboardPage() {
 
       setSubscription(subData)
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Dashboard error:', error)
     } finally {
       setLoading(false)
     }
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await signOut()
     router.push('/')
   }
 
-  if (loading || !mounted) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-infinity-cream flex items-center justify-center">
         <div className="text-center">
@@ -88,6 +65,8 @@ export default function DashboardPage() {
       </div>
     )
   }
+
+  if (!user) return null
 
   return (
     <div className="min-h-screen bg-infinity-cream">
@@ -113,7 +92,7 @@ export default function DashboardPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-infinity-navy mb-2">Welcome, {profile?.full_name}!</h1>
+          <h1 className="text-3xl font-bold text-infinity-navy mb-2">Welcome, {profile?.full_name || 'there'}!</h1>
           <p className="text-infinity-navy/70">Manage your legal matters</p>
         </div>
 
@@ -123,7 +102,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-infinity-navy mb-2">
-                  {subscription.pricing_plans.name} Plan
+                  {subscription.pricing_plans?.name} Plan
                 </h2>
                 <p className="text-infinity-navy/70">
                   {subscription.credits_remaining} consultation credits remaining
@@ -131,7 +110,7 @@ export default function DashboardPage() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-infinity-gold">
-                  R{subscription.pricing_plans.price_zar}/month
+                  R{subscription.pricing_plans?.price_zar}/month
                 </div>
                 <Link href="/pricing" className="text-sm text-infinity-navy hover:underline">
                   Change Plan
@@ -175,12 +154,12 @@ export default function DashboardPage() {
           </Link>
 
           <Link
-            href="/attorneys/browse"
+            href="/pricing"
             className="bg-white rounded-lg border border-infinity-gold/20 p-6 hover:border-infinity-gold transition-all"
           >
             <div className="text-4xl mb-3">⚖️</div>
-            <h3 className="font-semibold text-infinity-navy mb-2">Find Attorney</h3>
-            <p className="text-sm text-infinity-navy/70">Browse verified attorneys</p>
+            <h3 className="font-semibold text-infinity-navy mb-2">Subscription Plans</h3>
+            <p className="text-sm text-infinity-navy/70">View available plans</p>
           </Link>
         </div>
 

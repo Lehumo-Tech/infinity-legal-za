@@ -2,6 +2,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import LegalDisclaimer from '../components/LegalDisclaimer'
 import dynamic from 'next/dynamic'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const CookieConsent = dynamic(() => import('../components/CookieConsent'), {
   ssr: false
@@ -18,11 +19,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-background">
-          {children}
-        </div>
-        <CookieConsent />
-        <LegalDisclaimer />
+        <AuthProvider>
+          <div className="min-h-screen bg-background">
+            {children}
+          </div>
+          <CookieConsent />
+          <LegalDisclaimer />
+        </AuthProvider>
       </body>
     </html>
   )
