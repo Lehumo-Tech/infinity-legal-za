@@ -1,8 +1,20 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { checkRateLimit } from '@/lib/security'
+import { createNotification } from '@/lib/notifications'
 
 export async function POST(request) {
   try {
+    // Rate limit: max 5 signups per minute per IP
+    const ip = request.headers.get('x-forwarded-for') || 'unknown'
+    const rateCheck = checkRateLimit(`signup:${ip}`, 5, 60000)
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Too many signup attempts. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const { email, password, fullName, phone, role } = await request.json()
 
     // Validate inputs
@@ -60,6 +72,15 @@ export async function POST(request) {
         { status: 500 }
       )
     }
+
+    // Send welcome notification
+    await createNotification({
+      userId: authData.user.id,
+      type: 'system',
+      title: 'Welcome to Infinity Legal!',
+      message: `Hi ${fullName}, welcome to the platform. Start by describing your legal issue using our free AI intake tool.`,
+      link: '/intake'
+    })
 
     // Return success with user data
     return NextResponse.json({

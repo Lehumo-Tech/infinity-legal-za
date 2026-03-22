@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
+import { createNotification } from '@/lib/notifications'
+import { checkRateLimit } from '@/lib/security'
 
 // Initialize the OpenAI-compatible client pointing to Emergent's proxy
 const client = new OpenAI({
@@ -55,6 +57,16 @@ Guidelines:
 
 export async function POST(request) {
   try {
+    // Rate limit: max 5 AI analyses per minute per IP
+    const ip = request.headers.get('x-forwarded-for') || 'unknown'
+    const rateCheck = checkRateLimit(`intake:${ip}`, 5, 60000)
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait a moment before trying again.' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
     const { responses, isUrgent, selectedCategory } = body
 
@@ -167,6 +179,16 @@ export async function POST(request) {
 
         if (!caseError && caseData) {
           caseId = caseData.id
+          
+          // Notify the client about the new case
+          await createNotification({
+            userId: user.id,
+            type: 'case_update',
+            title: 'AI Analysis Complete',
+            message: `Your ${analysis.category} case has been analyzed and saved. ${analysis.urgency === 'high' || analysis.urgency === 'emergency' ? 'Urgent attention recommended.' : 'Review your next steps.'}`,
+            link: '/dashboard',
+            metadata: { caseId: caseData.id, category: analysis.category }
+          })
         }
       } catch (e) {
         console.error('Failed to save case from intake:', e)

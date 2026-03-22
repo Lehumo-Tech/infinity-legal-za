@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
+import { createNotification } from '@/lib/notifications'
 
 async function getUserFromRequest(request) {
   const authHeader = request.headers.get('authorization')
@@ -103,6 +104,19 @@ export async function POST(request) {
     if (error) {
       console.error('Task create error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // Notify assigned user about new task
+    const assignee = assigned_to || user.id
+    if (assignee && assignee !== user.id) {
+      await createNotification({
+        userId: assignee,
+        type: 'task_reminder',
+        title: 'New Task Assigned',
+        message: `You have been assigned a new task: "${title}"${due_date ? ` due by ${new Date(due_date).toLocaleDateString('en-ZA')}` : ''}.`,
+        link: '/attorney/office/tasks',
+        metadata: { taskId: data.id }
+      })
     }
 
     return NextResponse.json({ task: data }, { status: 201 })

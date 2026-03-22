@@ -352,22 +352,93 @@ frontend:
           agent: "main"
           comment: "Full 3-step booking flow: 1) Attorney selection with search/filter, 2) Date/time selection with real availability, 3) Review & confirm. Connected to Supabase."
 
+  - task: "Security Middleware"
+    implemented: true
+    working: true
+    file: "middleware.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Enhanced with CSP, XSS protection, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, session timeout headers, no-cache for API routes."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed. All required security headers are present and correctly configured: Content-Security-Policy, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, X-XSS-Protection: 1; mode=block, Strict-Transport-Security, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy, X-Session-Timeout: 1800. Security headers implementation working perfectly."
+
+  - task: "Security Utilities"
+    implemented: true
+    working: false
+    file: "lib/security.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Input sanitization, rate limiting, AES-256-GCM encryption, PII redaction, session timeout checker."
+        - working: false
+          agent: "testing"
+          comment: "CRITICAL ISSUE: Rate limiting functionality is not working correctly. Tested signup endpoint with 10+ rapid requests (both valid and invalid) and no 429 rate limit responses were returned. The checkRateLimit function is called but not enforcing limits. Headers show 'x-ratelimit-policy: 30/minute' but actual enforcement is failing. This is a critical security vulnerability. Input sanitization, encryption, and PII redaction functions appear to be implemented correctly but rate limiting needs immediate fix."
+
+  - task: "Notifications API"
+    implemented: true
+    working: true
+    file: "app/api/notifications/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET/PUT /api/notifications - list and mark read. Uses MongoDB."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All authentication and functionality tests passed: 1) GET /api/notifications without auth correctly returns 401. 2) GET /api/notifications with auth returns notifications array and unreadCount (found 1 welcome notification for new user). 3) PUT /api/notifications with {markAllRead: true} successfully marks all as read. 4) GET after marking read shows unreadCount: 0, confirming mark-as-read functionality works correctly. MongoDB integration working perfectly."
+
+  - task: "Notification Reminders API"
+    implemented: true
+    working: true
+    file: "app/api/notifications/reminders/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/notifications/reminders - Generates task and consultation reminders."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All authentication and functionality tests passed: 1) POST /api/notifications/reminders without auth correctly returns 401. 2) POST /api/notifications/reminders with auth returns success response with notificationsCreated count (0 in test as no due tasks/consultations), message, and timestamp. API correctly processes reminders for tasks due today/tomorrow, overdue tasks, and upcoming consultations. MongoDB integration working correctly."
+
+  - task: "NotificationBell Component"
+    implemented: true
+    working: true
+    file: "components/NotificationBell.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Real-time bell with dropdown, unread count, mark read. Added to landing, dashboard, attorney layout."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 4
+  test_sequence: 6
   run_ui: false
 
 test_plan:
   current_focus: []
-  stuck_tasks: []
+  stuck_tasks:
+    - "Security Utilities"
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
-      message: "Implemented Consultation Booking feature. 3 new API routes: 1) GET /api/attorneys - Lists verified attorneys (supports ?specialty= and ?search= filters). 2) GET /api/attorneys/[id]/availability?date=YYYY-MM-DD - Returns available dates and time slots. 3) POST /api/consultations (requires auth Bearer token) - Creates booking with {attorneyId, bookingDate, bookingTime, duration, consultationType, notes, caseId}. GET /api/consultations (requires auth) - Lists user bookings. 3 seed attorneys exist. consultation_bookings table uses status 'pending' (not 'scheduled'). For auth: POST Supabase auth endpoint to login."
+      message: "Implemented Security Hardening and Notifications. New APIs: 1) GET /api/notifications (auth required) - returns user notifications from MongoDB with unread count. 2) PUT /api/notifications (auth required) - mark as read via {notificationId} or {markAllRead:true}. 3) POST /api/notifications/reminders - generates reminders for tasks due today/tomorrow, overdue tasks, upcoming consultations. Rate limiting on /api/intake/analyze (5/min) and /api/auth/signup (5/min). Notifications auto-created on: booking creation, case intake, signup, task assignment. Auth: create via POST /api/auth/signup then login via Supabase. MongoDB collection: notifications."
     - agent: "testing"
-      message: "AI Intake Analysis API testing completed successfully. All 5 test scenarios passed."
-    - agent: "testing"
-      message: "Consultation Booking APIs testing completed successfully. All 3 API endpoints passed comprehensive testing: 1) Attorneys Listing API - All 5 scenarios passed (basic listing, Criminal Law filter, Family Law filter, search by name, empty filter). 2) Attorney Availability API - All 4 scenarios passed (available dates, time slots, invalid ID handling). 3) Consultations Booking API - All 6 scenarios passed (create with auth, unauthorized access, validation, list bookings, double booking prevention). All authentication, filtering, validation, and booking functionality working perfectly. No critical issues found."
+      message: "CRITICAL SECURITY ISSUE FOUND: Rate limiting is not working on signup endpoint. Tested with 10+ rapid requests and no 429 responses returned. Headers show rate limit policy but enforcement is failing. This is a critical vulnerability that needs immediate fix. All other features working: Security headers ✅, Notifications API ✅, Notification Reminders ✅, AI Intake rate limiting ✅ (light test). Recommend using websearch tool to research rate limiting implementation fixes."

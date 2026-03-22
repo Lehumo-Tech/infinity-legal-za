@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
+import { createNotification } from '@/lib/notifications'
 
 async function getUserFromRequest(request) {
   const authHeader = request.headers.get('authorization')
@@ -144,10 +145,32 @@ export async function POST(request) {
       .eq('id', attorneyId)
       .single()
 
+    const attorneyName = profile?.full_name || 'Attorney'
+    const formattedDate = new Date(bookingDate).toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long' })
+
+    // Create notifications for both client and attorney
+    await createNotification({
+      userId: user.id,
+      type: 'booking',
+      title: 'Consultation Booked',
+      message: `Your consultation with ${attorneyName} is confirmed for ${formattedDate} at ${bookingTime}.`,
+      link: '/dashboard',
+      metadata: { bookingId: booking.id, attorneyId }
+    })
+
+    await createNotification({
+      userId: attorneyId,
+      type: 'booking',
+      title: 'New Consultation Booking',
+      message: `A client has booked a ${duration}-minute consultation for ${formattedDate} at ${bookingTime}.`,
+      link: '/attorney/office',
+      metadata: { bookingId: booking.id, clientId: user.id }
+    })
+
     return NextResponse.json({
       booking: {
         ...booking,
-        attorney_name: profile?.full_name || 'Attorney'
+        attorney_name: attorneyName
       },
       message: 'Consultation booked successfully'
     }, { status: 201 })

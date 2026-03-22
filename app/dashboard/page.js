@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import NotificationBell from '@/components/NotificationBell'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -78,6 +79,7 @@ export default function DashboardPage() {
               <span className="font-bold text-xl text-infinity-navy">My Dashboard</span>
             </Link>
             <div className="flex items-center gap-4">
+              <NotificationBell />
               <span className="text-sm text-infinity-navy/70">{profile?.full_name}</span>
               <button
                 onClick={handleLogout}
