@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import os
 
 # Configuration
-BASE_URL = "https://infinity-legal.preview.emergentagent.com"
+BASE_URL = "https://legal-tech-za.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 # Supabase Auth Configuration
@@ -473,6 +473,159 @@ def test_validation_errors():
         print_test_result("Validation Test", False, f"Exception: {str(e)}")
         return False
 
+def test_ai_intake_analysis_api():
+    """Test AI Intake Analysis API endpoint"""
+    print("\n🤖 AI INTAKE ANALYSIS API TESTS")
+    print("-" * 40)
+    
+    endpoint = f"{API_BASE}/intake/analyze"
+    headers = {"Content-Type": "application/json"}
+    timeout = 30  # 30 seconds for AI requests
+    
+    all_tests_passed = True
+    
+    # Test 1: Basic intake analysis (employment dismissal)
+    print("Testing basic intake analysis (employment dismissal)...")
+    try:
+        payload = {
+            "responses": {
+                "problem": "I was dismissed from my job without a hearing or any prior warnings after working for 3 years",
+                "timeline": "This happened last week",
+                "outcome": "I want compensation for unfair dismissal"
+            },
+            "isUrgent": False
+        }
+        
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=timeout)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verify required fields
+            required_fields = [
+                'category', 'summary', 'urgency', 'nextSteps', 
+                'relevantLegislation', 'estimatedCostRange', 
+                'estimatedTimeline', 'confidence'
+            ]
+            
+            missing_fields = [field for field in required_fields if field not in data]
+            if missing_fields:
+                print_test_result("Basic intake analysis", False, f"Missing fields: {missing_fields}")
+                all_tests_passed = False
+            else:
+                print_test_result("Basic intake analysis", True, f"Category: {data.get('category')}, Urgency: {data.get('urgency')}")
+        else:
+            print_test_result("Basic intake analysis", False, f"HTTP {response.status_code}: {response.text}")
+            all_tests_passed = False
+            
+    except requests.exceptions.Timeout:
+        print_test_result("Basic intake analysis", False, "Request timeout (>30s)")
+        all_tests_passed = False
+    except Exception as e:
+        print_test_result("Basic intake analysis", False, str(e))
+        all_tests_passed = False
+    
+    # Test 2: Urgent criminal case
+    print("Testing urgent criminal case...")
+    try:
+        payload = {
+            "responses": {
+                "problem": "I was arrested last night and charged with assault. I am currently in police custody",
+                "timeline": "Last night, 21 March 2026",
+                "outcome": "I need bail urgently"
+            },
+            "isUrgent": True,
+            "selectedCategory": "Criminal Law"
+        }
+        
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=timeout)
+        
+        if response.status_code == 200:
+            data = response.json()
+            urgency = data.get('urgency', '').lower()
+            
+            if urgency in ['high', 'emergency']:
+                print_test_result("Urgent criminal case", True, f"Urgency correctly set to '{urgency}'")
+            else:
+                print_test_result("Urgent criminal case", False, f"Expected high/emergency urgency, got '{urgency}'")
+                all_tests_passed = False
+        else:
+            print_test_result("Urgent criminal case", False, f"HTTP {response.status_code}: {response.text}")
+            all_tests_passed = False
+            
+    except requests.exceptions.Timeout:
+        print_test_result("Urgent criminal case", False, "Request timeout (>30s)")
+        all_tests_passed = False
+    except Exception as e:
+        print_test_result("Urgent criminal case", False, str(e))
+        all_tests_passed = False
+    
+    # Test 3: Validation - empty problem
+    print("Testing validation - empty problem...")
+    try:
+        payload = {"responses": {}}
+        
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=timeout)
+        
+        if response.status_code == 400:
+            print_test_result("Validation - empty problem", True, "Correctly returns 400 for empty problem")
+        else:
+            print_test_result("Validation - empty problem", False, f"Expected 400, got {response.status_code}")
+            all_tests_passed = False
+            
+    except Exception as e:
+        print_test_result("Validation - empty problem", False, str(e))
+        all_tests_passed = False
+    
+    # Test 4: Validation - no body
+    print("Testing validation - no body...")
+    try:
+        payload = {}
+        
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=timeout)
+        
+        if response.status_code == 400:
+            print_test_result("Validation - no body", True, "Correctly returns 400 for empty body")
+        else:
+            print_test_result("Validation - no body", False, f"Expected 400, got {response.status_code}")
+            all_tests_passed = False
+            
+    except Exception as e:
+        print_test_result("Validation - no body", False, str(e))
+        all_tests_passed = False
+    
+    # Test 5: With optional fields - Property Law
+    print("Testing with optional fields (property law)...")
+    try:
+        payload = {
+            "responses": {
+                "problem": "My landlord is trying to evict me without proper notice",
+                "timeline": "I received the notice yesterday",
+                "outcome": "I want to stay in my house",
+                "parties": "My landlord and the estate agent",
+                "documents": "I have my lease agreement"
+            },
+            "selectedCategory": "Property Law"
+        }
+        
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=timeout)
+        
+        if response.status_code == 200:
+            data = response.json()
+            print_test_result("Property law with optional fields", True, f"Category: {data.get('category')}")
+        else:
+            print_test_result("Property law with optional fields", False, f"HTTP {response.status_code}: {response.text}")
+            all_tests_passed = False
+            
+    except requests.exceptions.Timeout:
+        print_test_result("Property law with optional fields", False, "Request timeout (>30s)")
+        all_tests_passed = False
+    except Exception as e:
+        print_test_result("Property law with optional fields", False, str(e))
+        all_tests_passed = False
+    
+    return all_tests_passed
+
 def run_all_tests():
     """Run all backend API tests"""
     print("=" * 60)
@@ -502,6 +655,7 @@ def run_all_tests():
     test_results['profile'] = test_profile_api()
     test_results['documents'] = test_documents_api()
     test_results['documents_upload'] = test_documents_upload_api()
+    test_results['ai_intake_analysis'] = test_ai_intake_analysis_api()
     
     print("\n🔒 SECURITY TESTS")
     print("-" * 30)

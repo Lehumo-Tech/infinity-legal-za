@@ -195,6 +195,21 @@ backend:
           agent: "testing"
           comment: "Profile API fully functional. GET /api/profile retrieves user profile with attorney details when applicable. PUT /api/profile updates full_name and phone successfully. Proper authorization and data validation in place."
 
+  - task: "AI Intake Analysis API"
+    implemented: true
+    working: true
+    file: "app/api/intake/analyze/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Implemented AI intake analysis using Gemini via Emergent LLM proxy (OpenAI-compatible). Accepts user responses, sends to Gemini for analysis, returns structured JSON with category, summary (PII redacted), urgency, next steps, relevant SA legislation, cost estimate, timeline, and confidence score. If user is authenticated, saves case to Supabase. Tested via full browser E2E flow - works correctly."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All 5 test scenarios passed: 1) Basic employment dismissal analysis returns proper JSON structure with all required fields (category: Labour Law, urgency: high). 2) Urgent criminal case correctly escalates urgency to 'emergency'. 3) Empty problem validation returns 400 error as expected. 4) Empty body validation returns 400 error as expected. 5) Property law case with optional fields processes correctly. API response times 6-9 seconds as expected for AI processing. All validation, error handling, and JSON structure requirements working perfectly."
+
 frontend:
   - task: "Auth Context Provider"
     implemented: true
@@ -268,10 +283,22 @@ frontend:
           agent: "main"
           comment: "Drag-and-drop upload UI, case/category selection, document list. Needs Supabase Storage bucket."
 
+  - task: "AI Intake Wizard Page"
+    implemented: true
+    working: true
+    file: "app/intake/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Implemented full AI intake wizard with category selection, 5-question form, animated loading, and rich results view. Tested E2E via browser - full flow works."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 2
+  test_sequence: 3
   run_ui: false
 
 test_plan:
@@ -282,6 +309,6 @@ test_plan:
 
 agent_communication:
     - agent: "main"
-      message: "I have implemented the complete attorney office backend and frontend. All API routes are at /api/cases, /api/tasks, /api/documents, /api/documents/upload, /api/dashboard/stats, /api/profile. Auth is via Bearer token in Authorization header. Test user: test_ui_1774195637@example.com / TestPass123! (attorney role). The Supabase database has specific CHECK constraints - valid case_types are: criminal, civil, family, other. Valid urgencies are: low, medium, high, emergency. Valid statuses: intake, matched, active, closed, archived. For auth token: POST to Supabase auth endpoint to get access_token, then use as Bearer token."
+      message: "Implemented AI Intake Wizard. New API route at POST /api/intake/analyze. It accepts JSON body with {responses: {problem, timeline, outcome, parties, documents}, isUrgent: bool, selectedCategory: string}. Uses Gemini AI via Emergent LLM proxy (OpenAI-compatible). The EMERGENT_LLM_KEY env variable is set. Returns JSON with category, subcategory, summary, urgency, nextSteps, relevantLegislation, estimatedCostRange, estimatedTimeline, confidence, warnings, ppiCompliance. If user sends Authorization Bearer token, it tries to save the case to Supabase. Test with POST /api/intake/analyze with Content-Type: application/json body. No auth required for basic analysis."
     - agent: "testing"
-      message: "Comprehensive backend API testing completed successfully. All 6 backend tasks tested and working correctly. Fixed minor SQL error in documents API (cases.title -> cases.case_subtype). Created backend_test.py with full test suite covering authentication, CRUD operations, security, and validation. All endpoints properly handle authorization, return correct responses, and validate input data. Document upload works (Supabase Storage bucket not configured but endpoint logic is sound). Ready for production use."
+      message: "AI Intake Analysis API testing completed successfully. All 5 test scenarios passed including basic employment dismissal analysis, urgent criminal case handling, validation for empty requests, and property law case with optional fields. API correctly returns structured JSON with all required fields, handles urgency escalation properly, validates input correctly, and processes AI requests within expected timeframes (6-9 seconds). The endpoint is fully functional and ready for production use."
