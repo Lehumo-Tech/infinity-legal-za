@@ -38,7 +38,14 @@ export default function SignupPage() {
 
       if (authError) throw authError
 
-      // Create profile
+      if (!authData.user) {
+        throw new Error('Signup failed. Please try again.')
+      }
+
+      // Wait a moment for auth to complete
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Create profile using the authenticated user's session
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([{
@@ -49,7 +56,10 @@ export default function SignupPage() {
           role: formData.role
         }])
 
-      if (profileError) throw profileError
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+        throw new Error('Profile creation failed: ' + profileError.message)
+      }
 
       // Redirect based on role
       if (formData.role === 'attorney') {
@@ -58,6 +68,7 @@ export default function SignupPage() {
         router.push('/dashboard')
       }
     } catch (err) {
+      console.error('Signup error:', err)
       setError(err.message || 'Signup failed')
     } finally {
       setLoading(false)

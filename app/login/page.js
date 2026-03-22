@@ -27,14 +27,21 @@ export default function LoginPage() {
 
       if (authError) throw authError
 
-      // Get user profile to determine role
+      // Get user profile to determine role (use maybeSingle)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', data.user.id)
-        .single()
+        .maybeSingle()
 
-      if (profileError) throw profileError
+      if (profileError) {
+        console.error('Profile error:', profileError)
+        throw new Error('Could not load profile')
+      }
+
+      if (!profile) {
+        throw new Error('Profile not found. Please contact support.')
+      }
 
       // Redirect based on role
       if (profile.role === 'attorney') {
