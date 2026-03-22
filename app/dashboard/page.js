@@ -28,12 +28,16 @@ export default function DashboardPage() {
 
       setUser(user)
 
-      // Get profile
-      const { data: profileData } = await supabase
+      // Get profile (use maybeSingle to handle edge cases)
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
+
+      if (profileError) {
+        console.error('Profile error:', profileError)
+      }
 
       setProfile(profileData)
 
@@ -46,13 +50,13 @@ export default function DashboardPage() {
 
       setCases(casesData || [])
 
-      // Get subscription
+      // Get subscription (use maybeSingle to handle no subscription case)
       const { data: subData } = await supabase
         .from('user_subscriptions')
         .select('*, pricing_plans(*)')
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .single()
+        .maybeSingle()
 
       setSubscription(subData)
     } catch (error) {
