@@ -18,13 +18,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="border-b border-border bg-infinity-cream/95 backdrop-blur supports-[backdrop-filter]:bg-infinity-cream/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">∞</span>
-            </div>
-            <span className="font-bold text-xl">Infinity Legal</span>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Infinity Legal" className="h-10 w-auto" />
+            <span className="font-bold text-xl text-infinity-navy">Infinity Legal</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/attorney/signup" className="text-sm text-muted-foreground hover:text-foreground">
@@ -46,14 +44,14 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-infinity-gold/10 text-infinity-navy text-sm font-medium mb-6">
+            <span className="w-2 h-2 bg-infinity-gold rounded-full animate-pulse"></span>
             24/7 AI-Powered Legal Help
           </div>
           
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight text-infinity-navy">
             Solve Your Legal Problem in Minutes.
-            <span className="block text-primary mt-2">Affordable. Confidential.</span>
+            <span className="block text-infinity-gold mt-2">Affordable. Confidential.</span>
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -64,75 +62,75 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <button
               onClick={() => router.push('/intake')}
-              className="px-8 py-4 bg-primary text-primary-foreground rounded-lg text-lg font-semibold hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
+              className="px-8 py-4 bg-infinity-navy text-infinity-cream rounded-lg text-lg font-semibold hover:bg-infinity-navy/90 shadow-lg hover:shadow-xl transition-all"
             >
               Start Free Legal Intake →
             </button>
             <button
               onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 bg-secondary text-secondary-foreground rounded-lg text-lg font-semibold hover:bg-secondary/90"
+              className="px-8 py-4 bg-infinity-gold text-infinity-navy rounded-lg text-lg font-semibold hover:bg-infinity-gold/90"
             >
               How It Works
             </button>
           </div>
 
           {/* Trust Indicators */}
-          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t border-border">
+          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t border-infinity-gold/20">
             <div>
-              <div className="text-3xl font-bold text-primary">500+</div>
-              <div className="text-sm text-muted-foreground">Verified Attorneys</div>
+              <div className="text-3xl font-bold text-infinity-gold">500+</div>
+              <div className="text-sm text-infinity-navy/70">Verified Attorneys</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary">&lt;5min</div>
-              <div className="text-sm text-muted-foreground">Average Response</div>
+              <div className="text-3xl font-bold text-infinity-gold">&lt;5min</div>
+              <div className="text-sm text-infinity-navy/70">Average Response</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary">95%</div>
-              <div className="text-sm text-muted-foreground">Client Satisfaction</div>
+              <div className="text-3xl font-bold text-infinity-gold">95%</div>
+              <div className="text-sm text-infinity-navy/70">Client Satisfaction</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 px-4 bg-muted/30">
+      <section id="how-it-works" className="py-20 px-4 bg-infinity-cream">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
+          <h2 className="text-4xl font-bold text-center mb-12 text-infinity-navy">How It Works</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-card rounded-lg p-8 border border-border shadow-sm">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-white rounded-lg p-8 border border-infinity-gold/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-infinity-gold/10 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-2xl">💬</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">1. Tell Us Your Problem</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-xl font-semibold mb-3 text-infinity-navy">1. Tell Us Your Problem</h3>
+              <p className="text-infinity-navy/70">
                 Answer 3 simple questions. Our AI understands legal issues in plain language. 
                 No signup required to start.
               </p>
-              <div className="mt-4 text-sm text-primary font-medium">Takes 2-3 minutes</div>
+              <div className="mt-4 text-sm text-infinity-gold font-medium">Takes 2-3 minutes</div>
             </div>
 
-            <div className="bg-card rounded-lg p-8 border border-border shadow-sm">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-white rounded-lg p-8 border border-infinity-gold/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-infinity-gold/10 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-2xl">🤖</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">2. Get Instant Guidance</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-xl font-semibold mb-3 text-infinity-navy">2. Get Instant Guidance</h3>
+              <p className="text-infinity-navy/70">
                 Our AI analyzes your case and provides immediate next steps, similar cases, 
                 and estimated costs.
               </p>
-              <div className="mt-4 text-sm text-primary font-medium">Instant results</div>
+              <div className="mt-4 text-sm text-infinity-gold font-medium">Instant results</div>
             </div>
 
-            <div className="bg-card rounded-lg p-8 border border-border shadow-sm">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-white rounded-lg p-8 border border-infinity-gold/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-infinity-gold/10 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-2xl">⚖️</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">3. Connect with Attorney</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-xl font-semibold mb-3 text-infinity-navy">3. Connect with Attorney</h3>
+              <p className="text-infinity-navy/70">
                 Choose from matched, LPC-verified attorneys. Book consultations or get full representation.
               </p>
-              <div className="mt-4 text-sm text-primary font-medium">Same-day appointments</div>
+              <div className="mt-4 text-sm text-infinity-gold font-medium">Same-day appointments</div>
             </div>
           </div>
         </div>
@@ -201,17 +199,15 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-12 px-4 bg-muted/30">
+      <footer className="border-t border-infinity-gold/20 py-12 px-4 bg-infinity-cream">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-lg">∞</span>
-                </div>
-                <span className="font-bold text-lg">Infinity Legal</span>
+              <div className="flex items-center gap-3 mb-4">
+                <img src="/logo.png" alt="Infinity Legal" className="h-10 w-auto" />
+                <span className="font-bold text-lg text-infinity-navy">Infinity Legal</span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-infinity-navy/70">
                 Democratizing legal access in South Africa through AI and verified attorneys.
               </p>
             </div>

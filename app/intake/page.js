@@ -102,8 +102,8 @@ export default function IntakePage() {
 
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold mb-2">Case Category</h3>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <h3 className="font-semibold mb-2 text-infinity-navy">Case Category</h3>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-infinity-gold/10 text-infinity-navy text-sm font-medium">
                   {aiAnalysis.category}
                 </div>
               </div>
@@ -126,9 +126,9 @@ export default function IntakePage() {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">Estimated Cost</h3>
-                <p className="text-2xl font-bold text-primary">{aiAnalysis.estimatedCost}</p>
-                <p className="text-sm text-muted-foreground">Based on similar cases in South Africa</p>
+                <h3 className="font-semibold mb-2 text-infinity-navy">Estimated Cost</h3>
+                <p className="text-2xl font-bold text-infinity-gold">{aiAnalysis.estimatedCost}</p>
+                <p className="text-sm text-infinity-navy/70">Based on similar cases in South Africa</p>
               </div>
 
               <div className="bg-muted/50 rounded-lg p-4">
@@ -156,13 +156,13 @@ export default function IntakePage() {
             <div className="mt-8 flex gap-4">
               <button
                 onClick={() => router.push('/attorneys/browse?caseId=' + aiAnalysis.caseId)}
-                className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90"
+                className="flex-1 px-6 py-3 bg-infinity-navy text-infinity-cream rounded-lg font-semibold hover:bg-infinity-navy/90"
               >
                 Find Attorney Now →
               </button>
               <button
                 onClick={() => router.push('/signup?caseId=' + aiAnalysis.caseId)}
-                className="flex-1 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg font-semibold hover:bg-secondary/90"
+                className="flex-1 px-6 py-3 bg-infinity-gold text-infinity-navy rounded-lg font-semibold hover:bg-infinity-gold/90"
               >
                 Save & Continue Later
               </button>

@@ -220,7 +220,7 @@ export default function AttorneySignupPage() {
 
             <button
               onClick={handleNext}
-              className="w-full mt-6 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90"
+              className="w-full mt-6 px-6 py-3 bg-infinity-navy text-infinity-cream rounded-lg font-semibold hover:bg-infinity-navy/90"
             >
               Next: Practice Areas →
             </button>
@@ -244,8 +244,8 @@ export default function AttorneySignupPage() {
                       onClick={() => handleSpecializationToggle(spec)}
                       className={`px-4 py-3 border rounded-lg text-left transition-all ${
                         formData.specializations.includes(spec)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-background border-border hover:border-primary'
+                          ? 'bg-infinity-navy text-infinity-cream border-infinity-navy'
+                          : 'bg-white border-infinity-gold/20 hover:border-infinity-gold'
                       }`}
                     >
                       {spec}
