@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { checkRateLimit } from '@/lib/security'
 import { createNotification } from '@/lib/notifications'
+import { sendWelcomeEmail } from '@/lib/brevo'
 
 export async function POST(request) {
   try {
@@ -74,13 +75,18 @@ export async function POST(request) {
       )
     }
 
-    // Send welcome notification
+    // Send welcome notification (in-app)
     await createNotification({
       userId: authData.user.id,
       type: 'system',
       title: 'Welcome to Infinity Legal!',
       message: `Hi ${fullName}, welcome to the platform. Start by describing your legal issue using our free AI intake tool.`,
       link: '/intake'
+    })
+
+    // Send welcome email (async, non-blocking)
+    sendWelcomeEmail(email, fullName).catch(err => {
+      console.error('Welcome email failed (non-blocking):', err.message)
     })
 
     // Return success with user data

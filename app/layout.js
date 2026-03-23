@@ -23,6 +23,32 @@ const playfair = Playfair_Display({
 export const metadata = {
   title: 'Infinity Legal - Solve Your Legal Problem in Minutes',
   description: 'Affordable, confidential legal help powered by AI. Connect with verified South African attorneys.',
+  icons: {
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
+  openGraph: {
+    title: 'Infinity Legal - AI-Powered Legal Help for South Africa',
+    description: 'Get instant guidance from our AI legal assistant, then connect with verified South African attorneys. Affordable. Confidential. POPIA compliant.',
+    siteName: 'Infinity Legal',
+    images: [
+      {
+        url: '/hero-consultation.png',
+        width: 1200,
+        height: 630,
+        alt: 'Professional legal consultation with Infinity Legal',
+      },
+    ],
+    locale: 'en_ZA',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Infinity Legal - AI-Powered Legal Help',
+    description: 'Get instant guidance from our AI legal assistant, then connect with verified South African attorneys.',
+    images: ['/hero-consultation.png'],
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'),
 }
 
 export default function RootLayout({ children }) {

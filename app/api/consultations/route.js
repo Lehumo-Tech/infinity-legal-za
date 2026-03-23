@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
 import { createNotification } from '@/lib/notifications'
+import { sendBookingConfirmation } from '@/lib/brevo'
 
 async function getUserFromRequest(request) {
   const authHeader = request.headers.get('authorization')
@@ -165,6 +166,16 @@ export async function POST(request) {
       message: `A client has booked a ${duration}-minute consultation for ${formattedDate} at ${bookingTime}.`,
       link: '/attorney/office',
       metadata: { bookingId: booking.id, clientId: user.id }
+    })
+
+    // Send booking confirmation email (async, non-blocking)
+    sendBookingConfirmation(user.email, user.user_metadata?.full_name || '', {
+      attorneyName,
+      date: formattedDate,
+      time: bookingTime,
+      caseType: consultationType || 'General Consultation',
+    }).catch(err => {
+      console.error('Booking confirmation email failed (non-blocking):', err.message)
     })
 
     return NextResponse.json({

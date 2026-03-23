@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/contexts/AuthContext'
 import NotificationBell from '@/components/NotificationBell'
+import DarkModeToggle from '@/components/DarkModeToggle'
 
 export default function LandingPage() {
   const router = useRouter()
@@ -14,43 +15,44 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="border-b border-infinity-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-40" aria-label="Main navigation">
+      <nav className="border-b border-infinity-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-40 dark:bg-gray-900/80 dark:border-gray-700" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 logo-hover" aria-label="Infinity Legal — Home">
             <img src="/logo.png" alt="Infinity Legal" className="h-9 w-auto" />
-            <span className="text-xl font-display font-semibold text-infinity-navy">
+            <span className="text-xl font-display font-semibold text-infinity-navy dark:text-white">
               Infinity Legal
             </span>
           </Link>
           <div className="ml-auto flex items-center gap-4">
-            <Link href="/pricing" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy transition-colors hidden sm:block">
+            <Link href="/pricing" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy dark:text-white/60 dark:hover:text-white transition-colors hidden sm:block">
               Pricing
             </Link>
-            <Link href="/attorney/signup" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy transition-colors hidden sm:block">
+            <Link href="/attorney/signup" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy dark:text-white/60 dark:hover:text-white transition-colors hidden sm:block">
               For Attorneys
             </Link>
             {isAuthenticated ? (
               <>
                 <NotificationBell />
-                <Link href="/dashboard" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy transition-colors">
+                <Link href="/dashboard" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy dark:text-white/60 dark:hover:text-white transition-colors">
                   Dashboard
                 </Link>
               </>
             ) : (
-              <Link href="/login" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy transition-colors">
+              <Link href="/login" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy dark:text-white/60 dark:hover:text-white transition-colors">
                 Sign In
               </Link>
             )}
             <Link href="/apply"
-              className="px-5 py-2.5 bg-infinity-navy text-white rounded-xl text-sm font-semibold hover:bg-infinity-navy-light shadow-sm hover:shadow-md transition-all focus-brand">
+              className="px-5 py-2.5 bg-infinity-navy text-white rounded-xl text-sm font-semibold hover:bg-infinity-navy-light shadow-sm hover:shadow-md transition-all focus-brand dark:bg-infinity-gold dark:text-infinity-navy dark:hover:bg-infinity-gold-light">
               Apply Now
             </Link>
+            <DarkModeToggle />
           </div>
         </div>
       </nav>
 
       {/* Hero Section — Split Layout with Family Consultation Image */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-infinity-cream via-white to-infinity-gold/5" aria-label="Hero — Legal help that feels like home">
+      <section className="relative overflow-hidden bg-gradient-to-br from-infinity-cream via-white to-infinity-gold/5 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800" aria-label="Hero — Legal help that feels like home">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center py-16 lg:py-24">
             {/* Left: Text Content */}
@@ -60,12 +62,12 @@ export default function LandingPage() {
                 24/7 AI-Powered Legal Help
               </div>
               
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-display font-bold mb-6 leading-[1.15] text-infinity-navy tracking-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-display font-bold mb-6 leading-[1.15] text-infinity-navy dark:text-white tracking-tight">
                 Legal Help That
                 <span className="block text-infinity-gold mt-1">Feels Like Home.</span>
               </h1>
               
-              <p className="text-lg text-infinity-navy/60 mb-8 max-w-lg font-sans leading-relaxed">
+              <p className="text-lg text-infinity-navy/60 dark:text-white/60 mb-8 max-w-lg font-sans leading-relaxed">
                 Get instant guidance from our AI legal assistant, then connect with verified South African attorneys — all from the comfort of your living room.
               </p>
 
@@ -135,11 +137,11 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works — With Virtual Consultation Image */}
-      <section id="how-it-works" className="py-20 lg:py-24 px-4 bg-white" aria-labelledby="how-it-works-heading">
+      <section id="how-it-works" className="py-20 lg:py-24 px-4 bg-white dark:bg-gray-900" aria-labelledby="how-it-works-heading">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3" id="how-it-works-heading">How It Works</h2>
-            <p className="text-infinity-navy/50 font-sans max-w-lg mx-auto">Three simple steps to legal clarity — from anywhere</p>
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy dark:text-white mb-3" id="how-it-works-heading">How It Works</h2>
+            <p className="text-infinity-navy/50 dark:text-white/50 font-sans max-w-lg mx-auto">Three simple steps to legal clarity — from anywhere</p>
           </div>
           
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -189,7 +191,7 @@ export default function LandingPage() {
       </section>
 
       {/* Why Families Trust Us — Testimonial Section with Happy Family Image */}
-      <section className="py-20 lg:py-24 px-4 bg-gradient-to-b from-infinity-cream to-white overflow-hidden" aria-labelledby="trust-heading">
+      <section className="py-20 lg:py-24 px-4 bg-gradient-to-b from-infinity-cream to-white dark:from-gray-800 dark:to-gray-900 overflow-hidden" aria-labelledby="trust-heading">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: Content */}
@@ -259,7 +261,7 @@ export default function LandingPage() {
       </section>
 
       {/* Practice Areas */}
-      <section className="py-20 lg:py-24 px-4 bg-white" aria-labelledby="practice-heading">
+      <section className="py-20 lg:py-24 px-4 bg-white dark:bg-gray-900" aria-labelledby="practice-heading">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3" id="practice-heading">We Handle All Legal Matters</h2>
@@ -288,7 +290,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Preview */}
-      <section className="py-20 lg:py-24 px-4 bg-infinity-cream">
+      <section className="py-20 lg:py-24 px-4 bg-infinity-cream dark:bg-gray-800">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3">Simple, Honest Pricing</h2>
           <p className="text-infinity-navy/50 font-sans mb-10 max-w-lg mx-auto">
@@ -371,7 +373,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-infinity-navy/10 py-14 px-4 bg-white" aria-label="Site footer">
+      <footer className="border-t border-infinity-navy/10 py-14 px-4 bg-white dark:bg-gray-900 dark:border-gray-700" aria-label="Site footer">
         <div className="max-w-6xl mx-auto">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
             <div>

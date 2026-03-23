@@ -141,6 +141,31 @@
   }
 }
 
+/* ========== Dark Mode Global Text Overrides ========== */
+:root.dark body {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+:root.dark h1, :root.dark h2, :root.dark h3, :root.dark h4, :root.dark h5, :root.dark h6 {
+  color: #ffffff;
+}
+/* Improve readability for muted text in dark mode */
+:root.dark [class*="text-infinity-navy/5"],
+:root.dark [class*="text-infinity-navy/6"] {
+  color: rgba(243, 244, 246, 0.65) !important;
+}
+:root.dark .border-infinity-navy\/10 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+/* Dark mode cards */
+:root.dark .bg-white {
+  background-color: #1f2937;
+}
+/* Dark mode for testimonial and info cards */
+:root.dark .email-wrapper {
+  background-color: #1f2937;
+}
+
 /* ========== Accessibility ========== */
 
 /* Skip-to-content link — visible only on keyboard focus */
