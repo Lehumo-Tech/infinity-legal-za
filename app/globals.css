@@ -113,4 +113,30 @@
   .focus-brand {
     @apply focus:outline-none focus:ring-2 focus:ring-infinity-gold focus:ring-offset-2;
   }
+  /* Logo watermark background */
+  .watermark {
+    position: relative;
+  }
+  .watermark::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 60vw;
+    height: 60vw;
+    max-width: 700px;
+    max-height: 700px;
+    transform: translate(-50%, -50%);
+    background-image: url('/logo.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .watermark > * {
+    position: relative;
+    z-index: 1;
+  }
 }
