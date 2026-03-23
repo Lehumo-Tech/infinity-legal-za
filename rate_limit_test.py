@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BASE_URL = "https://legal-tech-za.preview.emergentagent.com"
+BASE_URL = "https://shield-guardian-3.preview.emergentagent.com"
 TIMEOUT = 15
 
 def test_rate_limiting_detailed():

@@ -8,7 +8,7 @@ import json
 import time
 import uuid
 
-BASE_URL = "https://legal-tech-za.preview.emergentagent.com"
+BASE_URL = "https://shield-guardian-3.preview.emergentagent.com"
 TIMEOUT = 15
 
 def test_rate_limiting_with_valid_requests():

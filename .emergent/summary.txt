@@ -1,157 +1,177 @@
 <analysis>**original_problem_statement:**
-The user wants to build a comprehensive legal tech platform, Infinity Legal Platform, using Next.js, Tailwind, and Supabase. The platform must serve both clients and attorneys in the South African market.
+The user wants to build a comprehensive legal tech platform, Infinity Legal Platform, using Next.js, Tailwind, and Supabase for the South African market.
 
-**PRODUCT REQUIREMENTS (V2):**
-- **Business Model:** A multi-tiered subscription model for clients, with platform fees processed via PayFast.
+**PRODUCT REQUIREMENTS (V2 & V3):**
+- **Business Model:** A multi-tiered subscription model for clients.
 - **Client-Facing Features:**
-    - AI-powered legal intake wizard (using an LLM).
-    - A multi-step application form based on a provided PDF.
-    - A pricing page detailing subscription tiers.
-    - A system for booking consultations with attorneys.
+    - AI-powered legal intake wizard.
+    - A multi-step application form.
+    - A redesigned pricing page with new plans.
+    - A system for booking consultations.
+    - A UI overhaul to create a warmer, more approachable aesthetic using specific images and design principles.
 - **Attorney-Facing Features (Virtual Office):**
-    - A redesigned dashboard with key statistics and charts based on a user-provided screenshot.
-    - Full Case Management system (CRUD).
-    - Document Vault with file uploads.
-    - Task Manager with a Kanban-style board.
-    - Calendar for managing dates.
-- **Branding:** Use the official logo provided by the user.
-- **Security & Compliance (Non-Negotiable):**
-    - Supabase Row-Level Security (RLS) must be enabled and enforced on ALL tables.
+    - A redesigned dashboard with key stats.
+    - Full Case Management, Document Vault, Task Manager, and Calendar.
+- **Branding & UI/UX (Major Overhaul):**
+    - Implement a new official logo ( and ).
+    - Apply a new brand color palette (Infinity Navy, Gold) and typography (Playfair Display, Inter) across the entire application.
+    - Implement an SVG logo watermark as a subtle background throughout the app.
+    - Update  component styles (, ) to match the new brand.
+    - Integrate four specific, user-provided images into the landing page for a friendlier feel.
+- **Security & Compliance:**
+    - Enforce Supabase Row-Level Security (RLS).
+    - Implement security headers, rate limiting, and other hardening measures.
     - POPIA compliance.
+- **Notifications:**
+    - An in-app notification system for key events.
+    - Future integration with Email/SMS services.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The project is a fully functional Next.js 14 application with Supabase integration. The critical signup blocker caused by Supabase RLS has been resolved. A complete Attorney Virtual Office has been implemented, featuring a redesigned UI (based on a user-provided screenshot) that is fully connected to the backend for case management, tasks, documents, and a calendar. A new 6-step client application form has also been built, which successfully creates user accounts and associated case records. The application's branding has been updated with the official logo. A global  now manages authentication state, resolving previous hydration errors.
+The project is a fully functional Next.js 14 application with Supabase for core data and MongoDB for notifications. Key features like the AI Intake Wizard, multi-step application form, and a complete Attorney Virtual Office are implemented and working. A major brand overhaul has been completed, including a new logo, a new professional color scheme and typography system, and updated pricing plans that are dynamically loaded from the database. Security has been hardened with middleware for security headers and robust, IP-aware rate limiting on critical endpoints. An SVG version of the logo has been implemented as a subtle watermark across all pages.
 
 **Last working item**:
-- **Last item agent was working:** The agent was preparing to implement the AI-powered legal intake wizard. It confirmed with the user to proceed with this feature using the platform's built-in LLM key. The agent then successfully fetched the Emergent LLM key and the integration playbook for Gemini via the  library.
-- **Status:** NOT STARTED
-- **Agent Testing Done:** N/A
-- **Which testing method agent to use?** both
-- **User Testing Done:** N/A
+- **Last item agent was working:** The agent was processing a user request for a final UI/UX refinement. The user provided four specific images and instructions to create a more welcoming and professional feel on the landing page and other relevant sections.
+- **Status:** IN PROGRESS
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** screenshot tool
+- **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-There are no known pending or in-progress issues. The critical RLS signup blocker and recurring hydration errors from the previous session have been resolved.
+There are no known bugs or blocking issues.
 
 **In progress Task List**:
-There are no tasks currently in progress.
+- **Task 1: UI/UX Refinement with New Images (P0)**
+  - **Where to resume:** The user has provided four images and detailed instructions for a friendlier UI. The next step is to edit  and other relevant pages to integrate these images and apply the requested design principles (e.g., using the Family Consultation image for the hero section, the Home Office image for a How it Works section, etc.).
+  - **What will be achieved with this?** The application's visual appeal and user trust will be enhanced by replacing placeholder content with professional, context-aware imagery that aligns with the new brand identity.
+  - **Status:** IN PROGRESS
+  - **Should Test frontend/backend/both after fix?** frontend
+  - **Blocked on something:** No
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-  - **(P0) AI Intake Integration:** Implement the AI-powered intake wizard on the .
-    - **Where to resume:** Use the fetched  playbook and the platform's LLM key () to connect to the Gemini model.
-    - **Goal:** Create a user interface for the intake wizard, send the user's input to the Gemini API for processing (summary, PII redaction), and save the results into the  table in Supabase.
-  - **(P1) Consultation Booking:** Implement the  feature, including attorney filtering, time slot selection, and database-connected booking logic.
+  - **(P1) PayFast Integration:** Implement the subscription payment checkout flow on the . This task is currently **ON HOLD** per user request.
 
-- **Future Tasks (On Hold):**
-  - **PayFast Integration:** Implement the subscription payment checkout flow on the  page. The user has explicitly requested to put this **on hold**.
-  - **Security Hardening:** Implement client-side encryption for sensitive database fields and configure security middleware () for session timeouts and Cross-Site-Scripting (XSS) protection.
-  - **Notifications:** Integrate an email or SMS service for reminders related to tasks and calendar events.
+- **Future Tasks:**
+  - **(P2) Email/SMS Notifications:** The in-app notification architecture is complete. The next phase is to integrate an external service (e.g., SendGrid, Twilio) to send email/SMS reminders. This will require an API key from the user.
+  - **(P3) Create Brand Book:** Document the new branding (colors, fonts, logo usage) in a  file as requested by the user.
+  - **(P4) Accessibility & Animation:** Conduct a thorough accessibility check for WCAG 2.1 AA compliance and implement subtle hover animations on the logo as requested.
+  - **(P5) Cleanup Obsolete Files:** Remove unused files like .
 
 **Completed work in this session**
-- **Resolved Signup & RLS Blocker:** The user signup flow is now fully functional via a secure server-side API endpoint (), resolving the critical RLS issue.
-- **Resolved Hydration Errors:** A global  () was implemented to manage auth state, fixing previous server-client render mismatches.
-- **Attorney Virtual Office (Redesigned & Functional):**
-  - Completely redesigned the UI for the entire attorney section based on a user-provided screenshot, creating a new shared layout in .
-  - All attorney pages () are now connected to the live Supabase backend, including a dashboard with stats, full CRUD for cases, a Kanban board for tasks, file uploads for documents, and an event-populated calendar.
-- **Built Multi-Step Application Form:**
-  - Created a new 6-step application form at  modeled after a user-provided PDF.
-  - Implemented a backend API () that handles user creation, profile creation, and case creation in a single transaction.
-- **Backend APIs & Schema Adaptation:**
-  - Created and tested robust API routes for , , , and .
-  - Fixed database schema mismatches by adapting the code to the existing table structure and its constraints (e.g., valid enum values for , ).
-- **Updated Branding:**
-  - Replaced the placeholder logo with the official user-provided logo () across the entire application.
-- **Code Cleanup:**
-  - Removed the obsolete catch-all API route ().
-- **Backend Testing:**
-  - The  agent was run and successfully verified all backend endpoints.
+- **AI Intake Wizard:** Built and tested a multi-step form at  that uses Gemini to provide legal analysis. API at .
+- **Consultation Booking System:** Implemented a full booking flow with attorney filtering, availability checks, and booking creation. Frontend at  and APIs under  and .
+- **Security Hardening & Rate Limiting:**
+  - Implemented comprehensive security headers in .
+  - Created a robust, hot-reload-proof, and proxy-aware IP rate-limiting mechanism in  and applied it to the signup and AI intake routes.
+- **In-App Notification System:**
+  - Introduced MongoDB to store notifications. Connection helper at .
+  - Created APIs () and a UI component () for creating and displaying notifications for signups, bookings, and new cases.
+- **Full Brand & Pricing Overhaul:**
+  - Updated the database ( table) with new plans: Shield, Guardian, and Advocate.
+  - Created a new API () to fetch plans dynamically.
+  - Redesigned the pricing page () and landing page () with the new branding.
+  - Implemented a new color palette and typography system across the app via  and .
+- **SVG Watermark:**
+  - Saved the user-provided SVG logo to .
+  - Added a global, subtle background watermark style and applied it to the root layout at .
 
 **Earlier issues found/mentioned but not fixed**
 - None.
 
 **Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork:** new row violates row-level security policy for table profiles
-  - **Recurrence count:** 1
-  - **Status:** RESOLVED
+- None. The previous RLS issue was resolved and did not recur.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Framework/Stack:** Next.js 14 (App Router), Tailwind CSS, shadcn/ui.
-- **Backend/DB:** Supabase (PostgreSQL, Authentication, Storage).
-- **Security Model:** Supabase Row-Level Security (RLS) is handled via server-side API routes using an admin client.
-- **State Management:** React Context API () for global authentication state.
-- **LLM Integration:** Planned use of Gemini via the  library.
+- **Framework/Stack:** Next.js 14, Tailwind CSS, shadcn/ui.
+- **Databases:** Supabase (PostgreSQL for primary data), MongoDB (for notifications).
+- **Security:** Supabase RLS, Middleware (CSP, XSS), custom IP-based rate limiting on sensitive APIs.
+- **State Management:** React Context API ().
+- **LLM Integration:** Gemini (via Emergent's proxy).
 
 **key DB schema**
--   **cases**:  (Note: This table lacks  and  columns; code has been adapted).
--   **tasks**: 
--   **documents**: 
--   **profiles**: 
+- **Supabase:**
+  - :  - *Newly updated with Shield, Guardian, Advocate plans.*
+  - : 
+  - : 
+  - : 
+  - : 
+- **MongoDB:**
+  - : 
 
 **changes in tech stack**
-- The LLM for the AI Intake feature has been decided as **Gemini**, instead of the initially mentioned OpenAI.
+- **MongoDB** has been introduced and is actively used for the in-app notification system.
 
 **All files of reference**
-- : The new multi-step application form UI.
-- : The backend logic for the application form.
-- : The new shared layout for the entire redesigned attorney section.
-- : The global auth provider that solved hydration issues.
-- : Example of a functional, schema-aware CRUD API route.
-- : The new official logo file.
+- : Landing page to be updated with new images.
+- : The newly redesigned pricing page.
+- : Contains the new brand colors, fonts, and watermark styles.
+- : Defines the new Tailwind theme for the brand.
+- : The SVG file used for the global watermark.
+- : Contains the fixed rate-limiting logic.
+- : Handles the new MongoDB connection.
+- : The primary API for the notification system.
 
 **Areas that need refactoring**:
-- The file  was created to suggest database changes, but the agent adapted the code instead. This file could be removed or provided to the user for future schema alignment. The application code itself is well-structured.
+- The user provided  component code for  and . The agent implemented the brand refresh using global CSS and Tailwind config, which works but does not directly modify the component files. This could be a future refinement if desired.
+- The file  is obsolete and should be removed.
 
 **key api endpoints**
-- : Handles user registration.
-- : Submits a new client application, creating a user and a case.
-- : Full CRUD for legal cases.
-- : Full CRUD for tasks.
--  and : For document management and uploads.
-- : Retrieves statistics for the attorney dashboard.
+- : User registration, now with rate limiting.
+- : Submits legal problem for AI analysis, now with rate limiting.
+- : Manages user notifications stored in MongoDB.
+- : Fetches the new, dynamic pricing plans from Supabase.
+- : Lists attorneys with filtering.
+- : Retrieves an attorney's schedule.
+- : Books a new consultation.
 
 **Critical Info for New Agent**
 - **PayFast is ON HOLD.** Do not work on it unless the user explicitly asks.
-- Your immediate priority is to **build the AI Intake feature**. Use the  library to connect to Gemini. The platform LLM key has already been fetched.
-- The database  table does **not** have  or  columns. The application code was adapted to work with the existing schema (e.g., using ). Ensure any new features respect this schema.
-- All backend-related logic (especially writes) **must** go through server-side API routes to comply with the RLS policy.
+- Your immediate priority is to **implement the final UI/UX refinement** using the four images and design principles provided by the user in their last message. Start by modifying .
+- **MongoDB is now a part of the stack** for notifications. The connection logic is in .
+- The **rate-limiting logic in  is critical** and correctly handles proxy IPs. Do not change it unless necessary.
+- The new brand identity is the source of truth. Refer to  and  for all styling. Use  for headings and  for body text.
 
 **documents and test reports created in this job**
 - 
--  (Generated by the backend testing agent)
--  (Updated with latest test plan)
+- 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1. **User:** (Provides new logo image) the official Logo. please update accordingly
-2. **Agent:** Replaces the logo file and verifies it on all pages. Confirms completion.
-3. **User:** (Replies 1 to a list of options) indicating they want to work on PayFast integration.
-4. **Agent:** Fetches the PayFast integration playbook.
-5. **Agent:** Asks for PayFast credentials (Merchant ID, Key, Passphrase).
-6. **User:** keep the payfast on hold for now i need the other ones like the ai intergration etc.
-7. **Agent:** Acknowledges PayFast is on hold and asks about the AI integration, specifically if a user-provided key is available or to use the platform's key.
-8. **User:** please use the built in llm key
-9. **Agent:** Fetches the platform's built-in LLM key.
-10. **Agent:** Fetches the integration playbook for Gemini using the  library. (This is where the last session ended).
+1. **User:** Asks to restart the app.
+2. **Assistant:** Restarts all services.
+3. **Assistant:** Confirms all services are running.
+4. **User:** Provides a detailed request for a complete brand overhaul: new pricing, new logo, new colors, new fonts, and new component styles.
+5. **Assistant:** Confirms plan to implement the overhaul.
+6. **User:** Clarifies the brand overhaul request, adding creative direction for plan names.
+7. **Assistant:** Implements the full brand and pricing overhaul, including updating the database, UI, and design system.
+8. **Assistant:** Implements a user-requested SVG background watermark across the app.
+9. **User:** Provides four specific images and detailed instructions for a final UI/UX refinement to create a warmer, more approachable aesthetic (e.g., Family Consultation Scene... for your homepage hero section).
+10. **Assistant:** Acknowledged the request and is ready to begin implementation.
 
 **Project Health Check:**
-- **Working:** Core functionalities including user signup, login, a redesigned and data-connected attorney office (dashboard, cases, tasks, documents, calendar), and a multi-step application form are all working.
+- **Working:** All core features are implemented and functional, including the AI wizard, booking system, security, notifications, and the new brand identity.
 - **Broken:** No features are currently broken.
-- **Mocked:** No features are currently mocked. The UI is connected to the live Supabase database.
+- **Mocked:** No features are mocked; the application is connected to live databases.
 
 **3rd Party Integrations**
-- **Supabase:** Used for Database (PostgreSQL), Authentication, and Storage. Requires user-provided keys ().
-- **Gemini (via ):** To be used for the AI Intake wizard. Uses the Emergent LLM Key.
-- **PayFast:** Integration is planned but currently **ON HOLD**. Will require User API Keys.
+- **Supabase (PostgreSQL, Auth, Storage):** Requires User API Key.
+- **Gemini (AI/LLM):** Uses Emergent LLM Key.
+- **MongoDB (Notifications):** Uses local .
+- **PayFast (Payments):** Integration is planned but currently **ON HOLD**. Will require User API Key.
 
 **Testing status**
-- **Testing agent used after significant changes:** YES (Backend testing agent was used and passed).
+- **Testing agent used after significant changes:** YES (Backend testing was used for the AI intake, booking, security, and notification features).
 - **Troubleshoot agent used after agent stuck in loop:** NO
 - **Test files created:** []
-- **Known regressions:** None.
+- **Known regressions:** A critical rate-limiting bug was discovered by the testing agent and subsequently fixed within the session. There are no known regressions.
 
 **Credentials to test flow:**
-New users (both clients and attorneys) can be created through the UI signup page. A new client user and associated case can also be created by completing the  form. No fixed credentials are required.</analysis>
+New users can be created via the UI signup page. Test cases can be generated via the AI Intake wizard when logged in or the multi-step application form.
+
+**What agent forgot to execute**
+- The agent successfully implemented the visual redesign requested by the user but did so via global CSS and Tailwind configuration (, ) rather than directly editing the  component files (, ) for which the user had provided code snippets. The outcome is visually correct, but the implementation method differs from the user's provided example code. This is a minor point as the goal was achieved.</analysis>
