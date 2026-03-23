@@ -1,88 +1,71 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import NotificationBell from '@/components/NotificationBell'
+
+const PLAN_META = {
+  shield: {
+    displayName: 'Shield',
+    tagline: 'Essential legal protection',
+    icon: '🛡️',
+    coverageLimit: 'R5,000',
+    color: 'from-slate-50 to-white',
+    borderColor: 'border-infinity-navy/10',
+    btnClass: 'bg-infinity-navy text-white hover:bg-infinity-navy-light',
+  },
+  guardian: {
+    displayName: 'Guardian',
+    tagline: 'Comprehensive peace of mind',
+    icon: '⚖️',
+    coverageLimit: 'R10,000',
+    color: 'from-infinity-gold/5 to-white',
+    borderColor: 'border-infinity-gold',
+    btnClass: 'bg-infinity-gold text-infinity-navy hover:bg-infinity-gold-light',
+    popular: true,
+  },
+  advocate: {
+    displayName: 'Advocate',
+    tagline: 'Maximum coverage & support',
+    icon: '🏛️',
+    coverageLimit: 'R12,000',
+    color: 'from-infinity-navy/5 to-white',
+    borderColor: 'border-infinity-navy/20',
+    btnClass: 'bg-infinity-navy text-white hover:bg-infinity-navy-light',
+  },
+}
 
 export default function PricingPage() {
   const router = useRouter()
-  const [consentChecked, setConsentChecked] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const [plans, setPlans] = useState([])
+  const [loading, setLoading] = useState(true)
   const [selectedPlan, setSelectedPlan] = useState(null)
+  const [consentChecked, setConsentChecked] = useState(false)
 
-  const plans = [
-    {
-      id: 'free',
-      name: 'Free',
-      price: 0,
-      credits: 0,
-      storage: '0GB',
-      features: [
-        'AI legal information',
-        'Legal templates',
-        'Attorney directory',
-        'Community support'
-      ],
-      cta: 'Get Started',
-      popular: false
-    },
-    {
-      id: 'starter',
-      name: 'Starter',
-      price: 99,
-      credits: 1,
-      storage: '500MB',
-      features: [
-        '1 consultation credit/month',
-        'Case tracking',
-        '500MB storage',
-        'Email support',
-        'Document uploads'
-      ],
-      cta: 'Start Starter',
-      popular: false
-    },
-    {
-      id: 'family',
-      name: 'Family Protect',
-      price: 199,
-      credits: 3,
-      storage: '1GB',
-      features: [
-        '3 consultation credits/month',
-        'Document drafting assistance',
-        '1GB storage',
-        'Priority support',
-        'Family member access'
-      ],
-      cta: 'Protect Your Family',
-      popular: true
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      price: 349,
-      credits: 999,
-      storage: '2GB',
-      features: [
-        'Unlimited consultations (fair use)',
-        'Emergency access',
-        '2GB storage',
-        '24/7 priority support',
-        'Document review',
-        'Court date reminders'
-      ],
-      cta: 'Go Premium',
-      popular: false
+  useEffect(() => {
+    async function fetchPlans() {
+      try {
+        const res = await fetch('/api/plans')
+        const data = await res.json()
+        setPlans(data.plans || [])
+      } catch (err) {
+        console.error('Failed to fetch plans:', err)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+    fetchPlans()
+  }, [])
 
-  const handleSubscribe = async (plan) => {
-    if (plan.id === 'free') {
-      router.push('/signup?plan=free')
-      return
+  const handleSubscribe = (plan) => {
+    if (isAuthenticated) {
+      setSelectedPlan(plan)
+    } else {
+      router.push(`/signup?plan=${plan.name}`)
     }
-
-    setSelectedPlan(plan)
   }
 
   const handleCheckout = async () => {
@@ -90,149 +73,237 @@ export default function PricingPage() {
       alert('Please accept the terms and consent to data processing')
       return
     }
-
-    const checkoutData = {
-      plan_id: selectedPlan.id,
-      amount: selectedPlan.price
-    }
-
-    try {
-      const response = await fetch('/api/payment/create-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(checkoutData)
-      })
-
-      const data = await response.json()
-      
-      if (data.paymentUrl) {
-        window.location.href = data.paymentUrl
-      }
-    } catch (error) {
-      console.error('Checkout error:', error)
-      alert('Payment error. Please try again.')
-    }
+    // PayFast integration placeholder — on hold
+    alert(`Subscription to ${PLAN_META[selectedPlan.name]?.displayName || selectedPlan.name} plan confirmed! Payment integration coming soon.`)
+    setSelectedPlan(null)
+    setConsentChecked(false)
   }
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-12">
-          <Link href="/" className="text-sm text-infinity-navy/70 hover:text-infinity-navy mb-4 inline-flex items-center gap-1">
-            Back to Home
+    <div className="min-h-screen bg-gradient-to-b from-infinity-cream to-white">
+      {/* Navigation */}
+      <nav className="border-b border-infinity-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/logo.png" alt="Infinity Legal" className="h-9 w-auto" />
+            <span className="text-xl font-display font-semibold text-infinity-navy">
+              Infinity Legal
+            </span>
           </Link>
-          <h1 className="text-5xl font-bold mb-4 text-infinity-navy">Choose Your Plan</h1>
-          <p className="text-xl text-infinity-navy/70">
-            Affordable legal support for every South African
-          </p>
+          <div className="ml-auto flex items-center gap-4">
+            {isAuthenticated && <NotificationBell />}
+            <Link href="/" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy transition-colors">
+              ← Back to Home
+            </Link>
+          </div>
         </div>
+      </nav>
 
-        <div className="grid md:grid-cols-4 gap-6 mb-16">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative rounded-lg p-8 border-2 transition-all ${
-                plan.popular
-                  ? 'border-infinity-gold bg-infinity-gold/5 shadow-xl scale-105'
-                  : 'border-infinity-gold/20 bg-white hover:border-infinity-gold/40'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-infinity-gold text-infinity-navy px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </span>
-                </div>
-              )}
+      {/* Hero */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-infinity-gold/10 text-infinity-navy text-sm font-medium mb-6">
+          <span className="w-2 h-2 bg-infinity-gold rounded-full"></span>
+          Startup-Friendly Pricing
+        </div>
+        <h1 className="text-4xl sm:text-5xl font-display font-bold text-infinity-navy mb-4 tracking-tight">
+          Legal Protection <span className="text-infinity-gold">Made Simple</span>
+        </h1>
+        <p className="text-lg text-infinity-navy/60 max-w-2xl mx-auto font-sans leading-relaxed">
+          Affordable legal coverage for every South African. Choose a plan that fits your needs — 
+          no complex packages, just honest protection.
+        </p>
+      </div>
 
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold mb-2 text-infinity-navy">{plan.name}</h3>
-                <div className="mb-4">
-                  <span className="text-5xl font-bold text-infinity-navy">R{plan.price}</span>
-                  {plan.price > 0 && <span className="text-infinity-navy/70">/month</span>}
-                </div>
-                <div className="text-sm text-infinity-navy/70">
-                  {plan.credits === 999 ? 'Unlimited' : plan.credits} consultation credit{plan.credits !== 1 && plan.credits !== 999 ? 's' : ''}/month
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="text-infinity-gold text-lg">✓</span>
-                    <span className="text-infinity-navy/80">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => handleSubscribe(plan)}
-                className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                  plan.popular
-                    ? 'bg-infinity-navy text-infinity-cream hover:bg-infinity-navy/90 shadow-lg'
-                    : 'bg-infinity-gold text-infinity-navy hover:bg-infinity-gold/90'
-                }`}
-              >
-                {plan.cta}
-              </button>
+      {/* Plans Grid */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-infinity-gold/20 flex items-center justify-center animate-pulse">
+              <span className="text-2xl">⚖️</span>
             </div>
-          ))}
+            <p className="text-infinity-navy/60">Loading plans...</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {plans.map((plan) => {
+              const meta = PLAN_META[plan.name] || {}
+              const isPopular = meta.popular
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative rounded-2xl border-2 bg-gradient-to-b ${meta.color || 'from-white to-white'} ${
+                    isPopular ? `${meta.borderColor} shadow-xl scale-[1.02]` : `${meta.borderColor || 'border-gray-200'} shadow-sm hover:shadow-lg`
+                  } transition-all duration-300 overflow-hidden`}
+                >
+                  {/* Popular Badge */}
+                  {isPopular && (
+                    <div className="absolute top-0 left-0 right-0">
+                      <div className="bg-infinity-gold text-infinity-navy text-center py-1.5 text-xs font-bold uppercase tracking-wider">
+                        Most Popular
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={`p-8 ${isPopular ? 'pt-12' : ''}`}>
+                    {/* Plan Header */}
+                    <div className="text-center mb-6">
+                      <span className="text-4xl mb-3 block">{meta.icon}</span>
+                      <h3 className="text-2xl font-display font-bold text-infinity-navy mb-1">
+                        {meta.displayName || plan.name}
+                      </h3>
+                      <p className="text-sm text-infinity-navy/50 font-sans">
+                        {meta.tagline}
+                      </p>
+                    </div>
+
+                    {/* Price */}
+                    <div className="text-center mb-6 pb-6 border-b border-infinity-navy/10">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-sm text-infinity-navy/50 font-medium">R</span>
+                        <span className="text-5xl font-bold text-infinity-navy tracking-tight">{plan.price_zar}</span>
+                        <span className="text-sm text-infinity-navy/50 font-medium">/month</span>
+                      </div>
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-infinity-success/10 text-infinity-success text-sm font-semibold">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        Covers up to {meta.coverageLimit}
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    <ul className="space-y-3 mb-8">
+                      {(plan.features || []).map((feature, i) => (
+                        <li key={i} className="flex items-start gap-3 text-sm font-sans">
+                          <span className="mt-0.5 w-5 h-5 rounded-full bg-infinity-gold/20 text-infinity-gold flex items-center justify-center flex-shrink-0 text-xs font-bold">✓</span>
+                          <span className="text-infinity-navy/70">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* CTA Button */}
+                    <button
+                      onClick={() => handleSubscribe(plan)}
+                      className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 focus-brand ${
+                        meta.btnClass || 'bg-infinity-navy text-white hover:bg-infinity-navy-light'
+                      } ${isPopular ? 'shadow-lg hover:shadow-xl' : 'shadow-sm hover:shadow-md'}`}
+                    >
+                      Get {meta.displayName || plan.name}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Payment Info */}
+        <div className="mt-12 grid sm:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-infinity-navy/10 p-6">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">💳</span>
+              <div>
+                <h4 className="font-display font-semibold text-infinity-navy mb-1">How Payment Works</h4>
+                <p className="text-sm text-infinity-navy/60 font-sans leading-relaxed">
+                  Monthly subscription fees are processed securely via PayFast (coming soon). 
+                  Attorney consultation fees are paid separately to the attorney's trust account.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-infinity-navy/10 p-6">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">🔒</span>
+              <div>
+                <h4 className="font-display font-semibold text-infinity-navy mb-1">POPIA Compliant</h4>
+                <p className="text-sm text-infinity-navy/60 font-sans leading-relaxed">
+                  Your personal data is protected in accordance with the Protection of Personal Information Act. 
+                  We never share your information without consent.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-12">
-          <h3 className="font-semibold text-amber-900 mb-2">Payment Structure</h3>
-          <ul className="text-sm text-amber-800 space-y-2">
-            <li>
-              Platform Subscription Fees (R99-R349/month) are paid to Infinity Legal via PayFast.
-            </li>
-            <li>
-              Legal Consultation Fees (R350-R1500/consultation) are paid directly to attorney Trust Account.
-            </li>
-          </ul>
+        {/* FAQ */}
+        <div className="mt-16 max-w-3xl mx-auto">
+          <h2 className="text-2xl font-display font-bold text-infinity-navy text-center mb-8">
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-4">
+            {[
+              { q: 'What does "coverage up to" mean?', a: 'Each plan covers legal costs up to the specified amount per matter. If your case requires more, your attorney will discuss additional fees with you upfront.' },
+              { q: 'Can I upgrade my plan later?', a: 'Yes! You can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle.' },
+              { q: 'Is there a contract?', a: 'No long-term contracts. All plans are month-to-month. Cancel anytime with no penalties.' },
+              { q: 'What happens if I need a consultation?', a: 'Use our AI intake tool to describe your situation, then book a consultation with a verified attorney directly through the platform.' },
+            ].map((faq, i) => (
+              <details key={i} className="bg-white rounded-xl border border-infinity-navy/10 overflow-hidden group">
+                <summary className="px-6 py-4 font-medium text-infinity-navy cursor-pointer flex items-center justify-between font-sans hover:bg-infinity-cream/50 transition-colors">
+                  {faq.q}
+                  <svg className="w-5 h-5 text-infinity-navy/40 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="px-6 pb-4 text-sm text-infinity-navy/60 font-sans leading-relaxed">
+                  {faq.a}
+                </div>
+              </details>
+            ))}
+          </div>
         </div>
       </div>
 
+      {/* Subscription Modal */}
       {selectedPlan && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-8">
-            <h3 className="text-2xl font-bold mb-4 text-infinity-navy">
-              Subscribe to {selectedPlan.name}
-            </h3>
-            
-            <div className="bg-infinity-cream rounded-lg p-6 mb-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={(e) => e.target === e.currentTarget && setSelectedPlan(null)}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl">
+            <div className="text-center mb-6">
+              <span className="text-4xl mb-2 block">{PLAN_META[selectedPlan.name]?.icon}</span>
+              <h3 className="text-2xl font-display font-bold text-infinity-navy">
+                Subscribe to {PLAN_META[selectedPlan.name]?.displayName}
+              </h3>
+              <p className="text-sm text-infinity-navy/50 mt-1 font-sans">{PLAN_META[selectedPlan.name]?.tagline}</p>
+            </div>
+
+            <div className="bg-infinity-cream rounded-xl p-5 mb-6">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-infinity-navy/70">Monthly subscription</span>
-                <span className="text-2xl font-bold text-infinity-navy">R{selectedPlan.price}</span>
+                <span className="text-sm text-infinity-navy/60 font-sans">Monthly subscription</span>
+                <span className="text-3xl font-bold text-infinity-navy">R{selectedPlan.price_zar}</span>
+              </div>
+              <div className="text-xs text-infinity-navy/40 font-sans">
+                Coverage up to {PLAN_META[selectedPlan.name]?.coverageLimit} per matter
               </div>
             </div>
 
             <div className="mb-6">
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={consentChecked}
                   onChange={(e) => setConsentChecked(e.target.checked)}
-                  className="mt-1 w-4 h-4"
+                  className="mt-1 w-4 h-4 rounded border-infinity-navy/30 text-infinity-navy focus:ring-infinity-gold"
                 />
-                <span className="text-sm text-infinity-navy/70">
-                  I agree to the Terms and Privacy Policy. I consent to POPIA Section 72 data processing.
+                <span className="text-sm text-infinity-navy/60 font-sans leading-relaxed group-hover:text-infinity-navy/80 transition-colors">
+                  I agree to the <Link href="#" className="text-infinity-navy underline">Terms of Service</Link> and{' '}
+                  <Link href="#" className="text-infinity-navy underline">Privacy Policy</Link>. I consent to data 
+                  processing in accordance with POPIA Section 72.
                 </span>
               </label>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
-                onClick={() => setSelectedPlan(null)}
-                className="flex-1 px-6 py-3 border-2 border-infinity-gold/20 text-infinity-navy rounded-lg"
+                onClick={() => { setSelectedPlan(null); setConsentChecked(false) }}
+                className="flex-1 px-6 py-3 border-2 border-infinity-navy/10 text-infinity-navy rounded-xl font-medium hover:border-infinity-navy/30 transition-colors font-sans"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCheckout}
                 disabled={!consentChecked}
-                className="flex-1 px-6 py-3 bg-infinity-navy text-infinity-cream rounded-lg disabled:opacity-50"
+                className="flex-1 px-6 py-3 bg-infinity-navy text-white rounded-xl font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-infinity-navy-light transition-colors focus-brand font-sans"
               >
-                Pay with PayFast
+                Confirm
               </button>
             </div>
           </div>

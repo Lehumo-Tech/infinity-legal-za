@@ -51,10 +51,25 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Infinity Legal Brand Colors
-        'infinity-navy': '#1a3a52',
-        'infinity-gold': '#c9a961',
-        'infinity-cream': '#f5f5f0',
+        // Infinity Legal Brand Colors — Official Palette
+        'infinity-navy': '#1a365d',
+        'infinity-navy-light': '#2c5282',
+        'infinity-gold': '#d4af37',
+        'infinity-gold-light': '#f6e05e',
+        'infinity-cream': '#f9fafb',
+        'infinity-gray': {
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          900: '#111827',
+        },
+        'infinity-success': '#059669',
+        'infinity-error': '#dc2626',
+        'infinity-warning': '#d97706',
+      },
+      fontFamily: {
+        display: ['Playfair Display', 'Georgia', 'serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -70,10 +85,15 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "shimmer": "shimmer 2s ease-in-out infinite",
       },
     },
   },
