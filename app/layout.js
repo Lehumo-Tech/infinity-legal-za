@@ -30,8 +30,14 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} ${playfair.variable} font-sans`}>
         <AuthProvider>
+          {/* Skip-to-content link for keyboard accessibility */}
+          <a href="#main-content" className="skip-to-content">
+            Skip to main content
+          </a>
           <div className="min-h-screen bg-background watermark">
-            {children}
+            <main id="main-content" tabIndex={-1}>
+              {children}
+            </main>
           </div>
           <CookieConsent />
           <LegalDisclaimer />

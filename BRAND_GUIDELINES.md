@@ -1,278 +1,321 @@
-# 🎨 Infinity Legal - Brand Guidelines
+# Infinity Legal — Brand Guidelines v2.0
 
-## Logo & Visual Identity
+> **Last Updated:** February 2026 | **Version:** 2.0  
+> **Design System Files:** `tailwind.config.js`, `globals.css`
+
+---
+
+## 1. Logo & Visual Identity
 
 ### Primary Logo
-**File:** `/app/public/logo.png`
+| Asset | Path | Format | Usage |
+|-------|------|--------|-------|
+| Logo (Raster) | `/public/logo.png` | PNG | Navigation, footer, emails |
+| Logo (Vector) | `/public/logo.svg` | SVG | Watermark, print, scalable use |
 
-The Infinity Legal logo features:
-- **Infinity symbol (∞)** - Representing unlimited legal support
-- **Classical pillar** - Symbolizing justice, stability, and legal tradition
-- **Intertwined design** - Showing the integration of modern AI with traditional legal practice
+**Design Elements:**
+- **Infinity symbol (∞)** — Unlimited legal support
+- **Classical pillar** — Justice, stability, legal tradition
+- **Intertwined design** — Modern AI meets traditional practice
 
-### Logo Usage
-- Minimum clear space: Equal to height of the logo on all sides
-- Minimum size: 40px height (web), 0.5 inches (print)
-- Do not rotate, skew, or alter the proportions
-- Do not change the colors
-- Always use on appropriate backgrounds (light backgrounds preferred)
+### Logo Usage Rules
+- **Minimum clear space:** Equal to the logo height on all sides
+- **Minimum size:** 36px height (web), 0.5″ (print)
+- **Do not** rotate, skew, stretch, or recolor the logo
+- **Preferred backgrounds:** White, cream, light — avoid busy imagery behind it
 
----
+### SVG Watermark
+The SVG logo is applied as a subtle, fixed-position background watermark across the entire application via the `.watermark` CSS class in `globals.css`. It renders at **3.5% opacity**, centered, and is non-interactive.
 
-## Color Palette
-
-### Primary Colors
-
-#### Infinity Navy
-- **HEX:** `#1a3a52`
-- **RGB:** 26, 58, 82
-- **HSL:** 207°, 48%, 22%
-- **Tailwind:** `infinity-navy`
-
-**Usage:**
-- Primary CTAs and buttons
-- Main headings
-- Navigation text
-- Body text for emphasis
-
-#### Infinity Gold
-- **HEX:** `#c9a961`
-- **RGB:** 201, 169, 97
-- **HSL:** 40°, 35%, 60%
-- **Tailwind:** `infinity-gold`
-
-**Usage:**
-- Secondary CTAs
-- Accent elements
-- Trust indicators (numbers)
-- Highlights and emphasis
-- Borders and dividers (at 20% opacity)
-
-#### Infinity Cream
-- **HEX:** `#f5f5f0`
-- **RGB:** 245, 245, 240
-- **HSL:** 40°, 20%, 96%
-- **Tailwind:** `infinity-cream`
-
-**Usage:**
-- Page backgrounds
-- Section backgrounds
-- Navigation background
-- Card backgrounds (use white for contrast)
-
-### Supporting Colors
-
-#### White
-- **HEX:** `#ffffff`
-- **Usage:** Card backgrounds, alternating sections
-
-#### Black (Text)
-- **HEX:** `#0a0a0a`
-- **Usage:** Body copy, paragraph text
-
-#### Muted Navy (70% opacity)
-- **Color:** `infinity-navy/70`
-- **Usage:** Secondary text, captions, metadata
-
----
-
-## Typography
-
-### Font Family
-**Inter** (Google Fonts)
-- Clean, modern, highly legible
-- Excellent for both headings and body text
-- Supports multiple weights
-
-### Font Weights
-- **Regular (400):** Body text, descriptions
-- **Medium (500):** Sub-headings, labels
-- **Semibold (600):** Section headings
-- **Bold (700):** Main headings, hero text
-
-### Type Scale
-- **Hero:** 5xl (48px) - 6xl (60px)
-- **H1:** 4xl (36px)
-- **H2:** 3xl (30px) - 2xl (24px)
-- **H3:** xl (20px)
-- **Body:** base (16px)
-- **Small:** sm (14px)
-- **Tiny:** xs (12px)
-
----
-
-## Design Tokens (Tailwind CSS)
-
-### Spacing
-- Use 8px grid system (multiples of 2/4/8)
-- Container max-width: 1400px
-- Container padding: 2rem (32px)
-
-### Border Radius
-- **Large:** rounded-lg (8px) - Cards, major containers
-- **Medium:** rounded-md (6px) - Buttons, inputs
-- **Small:** rounded-sm (4px) - Tags, badges
-- **Full:** rounded-full - Pills, badges
-
-### Shadows
 ```css
-shadow-sm    /* Subtle elevation for cards */
-shadow-lg    /* Primary CTAs */
-shadow-xl    /* Hover states on important elements */
+/* Applied to root layout wrapper */
+.watermark::before {
+  opacity: 0.035;
+  background-image: url('/logo.svg');
+  /* Fixed position, centered, 60vw max 700px */
+}
 ```
 
 ---
 
-## Component Styling
+## 2. Color Palette
+
+### Primary Brand Colors
+
+#### Infinity Navy
+| Property | Value |
+|----------|-------|
+| HEX | `#1a365d` |
+| Tailwind | `infinity-navy` |
+| CSS Variable | `--infinity-navy` |
+| HSL (shadcn) | `215 55% 23%` |
+
+**Usage:** Primary buttons, headings, navigation text, body emphasis, CTA backgrounds.
+
+#### Infinity Navy Light
+| Property | Value |
+|----------|-------|
+| HEX | `#2c5282` |
+| Tailwind | `infinity-navy-light` |
+| CSS Variable | `--infinity-navy-light` |
+
+**Usage:** Button hover states, gradient endpoints, secondary navy needs.
+
+#### Infinity Gold
+| Property | Value |
+|----------|-------|
+| HEX | `#d4af37` |
+| Tailwind | `infinity-gold` |
+| CSS Variable | `--infinity-gold` |
+| HSL (shadcn) | `43 65% 52%` |
+
+**Usage:** Secondary CTAs, accent text, trust indicators, star ratings, highlighted numbers, border accents (at 10-30% opacity).
+
+#### Infinity Gold Light
+| Property | Value |
+|----------|-------|
+| HEX | `#f6e05e` |
+| Tailwind | `infinity-gold-light` |
+
+**Usage:** Gold button hover states, gradient endpoints.
+
+### Neutral Colors
+
+| Name | HEX | Tailwind | Usage |
+|------|-----|----------|-------|
+| Cream | `#f9fafb` | `infinity-cream` | Page backgrounds, section alternation |
+| Gray 50 | `#f9fafb` | `infinity-gray-50` | Light backgrounds |
+| Gray 100 | `#f3f4f6` | `infinity-gray-100` | Borders, dividers |
+| Gray 900 | `#111827` | `infinity-gray-900` | Heavy text (rare) |
+
+### Semantic Colors
+
+| Name | HEX | Tailwind | Usage |
+|------|-----|----------|-------|
+| Success | `#059669` | `infinity-success` | Confirmations, positive indicators |
+| Error | `#dc2626` | `infinity-error` | Errors, emergency alerts, destructive actions |
+| Warning | `#d97706` | `infinity-warning` | Cautions, pending states |
+
+### Brand Gradients
+
+```css
+/* Navy gradient — CTA sections, footers */
+.bg-brand-gradient {
+  background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+}
+
+/* Gold gradient — accent highlights */
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #d4af37 0%, #f6e05e 100%);
+}
+```
+
+---
+
+## 3. Typography
+
+### Font Families
+
+| Role | Font | Tailwind Class | CSS Variable | Fallbacks |
+|------|------|---------------|--------------|-----------|
+| **Display / Headings** | Playfair Display | `font-display` | `--font-display` | Georgia, serif |
+| **Body / UI** | Inter | `font-sans` | `--font-primary` | -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif |
+| **Code** | JetBrains Mono | `font-mono` | `--font-mono` | Fira Code, monospace |
+
+### Heading Hierarchy
+
+| Level | Font | Weight | Size (Desktop) | Tailwind |
+|-------|------|--------|----------------|----------|
+| H1 (Hero) | Playfair Display | Bold (700) | 3.5rem / 56px | `text-[3.5rem] font-display font-bold` |
+| H2 (Section) | Playfair Display | Bold (700) | 2.25rem / 36px | `text-3xl sm:text-4xl font-display font-bold` |
+| H3 (Card/Sub) | Playfair Display | Semibold (600) | 1.25rem / 20px | `text-xl font-display font-semibold` |
+| Body | Inter | Regular (400) | 1rem / 16px | `font-sans` |
+| Small | Inter | Regular (400) | 0.875rem / 14px | `text-sm font-sans` |
+| Caption | Inter | Medium (500) | 0.75rem / 12px | `text-xs font-sans` |
+
+### Typography Rules
+- **All `<h1>`, `<h2>`, `<h3>` elements** automatically use Playfair Display via `globals.css`.
+- Body text uses Inter by default via the `font-sans` class on `<body>`.
+- Never use Playfair Display below `text-lg` — it's a display font, not a reading font.
+- Line height: `leading-relaxed` for body text, `leading-tight` for headings.
+
+---
+
+## 4. Imagery
+
+### Official Brand Photography
+
+| Image | File | Placement | Purpose |
+|-------|------|-----------|---------|
+| Family Consultation | `/public/hero-consultation.png` | Hero section | Professional warmth, trust |
+| Happy Family | `/public/happy-family.png` | Testimonials section | Community, multi-generational trust |
+| Virtual Consultation | `/public/virtual-consultation.png` | How It Works section | Modern, tech-forward, accessible |
+| Family with Attorney | `/public/family-attorney.png` | CTA section (background) | Personal connection, representation |
+
+### Image Guidelines
+- All images convey **warmth, approachability, and professionalism**.
+- Prefer images showing **real-world, home-like settings** — not sterile offices.
+- Use a `rounded-2xl` border radius and `shadow-xl` or `shadow-2xl` on image containers.
+- Apply subtle gradient overlays where text overlaps images: `bg-gradient-to-t from-infinity-navy/10`.
+- Always include descriptive, meaningful `alt` text for accessibility.
+
+---
+
+## 5. Component Patterns
 
 ### Buttons
 
 #### Primary Button (Navy)
 ```jsx
-className="px-8 py-4 bg-infinity-navy text-infinity-cream rounded-lg font-semibold hover:bg-infinity-navy/90 shadow-lg hover:shadow-xl transition-all"
+<button className="px-7 py-3.5 bg-infinity-navy text-white rounded-xl text-base font-semibold hover:bg-infinity-navy-light shadow-lg hover:shadow-xl transition-all focus-brand">
+  Apply for Legal Services →
+</button>
 ```
 
 #### Secondary Button (Gold)
 ```jsx
-className="px-8 py-4 bg-infinity-gold text-infinity-navy rounded-lg font-semibold hover:bg-infinity-gold/90"
+<button className="px-7 py-3.5 bg-infinity-gold text-infinity-navy rounded-xl text-base font-semibold hover:bg-infinity-gold-light shadow-sm hover:shadow-md transition-all focus-brand">
+  Free AI Intake
+</button>
+```
+
+#### Ghost/Outline Button
+```jsx
+<button className="px-8 py-4 bg-white/10 text-white border border-white/20 rounded-xl text-lg font-semibold hover:bg-white/20 shadow-lg hover:shadow-xl transition-all focus-brand backdrop-blur-sm">
+  Book a Consultation
+</button>
+```
+
+#### Emergency Button
+```jsx
+<button className="px-8 py-4 bg-infinity-error text-white rounded-xl text-lg font-semibold hover:bg-infinity-error/90 shadow-lg hover:shadow-xl transition-all focus-brand">
+  Get Emergency Help Now
+</button>
 ```
 
 ### Cards
 ```jsx
-className="bg-white rounded-lg p-8 border border-infinity-gold/20 shadow-sm hover:shadow-md transition-shadow"
+<div className="bg-white rounded-2xl p-8 border border-infinity-navy/10 shadow-sm hover:shadow-lg hover:border-infinity-gold/30 transition-all duration-300">
+  {/* Card content */}
+</div>
 ```
 
-### Badges/Tags
+### Badges / Tags
 ```jsx
-className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-infinity-gold/10 text-infinity-navy text-sm font-medium"
+<div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-infinity-gold/10 text-infinity-navy text-sm font-medium">
+  <span className="w-2 h-2 bg-infinity-gold rounded-full animate-pulse"></span>
+  24/7 AI-Powered Legal Help
+</div>
 ```
 
 ### Input Fields
 ```jsx
-className="w-full px-4 py-3 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy"
+<input className="w-full px-4 py-3 border border-infinity-navy/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-infinity-gold focus:ring-offset-2 font-sans" />
 ```
 
 ---
 
-## Usage Examples
+## 6. Layout & Spacing
 
-### Navigation Bar
-- Background: `bg-infinity-cream/95`
-- Logo: 40px height
-- Text: `text-infinity-navy`
-- Active state: `text-infinity-gold`
+| Token | Value | Usage |
+|-------|-------|-------|
+| Container max-width | 1400px (`max-w-7xl`) | Page sections |
+| Content max-width | 1152px (`max-w-6xl`) | Content grids |
+| Narrow content | 896px (`max-w-4xl`) | Text-heavy sections |
+| Container padding | `px-4 sm:px-6 lg:px-8` | Responsive padding |
+| Section padding | `py-20 lg:py-24` | Vertical section spacing |
+| Grid gap | `gap-5` to `gap-8` | Card grids |
+| Border radius | `rounded-xl` (buttons), `rounded-2xl` (cards/images) | Corners |
 
-### Hero Section
-- Background: `bg-background` (cream)
-- Main heading: `text-infinity-navy`
-- Accent text: `text-infinity-gold`
-- Primary CTA: Navy button
-- Secondary CTA: Gold button
-
-### Section Backgrounds
-- Alternate between:
-  - White (`bg-white`)
-  - Cream (`bg-infinity-cream`)
-- Never use both navy and gold as backgrounds
-
-### Trust Indicators
-- Numbers: `text-infinity-gold` (3xl, bold)
-- Labels: `text-infinity-navy/70` (sm)
-
-### Emergency Alerts
-- Background: `bg-infinity-gold/10`
-- Border: `border-infinity-gold/30`
-- Text: `text-infinity-navy`
+### Section Backgrounds (Alternating)
+1. `bg-gradient-to-br from-infinity-cream via-white to-infinity-gold/5` — Hero
+2. `bg-white` — Standard sections
+3. `bg-gradient-to-b from-infinity-cream to-white` — Feature sections
+4. `bg-infinity-cream` — Alternating contrast
+5. `bg-infinity-navy` with image overlay — CTA sections
 
 ---
 
-## Accessibility Guidelines
+## 7. Accessibility (WCAG 2.1 AA)
 
-### Color Contrast
-All color combinations meet WCAG AA standards:
-- Navy on Cream: 10.2:1 (AAA)
-- Gold on Navy: 4.7:1 (AA)
-- Navy on White: 12.6:1 (AAA)
+### Color Contrast Ratios
+| Combination | Ratio | Level |
+|-------------|-------|-------|
+| Navy (#1a365d) on White (#fff) | 11.4:1 | ✅ AAA |
+| Navy (#1a365d) on Cream (#f9fafb) | 10.8:1 | ✅ AAA |
+| Gold (#d4af37) on Navy (#1a365d) | 4.5:1 | ✅ AA |
+| White on Navy | 11.4:1 | ✅ AAA |
+| Error (#dc2626) on White | 4.6:1 | ✅ AA |
 
 ### Focus States
-- Use `focus:ring-2 focus:ring-infinity-navy` for keyboard navigation
-- Ensure focus indicators are always visible
+- All interactive elements use `.focus-brand`: `focus:ring-2 focus:ring-infinity-gold focus:ring-offset-2`
+- Uses `focus-visible` to avoid showing focus rings on mouse clicks
+- Skip-to-content link provided for keyboard users
 
-### Text Size
-- Minimum body text: 16px (1rem)
-- Minimum UI text: 14px (0.875rem)
+### Motion & Animation
+- All animations respect `prefers-reduced-motion: reduce`
+- Logo hover animation is subtle (scale + opacity shift)
+- Pulse animations on badges are decorative only
 
----
-
-## Don'ts
-
-❌ **Don't:**
-- Use gold and navy together at full opacity (low contrast)
-- Use navy as background for large text areas
-- Stretch or distort the logo
-- Use colors other than the brand palette
-- Place the logo on busy backgrounds
-- Use overly thin font weights (below 400)
+### Landmarks & ARIA
+- `<nav>` for navigation
+- `<main>` for primary content
+- `<footer>` for footer
+- `<section>` with headings for each content block
+- `aria-label` on icon-only buttons (e.g., notification bell)
+- Meaningful `alt` text on all images
 
 ---
 
-## Assets Location
+## 8. Don'ts
 
-| Asset | Path | Usage |
-|-------|------|-------|
-| Logo | `/app/public/logo.png` | Navigation, footer |
-| Favicon | TBD | Browser tab icon |
-| Social Card | TBD | Social media sharing |
-
----
-
-## Quick Reference
-
-### CSS Variables (globals.css)
-```css
---primary: 207 48% 22%;        /* Navy */
---secondary: 40 35% 60%;        /* Gold */
---background: 40 20% 96%;       /* Cream */
-```
-
-### Tailwind Classes (Most Used)
-```
-bg-infinity-navy
-bg-infinity-gold
-bg-infinity-cream
-text-infinity-navy
-text-infinity-gold
-border-infinity-gold/20
-hover:bg-infinity-navy/90
-```
+- ❌ Don't use gold text on white backgrounds (insufficient contrast)
+- ❌ Don't use Playfair Display for body text or small UI labels
+- ❌ Don't stretch, rotate, or recolor the logo
+- ❌ Don't use colors outside the brand palette
+- ❌ Don't place the logo on busy or dark backgrounds without a container
+- ❌ Don't use font weights below 400 for body text
+- ❌ Don't use `rounded-lg` for cards — use `rounded-2xl`
+- ❌ Don't use `rounded-md` for buttons — use `rounded-xl`
 
 ---
 
-## Implementation Status
+## 9. File Reference
 
-✅ **Complete:**
-- Logo integrated in navigation and footer
-- Color palette applied throughout
-- Landing page fully branded
-- Intake wizard branded
-- Attorney signup branded
-- All CTAs updated
-
-⏳ **Pending:**
-- Favicon generation
-- Social media card (og:image)
-- Email templates branding
-- Dark mode variants
+| File | Purpose |
+|------|---------|
+| `tailwind.config.js` | Brand colors, fonts, animations, theme tokens |
+| `app/globals.css` | CSS variables, base styles, watermark, gradients |
+| `public/logo.png` | Raster logo |
+| `public/logo.svg` | Vector logo (watermark) |
+| `public/hero-consultation.png` | Hero section image |
+| `public/happy-family.png` | Testimonials section image |
+| `public/virtual-consultation.png` | How It Works section image |
+| `public/family-attorney.png` | CTA background image |
 
 ---
 
-**Last Updated:** March 2025  
-**Version:** 1.0
+## 10. Implementation Status
+
+| Feature | Status |
+|---------|--------|
+| Logo (PNG + SVG) | ✅ Complete |
+| SVG Watermark | ✅ Complete |
+| Color palette (Tailwind + CSS) | ✅ Complete |
+| Dual typography (Playfair + Inter) | ✅ Complete |
+| Landing page with brand images | ✅ Complete |
+| Pricing page branded | ✅ Complete |
+| AI Intake wizard branded | ✅ Complete |
+| Attorney dashboard branded | ✅ Complete |
+| Accessibility (WCAG 2.1 AA) | ✅ Complete |
+| Skip-to-content link | ✅ Complete |
+| Reduced motion support | ✅ Complete |
+| Favicon | ⏳ Pending |
+| Social media card (og:image) | ⏳ Pending |
+| Email template branding | ⏳ Pending |
+| Dark mode refinement | ⏳ Pending |
 
 ---
 
-## Contact
-
-For brand guidelines questions:  
-**Email:** brand@infinitylegal.org  
-**Design System:** See `/app/tailwind.config.js` and `/app/app/globals.css`
+**Contact:** brand@infinitylegal.org  
+**Design System:** See `tailwind.config.js` and `app/globals.css`

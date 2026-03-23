@@ -109,9 +109,9 @@
   .bg-gold-gradient {
     background: linear-gradient(135deg, #d4af37 0%, #f6e05e 100%);
   }
-  /* Focus ring using brand colors */
+  /* Focus ring using brand colors — visible only on keyboard navigation */
   .focus-brand {
-    @apply focus:outline-none focus:ring-2 focus:ring-infinity-gold focus:ring-offset-2;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-infinity-gold focus-visible:ring-offset-2;
   }
   /* Logo watermark background */
   .watermark {
@@ -138,5 +138,69 @@
   .watermark > * {
     position: relative;
     z-index: 1;
+  }
+}
+
+/* ========== Accessibility ========== */
+
+/* Skip-to-content link — visible only on keyboard focus */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: #1a365d;
+  color: #ffffff;
+  border-radius: 0 0 0.75rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-to-content:focus {
+  top: 0;
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+/* Ensure focus-visible rings on all interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ========== Logo Hover Animation ========== */
+.logo-hover {
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+.logo-hover:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-hover:hover {
+    transform: none;
+    filter: none;
   }
 }

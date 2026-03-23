@@ -14,9 +14,9 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="border-b border-infinity-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+      <nav className="border-b border-infinity-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-40" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 logo-hover" aria-label="Infinity Legal — Home">
             <img src="/logo.png" alt="Infinity Legal" className="h-9 w-auto" />
             <span className="text-xl font-display font-semibold text-infinity-navy">
               Infinity Legal
@@ -50,7 +50,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section — Split Layout with Family Consultation Image */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-infinity-cream via-white to-infinity-gold/5">
+      <section className="relative overflow-hidden bg-gradient-to-br from-infinity-cream via-white to-infinity-gold/5" aria-label="Hero — Legal help that feels like home">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center py-16 lg:py-24">
             {/* Left: Text Content */}
@@ -135,10 +135,10 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works — With Virtual Consultation Image */}
-      <section id="how-it-works" className="py-20 lg:py-24 px-4 bg-white">
+      <section id="how-it-works" className="py-20 lg:py-24 px-4 bg-white" aria-labelledby="how-it-works-heading">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3">How It Works</h2>
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3" id="how-it-works-heading">How It Works</h2>
             <p className="text-infinity-navy/50 font-sans max-w-lg mx-auto">Three simple steps to legal clarity — from anywhere</p>
           </div>
           
@@ -189,7 +189,7 @@ export default function LandingPage() {
       </section>
 
       {/* Why Families Trust Us — Testimonial Section with Happy Family Image */}
-      <section className="py-20 lg:py-24 px-4 bg-gradient-to-b from-infinity-cream to-white overflow-hidden">
+      <section className="py-20 lg:py-24 px-4 bg-gradient-to-b from-infinity-cream to-white overflow-hidden" aria-labelledby="trust-heading">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: Content */}
@@ -201,7 +201,7 @@ export default function LandingPage() {
                 Trusted by South African Families
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-4 leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-4 leading-tight" id="trust-heading">
                 Real People. <br />
                 <span className="text-infinity-gold">Real Legal Solutions.</span>
               </h2>
@@ -259,14 +259,14 @@ export default function LandingPage() {
       </section>
 
       {/* Practice Areas */}
-      <section className="py-20 lg:py-24 px-4 bg-white">
+      <section className="py-20 lg:py-24 px-4 bg-white" aria-labelledby="practice-heading">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3">We Handle All Legal Matters</h2>
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3" id="practice-heading">We Handle All Legal Matters</h2>
             <p className="text-infinity-navy/50 font-sans max-w-lg mx-auto">From criminal defense to commercial disputes — our network covers it all</p>
           </div>
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5" role="list">
             {[
               { icon: '🚔', name: 'Criminal Law', desc: 'Arrests, charges, bail' },
               { icon: '👨‍👩‍👧', name: 'Family Law', desc: 'Divorce, custody, maintenance' },
@@ -277,7 +277,7 @@ export default function LandingPage() {
               { icon: '🏢', name: 'Commercial Law', desc: 'Business disputes, contracts' },
               { icon: '🏛️', name: 'Administrative', desc: 'Government, licensing' },
             ].map((area, i) => (
-              <div key={i} onClick={() => router.push('/intake')} className="bg-white rounded-xl p-6 border border-infinity-navy/10 hover:border-infinity-gold/40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group">
+              <div key={i} role="listitem" onClick={() => router.push('/intake')} className="bg-white rounded-xl p-6 border border-infinity-navy/10 hover:border-infinity-gold/40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group" aria-label={`${area.name} — ${area.desc}. Click to start AI intake.`} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push('/intake'); } }}>
                 <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-200">{area.icon}</div>
                 <h3 className="font-display font-semibold mb-1 text-infinity-navy">{area.name}</h3>
                 <p className="text-sm text-infinity-navy/50 font-sans">{area.desc}</p>
@@ -371,11 +371,11 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-infinity-navy/10 py-14 px-4 bg-white">
+      <footer className="border-t border-infinity-navy/10 py-14 px-4 bg-white" aria-label="Site footer">
         <div className="max-w-6xl mx-auto">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
             <div>
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-4 logo-hover">
                 <img src="/logo.png" alt="Infinity Legal" className="h-10 w-auto" />
                 <span className="font-display font-bold text-lg text-infinity-navy">Infinity Legal</span>
               </div>
