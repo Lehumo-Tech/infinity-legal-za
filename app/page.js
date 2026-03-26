@@ -10,7 +10,7 @@ import DarkModeToggle from '@/components/DarkModeToggle'
 
 export default function LandingPage() {
   const router = useRouter()
-  const { user, isAuthenticated, loading: authLoading } = useAuth()
+  const { user, isAuthenticated, loading: authLoading, canAccessPortal } = useAuth()
 
   return (
     <div className="min-h-screen">
@@ -33,9 +33,15 @@ export default function LandingPage() {
             {isAuthenticated ? (
               <>
                 <NotificationBell />
-                <Link href="/dashboard" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy dark:text-white/60 dark:hover:text-white transition-colors">
-                  Dashboard
-                </Link>
+                {canAccessPortal ? (
+                  <Link href="/portal" className="text-sm font-medium text-infinity-gold hover:text-infinity-gold-light transition-colors">
+                    Staff Portal
+                  </Link>
+                ) : (
+                  <Link href="/dashboard" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy dark:text-white/60 dark:hover:text-white transition-colors">
+                    Dashboard
+                  </Link>
+                )}
               </>
             ) : (
               <Link href="/login" className="text-sm font-medium text-infinity-navy/60 hover:text-infinity-navy dark:text-white/60 dark:hover:text-white transition-colors">
