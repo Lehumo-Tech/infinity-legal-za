@@ -1,7 +1,7 @@
 # 🏛️ Infinity Legal Platform
 
 **Domain:** infinitylegal.org  
-**Live Demo:** https://shield-guardian-3.preview.emergentagent.com  
+**Live Demo:** https://infinity-legal-sa.preview.emergentagent.com  
 **Status:** ✅ MVP Complete - Ready for API Key Integration
 
 ---
@@ -146,7 +146,7 @@ Infinity Legal is a POPIA-compliant, LPC-approved legal technology platform that
 ## 🔧 Quick Start
 
 ### 1. View the Demo
-Visit: **https://shield-guardian-3.preview.emergentagent.com**
+Visit: **https://infinity-legal-sa.preview.emergentagent.com**
 
 ### 2. Test the Intake Flow
 1. Click "Get Help Now"

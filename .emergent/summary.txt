@@ -1,177 +1,148 @@
 <analysis>**original_problem_statement:**
-The user wants to build a comprehensive legal tech platform, Infinity Legal Platform, using Next.js, Tailwind, and Supabase for the South African market.
+The user is building the Infinity Legal Platform, a comprehensive legal tech SaaS for the South African market. 
+**PRODUCT REQUIREMENTS:**
+- Client-Facing Features: AI legal intake wizard, multi-step application form, booking system, multi-tiered subscription model, and warm/approachable branding.
+- Virtual Office / Intranet (Infinity OS): A multi-tier legal staffing intranet with strict Role-Based Access Control (RBAC). 
+  - **Legal Officers** hold licenses, provide strategy, and approve documents (Privileged Access).
+  - **Paralegals** handle execution, research, and drafts (Medium Access).
+  - **Intake/Call Center** qualify leads (Low Access).
+- Document workflow with status transitions, privileged strategy notes, and automated lead handoffs.
+- Integrations: Notifications (In-app + Brevo Email), Supabase for auth/data, and Gemini for AI analysis.
 
-**PRODUCT REQUIREMENTS (V2 & V3):**
-- **Business Model:** A multi-tiered subscription model for clients.
-- **Client-Facing Features:**
-    - AI-powered legal intake wizard.
-    - A multi-step application form.
-    - A redesigned pricing page with new plans.
-    - A system for booking consultations.
-    - A UI overhaul to create a warmer, more approachable aesthetic using specific images and design principles.
-- **Attorney-Facing Features (Virtual Office):**
-    - A redesigned dashboard with key stats.
-    - Full Case Management, Document Vault, Task Manager, and Calendar.
-- **Branding & UI/UX (Major Overhaul):**
-    - Implement a new official logo ( and ).
-    - Apply a new brand color palette (Infinity Navy, Gold) and typography (Playfair Display, Inter) across the entire application.
-    - Implement an SVG logo watermark as a subtle background throughout the app.
-    - Update  component styles (, ) to match the new brand.
-    - Integrate four specific, user-provided images into the landing page for a friendlier feel.
-- **Security & Compliance:**
-    - Enforce Supabase Row-Level Security (RLS).
-    - Implement security headers, rate limiting, and other hardening measures.
-    - POPIA compliance.
-- **Notifications:**
-    - An in-app notification system for key events.
-    - Future integration with Email/SMS services.
+**User's preferred language**: English (INSTRUCT next agent to respond in English)
 
-**User's preferred language**: English
-
-**what currently exists?**
-The project is a fully functional Next.js 14 application with Supabase for core data and MongoDB for notifications. Key features like the AI Intake Wizard, multi-step application form, and a complete Attorney Virtual Office are implemented and working. A major brand overhaul has been completed, including a new logo, a new professional color scheme and typography system, and updated pricing plans that are dynamically loaded from the database. Security has been hardened with middleware for security headers and robust, IP-aware rate limiting on critical endpoints. An SVG version of the logo has been implemented as a subtle watermark across all pages.
+**what currently exists?** 
+A fully functional Next.js 14 application. It features a completely redesigned, responsive UI with dark mode, accessibility compliance (WCAG 2.1 AA), and updated practice areas/pricing plans. The backend includes a robust custom RBAC engine (), a Brevo-powered transactional email system, comprehensive AI Intake, and booking logic. The internal portal () enforces role-aware views and strict data privilege boundaries between Legal Officers, Paralegals, and Intake Agents.
 
 **Last working item**:
-- **Last item agent was working:** The agent was processing a user request for a final UI/UX refinement. The user provided four specific images and instructions to create a more welcoming and professional feel on the landing page and other relevant sections.
+- **Last item agent was working:** Taking screenshots of the newly built intranet/dashboard views (Legal Officer, Paralegal, and Intake workflows) to show the user. The agent created a temporary mock page at  to bypass authentication for these demonstration screenshots and had just captured the Paralegal view.
 - **Status:** IN PROGRESS
-- **Agent Testing Done:** N
+- **Agent Testing Done:** Y
 - **Which testing method agent to use?** screenshot tool
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-There are no known bugs or blocking issues.
+Issue 1: Provide final intranet screenshots to the user
+- **Attempted fixes:** N/A (Feature works, just finishing screenshot gathering).
+- **Next debug checklist:** Navigate to  via the screenshot tool to capture the Intake and potentially Admin dashboards, then summarize and present these views to the user in the chat.
+- **Why fix this issue and what will be achieved with the fix?** Fulfills the user's explicit request to show me screenshots of the intranet in action.
+- **Status:** IN PROGRESS (P0)
+- **Is recurring issue?** N
+- **Should Test frontend/backend/both after fix?** Frontend (Screenshots)
+- **Blocked on other issue:** No
 
 **In progress Task List**:
-- **Task 1: UI/UX Refinement with New Images (P0)**
-  - **Where to resume:** The user has provided four images and detailed instructions for a friendlier UI. The next step is to edit  and other relevant pages to integrate these images and apply the requested design principles (e.g., using the Family Consultation image for the hero section, the Home Office image for a How it Works section, etc.).
-  - **What will be achieved with this?** The application's visual appeal and user trust will be enhanced by replacing placeholder content with professional, context-aware imagery that aligns with the new brand identity.
-  - **Status:** IN PROGRESS
-  - **Should Test frontend/backend/both after fix?** frontend
-  - **Blocked on something:** No
+Task 1: Clean up demo page
+- **Where to resume:** 
+- **What will be achieved with this?** The  page was created purely to generate unauthenticated screenshots for the user. Once the user is satisfied with the UI, this file MUST be deleted to ensure mock data and internal UI layouts do not leak into the production environment.
+- **Status:** NOT STARTED (P1)
+- **Should Test frontend/backend/both after fix?** NA
+- **Blocked on something:** Waiting for the user to confirm they are happy with the screenshots.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks:**
-  - **(P1) PayFast Integration:** Implement the subscription payment checkout flow on the . This task is currently **ON HOLD** per user request.
+Upcoming Tasks:
+- **(P1) PayFast Integration:** Implement the subscription payment checkout flow. (Currently **ON HOLD** per user request).
+- **(P2) Staff Onboarding Flow:** With the RBAC system fully implemented in the backend, create an easy UI for the Managing Partner/HR to invite new staff members and assign their roles ().
 
-- **Future Tasks:**
-  - **(P2) Email/SMS Notifications:** The in-app notification architecture is complete. The next phase is to integrate an external service (e.g., SendGrid, Twilio) to send email/SMS reminders. This will require an API key from the user.
-  - **(P3) Create Brand Book:** Document the new branding (colors, fonts, logo usage) in a  file as requested by the user.
-  - **(P4) Accessibility & Animation:** Conduct a thorough accessibility check for WCAG 2.1 AA compliance and implement subtle hover animations on the logo as requested.
-  - **(P5) Cleanup Obsolete Files:** Remove unused files like .
+Future Tasks:
+- **(P3) Role-Based Audit Logging UI:** The backend audit logs track when documents change status, but a UI to view these logs in the  for the IT/Admin roles should be fleshed out.
 
 **Completed work in this session**
-- **AI Intake Wizard:** Built and tested a multi-step form at  that uses Gemini to provide legal analysis. API at .
-- **Consultation Booking System:** Implemented a full booking flow with attorney filtering, availability checks, and booking creation. Frontend at  and APIs under  and .
-- **Security Hardening & Rate Limiting:**
-  - Implemented comprehensive security headers in .
-  - Created a robust, hot-reload-proof, and proxy-aware IP rate-limiting mechanism in  and applied it to the signup and AI intake routes.
-- **In-App Notification System:**
-  - Introduced MongoDB to store notifications. Connection helper at .
-  - Created APIs () and a UI component () for creating and displaying notifications for signups, bookings, and new cases.
-- **Full Brand & Pricing Overhaul:**
-  - Updated the database ( table) with new plans: Shield, Guardian, and Advocate.
-  - Created a new API () to fetch plans dynamically.
-  - Redesigned the pricing page () and landing page () with the new branding.
-  - Implemented a new color palette and typography system across the app via  and .
-- **SVG Watermark:**
-  - Saved the user-provided SVG logo to .
-  - Added a global, subtle background watermark style and applied it to the root layout at .
+- **Landing Page Image Integration:** Embedded 4 user-provided images into the Hero, How It Works, Testimonials, and CTA sections.
+- **Brand Book & Cleanup:** Created  and deleted 7 obsolete migration/test files.
+- **Accessibility (WCAG 2.1 AA):** Added skip-to-content links, ARIA labels, semantic landmarks, and hover animations.
+- **Brevo Email Integration:** Created  using the user's API key, connected to signup & booking flows.
+- **Dark Mode:** Implemented a global dark mode toggle and styled all landing page sections.
+- **Infinity OS (Role-Aware Architecture):** Created a strict RBAC engine () separating Legal Officers, Paralegals, and Intake Agents. Added  for DB changes. Built dynamic  dashboards. 
+- **Content Updates:** Removed Commercial Law, changed Civil Litigation to Civil Law. Updated Pricing plans to Labour Shield (R95/mo, covers R72,300), Civil Guard (R115/mo, covers R78,500), and Complete Cover (R130/mo, covers R100,000).
 
 **Earlier issues found/mentioned but not fixed**
 - None.
 
 **Known issue recurrence from previous fork**
-- None. The previous RLS issue was resolved and did not recur.
+- **Issue recurrence in previous fork:** Next.js Route Caching for Supabase Data.
+- **Recurrence count:** 1 (During the pricing plans update).
+- **Status:** RESOLVED
+- **Note:** The API route  heavily cached the database response, making it appear as though the database wasn't updated. Fixed by adding  to the route and restarting Next.js. **Keep this in mind for all new GET API routes reading from Supabase.**
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Framework/Stack:** Next.js 14, Tailwind CSS, shadcn/ui.
-- **Databases:** Supabase (PostgreSQL for primary data), MongoDB (for notifications).
-- **Security:** Supabase RLS, Middleware (CSP, XSS), custom IP-based rate limiting on sensitive APIs.
-- **State Management:** React Context API ().
-- **LLM Integration:** Gemini (via Emergent's proxy).
+- Framework: Next.js 14 App Router, TailwindCSS, shadcn/ui.
+- Databases: Supabase (PostgreSQL) for primary data & Auth; MongoDB for local notifications.
+- Security: Custom Role-Based Access Control (RBAC) middleware verifying JWT tokens and mapping to specific staff privileges. Strict separation between Legal Officers (Attorneys) and Support Staff (Paralegals/Intake).
 
 **key DB schema**
-- **Supabase:**
-  - :  - *Newly updated with Shield, Guardian, Advocate plans.*
-  - : 
-  - : 
-  - : 
-  - : 
-- **MongoDB:**
-  - : 
+- : 
+- : 
+- : 
+- : 
+- : 
+- :  *(Updated)*
 
 **changes in tech stack**
-- **MongoDB** has been introduced and is actively used for the in-app notification system.
+- Added **Brevo** as the transactional email provider.
 
 **All files of reference**
-- : Landing page to be updated with new images.
-- : The newly redesigned pricing page.
-- : Contains the new brand colors, fonts, and watermark styles.
-- : Defines the new Tailwind theme for the brand.
-- : The SVG file used for the global watermark.
-- : Contains the fixed rate-limiting logic.
-- : Handles the new MongoDB connection.
-- : The primary API for the notification system.
+- : Core brain for Infinity OS privilege separation.
+- : The dynamic dashboard routing logic based on the user's role.
+- : The temporary mock file used exclusively for taking unauthenticated UI screenshots.
+- : The database schema changes required for the new roles, leads, and privileged notes tables.
+- : Email service wrapper.
 
 **Areas that need refactoring**:
-- The user provided  component code for  and . The agent implemented the brand refresh using global CSS and Tailwind config, which works but does not directly modify the component files. This could be a future refinement if desired.
-- The file  is obsolete and should be removed.
+-  MUST be deleted once the user approves the intranet screenshots.
 
 **key api endpoints**
-- : User registration, now with rate limiting.
-- : Submits legal problem for AI analysis, now with rate limiting.
-- : Manages user notifications stored in MongoDB.
-- : Fetches the new, dynamic pricing plans from Supabase.
-- : Lists attorneys with filtering.
-- : Retrieves an attorney's schedule.
-- : Books a new consultation.
+- : Sends transactional emails via Brevo.
+- : Protected by  or higher.
+- : Strictly protected by  requirement.
+- : Enforces that only Legal Officers can switch a document from 'Draft' to 'Approved'.
 
 **Critical Info for New Agent**
-- **PayFast is ON HOLD.** Do not work on it unless the user explicitly asks.
-- Your immediate priority is to **implement the final UI/UX refinement** using the four images and design principles provided by the user in their last message. Start by modifying .
-- **MongoDB is now a part of the stack** for notifications. The connection logic is in .
-- The **rate-limiting logic in  is critical** and correctly handles proxy IPs. Do not change it unless necessary.
-- The new brand identity is the source of truth. Refer to  and  for all styling. Use  for headings and  for body text.
+- **RBAC is Active:** Do not expose sensitive data APIs without importing  or  from . Paralegals cannot see privileged notes; Intake cannot see cases.
+- **Caching Gotcha:** Use  in any new Supabase  routes to avoid Next.js static caching issues.
+- **PayFast integration is still ON HOLD.**
 
 **documents and test reports created in this job**
 - 
 - 
-- 
+-  (Updated with backend test results for Email API and RBAC API)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1. **User:** Asks to restart the app.
-2. **Assistant:** Restarts all services.
-3. **Assistant:** Confirms all services are running.
-4. **User:** Provides a detailed request for a complete brand overhaul: new pricing, new logo, new colors, new fonts, and new component styles.
-5. **Assistant:** Confirms plan to implement the overhaul.
-6. **User:** Clarifies the brand overhaul request, adding creative direction for plan names.
-7. **Assistant:** Implements the full brand and pricing overhaul, including updating the database, UI, and design system.
-8. **Assistant:** Implements a user-requested SVG background watermark across the app.
-9. **User:** Provides four specific images and detailed instructions for a final UI/UX refinement to create a warmer, more approachable aesthetic (e.g., Family Consultation Scene... for your homepage hero section).
-10. **Assistant:** Acknowledged the request and is ready to begin implementation.
+1. **User:** Provided API key for Brevo.
+2. **Assistant:** Integrated Brevo, Dark Mode, and Favicon generation. Tested backend.
+3. **User:** Provided a huge prompt requesting a total rewrite of the internal app (Infinity OS) to enforce strict RBAC between Legal Officers, Paralegals, and Intake Call Center staff.
+4. **Assistant:** Asked for confirmation before proceeding.
+5. **User:** Confirmed to proceed.
+6. **Assistant:** Built the entire RBAC engine, created API endpoints, migration scripts, and the frontend  dynamic dashboards.
+7. **User:** Requested changes to the landing page practice areas (change Civil Litigation to Civil Law, remove Commercial Law) and updated pricing plans with specific names, ZAR prices.
+8. **Assistant:** Implemented those changes. Discovered an API caching issue, fixed it, and confirmed.
+9. **User:** Provided specific coverage limits for the pricing plans (R72,300, R78,500, R100,000).
+10. **User:** please show me screenshots of the intranet in action. the different dashbords etc
+   - *Status:* IN PROGRESS. The agent created  to take screenshots and just finished capturing the Paralegal view.
 
 **Project Health Check:**
-- **Working:** All core features are implemented and functional, including the AI wizard, booking system, security, notifications, and the new brand identity.
-- **Broken:** No features are currently broken.
-- **Mocked:** No features are mocked; the application is connected to live databases.
+- Working: Landing page, Pricing, Brevo Emails, Dark Mode, RBAC Engine Backend, AI Wizard.
+- Broken: None.
+- Mocked:  is mocked explicitly to take unauthenticated screenshots for the user. 
 
 **3rd Party Integrations**
-- **Supabase (PostgreSQL, Auth, Storage):** Requires User API Key.
-- **Gemini (AI/LLM):** Uses Emergent LLM Key.
-- **MongoDB (Notifications):** Uses local .
-- **PayFast (Payments):** Integration is planned but currently **ON HOLD**. Will require User API Key.
+- OpenAI/Gemini GPT via Emergent Proxy (Uses Emergent LLM Key)
+- Supabase for Database/Auth (Requires User API Key)
+- MongoDB for Notifications (Local instance)
+- Brevo for Emails (Uses User API Key)
+- PayFast (On Hold)
 
 **Testing status**
-- **Testing agent used after significant changes:** YES (Backend testing was used for the AI intake, booking, security, and notification features).
-- **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** []
-- **Known regressions:** A critical rate-limiting bug was discovered by the testing agent and subsequently fixed within the session. There are no known regressions.
+- Testing agent used after significant changes: YES (Backend tests passed for RBAC paths and Brevo).
+- Troubleshoot agent used after agent stuck in loop: NO
+- Test files created: None new (Updated ).
+- Known regressions: None.
 
 **Credentials to test flow:**
-New users can be created via the UI signup page. Test cases can be generated via the AI Intake wizard when logged in or the multi-step application form.
+Use UI signup for standard accounts. For staff, the  API was created, but for UI visual checks, use .
 
 **What agent forgot to execute**
-- The agent successfully implemented the visual redesign requested by the user but did so via global CSS and Tailwind configuration (, ) rather than directly editing the  component files (, ) for which the user had provided code snippets. The outcome is visually correct, but the implementation method differs from the user's provided example code. This is a minor point as the goal was achieved.</analysis>
+The agent was in the middle of executing the final screenshot request. It needs to grab the final Intake / Call Center dashboard screenshot from , provide the images to the user, and wrap up the request.</analysis>
