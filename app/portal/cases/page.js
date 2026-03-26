@@ -405,13 +405,13 @@ export default function PortalCasesPage() {
             {isOfficer ? 'Manage cases, prescription periods, time and resources.' : 'View and work on your assigned cases.'}
           </p>
         </div>
-        {(isOfficer || isManagingPartner) && (
-          <button onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-infinity-navy hover:bg-infinity-navy-light text-white rounded-xl font-semibold text-sm transition-colors shadow-sm">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            New Case
-          </button>
-        )}
+        {/* Create Case Button - All staff with portal access */}
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-infinity-navy hover:bg-infinity-navy-light text-white rounded-xl font-semibold text-sm transition-colors shadow-sm">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          New Case
+        </button>
       </div>
 
       {/* Filters */}
