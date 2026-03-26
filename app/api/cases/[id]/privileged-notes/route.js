@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requirePermission, createAuditLog } from '@/lib/rbac'
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/cases/[id]/privileged-notes

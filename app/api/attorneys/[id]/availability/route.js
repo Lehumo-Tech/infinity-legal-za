@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+export const dynamic = 'force-dynamic'
 
 const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
@@ -22,7 +23,7 @@ function generateTimeSlots(start, end, intervalMinutes = 60) {
 // GET /api/attorneys/[id]/availability?date=2026-04-01
 export async function GET(request, { params }) {
   try {
-    const { id } = params
+    const { id } = await params
     const { searchParams } = new URL(request.url)
     const dateStr = searchParams.get('date')
 

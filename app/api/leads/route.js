@@ -2,13 +2,15 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requirePermission, createAuditLog, ROLES } from '@/lib/rbac'
 import { createNotification } from '@/lib/notifications'
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/leads — List leads based on role
  */
 export async function GET(request) {
-  const { user, error, status } = await requirePermission(request, 'VIEW_LEADS')
-  if (error) return NextResponse.json({ error }, { status })
+  try {
+    const { user, error, status } = await requirePermission(request, 'VIEW_LEADS')
+    if (error) return NextResponse.json({ error }, { status })
 
   const role = user.profile?.role
   const url = new URL(request.url)
@@ -39,58 +41,68 @@ export async function GET(request) {
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
 
   return NextResponse.json({ leads: data || [] })
+  } catch (err) {
+    console.error('Leads GET error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
 
 /**
  * POST /api/leads — Create a new lead (Intake Agents or Managing Partners)
  */
 export async function POST(request) {
-  const { user, error, status } = await requirePermission(request, 'CREATE_LEAD')
-  if (error) return NextResponse.json({ error }, { status })
+  try {
+    const { user, error, status } = await requirePermission(request, 'CREATE_LEAD')
+    if (error) return NextResponse.json({ error }, { status })
 
-  const body = await request.json()
-  const { fullName, email, phone, source, caseType, urgency, description } = body
+    const body = await request.json()
+    const { fullName, email, phone, source, caseType, urgency, description } = body
 
-  if (!fullName) {
-    return NextResponse.json({ error: 'Lead name is required' }, { status: 400 })
+    if (!fullName) {
+      return NextResponse.json({ error: 'Lead name is required' }, { status: 400 })
+    }
+
+    const { data, error: dbErr } = await supabaseAdmin
+      .from('leads')
+      .insert([{
+        full_name: fullName,
+        email: email || null,
+        phone: phone || null,
+        source: source || 'web',
+        case_type: caseType || null,
+        urgency: urgency || 'medium',
+        description: description || null,
+        intake_agent_id: user.id,
+        status: 'new',
+      }])
+      .select()
+      .single()
+
+    if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
+
+    // Audit log
+    await createAuditLog({
+      userId: user.id,
+      action: 'CREATE_LEAD',
+      resourceType: 'lead',
+      resourceId: data.id,
+      details: { fullName, caseType, source },
+    })
+
+    return NextResponse.json({ lead: data }, { status: 201 })
+  } catch (err) {
+    console.error('Leads POST error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  const { data, error: dbErr } = await supabaseAdmin
-    .from('leads')
-    .insert([{
-      full_name: fullName,
-      email: email || null,
-      phone: phone || null,
-      source: source || 'web',
-      case_type: caseType || null,
-      urgency: urgency || 'medium',
-      description: description || null,
-      intake_agent_id: user.id,
-      status: 'new',
-    }])
-    .select()
-    .single()
-
-  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
-
-  // Audit log
-  await createAuditLog({
-    userId: user.id,
-    action: 'CREATE_LEAD',
-    resourceType: 'lead',
-    resourceId: data.id,
-    details: { fullName, caseType, source },
-  })
-
-  return NextResponse.json({ lead: data }, { status: 201 })
 }
 
 /**
  * PUT /api/leads — Update lead (qualify, assign, etc.)
  */
 export async function PUT(request) {
-  const { user, error, status } = await requirePermission(request, 'VIEW_LEADS')
-  if (error) return NextResponse.json({ error }, { status })
+  try {
+    const { user, error, status } = await requirePermission(request, 'VIEW_LEADS')
+    if (error) return NextResponse.json({ error }, { status })
 
   const body = await request.json()
   const { leadId, action: leadAction, ...updateData } = body
@@ -193,4 +205,8 @@ export async function PUT(request) {
   })
 
   return NextResponse.json({ lead: data })
+  } catch (err) {
+    console.error('Leads PUT error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

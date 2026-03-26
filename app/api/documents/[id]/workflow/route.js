@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requirePermission, requireRole, createAuditLog, ROLES, isOfficer } from '@/lib/rbac'
 import { createNotification, createBulkNotifications } from '@/lib/notifications'
+export const dynamic = 'force-dynamic'
 
 /**
  * PUT /api/documents/[id]/workflow
@@ -13,7 +14,7 @@ export async function PUT(request, { params }) {
   const { user, error, status } = await requirePermission(request, 'VIEW_DOCUMENTS')
   if (error) return NextResponse.json({ error }, { status })
 
-  const docId = params.id
+  const { id: docId } = await params
   const { newStatus } = await request.json()
   const role = user.profile?.role
 

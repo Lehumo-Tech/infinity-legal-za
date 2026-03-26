@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requirePermission, createAuditLog, ROLES } from '@/lib/rbac'
 import { createNotification } from '@/lib/notifications'
 import { sendWelcomeEmail } from '@/lib/brevo'
+export const dynamic = 'force-dynamic'
 
 /**
  * POST /api/auth/staff-signup

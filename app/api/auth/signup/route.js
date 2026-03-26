@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { checkRateLimit } from '@/lib/security'
 import { createNotification } from '@/lib/notifications'
 import { sendWelcomeEmail } from '@/lib/brevo'
+export const dynamic = 'force-dynamic'
 
 export async function POST(request) {
   try {

@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
 import { createNotification } from '@/lib/notifications'
 import { checkRateLimit } from '@/lib/security'
+export const dynamic = 'force-dynamic'
 
 // Initialize the OpenAI-compatible client pointing to Emergent's proxy
 const client = new OpenAI({

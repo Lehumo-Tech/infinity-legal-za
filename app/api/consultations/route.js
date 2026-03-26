@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
 import { createNotification } from '@/lib/notifications'
 import { sendBookingConfirmation } from '@/lib/brevo'
+export const dynamic = 'force-dynamic'
 
 async function getUserFromRequest(request) {
   const authHeader = request.headers.get('authorization')

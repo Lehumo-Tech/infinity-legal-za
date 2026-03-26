@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createNotification } from '@/lib/notifications'
 import { getDb } from '@/lib/mongodb'
+export const dynamic = 'force-dynamic'
 
 // POST /api/notifications/reminders - Generate task & calendar reminders
 // This can be called periodically (e.g., via cron or manual trigger)

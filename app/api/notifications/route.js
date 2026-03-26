@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { createClient } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid'
+export const dynamic = 'force-dynamic'
 
 async function getUserFromRequest(request) {
   const authHeader = request.headers.get('authorization')

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createNotification, createBulkNotifications } from '@/lib/notifications'
+export const dynamic = 'force-dynamic'
 
 // POST /api/applications - Process a full application
 export async function POST(request) {
