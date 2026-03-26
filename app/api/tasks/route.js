@@ -35,7 +35,7 @@ export async function GET(request) {
     // Only join case_number from cases (not title which may not exist)
     let query = supabaseAdmin
       .from('tasks')
-      .select('*, cases(case_number, case_type, case_subtype)')
+      .select('id, title, description, status, priority, due_date, assigned_to, created_by, case_id, completed_at, created_at, updated_at, cases(case_number, case_type, case_subtype)')
       .or(`assigned_to.eq.${user.id},created_by.eq.${user.id}`)
 
     if (status && status !== 'all') {
@@ -46,7 +46,7 @@ export async function GET(request) {
       query = query.eq('case_id', caseId)
     }
 
-    query = query.order('created_at', { ascending: false })
+    query = query.order('created_at', { ascending: false }).limit(100)
 
     const { data, error } = await query
 

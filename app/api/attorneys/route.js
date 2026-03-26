@@ -26,6 +26,7 @@ export async function GET(request) {
       query = query.contains('specialty', [specialty])
     }
 
+    query = query.limit(100)
     const { data: attorneys, error } = await query
 
     if (error) {
@@ -39,6 +40,7 @@ export async function GET(request) {
       .from('profiles')
       .select('id, full_name, email, phone')
       .in('id', attorneyIds)
+      .limit(100)
 
     const profileMap = {}
     for (const p of (profiles || [])) {

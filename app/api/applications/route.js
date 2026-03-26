@@ -129,6 +129,7 @@ export async function POST(request) {
         .from('profiles')
         .select('id')
         .in('role', ['intake_agent', 'managing_partner'])
+        .limit(50)
       if (intakeAgents?.length) {
         await createBulkNotifications(intakeAgents.map(a => ({
           userId: a.id,

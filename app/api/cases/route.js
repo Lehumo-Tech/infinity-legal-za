@@ -32,7 +32,7 @@ export async function GET(request) {
     const status = searchParams.get('status')
     const role = searchParams.get('role') || 'client'
 
-    let query = supabaseAdmin.from('cases').select('*')
+    let query = supabaseAdmin.from('cases').select('id, case_number, case_type, case_subtype, status, urgency, client_id, attorney_id, lead_attorney_id, support_paralegal_id, court_date, court_location, summary_encrypted, notes_encrypted, created_at, updated_at')
 
     if (role === 'attorney') {
       // For attorneys, get cases where they are the attorney
@@ -57,7 +57,7 @@ export async function GET(request) {
       query = query.eq('status', status)
     }
 
-    query = query.order('created_at', { ascending: false })
+    query = query.order('created_at', { ascending: false }).limit(100)
 
     const { data, error } = await query
 

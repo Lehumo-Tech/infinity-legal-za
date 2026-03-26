@@ -123,6 +123,7 @@ export async function PUT(request, { params }) {
         .from('profiles')
         .select('id')
         .in('role', ['legal_officer', 'managing_partner'])
+        .limit(50)
       if (officers?.length) {
         await createBulkNotifications(officers.map(o => ({
           userId: o.id,
