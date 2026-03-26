@@ -1,565 +1,377 @@
 #!/usr/bin/env python3
 """
-Infinity Legal Platform - Module 2 Case Management API Testing
-Tests the 7 case management endpoints that need retesting
+Backend API Testing Script for Infinity Legal Platform
+Tests production readiness endpoints and existing APIs
 """
 
 import requests
 import json
 import time
-from datetime import datetime
+import sys
+from urllib.parse import urljoin
 
-# Configuration
+# Base URL from environment
 BASE_URL = "https://case-workspace-1.preview.emergentagent.com"
-SUPABASE_URL = "https://qgjqrrxwcsggtjznjjqk.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnanFycnh3Y3NnZ3Rqem5qanFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODU0NTksImV4cCI6MjA4OTc2MTQ1OX0.C8YSkrSSbx8LtcgaaFS5mhMU3Tvr0IMk7byurQEqUgw"
 
-class CaseManagementTester:
-    def __init__(self):
-        self.auth_token = None
-        self.test_user_id = None
-        self.test_case_id = None
-        self.test_results = []
-        
-    def log_result(self, test_name, success, details=""):
-        """Log test result"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {test_name}")
-        if details:
-            print(f"   Details: {details}")
-        self.test_results.append({
-            "test": test_name,
-            "success": success,
-            "details": details
-        })
-        
-    def create_test_user(self):
-        """Step 1: Create a test user via POST /api/auth/signup"""
-        print("\n=== STEP 1: Creating Test User ===")
-        
-        # Generate unique email
-        timestamp = int(time.time())
-        test_email = f"casetest_{timestamp}@example.com"
-        
-        signup_data = {
-            "email": test_email,
-            "password": "TestPass123!",
-            "fullName": "Case Tester",
-            "role": "attorney"
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/api/auth/signup", json=signup_data)
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.test_user_id = data.get("user", {}).get("id")
-                self.log_result("User Signup", True, f"Created user: {test_email}")
-                return test_email, "TestPass123!"
-            else:
-                self.log_result("User Signup", False, f"Status: {response.status_code}, Response: {response.text}")
-                return None, None
-                
-        except Exception as e:
-            self.log_result("User Signup", False, f"Exception: {str(e)}")
-            return None, None
+def test_health_check():
+    """Test GET /api/health endpoint"""
+    print("\n=== Testing Health Check API ===")
     
-    def get_auth_token(self, email, password):
-        """Step 2: Get auth token from Supabase"""
-        print("\n=== STEP 2: Getting Auth Token ===")
+    try:
+        url = urljoin(BASE_URL, "/api/health")
+        print(f"Testing: {url}")
         
-        auth_data = {
-            "email": email,
-            "password": password
-        }
+        response = requests.get(url, timeout=10)
+        print(f"Status Code: {response.status_code}")
         
-        try:
-            response = requests.post(
-                f"{SUPABASE_URL}/auth/v1/token?grant_type=password",
-                json=auth_data,
-                headers={
-                    "apikey": SUPABASE_ANON_KEY,
-                    "Content-Type": "application/json"
-                }
-            )
+        if response.status_code == 200:
+            data = response.json()
+            print(f"✅ Health check successful")
+            print(f"Status: {data.get('status')}")
+            print(f"Version: {data.get('version')}")
+            print(f"Uptime: {data.get('uptime')} seconds")
+            print(f"Response Time: {data.get('responseTimeMs')} ms")
             
-            if response.status_code == 200:
-                data = response.json()
-                self.auth_token = data.get("access_token")
-                self.log_result("Auth Token", True, "Successfully obtained auth token")
-                return True
-            else:
-                self.log_result("Auth Token", False, f"Status: {response.status_code}, Response: {response.text}")
+            # Check services
+            services = data.get('services', {})
+            mongodb_status = services.get('mongodb', {}).get('status')
+            supabase_status = services.get('supabase', {}).get('status')
+            
+            print(f"MongoDB: {mongodb_status}")
+            print(f"Supabase: {supabase_status}")
+            
+            # Check environment
+            env = data.get('environment', {})
+            print(f"Environment Valid: {env.get('valid')}")
+            print(f"Environment Errors: {env.get('errors')}")
+            print(f"Environment Warnings: {env.get('warnings')}")
+            
+            # Check memory
+            memory = data.get('memory', {})
+            print(f"Memory - Heap Used: {memory.get('heapUsedMB')} MB")
+            print(f"Memory - RSS: {memory.get('rssMB')} MB")
+            
+            # Verify required fields
+            required_fields = ['status', 'timestamp', 'version', 'uptime', 'services', 'environment', 'memory', 'responseTimeMs']
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                print(f"❌ Missing required fields: {missing_fields}")
+                return False
+            
+            if mongodb_status != "connected":
+                print(f"❌ MongoDB not connected: {mongodb_status}")
                 return False
                 
-        except Exception as e:
-            self.log_result("Auth Token", False, f"Exception: {str(e)}")
-            return False
-    
-    def create_test_case(self):
-        """Step 3: Create a case via POST /api/cases"""
-        print("\n=== STEP 3: Creating Test Case ===")
-        
-        case_data = {
-            "title": "Employment Dismissal Case",
-            "case_type": "civil",
-            "case_subtype": "Unfair Dismissal",
-            "description": "Client was unfairly dismissed from their position without proper procedure",
-            "urgency": "high",
-            "status": "active",
-            "court_date": "2024-03-15",
-            "court_location": "Labour Court, Johannesburg"
-        }
-        
-        headers = {
-            "Authorization": f"Bearer {self.auth_token}",
-            "Content-Type": "application/json"
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/api/cases", json=case_data, headers=headers)
-            
-            if response.status_code == 201:
-                data = response.json()
-                case = data.get("case", {})
-                self.test_case_id = case.get("id")
-                case_number = case.get("case_number", "")
+            if env.get('valid') != True:
+                print(f"❌ Environment validation failed")
+                return False
                 
-                # Verify Matter Number format IL-YYYY-NNNN
-                if case_number and case_number.startswith("IL-") and len(case_number.split("-")) == 3:
-                    year = case_number.split("-")[1]
-                    seq = case_number.split("-")[2]
-                    if len(year) == 4 and len(seq) == 4 and seq.isdigit():
-                        self.log_result("Case Creation & Matter Number", True, f"Case created with Matter Number: {case_number}")
-                        return True
-                    else:
-                        self.log_result("Case Creation & Matter Number", False, f"Invalid Matter Number format: {case_number}")
-                        return False
+            print("✅ All health check requirements met")
+            return True
+        else:
+            print(f"❌ Health check failed with status {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Health check error: {str(e)}")
+        return False
+
+def test_analytics_api():
+    """Test POST /api/analytics and GET /api/analytics endpoints"""
+    print("\n=== Testing Analytics API ===")
+    
+    # Test POST /api/analytics (public endpoint)
+    try:
+        url = urljoin(BASE_URL, "/api/analytics")
+        print(f"Testing POST: {url}")
+        
+        # Test valid request
+        payload = {
+            "event": "page_view",
+            "page": "/test",
+            "referrer": "https://google.com",
+            "metadata": {"test": True}
+        }
+        
+        response = requests.post(url, json=payload, timeout=10)
+        print(f"POST Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('ok') == True:
+                print("✅ Analytics POST successful")
+            else:
+                print(f"❌ Analytics POST failed: {data}")
+                return False
+        else:
+            print(f"❌ Analytics POST failed with status {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+            
+        # Test invalid request (missing fields)
+        print("\nTesting POST with missing fields...")
+        invalid_payload = {"event": "page_view"}  # Missing 'page'
+        
+        response = requests.post(url, json=invalid_payload, timeout=10)
+        print(f"Invalid POST Status Code: {response.status_code}")
+        
+        if response.status_code == 400:
+            print("✅ Analytics POST validation working correctly")
+        else:
+            print(f"❌ Analytics POST validation failed - expected 400, got {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Analytics POST error: {str(e)}")
+        return False
+    
+    # Test GET /api/analytics (requires auth)
+    try:
+        print("\nTesting GET /api/analytics without auth...")
+        response = requests.get(url, timeout=10)
+        print(f"GET Status Code (no auth): {response.status_code}")
+        
+        if response.status_code == 401:
+            print("✅ Analytics GET auth protection working correctly")
+            return True
+        else:
+            print(f"❌ Analytics GET auth protection failed - expected 401, got {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Analytics GET error: {str(e)}")
+        return False
+
+def test_sitemap():
+    """Test GET /sitemap.xml endpoint"""
+    print("\n=== Testing Sitemap ===")
+    
+    try:
+        url = urljoin(BASE_URL, "/sitemap.xml")
+        print(f"Testing: {url}")
+        
+        response = requests.get(url, timeout=10)
+        print(f"Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            content = response.text
+            print(f"Content Type: {response.headers.get('content-type')}")
+            
+            # Check if it's valid XML with URL entries
+            if '<?xml' in content and '<urlset' in content and '<url>' in content:
+                print("✅ Sitemap is valid XML")
+                
+                # Check for priority pages
+                priority_pages = ['/', '/intake', '/pricing']
+                found_pages = []
+                
+                for page in priority_pages:
+                    if f"<loc>{BASE_URL}{page}</loc>" in content:
+                        found_pages.append(page)
+                
+                print(f"Priority pages found: {found_pages}")
+                
+                # Check that protected URLs are NOT included
+                protected_urls = ['/portal/', '/api/', '/dashboard/']
+                found_protected = []
+                
+                for protected in protected_urls:
+                    if protected in content:
+                        found_protected.append(protected)
+                
+                if found_protected:
+                    print(f"❌ Protected URLs found in sitemap: {found_protected}")
+                    return False
                 else:
-                    self.log_result("Case Creation & Matter Number", False, f"Missing or invalid Matter Number: {case_number}")
+                    print("✅ No protected URLs in sitemap")
+                
+                # Count total URLs
+                url_count = content.count('<url>')
+                print(f"Total URLs in sitemap: {url_count}")
+                
+                if url_count > 0:
+                    print("✅ Sitemap contains URL entries")
+                    return True
+                else:
+                    print("❌ Sitemap contains no URLs")
                     return False
             else:
-                self.log_result("Case Creation & Matter Number", False, f"Status: {response.status_code}, Response: {response.text}")
+                print("❌ Sitemap is not valid XML")
+                print(f"Content preview: {content[:200]}...")
                 return False
-                
-        except Exception as e:
-            self.log_result("Case Creation & Matter Number", False, f"Exception: {str(e)}")
+        else:
+            print(f"❌ Sitemap failed with status {response.status_code}")
+            print(f"Response: {response.text}")
             return False
+            
+    except Exception as e:
+        print(f"❌ Sitemap error: {str(e)}")
+        return False
+
+def test_robots_txt():
+    """Test GET /robots.txt endpoint"""
+    print("\n=== Testing Robots.txt ===")
     
-    def test_timeline_api(self):
-        """Test Case Timeline API"""
-        print("\n=== STEP 4a: Testing Timeline API ===")
+    try:
+        url = urljoin(BASE_URL, "/robots.txt")
+        print(f"Testing: {url}")
         
-        headers = {
-            "Authorization": f"Bearer {self.auth_token}",
-            "Content-Type": "application/json"
-        }
+        response = requests.get(url, timeout=10)
+        print(f"Status Code: {response.status_code}")
         
-        # Test GET /api/cases/{id}/timeline
-        try:
-            response = requests.get(f"{BASE_URL}/api/cases/{self.test_case_id}/timeline", headers=headers)
+        if response.status_code == 200:
+            content = response.text
+            print(f"Content Type: {response.headers.get('content-type')}")
+            print(f"Content preview: {content[:200]}...")
             
-            if response.status_code == 200:
-                data = response.json()
-                entries = data.get("entries", [])
-                self.log_result("Timeline GET", True, f"Retrieved {len(entries)} timeline entries")
+            # Check for sitemap reference
+            if 'sitemap.xml' in content.lower():
+                print("✅ Robots.txt references sitemap.xml")
+                return True
             else:
-                self.log_result("Timeline GET", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Timeline GET", False, f"Exception: {str(e)}")
-        
-        # Test POST /api/cases/{id}/timeline
-        timeline_data = {
-            "type": "activity",
-            "action": "case_review",
-            "description": "Initial case review completed by legal officer",
-            "metadata": {"reviewer": "Case Tester", "priority": "high"}
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/api/cases/{self.test_case_id}/timeline", json=timeline_data, headers=headers)
+                print("❌ Robots.txt does not reference sitemap.xml")
+                return False
+        else:
+            print(f"❌ Robots.txt failed with status {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
             
-            if response.status_code == 201:
-                data = response.json()
-                entry = data.get("entry", {})
-                self.log_result("Timeline POST", True, f"Created timeline entry: {entry.get('id')}")
-            else:
-                self.log_result("Timeline POST", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Timeline POST", False, f"Exception: {str(e)}")
+    except Exception as e:
+        print(f"❌ Robots.txt error: {str(e)}")
+        return False
+
+def test_404_page():
+    """Test custom 404 page"""
+    print("\n=== Testing 404 Page ===")
     
-    def test_notes_api(self):
-        """Test Case Notes API (staff only)"""
-        print("\n=== STEP 4b: Testing Notes API ===")
+    try:
+        url = urljoin(BASE_URL, "/this-page-does-not-exist")
+        print(f"Testing: {url}")
         
-        headers = {
-            "Authorization": f"Bearer {self.auth_token}",
-            "Content-Type": "application/json"
-        }
+        response = requests.get(url, timeout=10)
+        print(f"Status Code: {response.status_code}")
         
-        # Test GET /api/cases/{id}/notes
-        try:
-            response = requests.get(f"{BASE_URL}/api/cases/{self.test_case_id}/notes", headers=headers)
+        if response.status_code == 404:
+            content = response.text
+            print(f"Content Type: {response.headers.get('content-type')}")
             
-            if response.status_code == 200:
-                data = response.json()
-                notes = data.get("notes", [])
-                self.log_result("Notes GET", True, f"Retrieved {len(notes)} notes (attorney role should work)")
-            elif response.status_code == 403:
-                self.log_result("Notes GET", False, "Got 403 - attorney role should have access to notes")
+            # Check if it's HTML content (custom 404 page)
+            if 'html' in content.lower() and ('404' in content or 'not found' in content.lower()):
+                print("✅ Custom 404 page returned")
+                return True
             else:
-                self.log_result("Notes GET", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Notes GET", False, f"Exception: {str(e)}")
-        
-        # Test POST /api/cases/{id}/notes
-        note_data = {
-            "content": "Client provided additional documentation regarding dismissal procedure. Need to review company policy manual.",
-            "category": "strategy"
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/api/cases/{self.test_case_id}/notes", json=note_data, headers=headers)
+                print("❌ 404 response is not HTML or doesn't contain 404 content")
+                print(f"Content preview: {content[:200]}...")
+                return False
+        else:
+            print(f"❌ Expected 404 status, got {response.status_code}")
+            return False
             
-            if response.status_code == 201:
-                data = response.json()
-                note = data.get("note", {})
-                self.log_result("Notes POST", True, f"Created note: {note.get('id')}")
-            elif response.status_code == 403:
-                self.log_result("Notes POST", False, "Got 403 - attorney role should have access to create notes")
-            else:
-                self.log_result("Notes POST", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Notes POST", False, f"Exception: {str(e)}")
+    except Exception as e:
+        print(f"❌ 404 page error: {str(e)}")
+        return False
+
+def test_existing_apis():
+    """Test existing APIs to ensure nothing broke"""
+    print("\n=== Testing Existing APIs ===")
     
-    def test_tasks_api(self):
-        """Test Case Tasks API"""
-        print("\n=== STEP 4c: Testing Tasks API ===")
+    # Test GET /api/plans
+    try:
+        url = urljoin(BASE_URL, "/api/plans")
+        print(f"Testing: {url}")
         
-        headers = {
-            "Authorization": f"Bearer {self.auth_token}",
-            "Content-Type": "application/json"
-        }
+        response = requests.get(url, timeout=10)
+        print(f"Plans API Status Code: {response.status_code}")
         
-        # Test GET /api/cases/{id}/tasks
-        try:
-            response = requests.get(f"{BASE_URL}/api/cases/{self.test_case_id}/tasks", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                tasks = data.get("tasks", [])
-                self.log_result("Tasks GET", True, f"Retrieved {len(tasks)} tasks")
+        if response.status_code == 200:
+            data = response.json()
+            if 'plans' in data:
+                print(f"✅ Plans API working - found {len(data['plans'])} plans")
             else:
-                self.log_result("Tasks GET", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Tasks GET", False, f"Exception: {str(e)}")
-        
-        # Test POST /api/cases/{id}/tasks
-        task_data = {
-            "title": "Review Employment Contract",
-            "description": "Analyze the employment contract for unfair dismissal clauses",
-            "priority": "high",
-            "dueDate": "2024-02-20",
-            "assigneeName": "Case Tester"
-        }
-        
-        task_id = None
-        try:
-            response = requests.post(f"{BASE_URL}/api/cases/{self.test_case_id}/tasks", json=task_data, headers=headers)
+                print(f"❌ Plans API response missing 'plans' field")
+                return False
+        else:
+            print(f"❌ Plans API failed with status {response.status_code}")
+            return False
             
-            if response.status_code == 201:
-                data = response.json()
-                task = data.get("task", {})
-                task_id = task.get("id")
-                self.log_result("Tasks POST", True, f"Created task: {task_id}")
-            else:
-                self.log_result("Tasks POST", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Tasks POST", False, f"Exception: {str(e)}")
-        
-        # Test PUT /api/cases/{id}/tasks (toggle to completed)
-        if task_id:
-            update_data = {
-                "taskId": task_id,
-                "status": "completed"
-            }
-            
-            try:
-                response = requests.put(f"{BASE_URL}/api/cases/{self.test_case_id}/tasks", json=update_data, headers=headers)
-                
-                if response.status_code == 200:
-                    self.log_result("Tasks PUT (Complete)", True, f"Marked task {task_id} as completed")
-                else:
-                    self.log_result("Tasks PUT (Complete)", False, f"Status: {response.status_code}, Response: {response.text}")
-                    
-            except Exception as e:
-                self.log_result("Tasks PUT (Complete)", False, f"Exception: {str(e)}")
+    except Exception as e:
+        print(f"❌ Plans API error: {str(e)}")
+        return False
     
-    def test_messages_api(self):
-        """Test Case Messages API"""
-        print("\n=== STEP 4d: Testing Messages API ===")
+    # Test GET /api/attorneys
+    try:
+        url = urljoin(BASE_URL, "/api/attorneys")
+        print(f"Testing: {url}")
         
-        headers = {
-            "Authorization": f"Bearer {self.auth_token}",
-            "Content-Type": "application/json"
-        }
+        response = requests.get(url, timeout=10)
+        print(f"Attorneys API Status Code: {response.status_code}")
         
-        # Test GET /api/cases/{id}/messages
-        try:
-            response = requests.get(f"{BASE_URL}/api/cases/{self.test_case_id}/messages", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                messages = data.get("messages", [])
-                self.log_result("Messages GET", True, f"Retrieved {len(messages)} messages")
+        if response.status_code == 200:
+            data = response.json()
+            if 'attorneys' in data:
+                print(f"✅ Attorneys API working - found {len(data['attorneys'])} attorneys")
+                return True
             else:
-                self.log_result("Messages GET", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Messages GET", False, f"Exception: {str(e)}")
-        
-        # Test POST /api/cases/{id}/messages (normal message)
-        message_data = {
-            "content": "Client has provided all requested documentation. Ready to proceed with case preparation.",
-            "isInternal": False
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/api/cases/{self.test_case_id}/messages", json=message_data, headers=headers)
+                print(f"❌ Attorneys API response missing 'attorneys' field")
+                return False
+        else:
+            print(f"❌ Attorneys API failed with status {response.status_code}")
+            return False
             
-            if response.status_code == 201:
-                data = response.json()
-                message = data.get("message", {})
-                self.log_result("Messages POST (Normal)", True, f"Created message: {message.get('id')}")
-            else:
-                self.log_result("Messages POST (Normal)", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Messages POST (Normal)", False, f"Exception: {str(e)}")
-        
-        # Test POST /api/cases/{id}/messages (internal message)
-        internal_message_data = {
-            "content": "Internal note: Client seems very cooperative. High chance of successful settlement.",
-            "isInternal": True
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/api/cases/{self.test_case_id}/messages", json=internal_message_data, headers=headers)
-            
-            if response.status_code == 201:
-                data = response.json()
-                message = data.get("message", {})
-                self.log_result("Messages POST (Internal)", True, f"Created internal message: {message.get('id')}")
-            else:
-                self.log_result("Messages POST (Internal)", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Messages POST (Internal)", False, f"Exception: {str(e)}")
+    except Exception as e:
+        print(f"❌ Attorneys API error: {str(e)}")
+        return False
+
+def main():
+    """Run all production readiness tests"""
+    print("🚀 Starting Production Readiness Testing for Infinity Legal Platform")
+    print(f"Base URL: {BASE_URL}")
+    print("=" * 80)
     
-    def test_assign_api(self):
-        """Test Case Assignment API (requires MANAGE_CASES permission)"""
-        print("\n=== STEP 4e: Testing Assignment API ===")
-        
-        headers = {
-            "Authorization": f"Bearer {self.auth_token}",
-            "Content-Type": "application/json"
-        }
-        
-        # Test PUT /api/cases/{id}/assign
-        assign_data = {
-            "leadAttorneyId": self.test_user_id,
-            "supportTeam": ["paralegal_1", "legal_assistant_1"],
-            "billingRate": 1500.00
-        }
-        
-        try:
-            response = requests.put(f"{BASE_URL}/api/cases/{self.test_case_id}/assign", json=assign_data, headers=headers)
-            
-            if response.status_code == 200:
-                self.log_result("Assignment PUT", True, "Successfully assigned case (attorney has MANAGE_CASES permission)")
-            elif response.status_code == 403:
-                self.log_result("Assignment PUT", False, "Got 403 - attorney role should have MANAGE_CASES permission")
-            else:
-                self.log_result("Assignment PUT", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Assignment PUT", False, f"Exception: {str(e)}")
+    tests = [
+        ("Health Check API", test_health_check),
+        ("Analytics API", test_analytics_api),
+        ("Sitemap", test_sitemap),
+        ("Robots.txt", test_robots_txt),
+        ("404 Page", test_404_page),
+        ("Existing APIs", test_existing_apis),
+    ]
     
-    def test_metadata_api(self):
-        """Test Case Metadata API (prescription period and resource tracking)"""
-        print("\n=== STEP 4f: Testing Metadata API ===")
-        
-        headers = {
-            "Authorization": f"Bearer {self.auth_token}",
-            "Content-Type": "application/json"
-        }
-        
-        # Test GET /api/cases/{id}/metadata
-        try:
-            response = requests.get(f"{BASE_URL}/api/cases/{self.test_case_id}/metadata", headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                metadata = data.get("metadata", {})
-                self.log_result("Metadata GET", True, f"Retrieved metadata for case {self.test_case_id}")
-            else:
-                self.log_result("Metadata GET", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Metadata GET", False, f"Exception: {str(e)}")
-        
-        # Test POST /api/cases/{id}/metadata (prescription period)
-        prescription_data = {
-            "prescription": {
-                "type": "labour_unfair_dismissal",
-                "startDate": "2024-01-15",
-                "notes": "Dismissal occurred on 15 January 2024. 12-month prescription period applies."
-            }
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/api/cases/{self.test_case_id}/metadata", json=prescription_data, headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                metadata = data.get("metadata", {})
-                prescription = metadata.get("prescription", {})
-                expiry_date = prescription.get("expiryDate")
-                self.log_result("Metadata POST (Prescription)", True, f"Set prescription period, expires: {expiry_date}")
-            else:
-                self.log_result("Metadata POST (Prescription)", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Metadata POST (Prescription)", False, f"Exception: {str(e)}")
-        
-        # Test POST /api/cases/{id}/metadata (resource tracking)
-        resource_data = {
-            "resources": {
-                "estimatedHours": 40,
-                "budgetAllocated": 60000.00,
-                "hourlyRate": 1500.00,
-                "teamMembers": ["Case Tester", "Support Paralegal"],
-                "notes": "Labour law case requiring extensive document review and court preparation"
-            }
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/api/cases/{self.test_case_id}/metadata", json=resource_data, headers=headers)
-            
-            if response.status_code == 200:
-                data = response.json()
-                metadata = data.get("metadata", {})
-                resources = metadata.get("resources", {})
-                self.log_result("Metadata POST (Resources)", True, f"Set resource tracking: {resources.get('estimatedHours')} hours, R{resources.get('budgetAllocated')}")
-            else:
-                self.log_result("Metadata POST (Resources)", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Metadata POST (Resources)", False, f"Exception: {str(e)}")
+    results = {}
     
-    def test_auth_required(self):
-        """Test that all endpoints return 401 without auth token"""
-        print("\n=== STEP 5: Testing Auth Required ===")
-        
-        endpoints = [
-            ("GET", f"/api/cases/{self.test_case_id}/timeline"),
-            ("POST", f"/api/cases/{self.test_case_id}/timeline"),
-            ("GET", f"/api/cases/{self.test_case_id}/notes"),
-            ("POST", f"/api/cases/{self.test_case_id}/notes"),
-            ("GET", f"/api/cases/{self.test_case_id}/tasks"),
-            ("POST", f"/api/cases/{self.test_case_id}/tasks"),
-            ("PUT", f"/api/cases/{self.test_case_id}/tasks"),
-            ("GET", f"/api/cases/{self.test_case_id}/messages"),
-            ("POST", f"/api/cases/{self.test_case_id}/messages"),
-            ("PUT", f"/api/cases/{self.test_case_id}/assign"),
-            ("GET", f"/api/cases/{self.test_case_id}/metadata"),
-            ("POST", f"/api/cases/{self.test_case_id}/metadata"),
-        ]
-        
-        auth_failures = 0
-        for method, endpoint in endpoints:
-            try:
-                if method == "GET":
-                    response = requests.get(f"{BASE_URL}{endpoint}")
-                elif method == "POST":
-                    response = requests.post(f"{BASE_URL}{endpoint}", json={})
-                elif method == "PUT":
-                    response = requests.put(f"{BASE_URL}{endpoint}", json={})
-                
-                if response.status_code == 401:
-                    auth_failures += 1
-                else:
-                    print(f"   ⚠️  {method} {endpoint} returned {response.status_code} (expected 401)")
-                    
-            except Exception as e:
-                print(f"   ❌ {method} {endpoint} failed: {str(e)}")
-        
-        self.log_result("Auth Required Check", auth_failures == len(endpoints), f"{auth_failures}/{len(endpoints)} endpoints correctly returned 401")
+    for test_name, test_func in tests:
+        try:
+            print(f"\n{'='*20} {test_name} {'='*20}")
+            results[test_name] = test_func()
+        except Exception as e:
+            print(f"❌ {test_name} failed with exception: {str(e)}")
+            results[test_name] = False
     
-    def run_all_tests(self):
-        """Run all tests in sequence"""
-        print("🚀 Starting Infinity Legal Platform - Module 2 Case Management API Testing")
-        print("=" * 80)
-        
-        # Step 1: Create test user
-        email, password = self.create_test_user()
-        if not email:
-            print("❌ Cannot proceed without test user")
-            return
-        
-        # Step 2: Get auth token
-        if not self.get_auth_token(email, password):
-            print("❌ Cannot proceed without auth token")
-            return
-        
-        # Step 3: Create test case
-        if not self.create_test_case():
-            print("❌ Cannot proceed without test case")
-            return
-        
-        # Step 4: Test all case sub-APIs
-        self.test_timeline_api()
-        self.test_notes_api()
-        self.test_tasks_api()
-        self.test_messages_api()
-        self.test_assign_api()
-        self.test_metadata_api()
-        
-        # Step 5: Test auth requirements
-        self.test_auth_required()
-        
-        # Summary
-        self.print_summary()
+    # Summary
+    print("\n" + "="*80)
+    print("🏁 PRODUCTION READINESS TEST SUMMARY")
+    print("="*80)
     
-    def print_summary(self):
-        """Print test summary"""
-        print("\n" + "=" * 80)
-        print("📊 TEST SUMMARY")
-        print("=" * 80)
-        
-        passed = sum(1 for result in self.test_results if result["success"])
-        total = len(self.test_results)
-        
-        print(f"Total Tests: {total}")
-        print(f"Passed: {passed}")
-        print(f"Failed: {total - passed}")
-        print(f"Success Rate: {(passed/total)*100:.1f}%")
-        
-        print("\n📋 DETAILED RESULTS:")
-        for result in self.test_results:
-            status = "✅" if result["success"] else "❌"
-            print(f"{status} {result['test']}")
-            if result["details"] and not result["success"]:
-                print(f"   {result['details']}")
-        
-        print("\n" + "=" * 80)
+    passed = 0
+    total = len(tests)
+    
+    for test_name, result in results.items():
+        status = "✅ PASS" if result else "❌ FAIL"
+        print(f"{status} - {test_name}")
+        if result:
+            passed += 1
+    
+    print(f"\nOverall Result: {passed}/{total} tests passed ({(passed/total)*100:.1f}%)")
+    
+    if passed == total:
+        print("🎉 ALL PRODUCTION READINESS TESTS PASSED!")
+        return True
+    else:
+        print("⚠️  Some tests failed - review issues above")
+        return False
 
 if __name__ == "__main__":
-    tester = CaseManagementTester()
-    tester.run_all_tests()
+    success = main()
+    sys.exit(0 if success else 1)
