@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { createClient } from '@supabase/supabase-js'
+import { createNotification } from '@/lib/notifications'
 
 async function getUserFromRequest(request) {
   const authHeader = request.headers.get('authorization')
@@ -150,6 +151,20 @@ export async function POST(request) {
       description: data.description || data.summary_encrypted || ''
     }
 
+    // Send notification to the client that their case was created
+    try {
+      await createNotification({
+        userId: user.id,
+        type: 'case_update',
+        title: 'Case Created',
+        message: `Your case "${normalizedCase.title}" (${caseNumber}) has been created and is being processed.`,
+        link: '/dashboard',
+        metadata: { caseId: data.id, caseNumber },
+      })
+    } catch (notifErr) {
+      console.error('Failed to send case creation notification:', notifErr)
+    }
+
     return NextResponse.json({ case: normalizedCase }, { status: 201 })
   } catch (error) {
     console.error('Cases API error:', error)
@@ -192,6 +207,46 @@ export async function PUT(request) {
       ...data,
       title: data.title || data.case_subtype || data.case_type || 'Untitled Case',
       description: data.description || data.summary_encrypted || ''
+    }
+
+    // Send notifications on status change
+    if (updates.status) {
+      const statusLabels = {
+        'intake': 'Intake',
+        'active': 'Active',
+        'under_review': 'Under Review',
+        'closed': 'Closed',
+        'resolved': 'Resolved',
+        'pending': 'Pending',
+      }
+      const statusLabel = statusLabels[updates.status] || updates.status
+      
+      try {
+        // Notify case client
+        if (data.client_id && data.client_id !== user.id) {
+          await createNotification({
+            userId: data.client_id,
+            type: 'case_update',
+            title: 'Case Status Updated',
+            message: `Your case "${normalizedCase.title}" has been updated to "${statusLabel}".`,
+            link: '/dashboard',
+            metadata: { caseId: id, newStatus: updates.status },
+          })
+        }
+        // Notify lead attorney if different from updater
+        if (data.lead_attorney_id && data.lead_attorney_id !== user.id) {
+          await createNotification({
+            userId: data.lead_attorney_id,
+            type: 'case_update',
+            title: 'Case Status Updated',
+            message: `Case "${normalizedCase.title}" (${data.case_number}) status changed to "${statusLabel}".`,
+            link: '/portal/cases',
+            metadata: { caseId: id, newStatus: updates.status },
+          })
+        }
+      } catch (notifErr) {
+        console.error('Failed to send case update notification:', notifErr)
+      }
     }
 
     return NextResponse.json({ case: normalizedCase })

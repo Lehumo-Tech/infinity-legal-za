@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { createNotification, createBulkNotifications } from '@/lib/notifications'
 
 // POST /api/applications - Process a full application
 export async function POST(request) {
@@ -109,6 +110,37 @@ export async function POST(request) {
         .from('cases')
         .update({ notes_encrypted: JSON.stringify(applicationMeta) })
         .eq('id', caseRecord.id)
+    }
+
+    // Send notifications
+    try {
+      // Welcome notification for the new client
+      await createNotification({
+        userId,
+        type: 'system',
+        title: 'Welcome to Infinity Legal!',
+        message: `Hi ${fullName}, your application has been received and is being reviewed. We'll be in touch shortly.`,
+        link: '/dashboard',
+        metadata: { applicationStatus: 'pending_review' },
+      })
+
+      // Notify intake agents about the new application
+      const { data: intakeAgents } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .in('role', ['intake_agent', 'managing_partner'])
+      if (intakeAgents?.length) {
+        await createBulkNotifications(intakeAgents.map(a => ({
+          userId: a.id,
+          type: 'system',
+          title: 'New Application Received',
+          message: `${fullName} has submitted a new application${legalMatterType ? ` (${legalMatterType})` : ''}.`,
+          link: '/portal/leads',
+          metadata: { applicantId: userId, caseId: caseRecord?.id },
+        })))
+      }
+    } catch (notifErr) {
+      console.error('Failed to send application notifications:', notifErr)
     }
 
     return NextResponse.json({

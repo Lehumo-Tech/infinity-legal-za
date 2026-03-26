@@ -3,67 +3,81 @@ The user is building the Infinity Legal Platform, a comprehensive legal tech Saa
 **PRODUCT REQUIREMENTS:**
 - Client-Facing Features: AI legal intake wizard, multi-step application form, booking system, multi-tiered subscription model, and warm/approachable branding.
 - Virtual Office / Intranet (Infinity OS): A multi-tier legal staffing intranet with strict Role-Based Access Control (RBAC). 
-  - **Legal Officers** hold licenses, provide strategy, and approve documents (Privileged Access).
-  - **Paralegals** handle execution, research, and drafts (Medium Access).
-  - **Intake/Call Center** qualify leads (Low Access).
 - Document workflow with status transitions, privileged strategy notes, and automated lead handoffs.
-- Integrations: Notifications (In-app + Brevo Email), Supabase for auth/data, and Gemini for AI analysis.
+- AI Integration: AI capabilities embedded deeply into the Audit process, market intelligence, lead recommendations, and legal research.
+- Integrations: Notifications (In-app + Brevo Email), Supabase for auth/data, Gemini for AI analysis (via Emergent Proxy).
 
 **User's preferred language**: English (INSTRUCT next agent to respond in English)
 
 **what currently exists?** 
-A fully functional Next.js 14 application. It features a completely redesigned, responsive UI with dark mode, accessibility compliance (WCAG 2.1 AA), and updated practice areas/pricing plans. The backend includes a robust custom RBAC engine (), a Brevo-powered transactional email system, comprehensive AI Intake, and booking logic. The internal portal () enforces role-aware views and strict data privilege boundaries between Legal Officers, Paralegals, and Intake Agents.
+A fully functional Next.js 14 application featuring a public-facing website and a secure internal portal (Infinity OS). It includes a robust RBAC engine, transactional emails (Brevo), and 5 new AI-powered endpoints that drive AI Audit Intelligence and Market/Lead Intelligence dashboards. The app also dynamically generates client-ready marketing assets (PPTX presentations, DOCX letterheads, HTML email signatures). The agent recently identified and created missing 404 pages (including the  flow).
 
 **Last working item**:
-- **Last item agent was working:** Taking screenshots of the newly built intranet/dashboard views (Legal Officer, Paralegal, and Intake workflows) to show the user. The agent created a temporary mock page at  to bypass authentication for these demonstration screenshots and had just captured the Paralegal view.
+- **Last item agent was working:** App-wide bug sweep and fixing broken links/pages. The agent specifically found that the , , and several  auth and static pages were returning 404s. The agent JUST used  to generate 8 missing pages.
 - **Status:** IN PROGRESS
-- **Agent Testing Done:** Y
-- **Which testing method agent to use?** screenshot tool
+- **Agent Testing Done:** N (Files were just created, UI and functionality not yet tested)
+- **Which testing method agent to use?** screenshot tool to verify the new UI pages, then manual backend testing (or test file) to ensure Supabase password reset logic actually fires correctly.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-Issue 1: Provide final intranet screenshots to the user
-- **Attempted fixes:** N/A (Feature works, just finishing screenshot gathering).
-- **Next debug checklist:** Navigate to  via the screenshot tool to capture the Intake and potentially Admin dashboards, then summarize and present these views to the user in the chat.
-- **Why fix this issue and what will be achieved with the fix?** Fulfills the user's explicit request to show me screenshots of the intranet in action.
-- **Status:** IN PROGRESS (P0)
-- **Is recurring issue?** N
-- **Should Test frontend/backend/both after fix?** Frontend (Screenshots)
-- **Blocked on other issue:** No
+  Issue 1: Verify and wire up Forgot Password / Reset Password Flow (P0)
+  Issue 2: Comprehensive App-wide Bug Sweep (P1)
+  
+  Issues Detail:
+  - Issue 1: 
+     - Attempted fixes: Agent created  and  via bulk writer.
+     - Next debug checklist: Check if the UI renders correctly via screenshot tool. Ensure the Supabase  logic is correctly implemented in the frontend/backend and that the redirect URLs map correctly.
+     - Why fix this issue and what will be achieved with the fix? Fulfills user's explicit request: fix the issue around the forgot password option because it doesnt work.
+     - Status: IN PROGRESS
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Both (Frontend UI + Backend Supabase Auth)
+     - Blocked on other issue: None
+  - Issue 2: 
+     - Attempted fixes: Agent checked for 404s and created 8 missing pages.
+     - Next debug checklist: The user asked to perform a bug-sweep across the whole app and its features. The agent only fixed 404s so far. Need to verify critical flows like Signup, Login, AI Intake, and basic routing.
+     - Why fix this issue and what will be achieved with the fix? Ensures application stability before moving forward.
+     - Status: IN PROGRESS
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Both
+     - Blocked on other issue: Issue 1
 
 **In progress Task List**:
-Task 1: Clean up demo page
-- **Where to resume:** 
-- **What will be achieved with this?** The  page was created purely to generate unauthenticated screenshots for the user. Once the user is satisfied with the UI, this file MUST be deleted to ensure mock data and internal UI layouts do not leak into the production environment.
-- **Status:** NOT STARTED (P1)
-- **Should Test frontend/backend/both after fix?** NA
-- **Blocked on something:** Waiting for the user to confirm they are happy with the screenshots.
+  Task 1: Full System Bug Sweep & Verification
+     - Where to resume: Review the newly created pages (, , etc.)
+     - What will be achieved with this? Complete the user's broad request to fix bugs across the app.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix? Both
+     - Blocked on something: None
 
 **Upcoming and Future Tasks**
-Upcoming Tasks:
-- **(P1) PayFast Integration:** Implement the subscription payment checkout flow. (Currently **ON HOLD** per user request).
-- **(P2) Staff Onboarding Flow:** With the RBAC system fully implemented in the backend, create an easy UI for the Managing Partner/HR to invite new staff members and assign their roles ().
+    Upcoming Tasks:
+    - **(P1) PayFast Integration:** Implement the subscription payment checkout flow. (Currently **ON HOLD** per user request).
 
-Future Tasks:
-- **(P3) Role-Based Audit Logging UI:** The backend audit logs track when documents change status, but a UI to view these logs in the  for the IT/Admin roles should be fleshed out.
+    Future Tasks:
+    - **(P2) Real-time Notifications:** Wiring up the local MongoDB notifications to trigger on RBAC status changes (e.g., Document Approved).
 
 **Completed work in this session**
-- **Landing Page Image Integration:** Embedded 4 user-provided images into the Hero, How It Works, Testimonials, and CTA sections.
-- **Brand Book & Cleanup:** Created  and deleted 7 obsolete migration/test files.
-- **Accessibility (WCAG 2.1 AA):** Added skip-to-content links, ARIA labels, semantic landmarks, and hover animations.
-- **Brevo Email Integration:** Created  using the user's API key, connected to signup & booking flows.
-- **Dark Mode:** Implemented a global dark mode toggle and styled all landing page sections.
-- **Infinity OS (Role-Aware Architecture):** Created a strict RBAC engine () separating Legal Officers, Paralegals, and Intake Agents. Added  for DB changes. Built dynamic  dashboards. 
-- **Content Updates:** Removed Commercial Law, changed Civil Litigation to Civil Law. Updated Pricing plans to Labour Shield (R95/mo, covers R72,300), Civil Guard (R115/mo, covers R78,500), and Complete Cover (R130/mo, covers R100,000).
+- Captured and provided Intranet screenshots for User via temporary demo page. (DONE)
+- Enhanced Staff Management UI () & Onboarding modal. (DONE)
+- Enhanced Audit Trail UI () with Timeline & Table views. (DONE)
+- AI Audit Intelligence & Market Intelligence Dashboards built (). (DONE)
+- Created 5 new AI endpoints using Emergent LLM Proxy (). (DONE)
+- Generated Client Presentation (). (DONE)
+- Generated Letterhead (). (DONE)
+- Generated HTML Email Signature with sharp logo rendering (). (DONE)
 
 **Earlier issues found/mentioned but not fixed**
-- None.
+   Issue 1: Supabase Password Reset Email Configuration
+   - Debug checklist: Check if the Supabase project has the correct email templates and redirect URLs configured for password reset. If the agent only built the UI, the email might not actually trigger or redirect correctly back to .
+   - Why to solve this issue and what will be achieved with this? The forgot password flow won't work in production if Supabase isn't configured correctly.
+   - Should Test frontend/backend/both after fix: Both
+   - Is recurring issue? N
 
 **Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork:** Next.js Route Caching for Supabase Data.
-- **Recurrence count:** 1 (During the pricing plans update).
-- **Status:** RESOLVED
-- **Note:** The API route  heavily cached the database response, making it appear as though the database wasn't updated. Fixed by adding  to the route and restarting Next.js. **Keep this in mind for all new GET API routes reading from Supabase.**
+  - Issue recurrence in previous fork: Next.js Route Caching for Supabase Data.
+  - Recurrence count: 1
+  - Status: RESOLVED
+  Note: Keep this in mind for all new GET API routes reading from Supabase. Ensure  is used.
 
 **Code Architecture**
 
@@ -71,78 +85,76 @@ Future Tasks:
 **Key Technical Concepts**
 - Framework: Next.js 14 App Router, TailwindCSS, shadcn/ui.
 - Databases: Supabase (PostgreSQL) for primary data & Auth; MongoDB for local notifications.
-- Security: Custom Role-Based Access Control (RBAC) middleware verifying JWT tokens and mapping to specific staff privileges. Strict separation between Legal Officers (Attorneys) and Support Staff (Paralegals/Intake).
+- Security: Custom Role-Based Access Control (RBAC) middleware verifying JWT tokens.
+- AI: Emergent LLM Proxy (OpenAI SDK pattern calling Gemini 2.5 Flash).
+- Asset Generation: Python scripts used via Bash (, ) to generate downloadable files.
 
 **key DB schema**
 - : 
 - : 
 - : 
-- : 
-- : 
-- :  *(Updated)*
 
 **changes in tech stack**
-- Added **Brevo** as the transactional email provider.
+- Added Emergent LLM Proxy (OpenAI SDK pointing to Emergent endpoints) for AI features.
+- Installed Python libraries (, ) globally for document generation.
 
-**All files of reference**
-- : Core brain for Infinity OS privilege separation.
-- : The dynamic dashboard routing logic based on the user's role.
-- : The temporary mock file used exclusively for taking unauthenticated UI screenshots.
-- : The database schema changes required for the new roles, leads, and privileged notes tables.
-- : Email service wrapper.
+**All files of reference** 
+1.  (NEW: Needs UI/functional testing)
+2.  (NEW: Needs UI/functional testing)
+3. , ,  (NEW)
+4. , ,  (NEW)
+5.  (Core AI wrapper logic)
+6.  (Generated asset)
+7.  (Generated asset)
+8.  (Generated asset)
 
 **Areas that need refactoring**:
--  MUST be deleted once the user approves the intranet screenshots.
+- Ensure all newly bulk-written pages (, etc.) have proper Tailwind styling and match the brand guidelines (navy, gold, readable fonts).
 
 **key api endpoints**
+- : Generates AI insights on audit logs.
+- : Scores leads based on market intelligence.
 - : Sends transactional emails via Brevo.
-- : Protected by  or higher.
-- : Strictly protected by  requirement.
-- : Enforces that only Legal Officers can switch a document from 'Draft' to 'Approved'.
 
 **Critical Info for New Agent**
-- **RBAC is Active:** Do not expose sensitive data APIs without importing  or  from . Paralegals cannot see privileged notes; Intake cannot see cases.
-- **Caching Gotcha:** Use  in any new Supabase  routes to avoid Next.js static caching issues.
+- **AI Implementation Rules:** Continue using the  proxy pattern (Emergent LLM Key) for any new AI tasks. 
+- **Bug Sweep Context:** The user requested a full-app bug sweep. Do not just stop at 404s. Verify basic user authentication, lead form submission, and dashboard rendering.
 - **PayFast integration is still ON HOLD.**
 
 **documents and test reports created in this job**
 - 
 - 
--  (Updated with backend test results for Email API and RBAC API)
+- 
 
-**Last 10 User Messages and any pending HUMAN messages**
-1. **User:** Provided API key for Brevo.
-2. **Assistant:** Integrated Brevo, Dark Mode, and Favicon generation. Tested backend.
-3. **User:** Provided a huge prompt requesting a total rewrite of the internal app (Infinity OS) to enforce strict RBAC between Legal Officers, Paralegals, and Intake Call Center staff.
-4. **Assistant:** Asked for confirmation before proceeding.
-5. **User:** Confirmed to proceed.
-6. **Assistant:** Built the entire RBAC engine, created API endpoints, migration scripts, and the frontend  dynamic dashboards.
-7. **User:** Requested changes to the landing page practice areas (change Civil Litigation to Civil Law, remove Commercial Law) and updated pricing plans with specific names, ZAR prices.
-8. **Assistant:** Implemented those changes. Discovered an API caching issue, fixed it, and confirmed.
-9. **User:** Provided specific coverage limits for the pricing plans (R72,300, R78,500, R100,000).
-10. **User:** please show me screenshots of the intranet in action. the different dashbords etc
-   - *Status:* IN PROGRESS. The agent created  to take screenshots and just finished capturing the Paralegal view.
+**Last 10 User Messages and any pending HUMAN messages** 
+1. **User:** please a create a useable letterhead for infinity legal i can download and use
+2. **Assistant:** Created .
+3. **User:** please create a proper email signature for tidimalo tsatsi (Uploaded logo & reference image).
+4. **Assistant:** Created HTML signature.
+5. **User:** the logo is blurry please fix it to be clear and readable
+6. **Assistant:** Fixed logo sizing and added CSS rendering optimizations.
+7. **User:** perform a bug-sweep ocross the whole app and its features. please also fix the issue around the forgot password option because it doeant work
+8. **Assistant:** Found that  and 7 other pages were missing (returning 404). Used bulk file writer to create them.
 
 **Project Health Check:**
-- Working: Landing page, Pricing, Brevo Emails, Dark Mode, RBAC Engine Backend, AI Wizard.
-- Broken: None.
-- Mocked:  is mocked explicitly to take unauthenticated screenshots for the user. 
+- Broken:  flow needs functional testing (just scaffolded).
+- Mocked: None currently active (Demo page was deleted).
 
-**3rd Party Integrations**
-- OpenAI/Gemini GPT via Emergent Proxy (Uses Emergent LLM Key)
-- Supabase for Database/Auth (Requires User API Key)
-- MongoDB for Notifications (Local instance)
-- Brevo for Emails (Uses User API Key)
-- PayFast (On Hold)
+**3rd Party Integrations** 
+- OpenAI SDK / Gemini 2.5 Flash — uses Emergent LLM Key
+- Supabase (Database/Auth) — requires User API Key
+- MongoDB (Notifications) — Local instance
+- Brevo (Emails) — requires User API Key
+- PayFast (Payments) — On Hold
 
 **Testing status**
-- Testing agent used after significant changes: YES (Backend tests passed for RBAC paths and Brevo).
+- Testing agent used after significant changes: NO (Pending for the newly created pages)
 - Troubleshoot agent used after agent stuck in loop: NO
-- Test files created: None new (Updated ).
-- Known regressions: None.
+- Test files created: None
+- Known regressions: None
 
 **Credentials to test flow:**
-Use UI signup for standard accounts. For staff, the  API was created, but for UI visual checks, use .
+Use UI signup for standard accounts.
 
 **What agent forgot to execute**
-The agent was in the middle of executing the final screenshot request. It needs to grab the final Intake / Call Center dashboard screenshot from , provide the images to the user, and wrap up the request.</analysis>
+The agent generated the 8 missing pages via  but stopped right after file generation. It forgot to use the  to verify the UI of the newly generated  pages, nor did it verify if the Supabase Auth reset functionality is correctly hooked up to the backend. Complete the bug-sweep verification.</analysis>

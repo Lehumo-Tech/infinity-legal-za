@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requirePermission, requireRole, createAuditLog, ROLES, isOfficer } from '@/lib/rbac'
+import { createNotification, createBulkNotifications } from '@/lib/notifications'
 
 /**
  * PUT /api/documents/[id]/workflow
@@ -110,6 +111,91 @@ export async function PUT(request, { params }) {
     resourceId: docId,
     details: { previousStatus: currentStatus, newStatus, documentName: doc.file_name },
   })
+
+  // Send real-time notifications based on workflow transition
+  const docName = doc.file_name || 'Untitled Document'
+  const userName = user.profile?.full_name || user.email || 'A team member'
+
+  try {
+    if (newStatus === 'review') {
+      // Notify officers that a document needs review
+      const { data: officers } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .in('role', ['legal_officer', 'managing_partner'])
+      if (officers?.length) {
+        await createBulkNotifications(officers.map(o => ({
+          userId: o.id,
+          type: 'document',
+          title: 'Document Awaiting Review',
+          message: `"${docName}" has been submitted for review by ${userName}.`,
+          link: '/portal/documents',
+          metadata: { documentId: docId, action: 'review' },
+        })))
+      }
+    } else if (newStatus === 'approved') {
+      // Notify the preparer that their document was approved
+      if (doc.prepared_by_paralegal) {
+        await createNotification({
+          userId: doc.prepared_by_paralegal,
+          type: 'document',
+          title: 'Document Approved',
+          message: `"${docName}" has been approved by ${userName}.`,
+          link: '/portal/documents',
+          metadata: { documentId: docId, action: 'approved' },
+        })
+      }
+      // Also notify client if case is linked
+      if (doc.case_id) {
+        const { data: caseData } = await supabaseAdmin.from('cases').select('client_id').eq('id', doc.case_id).single()
+        if (caseData?.client_id) {
+          await createNotification({
+            userId: caseData.client_id,
+            type: 'document',
+            title: 'Document Approved',
+            message: `A document in your case ("${docName}") has been approved.`,
+            link: '/dashboard',
+            metadata: { documentId: docId, action: 'approved' },
+          })
+        }
+      }
+    } else if (newStatus === 'rejected') {
+      // Notify the preparer that their document was rejected
+      if (doc.prepared_by_paralegal) {
+        await createNotification({
+          userId: doc.prepared_by_paralegal,
+          type: 'document',
+          title: 'Document Rejected',
+          message: `"${docName}" has been rejected by ${userName}. Please revise and resubmit.`,
+          link: '/portal/documents',
+          metadata: { documentId: docId, action: 'rejected' },
+        })
+      }
+    } else if (newStatus === 'signed') {
+      // Notify all relevant parties that the document is signed
+      const notifyUsers = new Set()
+      if (doc.prepared_by_paralegal) notifyUsers.add(doc.prepared_by_paralegal)
+      if (doc.case_id) {
+        const { data: caseData } = await supabaseAdmin.from('cases').select('client_id, lead_attorney_id').eq('id', doc.case_id).single()
+        if (caseData?.client_id) notifyUsers.add(caseData.client_id)
+        if (caseData?.lead_attorney_id) notifyUsers.add(caseData.lead_attorney_id)
+      }
+      notifyUsers.delete(user.id) // Don't notify the signer themselves
+      if (notifyUsers.size > 0) {
+        await createBulkNotifications([...notifyUsers].map(uid => ({
+          userId: uid,
+          type: 'document',
+          title: 'Document Signed',
+          message: `"${docName}" has been signed by ${userName}.`,
+          link: '/portal/documents',
+          metadata: { documentId: docId, action: 'signed' },
+        })))
+      }
+    }
+  } catch (notifErr) {
+    console.error('Failed to send document workflow notifications:', notifErr)
+    // Don't fail the request if notifications fail
+  }
 
   return NextResponse.json({ document: data, transition: `${currentStatus} → ${newStatus}` })
 }
