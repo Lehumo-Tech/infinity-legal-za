@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import { getDb } from '@/lib/mongodb'
 import { requirePermission, createAuditLog } from '@/lib/rbac'
 export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/cases/[id]/privileged-notes
  * Officer-only: View privileged strategy notes for a case
+ * Uses MongoDB instead of Supabase (table doesn't exist in Supabase)
  */
 export async function GET(request, { params }) {
   const { user, error, status } = await requirePermission(request, 'VIEW_PRIVILEGED_NOTES')
@@ -14,17 +15,24 @@ export async function GET(request, { params }) {
   const { id: caseId } = await params
 
   try {
-    const { data, error: dbErr } = await supabaseAdmin
-      .from('privileged_notes')
-      .select('*, author:profiles!author_id(full_name, role)')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false })
+    const db = await getDb()
+    const notes = await db.collection('privileged_notes')
+      .find({ caseId })
+      .sort({ createdAt: -1 })
+      .toArray()
 
-    if (dbErr) {
-      console.error('Privileged notes fetch error:', dbErr)
-      // Table might not exist - return empty
-      return NextResponse.json({ notes: [] })
-    }
+    // Enrich with author info from the stored data
+    const enrichedNotes = notes.map(n => ({
+      id: n._id?.toString() || n.id,
+      content: n.content,
+      is_strategy: n.isStrategy || false,
+      visibility: n.visibility || 'officer_only',
+      created_at: n.createdAt,
+      author: {
+        full_name: n.authorName || 'Officer',
+        role: n.authorRole || 'associate',
+      },
+    }))
 
     // Audit the access
     await createAuditLog({
@@ -32,10 +40,10 @@ export async function GET(request, { params }) {
       action: 'VIEW_PRIVILEGED_NOTES',
       resourceType: 'case',
       resourceId: caseId,
-      details: { notesCount: data?.length || 0 },
+      details: { notesCount: enrichedNotes.length },
     })
 
-    return NextResponse.json({ notes: data || [] })
+    return NextResponse.json({ notes: enrichedNotes })
   } catch (err) {
     console.error('Privileged notes error:', err)
     return NextResponse.json({ notes: [] })
@@ -45,6 +53,7 @@ export async function GET(request, { params }) {
 /**
  * POST /api/cases/[id]/privileged-notes
  * Officer-only: Create a privileged note
+ * Stores in MongoDB
  */
 export async function POST(request, { params }) {
   const { user, error, status } = await requirePermission(request, 'CREATE_PRIVILEGED_NOTES')
@@ -57,28 +66,50 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: 'Note content is required' }, { status: 400 })
   }
 
-  const { data, error: dbErr } = await supabaseAdmin
-    .from('privileged_notes')
-    .insert([{
-      case_id: caseId,
-      author_id: user.id,
+  try {
+    const db = await getDb()
+    const now = new Date().toISOString()
+    const noteId = `pn_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+
+    const note = {
+      id: noteId,
+      caseId,
+      authorId: user.id,
+      authorName: user.profile?.full_name || user.email,
+      authorRole: user.profile?.role || 'associate',
       content: content.trim(),
-      is_strategy: isStrategy || false,
+      isStrategy: isStrategy || false,
       visibility: visibility || 'officer_only',
-    }])
-    .select()
-    .single()
+      createdAt: now,
+      updatedAt: now,
+    }
 
-  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
+    await db.collection('privileged_notes').insertOne(note)
 
-  // Audit the creation
-  await createAuditLog({
-    userId: user.id,
-    action: 'CREATE_PRIVILEGED_NOTE',
-    resourceType: 'privileged_note',
-    resourceId: data.id,
-    details: { caseId, isStrategy },
-  })
+    // Audit the creation
+    await createAuditLog({
+      userId: user.id,
+      action: 'CREATE_PRIVILEGED_NOTE',
+      resourceType: 'privileged_note',
+      resourceId: noteId,
+      details: { caseId, isStrategy },
+    })
 
-  return NextResponse.json({ note: data }, { status: 201 })
+    return NextResponse.json({
+      note: {
+        id: noteId,
+        content: note.content,
+        is_strategy: note.isStrategy,
+        visibility: note.visibility,
+        created_at: note.createdAt,
+        author: {
+          full_name: note.authorName,
+          role: note.authorRole,
+        },
+      }
+    }, { status: 201 })
+  } catch (err) {
+    console.error('Privileged note creation error:', err)
+    return NextResponse.json({ error: 'Failed to create note' }, { status: 500 })
+  }
 }

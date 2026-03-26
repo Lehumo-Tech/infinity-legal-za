@@ -3,373 +3,235 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 
-// ============ OFFICER DASHBOARD ============
-function OfficerDashboard({ profile, token }) {
-  const [stats, setStats] = useState({ pendingApprovals: 0, activeCases: 0, upcomingCourt: 0, pendingLeads: 0 })
-  const [recentCases, setRecentCases] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
-        // Fetch cases
-        const casesRes = await fetch('/api/cases', { headers })
-        const casesData = await casesRes.json()
-        const cases = casesData.cases || []
-        const activeCases = cases.filter(c => c.status === 'active' || c.status === 'matched').length
-        const upcomingCourt = cases.filter(c => c.court_date && new Date(c.court_date) > new Date()).length
-
-        setStats({
-          pendingApprovals: cases.filter(c => c.status === 'pending').length,
-          activeCases,
-          upcomingCourt,
-          pendingLeads: 0,
-        })
-        setRecentCases(cases.slice(0, 5))
-      } catch (err) {
-        console.error('Dashboard fetch error:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [token])
-
-  return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold text-infinity-navy dark:text-white">Legal Officer Dashboard</h1>
-        <p className="text-infinity-navy/50 dark:text-white/50 text-sm font-sans mt-1">Welcome back, {profile?.full_name}. Here's your overview.</p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'Pending Approvals', value: stats.pendingApprovals, icon: '✅', color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' },
-          { label: 'Active Cases', value: stats.activeCases, icon: '📁', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' },
-          { label: 'Court Dates', value: stats.upcomingCourt, icon: '🏛️', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' },
-          { label: 'Pending Leads', value: stats.pendingLeads, icon: '📞', color: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' },
-        ].map((stat, i) => (
-          <div key={i} className={`rounded-xl p-5 ${stat.color} border border-current/10`}>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl">{stat.icon}</span>
-              <span className="text-3xl font-display font-bold">{loading ? '-' : stat.value}</span>
-            </div>
-            <div className="mt-2 text-sm font-semibold opacity-80">{stat.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Recent Cases */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-infinity-navy/10 dark:border-gray-700 p-6">
-        <h2 className="font-display font-semibold text-infinity-navy dark:text-white mb-4">Recent Cases</h2>
-        {loading ? (
-          <div className="text-center py-8 text-infinity-navy/40 dark:text-white/40">Loading...</div>
-        ) : recentCases.length === 0 ? (
-          <div className="text-center py-8 text-infinity-navy/40 dark:text-white/40">No cases yet</div>
-        ) : (
-          <div className="space-y-3">
-            {recentCases.map((c) => (
-              <div key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-infinity-cream/50 dark:bg-gray-700/50">
-                <div>
-                  <div className="font-semibold text-sm text-infinity-navy dark:text-white">{c.case_number || 'Case'}</div>
-                  <div className="text-xs text-infinity-navy/50 dark:text-white/50">{c.case_type} • {c.case_subtype || 'General'}</div>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  c.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                  c.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                  'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
-                }`}>
-                  {c.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-6 grid sm:grid-cols-3 gap-4">
-        <a href="/portal/approvals" className="bg-infinity-navy text-white rounded-xl p-4 text-center hover:bg-infinity-navy-light transition-colors">
-          <div className="text-2xl mb-1">✅</div>
-          <div className="text-sm font-semibold">Review Approvals</div>
-        </a>
-        <a href="/portal/cases" className="bg-infinity-gold text-infinity-navy rounded-xl p-4 text-center hover:bg-infinity-gold-light transition-colors">
-          <div className="text-2xl mb-1">📁</div>
-          <div className="text-sm font-semibold">View All Cases</div>
-        </a>
-        <a href="/portal/leads" className="bg-white dark:bg-gray-800 border border-infinity-navy/10 dark:border-gray-700 text-infinity-navy dark:text-white rounded-xl p-4 text-center hover:border-infinity-gold/40 transition-colors">
-          <div className="text-2xl mb-1">📞</div>
-          <div className="text-sm font-semibold">Pipeline</div>
-        </a>
-      </div>
-    </div>
-  )
-}
-
-// ============ PARALEGAL DASHBOARD ============
-function ParalegalDashboard({ profile, token }) {
-  const [stats, setStats] = useState({ draftingTasks: 0, assignedCases: 0, pendingLeads: 0, documentsToFile: 0 })
-  const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
-        const tasksRes = await fetch('/api/tasks', { headers })
-        const tasksData = await tasksRes.json()
-        const allTasks = tasksData.tasks || []
-        const pending = allTasks.filter(t => t.status === 'pending').length
-        const inProgress = allTasks.filter(t => t.status === 'in_progress').length
-
-        setStats({
-          draftingTasks: pending + inProgress,
-          assignedCases: 0,
-          pendingLeads: 0,
-          documentsToFile: 0,
-        })
-        setTasks(allTasks.slice(0, 8))
-      } catch (err) {
-        console.error('Dashboard fetch error:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [token])
-
-  return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold text-infinity-navy dark:text-white">Paralegal Workbench</h1>
-        <p className="text-infinity-navy/50 dark:text-white/50 text-sm font-sans mt-1">Welcome, {profile?.full_name}. Focus on your tasks below.</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'Drafting Tasks', value: stats.draftingTasks, icon: '📝', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400' },
-          { label: 'Assigned Cases', value: stats.assignedCases, icon: '📁', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' },
-          { label: 'Pending Leads', value: stats.pendingLeads, icon: '📞', color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' },
-          { label: 'Docs to File', value: stats.documentsToFile, icon: '📄', color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' },
-        ].map((stat, i) => (
-          <div key={i} className={`rounded-xl p-5 ${stat.color} border border-current/10`}>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl">{stat.icon}</span>
-              <span className="text-3xl font-display font-bold">{loading ? '-' : stat.value}</span>
-            </div>
-            <div className="mt-2 text-sm font-semibold opacity-80">{stat.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Task List — Dense & Productive */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-infinity-navy/10 dark:border-gray-700 p-6">
-        <h2 className="font-display font-semibold text-infinity-navy dark:text-white mb-4">My Tasks</h2>
-        {loading ? (
-          <div className="text-center py-8 text-infinity-navy/40 dark:text-white/40">Loading...</div>
-        ) : tasks.length === 0 ? (
-          <div className="text-center py-8 text-infinity-navy/40 dark:text-white/40">No tasks assigned yet</div>
-        ) : (
-          <div className="space-y-2">
-            {tasks.map((t) => (
-              <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg bg-infinity-cream/50 dark:bg-gray-700/50 hover:bg-infinity-cream dark:hover:bg-gray-700 transition-colors">
-                <input type="checkbox" checked={t.status === 'completed'} readOnly className="w-4 h-4 rounded border-infinity-navy/30 text-infinity-gold focus:ring-infinity-gold" />
-                <div className="flex-1 min-w-0">
-                  <div className={`text-sm font-medium ${t.status === 'completed' ? 'line-through text-infinity-navy/30 dark:text-white/30' : 'text-infinity-navy dark:text-white'}`}>{t.title}</div>
-                  {t.due_date && <div className="text-xs text-infinity-navy/40 dark:text-white/40">Due: {new Date(t.due_date).toLocaleDateString('en-ZA')}</div>}
-                </div>
-                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                  t.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                  t.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                  'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
-                }`}>
-                  {t.priority}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-6 grid sm:grid-cols-3 gap-4">
-        <a href="/portal/tasks" className="bg-teal-600 text-white rounded-xl p-4 text-center hover:bg-teal-700 transition-colors">
-          <div className="text-2xl mb-1">📝</div>
-          <div className="text-sm font-semibold">All Tasks</div>
-        </a>
-        <a href="/portal/documents" className="bg-infinity-navy text-white rounded-xl p-4 text-center hover:bg-infinity-navy-light transition-colors">
-          <div className="text-2xl mb-1">📄</div>
-          <div className="text-sm font-semibold">Document Filing</div>
-        </a>
-        <a href="/portal/leads" className="bg-white dark:bg-gray-800 border border-infinity-navy/10 dark:border-gray-700 text-infinity-navy dark:text-white rounded-xl p-4 text-center hover:border-infinity-gold/40 transition-colors">
-          <div className="text-2xl mb-1">📞</div>
-          <div className="text-sm font-semibold">Lead Prep</div>
-        </a>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="mt-6 p-4 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800/30 rounded-xl">
-        <p className="text-xs text-orange-700 dark:text-orange-400">
-          <strong>Reminder:</strong> All documents you draft are under supervision of your assigned Legal Officer. 
-          You cannot sign legal filings or transmit final legal advice to clients. 
-          Documents require Officer approval before client delivery.
-        </p>
-      </div>
-    </div>
-  )
-}
-
-// ============ INTAKE AGENT DASHBOARD ============
-function IntakeDashboard({ profile, token }) {
-  const [stats, setStats] = useState({ newLeads: 0, contacted: 0, qualified: 0, followUps: 0 })
-  const [leads, setLeads] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
-        const leadsRes = await fetch('/api/leads', { headers })
-        const leadsData = await leadsRes.json()
-        const allLeads = leadsData.leads || []
-
-        setStats({
-          newLeads: allLeads.filter(l => l.status === 'new').length,
-          contacted: allLeads.filter(l => l.status === 'contacted').length,
-          qualified: allLeads.filter(l => l.status === 'qualified').length,
-          followUps: allLeads.filter(l => l.status === 'contacted').length,
-        })
-        setLeads(allLeads.slice(0, 10))
-      } catch (err) {
-        console.error('Dashboard fetch error:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [token])
-
-  return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold text-infinity-navy dark:text-white">Call Center Dashboard</h1>
-        <p className="text-infinity-navy/50 dark:text-white/50 text-sm font-sans mt-1">Welcome, {profile?.full_name}. Qualify leads and schedule follow-ups.</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'New Leads', value: stats.newLeads, icon: '🆕', color: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' },
-          { label: 'Contacted', value: stats.contacted, icon: '📞', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' },
-          { label: 'Qualified', value: stats.qualified, icon: '✅', color: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' },
-          { label: 'Follow-ups', value: stats.followUps, icon: '🔄', color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' },
-        ].map((stat, i) => (
-          <div key={i} className={`rounded-xl p-5 ${stat.color} border border-current/10`}>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl">{stat.icon}</span>
-              <span className="text-3xl font-display font-bold">{loading ? '-' : stat.value}</span>
-            </div>
-            <div className="mt-2 text-sm font-semibold opacity-80">{stat.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Lead Queue — Minimal, Speed-focused */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-infinity-navy/10 dark:border-gray-700 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-semibold text-infinity-navy dark:text-white">Lead Queue</h2>
-          <a href="/portal/leads" className="text-sm text-infinity-gold font-semibold hover:underline">View All →</a>
-        </div>
-        {loading ? (
-          <div className="text-center py-8 text-infinity-navy/40 dark:text-white/40">Loading...</div>
-        ) : leads.length === 0 ? (
-          <div className="text-center py-8 text-infinity-navy/40 dark:text-white/40">No leads in queue</div>
-        ) : (
-          <div className="space-y-2">
-            {leads.map((l) => (
-              <div key={l.id} className="flex items-center gap-3 p-3 rounded-lg bg-infinity-cream/50 dark:bg-gray-700/50 hover:bg-infinity-cream dark:hover:bg-gray-700 transition-colors">
-                <div className={`w-2 h-2 rounded-full ${
-                  l.urgency === 'emergency' ? 'bg-red-500' :
-                  l.urgency === 'high' ? 'bg-orange-500' :
-                  l.urgency === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-infinity-navy dark:text-white truncate">{l.full_name}</div>
-                  <div className="text-xs text-infinity-navy/40 dark:text-white/40">{l.phone || l.email || 'No contact'} • {l.case_type || 'Unclassified'}</div>
-                </div>
-                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                  l.status === 'new' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                  l.status === 'contacted' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                  l.status === 'qualified' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                  'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
-                }`}>
-                  {l.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-6 grid sm:grid-cols-2 gap-4">
-        <a href="/portal/leads?new=true" className="bg-red-600 text-white rounded-xl p-4 text-center hover:bg-red-700 transition-colors">
-          <div className="text-2xl mb-1">➕</div>
-          <div className="text-sm font-semibold">New Lead Entry</div>
-        </a>
-        <a href="/portal/leads" className="bg-infinity-gold text-infinity-navy rounded-xl p-4 text-center hover:bg-infinity-gold-light transition-colors">
-          <div className="text-2xl mb-1">📞</div>
-          <div className="text-sm font-semibold">Call Queue</div>
-        </a>
-      </div>
-
-      {/* Restriction Notice */}
-      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-xl">
-        <p className="text-xs text-blue-700 dark:text-blue-400">
-          <strong>Note:</strong> As an Intake Specialist, you can qualify leads and schedule appointments. 
-          You cannot access active case files or provide legal advice. Qualified leads are automatically routed to the Paralegal queue.
-        </p>
-      </div>
-    </div>
-  )
-}
-
-// ============ MAIN PORTAL PAGE ============
-export default function PortalPage() {
-  const { profile, role, isOfficer, isParalegal, isIntakeAgent, isManagingPartner } = useAuth()
+export default function PortalDashboard() {
+  const { profile, role, roleLabel, department, isOfficer, isLegalStaff, isParalegal, isIntakeAgent, isDirector, isFinanceStaff } = useAuth()
   const [token, setToken] = useState(null)
+  const [stats, setStats] = useState({ activeCases: 0, pendingTasks: 0, meetingsToday: 0, unreadMessages: 0 })
+  const [recentCases, setRecentCases] = useState([])
+  const [notifications, setNotifications] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function getToken() {
+    async function init() {
       const { data } = await supabase.auth.getSession()
-      setToken(data?.session?.access_token || null)
+      const t = data?.session?.access_token || null
+      setToken(t)
+      if (t) fetchDashboardData(t)
     }
-    getToken()
+    init()
   }, [])
 
-  if (isManagingPartner || isOfficer) {
-    return <OfficerDashboard profile={profile} token={token} />
-  }
-  if (isParalegal) {
-    return <ParalegalDashboard profile={profile} token={token} />
-  }
-  if (isIntakeAgent) {
-    return <IntakeDashboard profile={profile} token={token} />
+  const fetchDashboardData = async (t) => {
+    try {
+      const headers = { Authorization: `Bearer ${t}` }
+      const [casesRes, tasksRes, notifsRes] = await Promise.allSettled([
+        fetch('/api/cases', { headers }),
+        fetch('/api/tasks', { headers }),
+        fetch('/api/notifications?limit=5', { headers }),
+      ])
+
+      let cases = [], tasks = [], notifs = []
+      if (casesRes.status === 'fulfilled' && casesRes.value.ok) {
+        const d = await casesRes.value.json()
+        cases = d.cases || []
+      }
+      if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
+        const d = await tasksRes.value.json()
+        tasks = d.tasks || []
+      }
+      if (notifsRes.status === 'fulfilled' && notifsRes.value.ok) {
+        const d = await notifsRes.value.json()
+        notifs = d.notifications || []
+      }
+
+      const activeCases = cases.filter(c => ['active', 'intake', 'under_review'].includes(c.status)).length
+      const pendingTasks = tasks.filter(t => t.status !== 'completed').length
+      const courtDates = cases.filter(c => {
+        if (!c.court_date) return false
+        const d = new Date(c.court_date)
+        const today = new Date()
+        return d.toDateString() === today.toDateString()
+      }).length
+
+      setStats({ activeCases, pendingTasks, meetingsToday: courtDates, unreadMessages: notifs.filter(n => !n.read).length })
+      setRecentCases(cases.slice(0, 5))
+      setNotifications(notifs.slice(0, 5))
+    } catch (err) {
+      console.error('Dashboard error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Default/Admin dashboard
+  const now = new Date()
+  const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening'
+  const dateStr = now.toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+
   return (
-    <div>
+    <div className="max-w-7xl mx-auto">
+      {/* Welcome Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold text-infinity-navy dark:text-white">Infinity OS Portal</h1>
-        <p className="text-infinity-navy/50 dark:text-white/50 text-sm font-sans mt-1">Welcome, {profile?.full_name}. Role: {role}</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-display font-bold text-infinity-navy dark:text-white">
+              {greeting}, {profile?.full_name?.split(' ')[0] || 'there'}
+            </h1>
+            <p className="text-sm text-infinity-navy/50 dark:text-white/40 mt-0.5">{dateStr}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-infinity-gold/10 text-infinity-gold">{roleLabel}</span>
+              <span className="text-[10px] text-infinity-navy/30 dark:text-white/30">{department} Department</span>
+            </div>
+          </div>
+          <Link href="/portal/cases" className="hidden sm:flex items-center gap-2 px-4 py-2 bg-infinity-navy hover:bg-infinity-navy-light text-white rounded-lg text-sm font-semibold transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+            New Case
+          </Link>
+        </div>
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-infinity-navy/10 dark:border-gray-700 p-8 text-center">
-        <p className="text-infinity-navy/60 dark:text-white/60">Your role-specific dashboard will be displayed here.</p>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        {[
+          { label: 'Active Cases', value: stats.activeCases, icon: '📁', bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-400', href: '/portal/cases' },
+          { label: 'Pending Tasks', value: stats.pendingTasks, icon: '📝', bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-400', href: '/portal/tasks' },
+          { label: 'Court Dates Today', value: stats.meetingsToday, icon: '🏛️', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400', href: '/portal/calendar' },
+          { label: 'Notifications', value: stats.unreadMessages, icon: '🔔', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-400', href: '#' },
+        ].map((stat, i) => (
+          <Link key={i} href={stat.href} className={`${stat.bg} rounded-xl p-4 border border-current/5 hover:shadow-md transition-shadow`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xl">{stat.icon}</span>
+              <span className={`text-2xl font-display font-bold ${stat.text}`}>{loading ? '—' : stat.value}</span>
+            </div>
+            <div className={`text-xs font-semibold ${stat.text} opacity-70`}>{stat.label}</div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Recent Cases */}
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-700">
+              <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white">Recent Cases</h2>
+              <Link href="/portal/cases" className="text-xs text-infinity-gold font-semibold hover:underline">View All →</Link>
+            </div>
+            {loading ? (
+              <div className="p-8 text-center text-sm text-gray-400">
+                <div className="w-5 h-5 border-2 border-infinity-gold border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                Loading...
+              </div>
+            ) : recentCases.length === 0 ? (
+              <div className="p-8 text-center">
+                <div className="text-3xl mb-2">📁</div>
+                <p className="text-sm text-gray-400">No cases yet.</p>
+                <Link href="/portal/cases" className="mt-2 inline-block text-xs text-infinity-gold font-semibold hover:underline">Create your first case →</Link>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                {recentCases.map(c => (
+                  <Link key={c.id} href="/portal/cases" className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${c.status === 'active' ? 'bg-green-500' : c.status === 'intake' ? 'bg-blue-500' : c.status === 'pending' ? 'bg-orange-500' : 'bg-gray-400'}`} />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-infinity-navy dark:text-white truncate">
+                        {c.case_number || 'Case'} {c.title && c.title !== 'Untitled Case' ? `— ${c.title}` : ''}
+                      </div>
+                      <div className="text-[11px] text-gray-400 truncate">{c.case_type} • {c.case_subtype || 'General'}</div>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold shrink-0 ${
+                      c.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                      c.status === 'intake' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                      c.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                      'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                    }`}>{c.status}</span>
+                    {c.urgency === 'emergency' && <span className="text-red-500 text-xs">⚠</span>}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+            {[
+              { label: 'New Case', icon: '📁', href: '/portal/cases', bg: 'bg-infinity-navy text-white hover:bg-infinity-navy-light' },
+              { label: 'Documents', icon: '📄', href: '/portal/documents', bg: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-infinity-navy dark:text-white hover:border-infinity-gold' },
+              ...(isOfficer ? [{ label: 'Approvals', icon: '✅', href: '/portal/approvals', bg: 'bg-infinity-gold text-infinity-navy hover:bg-infinity-gold-light' }] : []),
+              ...(isLegalStaff ? [{ label: 'AI Research', icon: '🤖', href: '/portal/intelligence', bg: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-infinity-navy dark:text-white hover:border-infinity-gold' }] : []),
+              ...(!isOfficer && isIntakeAgent ? [{ label: 'New Lead', icon: '📞', href: '/portal/leads', bg: 'bg-orange-500 text-white hover:bg-orange-600' }] : []),
+            ].slice(0, 4).map((a, i) => (
+              <Link key={i} href={a.href} className={`${a.bg} rounded-xl p-3 text-center transition-all text-xs font-semibold`}>
+                <div className="text-xl mb-1">{a.icon}</div>
+                {a.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Column: Notifications */}
+        <div className="space-y-4">
+          {/* Notifications */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+              <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white flex items-center gap-2">
+                🔔 Recent Notifications
+              </h2>
+            </div>
+            {notifications.length === 0 ? (
+              <div className="p-6 text-center text-xs text-gray-400">No new notifications</div>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-gray-700/50 max-h-64 overflow-y-auto">
+                {notifications.map((n, i) => (
+                  <div key={n._id || i} className={`px-4 py-2.5 ${!n.read ? 'bg-infinity-gold/5' : ''}`}>
+                    <div className="text-xs font-medium text-infinity-navy dark:text-white line-clamp-1">{n.title}</div>
+                    <div className="text-[10px] text-gray-400 line-clamp-1 mt-0.5">{n.message}</div>
+                    <div className="text-[9px] text-gray-300 mt-0.5">{n.createdAt ? new Date(n.createdAt).toLocaleString('en-ZA') : ''}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Firm Info Card */}
+          <div className="bg-infinity-navy dark:bg-gray-800 rounded-xl p-4 text-white">
+            <div className="text-xs font-bold mb-2 text-infinity-gold">INFINITY LEGAL (PTY) LTD</div>
+            <div className="space-y-1.5 text-[11px] text-white/60">
+              <div className="flex items-start gap-2">
+                <span className="shrink-0">📍</span>
+                <span>Block A, Eco Fusion 5, 1004 Witch-Hazel Avenue, Highveld Technopark, Centurion</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="shrink-0">📞</span>
+                <span>+27 12 940 1080</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="shrink-0">✉️</span>
+                <span>info@infinitylegal.co.za</span>
+              </div>
+            </div>
+            <div className="mt-3 pt-2 border-t border-white/10">
+              <div className="text-[10px] text-white/30">Managing Director: Tidimalo Tsatsi</div>
+            </div>
+          </div>
+
+          {/* Role Reminder */}
+          {isParalegal && (
+            <div className="p-3 bg-teal-50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800/30 rounded-xl">
+              <p className="text-[10px] text-teal-700 dark:text-teal-400">
+                <strong>Reminder:</strong> All documents require Officer approval before client delivery. You cannot sign legal filings or transmit final legal advice.
+              </p>
+            </div>
+          )}
+
+          {isIntakeAgent && (
+            <div className="p-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800/30 rounded-xl">
+              <p className="text-[10px] text-orange-700 dark:text-orange-400">
+                <strong>Note:</strong> You can qualify leads and schedule appointments. You cannot access active case files or provide legal advice.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
