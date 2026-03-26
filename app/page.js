@@ -135,7 +135,7 @@ export default function LandingPage() {
               {/* Floating badge - top right */}
               <div className="absolute -top-3 -right-3 bg-infinity-gold text-infinity-navy rounded-xl shadow-lg px-4 py-2 hidden lg:block">
                 <div className="text-sm font-bold font-display">Affordable</div>
-                <div className="text-xs font-sans">From R80/mo</div>
+                <div className="text-xs font-sans">From R95/mo</div>
               </div>
             </div>
           </div>
@@ -271,7 +271,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3" id="practice-heading">We Handle All Legal Matters</h2>
-            <p className="text-infinity-navy/50 font-sans max-w-lg mx-auto">From criminal defense to commercial disputes — our network covers it all</p>
+            <p className="text-infinity-navy/50 font-sans max-w-lg mx-auto">From criminal defense to civil disputes — our network covers it all</p>
           </div>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5" role="list">
@@ -281,8 +281,7 @@ export default function LandingPage() {
               { icon: '💼', name: 'Labour Law', desc: 'Dismissal, CCMA disputes' },
               { icon: '🏠', name: 'Property Law', desc: 'Evictions, transfers, disputes' },
               { icon: '💰', name: 'Debt Recovery', desc: 'Collections, insolvency' },
-              { icon: '📄', name: 'Civil Litigation', desc: 'Contracts, damages claims' },
-              { icon: '🏢', name: 'Commercial Law', desc: 'Business disputes, contracts' },
+              { icon: '📄', name: 'Civil Law', desc: 'Contracts, damages claims' },
               { icon: '🏛️', name: 'Administrative', desc: 'Government, licensing' },
             ].map((area, i) => (
               <div key={i} role="listitem" onClick={() => router.push('/intake')} className="bg-white rounded-xl p-6 border border-infinity-navy/10 hover:border-infinity-gold/40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group" aria-label={`${area.name} — ${area.desc}. Click to start AI intake.`} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push('/intake'); } }}>
@@ -300,19 +299,19 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-infinity-navy mb-3">Simple, Honest Pricing</h2>
           <p className="text-infinity-navy/50 font-sans mb-10 max-w-lg mx-auto">
-            Legal coverage from just R80/month. No hidden fees.
+            Legal coverage from just R95/month. No hidden fees.
           </p>
           <div className="grid sm:grid-cols-3 gap-6 mb-8">
             {[
-              { name: 'Shield', price: 80, coverage: 'R5,000', icon: '🛡️' },
-              { name: 'Guardian', price: 100, coverage: 'R10,000', icon: '⚖️', popular: true },
-              { name: 'Advocate', price: 110, coverage: 'R12,000', icon: '🏛️' },
+              { name: 'Labour Shield', price: 95, desc: 'Labour Law', icon: '💼' },
+              { name: 'Civil Guard', price: 115, desc: 'Civil Matters', icon: '📄', popular: true },
+              { name: 'Complete Cover', price: 130, desc: 'Civil, Labour, Foreign Nationals & more', icon: '🛡️' },
             ].map((plan, i) => (
               <div key={i} className={`rounded-2xl p-6 border-2 ${plan.popular ? 'border-infinity-gold bg-infinity-gold/5 shadow-lg' : 'border-infinity-navy/10 bg-white shadow-sm'} transition-all hover:shadow-lg`}>
                 <span className="text-3xl">{plan.icon}</span>
                 <h3 className="font-display font-bold text-infinity-navy mt-2">{plan.name}</h3>
                 <div className="text-3xl font-bold text-infinity-navy mt-1">R{plan.price}<span className="text-sm font-normal text-infinity-navy/40">/mo</span></div>
-                <p className="text-sm text-infinity-success font-semibold mt-2">Covers up to {plan.coverage}</p>
+                <p className="text-sm text-infinity-success font-semibold mt-2">{plan.desc}</p>
               </div>
             ))}
           </div>

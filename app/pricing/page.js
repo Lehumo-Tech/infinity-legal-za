@@ -7,30 +7,59 @@ import { useAuth } from '@/contexts/AuthContext'
 import NotificationBell from '@/components/NotificationBell'
 
 const PLAN_META = {
-  shield: {
-    displayName: 'Shield',
-    tagline: 'Essential legal protection',
+  'labour shield': {
+    displayName: 'Labour Shield',
+    tagline: 'Labour law protection',
+    icon: '💼',
+    description: 'Labour Law',
+    color: 'from-slate-50 to-white',
+    borderColor: 'border-infinity-navy/10',
+    btnClass: 'bg-infinity-navy text-white hover:bg-infinity-navy-light',
+  },
+  'civil guard': {
+    displayName: 'Civil Guard',
+    tagline: 'Civil matters coverage',
+    icon: '📄',
+    description: 'Civil Matters',
+    color: 'from-infinity-gold/5 to-white',
+    borderColor: 'border-infinity-gold',
+    btnClass: 'bg-infinity-gold text-infinity-navy hover:bg-infinity-gold-light',
+    popular: true,
+  },
+  'complete cover': {
+    displayName: 'Complete Cover',
+    tagline: 'Full spectrum legal protection',
     icon: '🛡️',
-    coverageLimit: 'R5,000',
+    description: 'Civil, Labour, Foreign Nationals, Estate & more',
+    color: 'from-infinity-navy/5 to-white',
+    borderColor: 'border-infinity-navy/20',
+    btnClass: 'bg-infinity-navy text-white hover:bg-infinity-navy-light',
+  },
+  // Legacy plan names (fallback)
+  shield: {
+    displayName: 'Labour Shield',
+    tagline: 'Labour law protection',
+    icon: '💼',
+    description: 'Labour Law',
     color: 'from-slate-50 to-white',
     borderColor: 'border-infinity-navy/10',
     btnClass: 'bg-infinity-navy text-white hover:bg-infinity-navy-light',
   },
   guardian: {
-    displayName: 'Guardian',
-    tagline: 'Comprehensive peace of mind',
-    icon: '⚖️',
-    coverageLimit: 'R10,000',
+    displayName: 'Civil Guard',
+    tagline: 'Civil matters coverage',
+    icon: '📄',
+    description: 'Civil Matters',
     color: 'from-infinity-gold/5 to-white',
     borderColor: 'border-infinity-gold',
     btnClass: 'bg-infinity-gold text-infinity-navy hover:bg-infinity-gold-light',
     popular: true,
   },
   advocate: {
-    displayName: 'Advocate',
-    tagline: 'Maximum coverage & support',
-    icon: '🏛️',
-    coverageLimit: 'R12,000',
+    displayName: 'Complete Cover',
+    tagline: 'Full spectrum legal protection',
+    icon: '🛡️',
+    description: 'Civil, Labour, Foreign Nationals, Estate & more',
     color: 'from-infinity-navy/5 to-white',
     borderColor: 'border-infinity-navy/20',
     btnClass: 'bg-infinity-navy text-white hover:bg-infinity-navy-light',
@@ -167,7 +196,7 @@ export default function PricingPage() {
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
-                        Covers up to {meta.coverageLimit}
+                        {meta.description || 'Legal Coverage'}
                       </div>
                     </div>
 
@@ -271,7 +300,7 @@ export default function PricingPage() {
                 <span className="text-3xl font-bold text-infinity-navy">R{selectedPlan.price_zar}</span>
               </div>
               <div className="text-xs text-infinity-navy/40 font-sans">
-                Coverage up to {PLAN_META[selectedPlan.name]?.coverageLimit} per matter
+                {PLAN_META[selectedPlan.name]?.description || 'Legal Coverage'}
               </div>
             </div>
 
