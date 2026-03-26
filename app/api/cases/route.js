@@ -92,20 +92,29 @@ export async function POST(request) {
     const body = await request.json()
     const { title, case_type, description, urgency, court_date, court_location, case_subtype } = body
 
-    // Generate case number
-    const caseNumber = 'INF-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-4)
+    // Auto-generate matter number: IL-{year}-{sequential}
+    let caseNumber
+    try {
+      const year = new Date().getFullYear()
+      const { count } = await supabaseAdmin.from('cases').select('id', { count: 'exact', head: true })
+      const seq = String((count || 0) + 1).padStart(4, '0')
+      caseNumber = `IL-${year}-${seq}`
+    } catch {
+      caseNumber = 'IL-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-4)
+    }
 
     // Build the insert object with only columns that exist in the schema
     const insertData = {
       case_number: caseNumber,
-      client_id: user.id,
+      client_id: body.client_id || user.id,
       case_type: case_type || 'other',
       case_subtype: case_subtype || title || '',
-      status: 'intake',
+      status: body.status || 'new',
       urgency: urgency || 'medium',
       court_date: court_date || null,
       court_location: court_location || null,
-      summary_encrypted: description || ''
+      summary_encrypted: description || '',
+      attorney_id: body.attorney_id || null,
     }
 
     // Try with title/description columns first (if migration was applied)
@@ -155,7 +164,7 @@ export async function POST(request) {
     // Send notification to the client that their case was created
     try {
       await createNotification({
-        userId: user.id,
+        userId: body.client_id || user.id,
         type: 'case_update',
         title: 'Case Created',
         message: `Your case "${normalizedCase.title}" (${caseNumber}) has been created and is being processed.`,
@@ -164,6 +173,25 @@ export async function POST(request) {
       })
     } catch (notifErr) {
       console.error('Failed to send case creation notification:', notifErr)
+    }
+
+    // Add timeline entry for case creation
+    try {
+      const { getDb } = require('@/lib/mongodb')
+      const db = await getDb()
+      await db.collection('case_timeline').insertOne({
+        id: `tl_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        caseId: data.id,
+        type: 'status',
+        action: 'case_created',
+        description: `Case ${caseNumber} created`,
+        userId: user.id,
+        userName: 'System',
+        metadata: { caseNumber, caseType: case_type, status: body.status || 'new' },
+        createdAt: new Date().toISOString(),
+      })
+    } catch (tlErr) {
+      console.error('Failed to add timeline entry:', tlErr)
     }
 
     return NextResponse.json({ case: normalizedCase }, { status: 201 })
@@ -213,10 +241,14 @@ export async function PUT(request) {
     // Send notifications on status change
     if (updates.status) {
       const statusLabels = {
+        'new': 'New',
         'intake': 'Intake',
         'active': 'Active',
         'under_review': 'Under Review',
+        'pending_court': 'Pending Court',
+        'settlement': 'In Settlement',
         'closed': 'Closed',
+        'archived': 'Archived',
         'resolved': 'Resolved',
         'pending': 'Pending',
       }

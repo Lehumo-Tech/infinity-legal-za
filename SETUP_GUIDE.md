@@ -13,7 +13,7 @@ Your Infinity Legal platform is ready to run! The application is currently runni
 - ✅ Rate limiting on API routes
 
 ### Live URL:
-**https://legal-intake-staging-1.preview.emergentagent.com**
+**https://case-workspace-1.preview.emergentagent.com**
 
 ---
 
@@ -202,7 +202,7 @@ NEXT_PUBLIC_BASE_URL=https://infinitylegal.org
 
 ### 1. Test Health Endpoint:
 ```bash
-curl https://legal-intake-staging-1.preview.emergentagent.com/api/health
+curl https://case-workspace-1.preview.emergentagent.com/api/health
 ```
 
 Should return:

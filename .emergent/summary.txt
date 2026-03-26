@@ -1,153 +1,139 @@
 <analysis>**original_problem_statement:**
-The user is building the Infinity Legal Platform, a comprehensive legal tech SaaS for the South African market. 
-**PRODUCT REQUIREMENTS:**
-- Client-Facing Features: AI legal intake wizard, multi-step application form, booking system, multi-tiered subscription model.
-- Virtual Office / Intranet (Infinity OS): A multi-tier legal staffing intranet with strict Role-Based Access Control (RBAC). 
-- In the latest request, the user provided a **massive enterprise specification upgrade**, demanding best industry standards and full modules for: Executive Leadership hierarchy, Case Database Structure, Document Management, Communication Hub, Calendar & Scheduling, Time Tracking & Billing, Knowledge Management, Compliance & Risk Management, HR & Administration, specific UI/UX Design Principles, and complex Security/RBAC mapping.
+The user is building the Infinity Legal Platform, a comprehensive legal tech SaaS for the South African market. In the most recent requirement, the user introduced **Module 2: Case Management System**, specifying a robust Case Creation Flow (converting from intake, generating sequential Matter Numbers), a tabbed Case Workspace (Timeline, Documents, Notes, Billing, Messages, Tasks), Status Workflows (new → active → pending_court, etc.), and mapping Organizational Hierarchy to specific roles.
 
 **User's preferred language**: English (INSTRUCT next agent to respond in English only)
 
 **what currently exists?** 
-A robust Next.js 14 full-stack app using Supabase (PostgreSQL + Auth) and MongoDB (used flexibly for local notifications and new schema-less case metadata). The app features public marketing/intake pages, AI endpoints (via Emergent proxy), and a secure internal portal (). The agent recently performed a massive production-readiness audit (adding caching bypasses and error boundaries), fixed auth flows, implemented case creation with Prescription Period tracking, and just began a complete architectural overhaul of the Portal Layout and RBAC to match the user's new enterprise-level specification.
+A robust Next.js 14 full-stack app utilizing Supabase (PostgreSQL + Auth) and heavily leveraging MongoDB for schema-less enterprise features. The agent successfully built and fully tested (frontend & backend) the Phase 1 Enterprise Modules: Calendar, Billing, HR Leave, Documents, Messages, Announcements, Knowledge Management, and AI endpoints. The agent fixed the previous PKCE Supabase Auth bug. Just before handoff, the agent began implementing the massive Module 2: Case Workspace request, scaffolding several new MongoDB-backed APIs and entirely overwriting the Case portal UI to support the requested tabs and workflow logic.
 
 **Last working item**:
-- **Last item agent was working:** Implementing the massive enterprise spec dump (from user message 309). The agent completely overhauled , , , and  to match the new firm hierarchy, and scaffolded 5 new module pages (Calendar, Billing, Reports, Settings, HR).
+- **Last item agent was working:** Implementing **Module 2: Case Management System**. The agent generated backend APIs for case sub-routes (, , , , , ), updated  to auto-generate Matter Numbers (e.g., IL-2026-001) and handle status workflows, and overwrote  to build the comprehensive tabbed workspace.
 - **Status:** IN PROGRESS
-- **Agent Testing Done:** N (Files successfully compiled, but UI and logic have not been tested).
-- **Which testing method agent to use?** Frontend testing agent and manual testing by screenshot tool to verify the new complex portal dashboard and sidebar layout render correctly for different user roles.
+- **Agent Testing Done:** N (The agent built the files but the session ended before compilation validation or testing could occur).
+- **Which testing method agent to use?** Frontend testing agent and manual testing by screenshot tool to ensure the massively overhauled  renders without crashing. Backend testing agent to verify the new  endpoints.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-  Issue 1: Verify Supabase Auth PKCE vs Session regression (P0)
-  Issue 2: Missing  Supabase table (P1)
+  Issue 1: Validate and stabilize the new Module 2 Case Workspace (P0)
   
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: Agent configured  in Supabase client to fix a blank wall error during the reset-password flow. However, this caused 401 Unauthorized errors for logged-in staff trying to create cases. The agent *reverted* the PKCE flag to restore case creation.
-     - Next debug checklist: Check  flow again using screenshot tool/backend testing to see if reverting PKCE broke the forgot password flow. Find a stable hybrid auth configuration.
-     - Why fix this issue and what will be achieved with the fix? Ensures both Password Reset (client-side) and API Session Auth (server-side) work concurrently without throwing 401s.
+     - Attempted fixes: The agent just used  to create 7 new APIs and overwrote  to include the complex tabbed UI (Timeline, Notes, Tasks, etc.).
+     - Next debug checklist: Check if the app still compiles. Use the screenshot tool on . Validate that clicking through the new tabs works and fetches from the newly created MongoDB routes.
+     - Why fix this issue and what will be achieved with the fix? Secures the delivery of the user's massive Module 2 Case Management specification.
      - Status: TESTING PENDING
-     - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix? Both
-     - Blocked on other issue: None
-  - Issue 2: 
-     - Attempted fixes: API route  throws a PostgreSQL  error because the table  does not exist in Supabase. Agent added a try/catch to fail gracefully.
-     - Next debug checklist: Create the  table in Supabase via DDL migration script, or migrate the feature to use MongoDB (as was done with case metadata).
-     - Why fix this issue and what will be achieved with the fix? Enables the actual saving of privileged legal strategy notes.
-     - Status: NOT STARTED
      - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Backend
+     - Should Test frontend/backend/both after fix? Both
      - Blocked on other issue: None
 
 **In progress Task List**:
-  Task 1: Enterprise Portal Overhaul & New Modules
-     - Where to resume: Review the newly scaffolded pages (, , , , ). Fill them with logic aligned to the user's Message 309 specs.
-     - What will be achieved with this? Fulfills the user's massive enterprise requirements dump.
+  Task 1: Module 2 - Case Management Logic Integration
+     - Where to resume: Review  and . Ensure that when a case is created, a Matter Number is generated successfully and the initial timeline entry is written to MongoDB. Verify the status workflow transitions.
+     - What will be achieved with this? Fulfills the Core Logic requirements for Case Management.
      - Status: IN PROGRESS
      - Should Test frontend/backend/both after fix? Both
      - Blocked on something: None
 
 **Upcoming and Future Tasks**
     Upcoming Tasks:
-    - **(P0) Document Management Implementation:** Templates library, Check-in/Check-out system, version control, role-based access permissions.
-    - **(P0) Time Tracking & Billing:** Hourly tracking, expenses, invoice generation, client payment portal.
-    - **(P1) Communication Hub:** Internal messaging, group chats, announcements, video conferencing integration.
-    - **(P1) Knowledge Management & Compliance:** Precedents database, conflict checking systems, audit trails for document access.
+    - **(P1) Convert Intake to Case:** Feature in Case Creation where an attorney can pull data from an existing intake submission via ID or client email to prepopulate the case form.
+    - **(P1) Document Versioning & Check-in/out:** Enhance the new Case Document tab to support file version control and lock/unlock status.
+    - **(P2) Case Archiving:** Implement read-only view for closed cases older than 30 days.
     
     Future Tasks:
-    - **(P2) AI Integration across new modules:** Per user request (remember to integrate ai functionality where possible).
-    - **(P2) PayFast Integration:** On hold from a previous session, but required for the billing/subscription modules.
+    - **(P2) PayFast Integration:** The user explicitly requested to **hold** this integration for now. Do not implement until instructed.
 
 **Completed work in this session**
-- Bug sweep: fixed 404s and verified public routing (DONE).
-- Configured  for Supabase PKCE password reset flow (DONE).
-- Added real-time MongoDB notifications to Document Workflow and Cases API (DONE).
-- Performance optimization: Replaced  and added  across APIs (DONE).
-- Added Case Creation UI for Legal Officers with Prescription Period tracking (DONE).
-- Built  using MongoDB to bypass Supabase schema restrictions (DONE).
-- Production-Readiness Audit: Added  to 20 stale-cached API routes, updated Next.js 14  in dynamic routes (DONE).
-- Scaffolded new Enterprise portal layout, Dashboard, and expanded RBAC engine (DONE).
+- Verified and stabilized Supabase PKCE Auth flow ( & ) (DONE)
+- Migrated  to MongoDB to fix API crashes (DONE)
+- Built enterprise backend APIs: Calendar, Billing, HR, Documents, Messages, Announcements, Knowledge (DONE)
+- Built and integrated portal UIs for all enterprise modules (DONE)
+- Passed comprehensive frontend and backend testing for Phase 1 enterprise features (DONE)
+- Scaffolded Module 2 Case Workspace APIs and updated main Case UI (DONE - pending tests)
 
 **Earlier issues found/mentioned but not fixed**
-   Issue 1: Missing schema columns in Supabase
-   - Debug checklist:  and  were referenced but missing from the Supabase  table. Agent patched API queries to use  and removed bad selections. 
-   - Why to solve this issue and what will be achieved with this? Prevents sudden 500 errors on dashboard loads.
-   - Should Test frontend/backend/both after fix: Backend
-   - Is recurring issue? Y (Hardcoded schema assumptions)
+None explicitly from the history, though reliance on hardcoded Supabase schemas continues to be bypassed by using MongoDB.
 
 **Known issue recurrence from previous fork**
-  - Issue recurrence in previous fork: Next.js Route Caching for Supabase Data.
-  - Recurrence count: 2 (Agent had to forcefully apply  to 20 API routes this session).
-  - Status: RESOLVED (But monitor any newly created GET routes).
+  - Issue recurrence in previous fork: Route Caching for Supabase Data.
+  - Recurrence count: 2
+  - Status: RESOLVED (Agent utilized  but remain vigilant for new Next.js GET routes).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- Framework: Next.js 14 App Router (App requires  for dynamic routes).
-- Databases: Supabase (Primary Relational Data/Auth) + MongoDB (Notifications/Metadata workaround for locked schemas).
-- Authorization: Custom RBAC middleware relying on JWT and .
+- Next.js 14 App Router (App requires  for dynamic routes).
+- Databases: Supabase (Auth / Core Legacy data) + MongoDB (Primary store for ALL new enterprise modules and case features).
+- Architecture: Heavy use of tabbed UI components fetching decoupled MongoDB APIs.
 
 **key DB schema**
-- **Supabase**: , , , 
-- **MongoDB**:  (system alerts),  (prescription periods, budgets, resource allocation).
+- **Supabase**: , , 
+- **MongoDB**: Heavily utilized now. New collections created dynamically for , , , , , , , etc.
 
 **changes in tech stack**
-- Agent increasingly utilizing **MongoDB** to store new feature data (like Case Metadata/Prescription periods) because migrating the Supabase PostgreSQL schema via DDL scripts requires manual SQL execution which is rigid.
+- The app has effectively migrated almost all **new feature logic to MongoDB** to bypass the rigid SQL definitions in Supabase, keeping Supabase strictly for Auth and legacy basic tables. Link MongoDB documents via the Supabase .
 
 **All files of reference** 
--  (Core permissions engine - overhauled)
--  (Frontend role definitions)
--  (New Enterprise sidebar navigation)
--  (New Enterprise dashboard widgets)
--  &  (Auth recovery)
--  (MongoDB case data extension)
+-  (Entirely overwritten for Module 2 Case Workspace)
+-  (Updated for Matter generation)
+-  (New case workspace endpoints)
+-  (Updated with test logs for the enterprise modules)
 
 **Areas that need refactoring**:
-- Auth flow: The app is caught between Supabase's implicit session persistence and PKCE flow. This needs architectural harmonization.
+- Data fragmentation: Core case data is in Supabase PostgreSQL, while timeline, tasks, and notes are in MongoDB. Ensure deletion or archiving protocols cover both databases.
 
 **key api endpoints**
-- : Creates a case.
-- : Fetches MongoDB-extended case fields (prescription period).
-- : Exchanges PKCE code for session token.
+- : Creates a case, generates sequential Matter Number, triggers timeline event.
+- : Fetches chronological feed for a specific case.
 
 **Critical Info for New Agent**
-- **MASSIVE SPEC UPDATE:** Review User Message 309. The user provided an enterprise-grade PRD mid-session. The previous simple Legal Officer roles are now expanded to Managing Director, Senior Partners, Associates, Paralegals, etc.
-- **MONGODB AS A WORKAROUND:** Because the Supabase schema ( files) is hard to alter dynamically, the previous agent brilliantly started using MongoDB () to store complex JSON metadata (like Prescription periods) tied to Supabase UUIDs. Continue this pattern for rapid feature delivery if Supabase schemas are restrictive.
-- **ROUTE CACHING:** ALWAYS apply  to new Next.js API GET routes reading from databases.
+- **MASSIVE CASE MANAGEMENT SPEC:** Review the user's very last message (Message 144). The agent has started on this by overwriting  and creating backend sub-routes. Your **first step** must be to check if the app is still compiling cleanly, take screenshots of the  UI, and fix any bugs introduced by the rapid file creation before moving on.
+- **HOLD PAYFAST:** The user explicitly stated: do everything and still hold the payfast integration for now.
+- **MONGODB USAGE:** Continue using MongoDB for all new features (Timeline, Notes, Tasks) to ensure fast iteration.
 
 **documents and test reports created in this job**
--  (Contains extensive logs from the backend production audit).
+  - 
 
 **Last 10 User Messages and any pending HUMAN messages** 
-1. **User:** where di we go to create a case as a legal officer
-2. **User:** i need a screenshot
-3. **User:** the client is logged in and cannot access the case creation (Agent added creation form).
-4. **User:** i also need a prescription period because timefames are important... (Agent built metadata API using MongoDB).
-5. **User:** i still cannot create a ase can you please do what im paying you to do (Agent fixed PKCE 401 bug).
-6. **User:** i need you to pay attention . this app is for the real world . we need you to employ best industry standards please revisit everything... (Agent did a massive production audit & fixed 20+ routes).
-7. **User:** yes please. also i need you to consider the following: executive leadership... [MASSIVE SPEC DUMP OF ENTIRE SYSTEM]
-8. **User:** do it all (Agent overhauled RBAC, Layout, AuthContext, and scaffolded new module files).
+1. **User:** please continue as planned (Agent built Phase 1 APIs).
+2. **User:** do everything and still hold the payfast integration for now (Agent built Phase 2 modules).
+3. **User:** okay do it all (Agent ran frontend tests and verified PKCE Auth).
+4. **User:** provide preview link
+5. **User:** wake up the servers
+6. **User:** Module 2: Case Management System Core Logic: Case Creation Flow... [MASSIVE SPECIFICATION DUMP] (Agent began scaffolding APIs and updated Case UI. Handed off before testing).
 *No pending human messages.*
 
 **Project Health Check:**
-- Broken: Potential regression on  flow due to PKCE rollback.
-- Mocked:  API catches errors gracefully but doesn't save due to missing DB table.
+- Broken: The newly overwritten Case Workspace () is entirely untested and may crash or have compilation errors. Needs immediate verification.
+- Mocked: None.
 
 **3rd Party Integrations** 
-- OpenAI SDK / Gemini 2.5 Flash — uses Emergent LLM Key
+- OpenAI GPT-4o / Gemini — uses Emergent LLM Key
 - Supabase (Database/Auth) — requires User API Key
-- MongoDB (Notifications/Metadata) — Local instance
-- Brevo (Emails) — requires User API Key
+- MongoDB (Data Store) — Local instance
 
 **Testing status**
-- Testing agent used after significant changes: YES (Backend testing passed 27/29)
+- Testing agent used after significant changes: YES (For initial Enterprise Modules). NO (For the newest Module 2 Case Workspace updates).
 - Troubleshoot agent used after agent stuck in loop: NO
 - Test files created: None
-- Known regressions: Supabase  reversion might have broken the Forgot Password email link flow again.
+- Known regressions: None known, but high risk in the untested  file.
 
 **Credentials to test flow:**
-- Use UI signup for standard accounts. (Check RBAC logic for role escalation).
+- Use UI signup for standard accounts, elevate roles in Supabase/AuthContext if needed.
 
 **What agent forgot to execute**
-- The agent reverted  in  to fix a 401 error blocking Case Creation. However, the agent *forgot to test* if this reversion broke the Forgot Password redirect link flow that they had solved earlier in the session using that exact PKCE setting. This must be verified.</analysis>
+- The agent successfully scaffolded the user's new Module 2: Case Management request, but the session ended before the agent could **compile the code, verify the UI with the screenshot tool, or run the testing agents**. Validation of these new files must be your top priority.
+
+**Debugging checklist for current issue**
+    Issue: Validate newly scaffolded Case Management UI and APIs
+    
+    Frontend files to check: 
+    -  (Check if the new tabbed logic renders without throwing React hooks errors)
+  
+    Backend files to check:
+    -  (Verify Matter Number generator works)
+    - 
+
+    Database to check:
+    - MongoDB (Ensure new collections for , , etc., are functioning)</analysis>
