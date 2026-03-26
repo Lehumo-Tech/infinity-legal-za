@@ -303,15 +303,16 @@ export default function LandingPage() {
           </p>
           <div className="grid sm:grid-cols-3 gap-6 mb-8">
             {[
-              { name: 'Labour Shield', price: 95, desc: 'Labour Law', icon: '💼' },
-              { name: 'Civil Guard', price: 115, desc: 'Civil Matters', icon: '📄', popular: true },
-              { name: 'Complete Cover', price: 130, desc: 'Civil, Labour, Foreign Nationals & more', icon: '🛡️' },
+              { name: 'Labour Shield', price: 95, desc: 'Labour Law', coverage: 'R72,300', icon: '💼' },
+              { name: 'Civil Guard', price: 115, desc: 'Civil Matters', coverage: 'R78,500', icon: '📄', popular: true },
+              { name: 'Complete Cover', price: 130, desc: 'Civil, Labour, Foreign Nationals & more', coverage: 'R100,000', icon: '🛡️' },
             ].map((plan, i) => (
               <div key={i} className={`rounded-2xl p-6 border-2 ${plan.popular ? 'border-infinity-gold bg-infinity-gold/5 shadow-lg' : 'border-infinity-navy/10 bg-white shadow-sm'} transition-all hover:shadow-lg`}>
                 <span className="text-3xl">{plan.icon}</span>
                 <h3 className="font-display font-bold text-infinity-navy mt-2">{plan.name}</h3>
                 <div className="text-3xl font-bold text-infinity-navy mt-1">R{plan.price}<span className="text-sm font-normal text-infinity-navy/40">/mo</span></div>
-                <p className="text-sm text-infinity-success font-semibold mt-2">{plan.desc}</p>
+                <p className="text-sm text-infinity-success font-semibold mt-2">Covers up to {plan.coverage}</p>
+                <p className="text-xs text-infinity-navy/50 mt-1">{plan.desc}</p>
               </div>
             ))}
           </div>
