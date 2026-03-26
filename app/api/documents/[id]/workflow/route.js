@@ -177,9 +177,9 @@ export async function PUT(request, { params }) {
       const notifyUsers = new Set()
       if (doc.prepared_by_paralegal) notifyUsers.add(doc.prepared_by_paralegal)
       if (doc.case_id) {
-        const { data: caseData } = await supabaseAdmin.from('cases').select('client_id, lead_attorney_id').eq('id', doc.case_id).single()
+        const { data: caseData } = await supabaseAdmin.from('cases').select('client_id, attorney_id').eq('id', doc.case_id).single()
         if (caseData?.client_id) notifyUsers.add(caseData.client_id)
-        if (caseData?.lead_attorney_id) notifyUsers.add(caseData.lead_attorney_id)
+        if (caseData?.attorney_id) notifyUsers.add(caseData.attorney_id)
       }
       notifyUsers.delete(user.id) // Don't notify the signer themselves
       if (notifyUsers.size > 0) {

@@ -32,7 +32,7 @@ export async function GET(request) {
     const status = searchParams.get('status')
     const role = searchParams.get('role') || 'client'
 
-    let query = supabaseAdmin.from('cases').select('id, case_number, case_type, case_subtype, status, urgency, client_id, attorney_id, lead_attorney_id, support_paralegal_id, court_date, court_location, summary_encrypted, notes_encrypted, created_at, updated_at')
+    let query = supabaseAdmin.from('cases').select('id, case_number, case_type, case_subtype, status, urgency, client_id, attorney_id, support_paralegal_id, court_date, court_location, summary_encrypted, notes_encrypted, created_at, updated_at')
 
     if (role === 'attorney') {
       // For attorneys, get cases where they are the attorney
@@ -234,9 +234,9 @@ export async function PUT(request) {
           })
         }
         // Notify lead attorney if different from updater
-        if (data.lead_attorney_id && data.lead_attorney_id !== user.id) {
+        if (data.attorney_id && data.attorney_id !== user.id) {
           await createNotification({
-            userId: data.lead_attorney_id,
+            userId: data.attorney_id,
             type: 'case_update',
             title: 'Case Status Updated',
             message: `Case "${normalizedCase.title}" (${data.case_number}) status changed to "${statusLabel}".`,
