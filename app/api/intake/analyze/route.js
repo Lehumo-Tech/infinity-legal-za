@@ -142,6 +142,30 @@ export async function POST(request) {
       analysis.urgency = 'high'
     }
 
+    // Save intake submission to MongoDB for attorney review
+    let intakeId = null
+    try {
+      const { getDb } = require('@/lib/mongodb')
+      const db = await getDb()
+      intakeId = `intake_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+      const user = await getUserFromRequest(request)
+      await db.collection('intake_submissions').insertOne({
+        id: intakeId,
+        userId: user?.id || null,
+        userEmail: user?.email || null,
+        responses: { problem: responses.problem, timeline: responses.timeline, outcome: responses.outcome, parties: responses.parties, documents: responses.documents },
+        selectedCategory: selectedCategory || null,
+        isUrgent: isUrgent || false,
+        analysis,
+        status: 'pending', // pending, reviewed, converted, dismissed
+        convertedCaseId: null,
+        convertedCaseNumber: null,
+        createdAt: new Date().toISOString(),
+      })
+    } catch (mongoErr) {
+      console.error('Failed to save intake to MongoDB:', mongoErr)
+    }
+
     // Map category to case_type for database
     const categoryToCaseType = {
       'Criminal Law': 'criminal',
@@ -200,6 +224,7 @@ export async function POST(request) {
     return NextResponse.json({
       ...analysis,
       caseId,
+      intakeId,
       savedToAccount: !!caseId
     })
 

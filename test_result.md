@@ -212,6 +212,42 @@ backend:
         - working: true
           agent: "testing"
           comment: "Comprehensive testing completed successfully. All 5 test scenarios passed: 1) Basic employment dismissal analysis returns proper JSON structure with all required fields (category: Labour Law, urgency: high). 2) Urgent criminal case correctly escalates urgency to 'emergency'. 3) Empty problem validation returns 400 error as expected. 4) Empty body validation returns 400 error as expected. 5) Property law case with optional fields processes correctly. API response times 6-9 seconds as expected for AI processing. All validation, error handling, and JSON structure requirements working perfectly."
+        - working: true
+          agent: "main"
+          comment: "UPDATED: Modified to save intake submissions to MongoDB 'intake_submissions' collection for attorney review. Now returns intakeId for tracking. All existing functionality preserved."
+        - working: true
+          agent: "testing"
+          comment: "Convert Intake to Case feature testing completed successfully. AI intake analysis now properly saves submissions to MongoDB with intakeId for tracking. All 11 test scenarios passed: 1) Authentication via Supabase working correctly. 2) GET /api/intakes without auth returns 401 as expected. 3) GET /api/intakes with auth returns intake list successfully. 4) POST /api/intake/analyze creates new intake with unique intakeId and AI analysis (Personal Injury, high urgency, 90% confidence). 5) New intake appears in list with 'pending' status. 6) Convert without auth returns 401 as expected. 7) Convert with auth successfully creates case IL-2026-0021. 8) Intake status changes to 'converted' with case number. 9) Duplicate convert returns 409 conflict as expected. 10) Tasks API working without updated_at error. 11) Filtering by status and category working correctly. All authentication, validation, and core functionality working perfectly."
+
+  - task: "Intakes Listing API"
+    implemented: true
+    working: true
+    file: "app/api/intakes/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "NEW: GET /api/intakes - Lists AI intake submissions from MongoDB. Requires authentication. Supports filtering by status, category, urgency, and search. Returns intake submissions with analysis data for attorney review."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All authentication and functionality working correctly: 1) GET /api/intakes without auth correctly returns 401 Unauthorized. 2) GET /api/intakes with auth successfully retrieves intake submissions list. 3) Filtering by status (pending) and category (Criminal Law) working correctly. 4) Search functionality implemented correctly. All MongoDB integration working perfectly. API ready for production use."
+
+  - task: "Intake to Case Conversion API"
+    implemented: true
+    working: true
+    file: "app/api/intakes/[id]/convert/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "NEW: POST /api/intakes/[id]/convert - Converts intake submission to case in Supabase. Requires authentication. Creates case with proper case number (IL-YYYY-NNNN), updates intake status to 'converted', saves AI analysis as case note, creates timeline entries, sends notifications. Prevents duplicate conversions with 409 response."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All authentication and conversion functionality working correctly: 1) POST /api/intakes/[id]/convert without auth correctly returns 401 Unauthorized. 2) POST /api/intakes/[id]/convert with auth successfully converts intake to case with proper case number (IL-2026-0021). 3) Intake status updates to 'converted' with case number tracking. 4) Duplicate conversion attempts correctly return 409 Conflict. 5) Case creation includes AI analysis as case note and timeline entries. All Supabase and MongoDB integration working perfectly. API ready for production use."
 
   - task: "Attorneys Listing API"
     implemented: true
@@ -715,11 +751,15 @@ frontend:
 agent_communication:
     - agent: "testing"
       message: "CRITICAL FLOWS TESTING COMPLETED SUCCESSFULLY: All 6 critical flows specified in the review request are working perfectly (100% pass rate). Fixed one minor issue with case creation status constraint. Supabase authentication, AI APIs, case workflow, health check, and AI intake all functioning correctly. System is production-ready for the specified critical flows. No major issues found."
+    - agent: "main"
+      message: "NEW FEATURE: Convert Intake to Case. Built 3 new APIs: GET /api/intakes (list), POST /api/intakes/[id]/convert (convert), and modified POST /api/intake/analyze to save submissions to MongoDB. Created portal UI at /portal/intakes with stats, filters, detail view, and convert modal. All APIs tested manually with auth tokens - list, convert, duplicate protection all working. Please test: 1) GET /api/intakes (auth required, returns submissions), 2) POST /api/intakes/{id}/convert (converts intake to case, saves AI analysis as case note), 3) Duplicate convert returns 409. Test user: test_intake@infinitylegal.org / TestPass2026!"
+    - agent: "testing"
+      message: "CONVERT INTAKE TO CASE TESTING COMPLETED SUCCESSFULLY: All 11 test scenarios passed (100% success rate). ✅ Authentication via Supabase working correctly. ✅ GET /api/intakes properly secured (401 without auth, returns intake list with auth). ✅ POST /api/intake/analyze creates intake submissions in MongoDB with intakeId tracking. ✅ POST /api/intakes/[id]/convert successfully converts intakes to cases with proper case numbers (IL-2026-0021), updates status to 'converted', prevents duplicates (409). ✅ GET /api/tasks working without updated_at column error. ✅ Filtering by status and category working correctly. All authentication, validation, MongoDB/Supabase integration, and core functionality working perfectly. Feature is production-ready."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 9
+  test_sequence: 10
   run_ui: false
 
   - task: "Real-time Notifications on Document Workflow"
