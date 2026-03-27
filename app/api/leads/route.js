@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import { getDb } from '@/lib/mongodb'
 import { requirePermission, createAuditLog, ROLES } from '@/lib/rbac'
 import { createNotification } from '@/lib/notifications'
 export const dynamic = 'force-dynamic'
@@ -12,35 +12,57 @@ export async function GET(request) {
     const { user, error, status } = await requirePermission(request, 'VIEW_LEADS')
     if (error) return NextResponse.json({ error }, { status })
 
-  const role = user.profile?.role
-  const url = new URL(request.url)
-  const statusFilter = url.searchParams.get('status')
-  const limit = parseInt(url.searchParams.get('limit') || '50')
+    const role = user.profile?.role
+    const url = new URL(request.url)
+    const statusFilter = url.searchParams.get('status')
+    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const search = url.searchParams.get('search')
 
-  let query = supabaseAdmin
-    .from('leads')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(limit)
+    const db = await getDb()
+    const filter = {}
 
-  // Intake agents only see their own leads
-  if (role === ROLES.INTAKE_AGENT) {
-    query = query.eq('intake_agent_id', user.id)
-  }
+    // Intake agents only see their own leads
+    if (role === ROLES.INTAKE_AGENT) {
+      filter.intake_agent_id = user.id
+    }
 
-  // Paralegals see leads assigned to them
-  if (role === ROLES.PARALEGAL) {
-    query = query.eq('assigned_paralegal_id', user.id)
-  }
+    // Paralegals see leads assigned to them
+    if (role === ROLES.PARALEGAL) {
+      filter.assigned_paralegal_id = user.id
+    }
 
-  if (statusFilter) {
-    query = query.eq('status', statusFilter)
-  }
+    if (statusFilter && statusFilter !== 'all') {
+      filter.status = statusFilter
+    }
 
-  const { data, error: dbErr } = await query
-  if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
+    if (search) {
+      filter['$or'] = [
+        { full_name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ]
+    }
 
-  return NextResponse.json({ leads: data || [] })
+    const leads = await db.collection('leads')
+      .find(filter)
+      .sort({ created_at: -1 })
+      .limit(limit)
+      .toArray()
+
+    // Get counts by status for summary
+    const pipeline = [
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]
+    const statusCounts = await db.collection('leads').aggregate(pipeline).toArray()
+    const summary = {
+      total: leads.length,
+      new: 0, contacted: 0, qualified: 0, converted: 0, lost: 0,
+    }
+    statusCounts.forEach(s => { if (summary[s._id] !== undefined) summary[s._id] = s.count })
+    summary.total = statusCounts.reduce((acc, s) => acc + s.count, 0)
+
+    return NextResponse.json({ leads, summary })
   } catch (err) {
     console.error('Leads GET error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -48,7 +70,7 @@ export async function GET(request) {
 }
 
 /**
- * POST /api/leads — Create a new lead (Intake Agents or Managing Partners)
+ * POST /api/leads — Create a new lead
  */
 export async function POST(request) {
   try {
@@ -62,34 +84,46 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Lead name is required' }, { status: 400 })
     }
 
-    const { data, error: dbErr } = await supabaseAdmin
-      .from('leads')
-      .insert([{
-        full_name: fullName,
-        email: email || null,
-        phone: phone || null,
-        source: source || 'web',
-        case_type: caseType || null,
-        urgency: urgency || 'medium',
-        description: description || null,
-        intake_agent_id: user.id,
-        status: 'new',
-      }])
-      .select()
-      .single()
+    const db = await getDb()
+    const leadId = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+    
+    const lead = {
+      id: leadId,
+      full_name: fullName,
+      email: email || null,
+      phone: phone || null,
+      source: source || 'web',
+      case_type: caseType || null,
+      urgency: urgency || 'medium',
+      description: description || null,
+      intake_agent_id: user.id,
+      intake_agent_name: user.profile?.full_name || user.email,
+      status: 'new',
+      assigned_paralegal_id: null,
+      assigned_officer_id: null,
+      qualified_at: null,
+      qualification_notes: null,
+      paralegal_sla_deadline: null,
+      officer_sla_deadline: null,
+      converted_case_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
 
-    if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
+    await db.collection('leads').insertOne(lead)
 
     // Audit log
-    await createAuditLog({
-      userId: user.id,
-      action: 'CREATE_LEAD',
-      resourceType: 'lead',
-      resourceId: data.id,
-      details: { fullName, caseType, source },
-    })
+    try {
+      await createAuditLog({
+        userId: user.id,
+        action: 'CREATE_LEAD',
+        resourceType: 'lead',
+        resourceId: leadId,
+        details: { fullName, caseType, source },
+      })
+    } catch (e) { console.error('Audit log error:', e) }
 
-    return NextResponse.json({ lead: data }, { status: 201 })
+    return NextResponse.json({ lead }, { status: 201 })
   } catch (err) {
     console.error('Leads POST error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -97,114 +131,111 @@ export async function POST(request) {
 }
 
 /**
- * PUT /api/leads — Update lead (qualify, assign, etc.)
+ * PUT /api/leads — Update lead (qualify, assign, convert, etc.)
  */
 export async function PUT(request) {
   try {
     const { user, error, status } = await requirePermission(request, 'VIEW_LEADS')
     if (error) return NextResponse.json({ error }, { status })
 
-  const body = await request.json()
-  const { leadId, action: leadAction, ...updateData } = body
-  const role = user.profile?.role
+    const body = await request.json()
+    const { leadId, action: leadAction, ...updateData } = body
+    const role = user.profile?.role
 
-  if (!leadId) return NextResponse.json({ error: 'leadId is required' }, { status: 400 })
+    if (!leadId) return NextResponse.json({ error: 'leadId is required' }, { status: 400 })
 
-  // Fetch the lead
-  const { data: lead, error: fetchErr } = await supabaseAdmin
-    .from('leads')
-    .select('*')
-    .eq('id', leadId)
-    .single()
+    const db = await getDb()
+    const lead = await db.collection('leads').findOne({ id: leadId })
+    if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
 
-  if (fetchErr || !lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
+    const updates = { updated_at: new Date().toISOString() }
 
-  const updates = { updated_at: new Date().toISOString() }
-
-  // QUALIFY — Intake Agent marks lead as qualified
-  if (leadAction === 'qualify') {
-    if (role !== ROLES.INTAKE_AGENT && role !== ROLES.MANAGING_PARTNER) {
-      return NextResponse.json({ error: 'Only intake agents can qualify leads' }, { status: 403 })
+    // QUALIFY
+    if (leadAction === 'qualify') {
+      updates.status = 'qualified'
+      updates.qualified_at = new Date().toISOString()
+      updates.qualification_notes = updateData.notes || null
     }
-    updates.status = 'qualified'
-    updates.qualified_at = new Date().toISOString()
-    updates.qualification_notes = updateData.notes || null
-  }
 
-  // ASSIGN TO PARALEGAL — Officer assigns qualified lead
-  else if (leadAction === 'assign_paralegal') {
-    if (role !== ROLES.LEGAL_OFFICER && role !== ROLES.MANAGING_PARTNER && role !== ROLES.ATTORNEY) {
-      return NextResponse.json({ error: 'Only officers can assign leads to paralegals' }, { status: 403 })
+    // CONTACT
+    else if (leadAction === 'contact') {
+      updates.status = 'contacted'
+      updates.contacted_at = new Date().toISOString()
+      updates.contact_notes = updateData.notes || null
     }
-    if (!updateData.paralegalId) return NextResponse.json({ error: 'paralegalId required' }, { status: 400 })
-    updates.assigned_paralegal_id = updateData.paralegalId
-    updates.assigned_to_paralegal_at = new Date().toISOString()
-    updates.paralegal_sla_deadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24hr SLA
 
-    // Notify paralegal
-    await createNotification({
-      userId: updateData.paralegalId,
-      type: 'lead_assignment',
-      title: 'New Lead Assigned',
-      message: `A qualified lead (${lead.full_name}) has been assigned to you for preparation.`,
-      link: '/portal/paralegal',
-    })
-  }
+    // ASSIGN TO PARALEGAL
+    else if (leadAction === 'assign_paralegal') {
+      if (!updateData.paralegalId) return NextResponse.json({ error: 'paralegalId required' }, { status: 400 })
+      updates.assigned_paralegal_id = updateData.paralegalId
+      updates.assigned_to_paralegal_at = new Date().toISOString()
+      updates.paralegal_sla_deadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
-  // ASSIGN TO OFFICER — Paralegal marks ready for strategy
-  else if (leadAction === 'ready_for_strategy') {
-    if (role !== ROLES.PARALEGAL && role !== ROLES.MANAGING_PARTNER) {
-      return NextResponse.json({ error: 'Only paralegals can mark leads ready for strategy' }, { status: 403 })
+      try {
+        await createNotification({
+          userId: updateData.paralegalId,
+          type: 'lead_assignment',
+          title: 'New Lead Assigned',
+          message: `A qualified lead (${lead.full_name}) has been assigned to you for preparation.`,
+          link: '/portal/leads',
+        })
+      } catch (e) { console.error('Notification error:', e) }
     }
-    if (!updateData.officerId) return NextResponse.json({ error: 'officerId required' }, { status: 400 })
-    updates.assigned_officer_id = updateData.officerId
-    updates.assigned_to_officer_at = new Date().toISOString()
-    updates.officer_sla_deadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48hr SLA
 
-    // Notify officer
-    await createNotification({
-      userId: updateData.officerId,
-      type: 'lead_assignment',
-      title: 'Case Ready for Strategy',
-      message: `Lead ${lead.full_name} has been prepared and is ready for your review.`,
-      link: '/portal/officer',
-    })
-  }
+    // READY FOR STRATEGY
+    else if (leadAction === 'ready_for_strategy') {
+      if (!updateData.officerId) return NextResponse.json({ error: 'officerId required' }, { status: 400 })
+      updates.assigned_officer_id = updateData.officerId
+      updates.assigned_to_officer_at = new Date().toISOString()
+      updates.officer_sla_deadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
 
-  // CONVERT — Officer converts lead to case
-  else if (leadAction === 'convert') {
-    if (role !== ROLES.LEGAL_OFFICER && role !== ROLES.MANAGING_PARTNER && role !== ROLES.ATTORNEY) {
-      return NextResponse.json({ error: 'Only officers can convert leads to cases' }, { status: 403 })
+      try {
+        await createNotification({
+          userId: updateData.officerId,
+          type: 'lead_assignment',
+          title: 'Case Ready for Strategy',
+          message: `Lead ${lead.full_name} has been prepared and is ready for your review.`,
+          link: '/portal/leads',
+        })
+      } catch (e) { console.error('Notification error:', e) }
     }
-    updates.status = 'converted'
-  }
 
-  // GENERIC UPDATE
-  else {
-    if (updateData.status) updates.status = updateData.status
-    if (updateData.description) updates.description = updateData.description
-    if (updateData.qualificationNotes) updates.qualification_notes = updateData.qualificationNotes
-  }
+    // CONVERT TO CASE
+    else if (leadAction === 'convert') {
+      updates.status = 'converted'
+      updates.converted_at = new Date().toISOString()
+      if (updateData.caseId) updates.converted_case_id = updateData.caseId
+    }
 
-  const { data, error: updateErr } = await supabaseAdmin
-    .from('leads')
-    .update(updates)
-    .eq('id', leadId)
-    .select()
-    .single()
+    // MARK AS LOST
+    else if (leadAction === 'lost') {
+      updates.status = 'lost'
+      updates.lost_reason = updateData.reason || null
+      updates.lost_at = new Date().toISOString()
+    }
 
-  if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 })
+    // GENERIC UPDATE
+    else {
+      if (updateData.status) updates.status = updateData.status
+      if (updateData.description) updates.description = updateData.description
+      if (updateData.qualificationNotes) updates.qualification_notes = updateData.qualificationNotes
+    }
 
-  // Audit log
-  await createAuditLog({
-    userId: user.id,
-    action: `LEAD_${(leadAction || 'UPDATE').toUpperCase()}`,
-    resourceType: 'lead',
-    resourceId: leadId,
-    details: { leadAction, updates },
-  })
+    await db.collection('leads').updateOne({ id: leadId }, { $set: updates })
+    const updatedLead = await db.collection('leads').findOne({ id: leadId })
 
-  return NextResponse.json({ lead: data })
+    // Audit log
+    try {
+      await createAuditLog({
+        userId: user.id,
+        action: `LEAD_${(leadAction || 'UPDATE').toUpperCase()}`,
+        resourceType: 'lead',
+        resourceId: leadId,
+        details: { leadAction, updates },
+      })
+    } catch (e) { console.error('Audit log error:', e) }
+
+    return NextResponse.json({ lead: updatedLead })
   } catch (err) {
     console.error('Leads PUT error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

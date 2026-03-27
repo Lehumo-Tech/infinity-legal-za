@@ -112,7 +112,7 @@ export default function LeadsPipelinePage() {
             {isIntakeAgent ? 'Qualify leads and move them through the pipeline.' : 'Track and manage incoming leads.'}
           </p>
         </div>
-        {(isIntakeAgent || isManagingPartner) && (
+        {(isIntakeAgent || isManagingPartner || isOfficer || role === 'attorney') && (
           <button
             onClick={() => setShowNewForm(true)}
             className="px-4 py-2 bg-infinity-navy text-white rounded-xl text-sm font-semibold hover:bg-infinity-navy-light transition-colors"
