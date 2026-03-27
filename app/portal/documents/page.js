@@ -27,6 +27,15 @@ export default function DocumentsPage() {
   const [aiResult, setAiResult] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
 
+  // Version management
+  const [selectedDocId, setSelectedDocId] = useState(null)
+  const [versions, setVersions] = useState([])
+  const [lockInfo, setLockInfo] = useState(null)
+  const [showVersionPanel, setShowVersionPanel] = useState(false)
+  const [versionLoading, setVersionLoading] = useState(false)
+  const [showNewVersionForm, setShowNewVersionForm] = useState(false)
+  const [newVersionForm, setNewVersionForm] = useState({ fileName: '', changeNotes: '' })
+
   useEffect(() => {
     async function init() {
       const { data } = await supabase.auth.getSession()
@@ -114,6 +123,74 @@ export default function DocumentsPage() {
     finally { setAiLoading(false) }
   }
 
+  // Version management functions
+  const fetchVersions = async (docId) => {
+    setVersionLoading(true)
+    try {
+      const res = await fetch(`/api/documents/${docId}/versions`, { headers: { Authorization: `Bearer ${token}` } })
+      if (res.ok) {
+        const data = await res.json()
+        setVersions(data.versions || [])
+        setLockInfo(data.lockInfo || null)
+      }
+    } catch (err) { console.error('Fetch versions error:', err) }
+    setVersionLoading(false)
+  }
+
+  const handleCheckout = async (docId) => {
+    try {
+      const res = await fetch(`/api/documents/${docId}/lock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'checkout' }),
+      })
+      const data = await res.json()
+      if (res.ok) { setActionMsg(data.message); fetchVersions(docId) }
+      else { setActionMsg(`Error: ${data.error}`) }
+    } catch (err) { setActionMsg(`Error: ${err.message}`) }
+  }
+
+  const handleCheckin = async (docId) => {
+    try {
+      const res = await fetch(`/api/documents/${docId}/lock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'checkin' }),
+      })
+      const data = await res.json()
+      if (res.ok) { setActionMsg(data.message); setLockInfo(null); fetchVersions(docId) }
+      else { setActionMsg(`Error: ${data.error}`) }
+    } catch (err) { setActionMsg(`Error: ${err.message}`) }
+  }
+
+  const handleNewVersion = async (docId) => {
+    if (!newVersionForm.fileName) return
+    try {
+      const res = await fetch(`/api/documents/${docId}/versions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          fileName: newVersionForm.fileName,
+          changeNotes: newVersionForm.changeNotes,
+          filePath: `/documents/${docId}/v${versions.length + 1}`,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setActionMsg(data.message)
+        setShowNewVersionForm(false)
+        setNewVersionForm({ fileName: '', changeNotes: '' })
+        fetchVersions(docId)
+      } else { setActionMsg(`Error: ${data.error}`) }
+    } catch (err) { setActionMsg(`Error: ${err.message}`) }
+  }
+
+  const openVersionPanel = (docId) => {
+    setSelectedDocId(docId)
+    setShowVersionPanel(true)
+    fetchVersions(docId)
+  }
+
   const STATUS_STYLES = {
     draft: 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300',
     review: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
@@ -172,6 +249,7 @@ export default function DocumentsPage() {
                       <th className="text-left px-4 py-2.5 font-semibold text-gray-500 text-xs">Document</th>
                       <th className="text-left px-4 py-2.5 font-semibold text-gray-500 text-xs">Category</th>
                       <th className="text-left px-4 py-2.5 font-semibold text-gray-500 text-xs">Status</th>
+                      <th className="text-left px-4 py-2.5 font-semibold text-gray-500 text-xs">Version</th>
                       <th className="text-left px-4 py-2.5 font-semibold text-gray-500 text-xs">Uploaded</th>
                       <th className="text-left px-4 py-2.5 font-semibold text-gray-500 text-xs">Actions</th>
                     </tr>
@@ -189,9 +267,15 @@ export default function DocumentsPage() {
                           <td className="px-4 py-2.5">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${STATUS_STYLES[wfStatus] || ''}`}>{wfStatus}</span>
                           </td>
+                          <td className="px-4 py-2.5">
+                            <button onClick={() => openVersionPanel(doc.id)} className="px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 rounded text-[10px] font-semibold hover:bg-indigo-200 transition-colors">
+                              v{doc.version || 1} History
+                            </button>
+                          </td>
                           <td className="px-4 py-2.5 text-[10px] text-gray-400">{new Date(doc.created_at).toLocaleDateString('en-ZA')}</td>
                           <td className="px-4 py-2.5">
                             <div className="flex gap-1 flex-wrap">
+                              <button onClick={() => handleCheckout(doc.id)} className="px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded text-[10px] font-semibold hover:bg-amber-200" title="Check-out for editing">🔒 Check Out</button>
                               {wfStatus === 'draft' && <button onClick={() => handleWorkflowAction(doc.id, 'review')} className="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded text-[10px] font-semibold hover:bg-blue-200">Submit for Review</button>}
                               {isOfficer && wfStatus === 'review' && (
                                 <>
@@ -217,6 +301,93 @@ export default function DocumentsPage() {
               <p className="text-xs text-orange-700 dark:text-orange-400">
                 <strong>UPL Protection:</strong> Documents you draft are automatically tagged &quot;Prepared by Paralegal under supervision of [Assigned Officer]&quot;. Only Legal Officers can approve, sign, and send documents to clients.
               </p>
+            </div>
+          )}
+
+          {/* VERSION HISTORY PANEL */}
+          {showVersionPanel && selectedDocId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xl max-h-[80vh] overflow-y-auto">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      📋 Version History
+                    </h2>
+                    <button onClick={() => { setShowVersionPanel(false); setSelectedDocId(null); setVersions([]); setShowNewVersionForm(false) }} className="text-gray-400 hover:text-gray-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+
+                  {/* Lock Status */}
+                  {lockInfo && (
+                    <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-amber-700 dark:text-amber-400">🔒 Checked Out</p>
+                          <p className="text-xs text-amber-600 dark:text-amber-500">By {lockInfo.lockedByName} — since {new Date(lockInfo.lockedAt).toLocaleString('en-ZA')}</p>
+                        </div>
+                        <button onClick={() => handleCheckin(selectedDocId)} className="px-3 py-1 bg-green-600 text-white rounded text-xs font-semibold hover:bg-green-700">
+                          🔓 Check In
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 mb-4">
+                    {!lockInfo && (
+                      <button onClick={() => handleCheckout(selectedDocId)} className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-200">
+                        🔒 Check Out
+                      </button>
+                    )}
+                    <button onClick={() => setShowNewVersionForm(!showNewVersionForm)} className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold hover:bg-blue-200">
+                      + New Version
+                    </button>
+                  </div>
+
+                  {/* New Version Form */}
+                  {showNewVersionForm && (
+                    <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <h3 className="text-sm font-bold mb-3 text-gray-800 dark:text-gray-200">Upload New Version</h3>
+                      <input type="text" value={newVersionForm.fileName} onChange={e => setNewVersionForm(p => ({ ...p, fileName: e.target.value }))}
+                        placeholder="Version file name" className="w-full mb-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                      <textarea value={newVersionForm.changeNotes} onChange={e => setNewVersionForm(p => ({ ...p, changeNotes: e.target.value }))}
+                        placeholder="Change notes (what was modified?)" rows={2} className="w-full mb-3 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none" />
+                      <div className="flex gap-2">
+                        <button onClick={() => handleNewVersion(selectedDocId)} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700">Save Version</button>
+                        <button onClick={() => setShowNewVersionForm(false)} className="px-4 py-1.5 text-gray-500 hover:text-gray-700 text-xs">Cancel</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Version List */}
+                  {versionLoading ? (
+                    <div className="text-center py-8"><div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" /><p className="text-xs text-gray-400">Loading versions...</p></div>
+                  ) : versions.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                      <p className="text-sm">No versions recorded yet</p>
+                      <p className="text-xs mt-1">Upload a new version to start tracking changes</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {versions.map((v, idx) => (
+                        <div key={v.id} className={`p-3 rounded-lg border ${idx === 0 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-xs font-bold text-gray-900 dark:text-white">v{v.version}</span>
+                              {idx === 0 && <span className="ml-2 px-1.5 py-0.5 bg-blue-500 text-white rounded text-[9px] font-bold">LATEST</span>}
+                              <span className="ml-2 text-xs text-gray-600 dark:text-gray-300">{v.fileName}</span>
+                            </div>
+                            <span className="text-[10px] text-gray-400">{new Date(v.createdAt).toLocaleString('en-ZA')}</span>
+                          </div>
+                          {v.changeNotes && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">{v.changeNotes}</p>}
+                          <p className="text-[10px] text-gray-400 mt-1">By {v.uploadedByName}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </>

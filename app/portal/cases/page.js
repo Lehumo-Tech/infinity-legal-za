@@ -328,7 +328,7 @@ export default function PortalCasesPage() {
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search cases..."
               className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-700 text-infinity-navy dark:text-white" />
             <div className="flex gap-1 flex-wrap">
-              {['all', 'new', 'active', 'pending_court', 'settlement', 'closed'].map(s => (
+              {['all', 'new', 'active', 'pending_court', 'settlement', 'closed', 'archived'].map(s => (
                 <button key={s} onClick={() => setFilter(s)}
                   className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors ${filter === s ? 'bg-infinity-navy text-white dark:bg-infinity-gold dark:text-infinity-navy' : 'bg-white dark:bg-gray-800 text-gray-500 border border-gray-200 dark:border-gray-700'}`}>
                   {s === 'pending_court' ? 'Court' : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -595,6 +595,40 @@ export default function PortalCasesPage() {
                           Assigned by: {caseMetadata.assignment.assignedByName || '—'} <br />
                           Billing Rate: R{caseMetadata.assignment.billingRate || '—'}/hr
                         </div>
+                      </div>
+                    )}
+
+                    {/* Archive Section */}
+                    {selectedCase.status === 'archived' && (
+                      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-lg">🗄️</span>
+                          <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400">Archived Case — Read Only</h4>
+                        </div>
+                        <p className="text-xs text-gray-400">This case has been archived. All data is preserved for reference but cannot be modified.</p>
+                      </div>
+                    )}
+                    {selectedCase.status === 'closed' && (
+                      <div className="mt-4">
+                        <button
+                          onClick={async () => {
+                            if (!confirm('Archive this case? It will become read-only.')) return
+                            try {
+                              const res = await fetch('/api/cases/archive', {
+                                method: 'POST',
+                                headers: { ...headers, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ caseId: selectedCase.id }),
+                              })
+                              const data = await res.json()
+                              if (res.ok) { alert(data.message); fetchCases(); setSelectedCase(null) }
+                              else { alert(data.error || 'Failed to archive') }
+                            } catch (err) { alert('Error: ' + err.message) }
+                          }}
+                          className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+                        >
+                          🗄️ Archive This Case (Read-Only)
+                        </button>
+                        <p className="text-[10px] text-gray-400 mt-1 text-center">Closed cases can be archived for long-term storage. Archived cases are read-only.</p>
                       </div>
                     )}
                   </div>

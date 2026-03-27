@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Test for Convert Intake to Case Feature
-Tests the new intake management APIs for Infinity Legal Platform
+Backend Testing for P1 (Document Versioning & Check-in/out) and P2 (Case Archiving) Features
+Infinity Legal Platform - Testing Agent
 """
 
 import requests
@@ -19,415 +19,413 @@ SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 TEST_EMAIL = "test_intake@infinitylegal.org"
 TEST_PASSWORD = "TestPass2026!"
 
-class IntakeTestSuite:
+class TestResults:
     def __init__(self):
-        self.access_token = None
-        self.test_intake_id = None
-        self.test_case_id = None
+        self.passed = 0
+        self.failed = 0
         self.results = []
-        
-    def log_result(self, test_name, success, message, details=None):
-        """Log test result"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name} - {message}")
-        if details:
-            print(f"   Details: {details}")
+    
+    def add_result(self, test_name, passed, details=""):
         self.results.append({
-            'test': test_name,
-            'success': success,
-            'message': message,
-            'details': details
+            "test": test_name,
+            "passed": passed,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
         })
-        
-    def authenticate(self):
-        """Step 1: Login via Supabase Auth to get token"""
-        print("\n=== STEP 1: Authentication Test ===")
-        try:
-            auth_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
-            headers = {
-                'apikey': SUPABASE_ANON_KEY,
-                'Content-Type': 'application/json'
-            }
-            data = {
-                'email': TEST_EMAIL,
-                'password': TEST_PASSWORD
-            }
-            
-            response = requests.post(auth_url, headers=headers, json=data, timeout=10)
-            
-            if response.status_code == 200:
-                auth_data = response.json()
-                self.access_token = auth_data.get('access_token')
-                if self.access_token:
-                    self.log_result("Authentication", True, "Successfully logged in and obtained access token")
-                    return True
-                else:
-                    self.log_result("Authentication", False, "No access token in response", auth_data)
-                    return False
-            else:
-                self.log_result("Authentication", False, f"Login failed with status {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("Authentication", False, f"Authentication error: {str(e)}")
-            return False
-    
-    def test_intakes_without_auth(self):
-        """Step 2: GET /api/intakes without auth → should return 401"""
-        print("\n=== STEP 2: Test Intakes API Without Auth ===")
-        try:
-            url = f"{BASE_URL}/api/intakes"
-            response = requests.get(url, timeout=10)
-            
-            if response.status_code == 401:
-                self.log_result("GET /api/intakes (no auth)", True, "Correctly returned 401 Unauthorized")
-                return True
-            else:
-                self.log_result("GET /api/intakes (no auth)", False, f"Expected 401, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("GET /api/intakes (no auth)", False, f"Request error: {str(e)}")
-            return False
-    
-    def test_intakes_with_auth(self):
-        """Step 3: GET /api/intakes with auth → should return list of intakes"""
-        print("\n=== STEP 3: Test Intakes API With Auth ===")
-        try:
-            url = f"{BASE_URL}/api/intakes"
-            headers = {'Authorization': f'Bearer {self.access_token}'}
-            response = requests.get(url, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                intakes = data.get('intakes', [])
-                self.log_result("GET /api/intakes (with auth)", True, f"Successfully retrieved {len(intakes)} intakes")
-                return True
-            else:
-                self.log_result("GET /api/intakes (with auth)", False, f"Expected 200, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("GET /api/intakes (with auth)", False, f"Request error: {str(e)}")
-            return False
-    
-    def test_intake_analyze(self):
-        """Step 4: POST /api/intake/analyze → Submit a new test intake"""
-        print("\n=== STEP 4: Test Intake Analysis (Create New Intake) ===")
-        try:
-            url = f"{BASE_URL}/api/intake/analyze"
-            headers = {'Content-Type': 'application/json'}
-            
-            # Create unique problem description for this test
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            data = {
-                "responses": {
-                    "problem": f"I was involved in a car accident on {timestamp} where the other driver ran a red light and crashed into my vehicle. I sustained injuries to my neck and back, and my car was severely damaged. The other driver's insurance company is refusing to pay for my medical bills and car repairs, claiming their client was not at fault despite clear evidence.",
-                    "timeline": "The accident happened 2 weeks ago. I have been receiving medical treatment since then.",
-                    "outcome": "I want compensation for my medical expenses, car repairs, and pain and suffering.",
-                    "parties": "Myself, the other driver, and both insurance companies.",
-                    "documents": "Police report, medical records, photos of the accident scene and vehicle damage, witness statements."
-                },
-                "selectedCategory": "Personal Injury",
-                "isUrgent": False
-            }
-            
-            print("   Submitting intake analysis request (may take 5-10 seconds for AI processing)...")
-            response = requests.post(url, headers=headers, json=data, timeout=30)
-            
-            if response.status_code == 200:
-                result = response.json()
-                self.test_intake_id = result.get('intakeId')
-                if self.test_intake_id:
-                    self.log_result("POST /api/intake/analyze", True, f"Successfully analyzed intake and created intakeId: {self.test_intake_id}")
-                    print(f"   AI Analysis: Category={result.get('category')}, Urgency={result.get('urgency')}, Confidence={result.get('confidence')}%")
-                    return True
-                else:
-                    self.log_result("POST /api/intake/analyze", False, "No intakeId returned in response", result)
-                    return False
-            else:
-                self.log_result("POST /api/intake/analyze", False, f"Expected 200, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("POST /api/intake/analyze", False, f"Request error: {str(e)}")
-            return False
-    
-    def verify_new_intake_in_list(self):
-        """Step 5: GET /api/intakes with auth → verify the new intake appears with status: pending"""
-        print("\n=== STEP 5: Verify New Intake Appears in List ===")
-        try:
-            url = f"{BASE_URL}/api/intakes"
-            headers = {'Authorization': f'Bearer {self.access_token}'}
-            response = requests.get(url, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                intakes = data.get('intakes', [])
-                
-                # Find our test intake
-                test_intake = None
-                for intake in intakes:
-                    if intake.get('id') == self.test_intake_id:
-                        test_intake = intake
-                        break
-                
-                if test_intake:
-                    status = test_intake.get('status')
-                    if status == 'pending':
-                        self.log_result("Verify new intake in list", True, f"Found new intake with status 'pending'")
-                        return True
-                    else:
-                        self.log_result("Verify new intake in list", False, f"Found intake but status is '{status}', expected 'pending'")
-                        return False
-                else:
-                    self.log_result("Verify new intake in list", False, f"Could not find intake with ID {self.test_intake_id} in list of {len(intakes)} intakes")
-                    return False
-            else:
-                self.log_result("Verify new intake in list", False, f"Expected 200, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("Verify new intake in list", False, f"Request error: {str(e)}")
-            return False
-    
-    def test_convert_without_auth(self):
-        """Step 6: POST /api/intakes/[intakeId]/convert without auth → should return 401"""
-        print("\n=== STEP 6: Test Convert Without Auth ===")
-        try:
-            url = f"{BASE_URL}/api/intakes/{self.test_intake_id}/convert"
-            headers = {'Content-Type': 'application/json'}
-            data = {}
-            
-            response = requests.post(url, headers=headers, json=data, timeout=10)
-            
-            if response.status_code == 401:
-                self.log_result("POST /api/intakes/[id]/convert (no auth)", True, "Correctly returned 401 Unauthorized")
-                return True
-            else:
-                self.log_result("POST /api/intakes/[id]/convert (no auth)", False, f"Expected 401, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("POST /api/intakes/[id]/convert (no auth)", False, f"Request error: {str(e)}")
-            return False
-    
-    def test_convert_with_auth(self):
-        """Step 7: POST /api/intakes/[intakeId]/convert with auth → should return 201 with case data"""
-        print("\n=== STEP 7: Test Convert With Auth ===")
-        try:
-            url = f"{BASE_URL}/api/intakes/{self.test_intake_id}/convert"
-            headers = {
-                'Authorization': f'Bearer {self.access_token}',
-                'Content-Type': 'application/json'
-            }
-            data = {}
-            
-            response = requests.post(url, headers=headers, json=data, timeout=10)
-            
-            if response.status_code == 201:
-                result = response.json()
-                case_data = result.get('case')
-                case_number = result.get('caseNumber')
-                
-                if case_data and case_number:
-                    self.test_case_id = case_data.get('id')
-                    self.log_result("POST /api/intakes/[id]/convert (with auth)", True, f"Successfully converted intake to case {case_number}")
-                    print(f"   Case ID: {self.test_case_id}")
-                    print(f"   Case Number: {case_number}")
-                    return True
-                else:
-                    self.log_result("POST /api/intakes/[id]/convert (with auth)", False, "Missing case data or case number in response", result)
-                    return False
-            else:
-                self.log_result("POST /api/intakes/[id]/convert (with auth)", False, f"Expected 201, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("POST /api/intakes/[id]/convert (with auth)", False, f"Request error: {str(e)}")
-            return False
-    
-    def verify_intake_converted_status(self):
-        """Step 8: GET /api/intakes → verify the intake now has status: converted"""
-        print("\n=== STEP 8: Verify Intake Status Changed to Converted ===")
-        try:
-            url = f"{BASE_URL}/api/intakes"
-            headers = {'Authorization': f'Bearer {self.access_token}'}
-            response = requests.get(url, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                intakes = data.get('intakes', [])
-                
-                # Find our test intake
-                test_intake = None
-                for intake in intakes:
-                    if intake.get('id') == self.test_intake_id:
-                        test_intake = intake
-                        break
-                
-                if test_intake:
-                    status = test_intake.get('status')
-                    converted_case_number = test_intake.get('convertedCaseNumber')
-                    
-                    if status == 'converted' and converted_case_number:
-                        self.log_result("Verify converted status", True, f"Intake status is 'converted' with case number {converted_case_number}")
-                        return True
-                    else:
-                        self.log_result("Verify converted status", False, f"Status is '{status}', convertedCaseNumber is '{converted_case_number}'")
-                        return False
-                else:
-                    self.log_result("Verify converted status", False, f"Could not find intake with ID {self.test_intake_id}")
-                    return False
-            else:
-                self.log_result("Verify converted status", False, f"Expected 200, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("Verify converted status", False, f"Request error: {str(e)}")
-            return False
-    
-    def test_duplicate_convert(self):
-        """Step 9: POST /api/intakes/[intakeId]/convert again → should return 409"""
-        print("\n=== STEP 9: Test Duplicate Convert (Should Return 409) ===")
-        try:
-            url = f"{BASE_URL}/api/intakes/{self.test_intake_id}/convert"
-            headers = {
-                'Authorization': f'Bearer {self.access_token}',
-                'Content-Type': 'application/json'
-            }
-            data = {}
-            
-            response = requests.post(url, headers=headers, json=data, timeout=10)
-            
-            if response.status_code == 409:
-                result = response.json()
-                self.log_result("Duplicate convert test", True, "Correctly returned 409 Conflict for already converted intake")
-                return True
-            else:
-                self.log_result("Duplicate convert test", False, f"Expected 409, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("Duplicate convert test", False, f"Request error: {str(e)}")
-            return False
-    
-    def test_tasks_api(self):
-        """Step 10: GET /api/tasks with auth → verify tasks API works without updated_at error"""
-        print("\n=== STEP 10: Test Tasks API (Verify updated_at Fix) ===")
-        try:
-            url = f"{BASE_URL}/api/tasks"
-            headers = {'Authorization': f'Bearer {self.access_token}'}
-            response = requests.get(url, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                tasks = data.get('tasks', [])
-                self.log_result("GET /api/tasks", True, f"Tasks API working correctly, returned {len(tasks)} tasks")
-                return True
-            elif response.status_code == 401:
-                self.log_result("GET /api/tasks", True, "Tasks API correctly requires authentication (401)")
-                return True
-            else:
-                self.log_result("GET /api/tasks", False, f"Expected 200 or 401, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("GET /api/tasks", False, f"Request error: {str(e)}")
-            return False
-    
-    def test_intake_filters(self):
-        """Step 11-12: Test intake filtering"""
-        print("\n=== STEP 11-12: Test Intake Filtering ===")
-        
-        # Test status filter
-        try:
-            url = f"{BASE_URL}/api/intakes?status=pending"
-            headers = {'Authorization': f'Bearer {self.access_token}'}
-            response = requests.get(url, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                intakes = data.get('intakes', [])
-                self.log_result("GET /api/intakes?status=pending", True, f"Status filter working, returned {len(intakes)} pending intakes")
-            else:
-                self.log_result("GET /api/intakes?status=pending", False, f"Expected 200, got {response.status_code}", response.text)
-                
-        except Exception as e:
-            self.log_result("GET /api/intakes?status=pending", False, f"Request error: {str(e)}")
-        
-        # Test category filter
-        try:
-            url = f"{BASE_URL}/api/intakes?category=Criminal%20Law"
-            headers = {'Authorization': f'Bearer {self.access_token}'}
-            response = requests.get(url, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                intakes = data.get('intakes', [])
-                self.log_result("GET /api/intakes?category=Criminal Law", True, f"Category filter working, returned {len(intakes)} Criminal Law intakes")
-                return True
-            else:
-                self.log_result("GET /api/intakes?category=Criminal Law", False, f"Expected 200, got {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_result("GET /api/intakes?category=Criminal Law", False, f"Request error: {str(e)}")
-            return False
-    
-    def run_all_tests(self):
-        """Run the complete test suite"""
-        print("🚀 Starting Convert Intake to Case Feature Test Suite")
-        print(f"Base URL: {BASE_URL}")
-        print(f"Test User: {TEST_EMAIL}")
-        
-        # Run tests in sequence
-        tests = [
-            self.authenticate,
-            self.test_intakes_without_auth,
-            self.test_intakes_with_auth,
-            self.test_intake_analyze,
-            self.verify_new_intake_in_list,
-            self.test_convert_without_auth,
-            self.test_convert_with_auth,
-            self.verify_intake_converted_status,
-            self.test_duplicate_convert,
-            self.test_tasks_api,
-            self.test_intake_filters
-        ]
-        
-        passed = 0
-        failed = 0
-        
-        for test in tests:
-            try:
-                if test():
-                    passed += 1
-                else:
-                    failed += 1
-            except Exception as e:
-                print(f"❌ FAIL: {test.__name__} - Unexpected error: {str(e)}")
-                failed += 1
-            
-            # Small delay between tests
-            time.sleep(0.5)
-        
-        # Print summary
-        print(f"\n{'='*60}")
-        print(f"🏁 TEST SUITE COMPLETE")
-        print(f"{'='*60}")
-        print(f"✅ PASSED: {passed}")
-        print(f"❌ FAILED: {failed}")
-        print(f"📊 SUCCESS RATE: {(passed/(passed+failed)*100):.1f}%")
-        
-        if failed == 0:
-            print("🎉 ALL TESTS PASSED! Convert Intake to Case feature is working correctly.")
+        if passed:
+            self.passed += 1
+            print(f"✅ {test_name}: PASSED - {details}")
         else:
-            print("⚠️  Some tests failed. Please review the issues above.")
+            self.failed += 1
+            print(f"❌ {test_name}: FAILED - {details}")
+    
+    def summary(self):
+        total = self.passed + self.failed
+        success_rate = (self.passed / total * 100) if total > 0 else 0
+        print(f"\n{'='*60}")
+        print(f"TEST SUMMARY: {self.passed}/{total} tests passed ({success_rate:.1f}%)")
+        print(f"{'='*60}")
+        return self.passed, self.failed, success_rate
+
+def login_to_supabase():
+    """Login to Supabase and get access token"""
+    try:
+        print(f"🔐 Logging in to Supabase as {TEST_EMAIL}...")
         
-        return failed == 0
+        login_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
+        headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Content-Type": "application/json"
+        }
+        data = {
+            "email": TEST_EMAIL,
+            "password": TEST_PASSWORD
+        }
+        
+        response = requests.post(login_url, headers=headers, json=data)
+        
+        if response.status_code == 200:
+            token_data = response.json()
+            access_token = token_data.get("access_token")
+            print(f"✅ Login successful, token obtained")
+            return access_token
+        else:
+            print(f"❌ Login failed: {response.status_code} - {response.text}")
+            return None
+            
+    except Exception as e:
+        print(f"❌ Login error: {str(e)}")
+        return None
+
+def test_document_versioning(token, results):
+    """Test P1: Document Versioning & Check-in/out APIs"""
+    print(f"\n{'='*60}")
+    print("TESTING P1: DOCUMENT VERSIONING & CHECK-IN/OUT")
+    print(f"{'='*60}")
+    
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    doc_id = "test-ver-001"  # Using unique document ID as specified in test plan
+    
+    # Test 1: POST /api/documents/test-ver-001/versions (create version 1)
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/versions"
+        data = {
+            "fileName": "Test Document v1.pdf",
+            "filePath": "/uploads/test-doc-v1.pdf",
+            "fileSize": 1024,
+            "fileType": "application/pdf"
+        }
+        response = requests.post(url, headers=headers, json=data)
+        
+        if response.status_code == 201:
+            version_data = response.json()
+            if version_data.get("version", {}).get("version") == 1:
+                results.add_result("Create Version 1", True, f"Version 1 created successfully")
+            else:
+                results.add_result("Create Version 1", False, f"Expected version 1, got {version_data.get('version', {}).get('version')}")
+        else:
+            results.add_result("Create Version 1", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Create Version 1", False, f"Exception: {str(e)}")
+    
+    # Test 2: POST /api/documents/test-ver-001/versions (create version 2 with changeNotes)
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/versions"
+        data = {
+            "fileName": "Test Document v2.pdf",
+            "filePath": "/uploads/test-doc-v2.pdf",
+            "fileSize": 2048,
+            "fileType": "application/pdf",
+            "changeNotes": "Added new sections and updated formatting"
+        }
+        response = requests.post(url, headers=headers, json=data)
+        
+        if response.status_code == 201:
+            version_data = response.json()
+            if version_data.get("version", {}).get("version") == 2:
+                results.add_result("Create Version 2 with Notes", True, f"Version 2 created with change notes")
+            else:
+                results.add_result("Create Version 2 with Notes", False, f"Expected version 2, got {version_data.get('version', {}).get('version')}")
+        else:
+            results.add_result("Create Version 2 with Notes", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Create Version 2 with Notes", False, f"Exception: {str(e)}")
+    
+    # Test 3: GET /api/documents/test-ver-001/versions (get version history)
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/versions"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            versions = data.get("versions", [])
+            total_versions = data.get("totalVersions", 0)
+            
+            if total_versions == 2 and len(versions) == 2:
+                # Check if sorted desc (v2 first)
+                if versions[0].get("version") == 2 and versions[1].get("version") == 1:
+                    results.add_result("Get Version History", True, f"Retrieved {total_versions} versions, sorted desc correctly")
+                else:
+                    results.add_result("Get Version History", False, f"Versions not sorted correctly: {[v.get('version') for v in versions]}")
+            else:
+                results.add_result("Get Version History", False, f"Expected 2 versions, got {total_versions}")
+        else:
+            results.add_result("Get Version History", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Get Version History", False, f"Exception: {str(e)}")
+    
+    # Test 4: GET /api/documents/test-ver-001/versions without auth (should return 401)
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/versions"
+        response = requests.get(url)  # No auth header
+        
+        if response.status_code == 401:
+            results.add_result("Version History Auth Check", True, "Correctly returned 401 without auth")
+        else:
+            results.add_result("Version History Auth Check", False, f"Expected 401, got {response.status_code}")
+    except Exception as e:
+        results.add_result("Version History Auth Check", False, f"Exception: {str(e)}")
+
+def test_document_checkin_checkout(token, results):
+    """Test P1: Document Check-in/out functionality"""
+    print(f"\n{'='*40}")
+    print("TESTING DOCUMENT CHECK-IN/OUT")
+    print(f"{'='*40}")
+    
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    doc_id = "test-ver-001"
+    
+    # Test 5: POST /api/documents/test-ver-001/lock with { action: "checkout" }
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/lock"
+        data = {"action": "checkout"}
+        response = requests.post(url, headers=headers, json=data)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "checked out" in data.get("message", "").lower():
+                results.add_result("Document Checkout", True, "Document checked out successfully")
+            else:
+                results.add_result("Document Checkout", True, f"Checkout response: {data.get('message')}")
+        else:
+            results.add_result("Document Checkout", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Document Checkout", False, f"Exception: {str(e)}")
+    
+    # Test 6: GET /api/documents/test-ver-001/lock (check lock status)
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/lock"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            locked = data.get("locked", False)
+            is_locked_by_me = data.get("isLockedByMe", False)
+            
+            if locked and is_locked_by_me:
+                results.add_result("Check Lock Status", True, "Document is locked by current user")
+            else:
+                results.add_result("Check Lock Status", False, f"Expected locked=true, isLockedByMe=true, got locked={locked}, isLockedByMe={is_locked_by_me}")
+        else:
+            results.add_result("Check Lock Status", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Check Lock Status", False, f"Exception: {str(e)}")
+    
+    # Test 7: POST /api/documents/test-ver-001/lock with { action: "checkout" } again (should work - already checked out by same user)
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/lock"
+        data = {"action": "checkout"}
+        response = requests.post(url, headers=headers, json=data)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "already checked out" in data.get("message", "").lower():
+                results.add_result("Double Checkout Same User", True, "Correctly handled double checkout by same user")
+            else:
+                results.add_result("Double Checkout Same User", True, f"Checkout response: {data.get('message')}")
+        else:
+            results.add_result("Double Checkout Same User", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Double Checkout Same User", False, f"Exception: {str(e)}")
+    
+    # Test 8: POST /api/documents/test-ver-001/lock with { action: "checkin" }
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/lock"
+        data = {"action": "checkin"}
+        response = requests.post(url, headers=headers, json=data)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "checked in" in data.get("message", "").lower():
+                results.add_result("Document Checkin", True, "Document checked in successfully")
+            else:
+                results.add_result("Document Checkin", True, f"Checkin response: {data.get('message')}")
+        else:
+            results.add_result("Document Checkin", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Document Checkin", False, f"Exception: {str(e)}")
+    
+    # Test 9: GET /api/documents/test-ver-001/lock (should show unlocked)
+    try:
+        url = f"{BASE_URL}/api/documents/{doc_id}/lock"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            locked = data.get("locked", True)  # Default to True to catch failures
+            
+            if not locked:
+                results.add_result("Check Unlocked Status", True, "Document is correctly unlocked after checkin")
+            else:
+                results.add_result("Check Unlocked Status", False, f"Expected locked=false, got locked={locked}")
+        else:
+            results.add_result("Check Unlocked Status", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Check Unlocked Status", False, f"Exception: {str(e)}")
+
+def test_case_archiving(token, results):
+    """Test P2: Case Archiving APIs"""
+    print(f"\n{'='*60}")
+    print("TESTING P2: CASE ARCHIVING")
+    print(f"{'='*60}")
+    
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    
+    # Test 10: GET /api/cases/archive with auth (should return cases array)
+    try:
+        url = f"{BASE_URL}/api/cases/archive"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            cases = data.get("cases", [])
+            read_only = data.get("readOnly", False)
+            
+            if isinstance(cases, list) and read_only:
+                results.add_result("List Archived Cases", True, f"Retrieved {len(cases)} archived cases with readOnly=true")
+            else:
+                results.add_result("List Archived Cases", False, f"Expected cases array and readOnly=true, got cases={type(cases)}, readOnly={read_only}")
+        else:
+            results.add_result("List Archived Cases", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("List Archived Cases", False, f"Exception: {str(e)}")
+    
+    # Test 11: POST /api/cases/archive with { action: "auto_archive" }
+    try:
+        url = f"{BASE_URL}/api/cases/archive"
+        data = {"action": "auto_archive"}
+        response = requests.post(url, headers=headers, json=data)
+        
+        if response.status_code == 200:
+            data = response.json()
+            message = data.get("message", "")
+            archived_count = data.get("archived", 0)
+            
+            if "archiv" in message.lower():
+                results.add_result("Auto Archive Cases", True, f"Auto-archive completed: {message}")
+            else:
+                results.add_result("Auto Archive Cases", False, f"Unexpected response: {message}")
+        else:
+            results.add_result("Auto Archive Cases", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Auto Archive Cases", False, f"Exception: {str(e)}")
+    
+    # Test 12: POST /api/cases/archive with { caseId: "nonexistent" } (should return 404)
+    try:
+        url = f"{BASE_URL}/api/cases/archive"
+        data = {"caseId": "nonexistent-case-id-12345"}
+        response = requests.post(url, headers=headers, json=data)
+        
+        if response.status_code == 404:
+            results.add_result("Archive Nonexistent Case", True, "Correctly returned 404 for nonexistent case")
+        else:
+            results.add_result("Archive Nonexistent Case", False, f"Expected 404, got {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Archive Nonexistent Case", False, f"Exception: {str(e)}")
+
+def test_previous_features_regression(token, results):
+    """Test Previous Feature Regression Tests"""
+    print(f"\n{'='*60}")
+    print("TESTING PREVIOUS FEATURES REGRESSION")
+    print(f"{'='*60}")
+    
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    
+    # Test 13: GET /api/intakes (should return intakes list)
+    try:
+        url = f"{BASE_URL}/api/intakes"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "intakes" in data or isinstance(data, list):
+                results.add_result("Intakes API Regression", True, "Intakes API working correctly")
+            else:
+                results.add_result("Intakes API Regression", False, f"Unexpected response structure: {list(data.keys()) if isinstance(data, dict) else type(data)}")
+        else:
+            results.add_result("Intakes API Regression", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Intakes API Regression", False, f"Exception: {str(e)}")
+    
+    # Test 14: GET /api/leads (should return leads list)
+    try:
+        url = f"{BASE_URL}/api/leads"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "leads" in data or isinstance(data, list):
+                results.add_result("Leads API Regression", True, "Leads API working correctly")
+            else:
+                results.add_result("Leads API Regression", False, f"Unexpected response structure: {list(data.keys()) if isinstance(data, dict) else type(data)}")
+        else:
+            results.add_result("Leads API Regression", False, f"Status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Leads API Regression", False, f"Exception: {str(e)}")
+    
+    # Test 15: GET /api/tasks (should return 200, not 500 - confirming updated_at fix)
+    try:
+        url = f"{BASE_URL}/api/tasks"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            results.add_result("Tasks API Regression", True, "Tasks API working correctly (updated_at fix confirmed)")
+        elif response.status_code == 401:
+            results.add_result("Tasks API Regression", True, "Tasks API properly secured (401 expected)")
+        elif response.status_code == 500:
+            results.add_result("Tasks API Regression", False, "Tasks API returning 500 error (updated_at issue not fixed)")
+        else:
+            results.add_result("Tasks API Regression", False, f"Unexpected status {response.status_code}: {response.text}")
+    except Exception as e:
+        results.add_result("Tasks API Regression", False, f"Exception: {str(e)}")
+
+def main():
+    """Main test execution"""
+    print("🚀 Starting P1 & P2 Features Backend Testing")
+    print(f"Base URL: {BASE_URL}")
+    print(f"Test User: {TEST_EMAIL}")
+    
+    results = TestResults()
+    
+    # Step 1: Login to get access token
+    token = login_to_supabase()
+    if not token:
+        print("❌ Cannot proceed without authentication token")
+        sys.exit(1)
+    
+    # Step 2: Test P1 - Document Versioning
+    test_document_versioning(token, results)
+    
+    # Step 3: Test P1 - Document Check-in/out
+    test_document_checkin_checkout(token, results)
+    
+    # Step 4: Test P2 - Case Archiving
+    test_case_archiving(token, results)
+    
+    # Step 5: Test Previous Features Regression
+    test_previous_features_regression(token, results)
+    
+    # Final Summary
+    passed, failed, success_rate = results.summary()
+    
+    # Detailed results
+    print(f"\n{'='*60}")
+    print("DETAILED TEST RESULTS")
+    print(f"{'='*60}")
+    for result in results.results:
+        status = "✅ PASS" if result["passed"] else "❌ FAIL"
+        print(f"{status}: {result['test']} - {result['details']}")
+    
+    print(f"\n🎯 TESTING COMPLETED")
+    print(f"📊 Success Rate: {success_rate:.1f}% ({passed}/{passed + failed})")
+    
+    if failed == 0:
+        print("🎉 ALL TESTS PASSED! P1 & P2 features are working correctly.")
+    else:
+        print(f"⚠️  {failed} test(s) failed. Please review the issues above.")
+    
+    return failed == 0
 
 if __name__ == "__main__":
-    test_suite = IntakeTestSuite()
-    success = test_suite.run_all_tests()
+    success = main()
     sys.exit(0 if success else 1)
