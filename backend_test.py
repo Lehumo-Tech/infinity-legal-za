@@ -11,7 +11,7 @@ import sys
 from urllib.parse import urljoin
 
 # Base URL from environment
-BASE_URL = "https://case-workspace-1.preview.emergentagent.com"
+BASE_URL = "https://infinity-staging.preview.emergentagent.com"
 
 def test_health_check():
     """Test GET /api/health endpoint"""

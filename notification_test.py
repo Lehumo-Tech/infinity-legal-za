@@ -9,7 +9,7 @@ import json
 import time
 from datetime import datetime
 
-BASE_URL = "https://case-workspace-1.preview.emergentagent.com"
+BASE_URL = "https://infinity-staging.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 def test_notification_system_with_auth():

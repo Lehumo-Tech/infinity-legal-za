@@ -3,7 +3,7 @@
 Infinity Legal Platform - ENHANCED Production-Readiness API Testing Suite
 Tests ALL API endpoints comprehensively including authenticated flows.
 
-Base URL: https://case-workspace-1.preview.emergentagent.com
+Base URL: https://infinity-staging.preview.emergentagent.com
 """
 
 import requests
@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 
 # Get base URL from environment
-BASE_URL = "https://case-workspace-1.preview.emergentagent.com"
+BASE_URL = "https://infinity-staging.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class EnhancedAPITester:

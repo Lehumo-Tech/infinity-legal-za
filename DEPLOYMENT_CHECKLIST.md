@@ -56,7 +56,7 @@
 
 - [ ] **Health Check Passed**
   ```bash
-  curl https://case-workspace-1.preview.emergentagent.com/api/health
+  curl https://infinity-staging.preview.emergentagent.com/api/health
   ```
   Expected: All services show "configured"
 
@@ -96,7 +96,7 @@
 
 - [ ] **Security Headers Check**
   ```bash
-  curl -I https://case-workspace-1.preview.emergentagent.com/
+  curl -I https://infinity-staging.preview.emergentagent.com/
   ```
   - [ ] `Content-Security-Policy` present
   - [ ] `X-Frame-Options: DENY` present
@@ -107,7 +107,7 @@
   ```bash
   # Send 101 requests (should fail on 101st)
   for i in {1..101}; do
-    curl -s https://case-workspace-1.preview.emergentagent.com/api/health
+    curl -s https://infinity-staging.preview.emergentagent.com/api/health
   done
   ```
   - [ ] 101st request returns 429 (Rate limit exceeded)

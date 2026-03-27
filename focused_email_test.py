@@ -6,7 +6,7 @@ Focused Email API Test - Verify API behavior with invalid Brevo key
 import requests
 import json
 
-BASE_URL = "https://case-workspace-1.preview.emergentagent.com/api"
+BASE_URL = "https://infinity-staging.preview.emergentagent.com/api"
 
 def test_email_api_behavior():
     """Test that the email API is working correctly despite Brevo API key issues"""

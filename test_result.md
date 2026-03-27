@@ -149,6 +149,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "Complete CRUD testing passed. GET lists tasks with case relationships. POST creates tasks with proper validation. PUT updates task status correctly. DELETE removes tasks successfully. All endpoints working with proper authorization."
+        - working: true
+          agent: "main"
+          comment: "Fixed tasks.updated_at column error. Removed updated_at from Supabase select query in GET /api/tasks (line 39). Column did not exist in Supabase tasks table. API now returns 401 properly instead of 500."
 
   - task: "Documents API (List + Upload)"
     implemented: true
@@ -1140,4 +1143,4 @@ agent_communication:
     - agent: "testing"
       message: "PRODUCTION READINESS TESTING COMPLETED: All 6 production readiness endpoints tested and working perfectly. ✅ Health Check API: Returns proper status with MongoDB/Supabase connectivity, environment validation, memory usage, and 407ms response time. ✅ Analytics API: Privacy-compliant tracking working with proper validation and auth protection. ✅ Sitemap: Valid XML with 17 URLs, priority pages included, protected URLs excluded. ✅ Robots.txt: Proper content with sitemap reference and AI crawler blocking. ✅ Custom 404 Page: Branded 404 page with navigation options. ✅ Existing APIs: Plans and Attorneys APIs still working (3 plans, 3 attorneys found). All production readiness requirements met - platform ready for deployment."
     - agent: "main"
-      message: "AI ENHANCEMENT + WORKFLOW TESTING: 1) Fixed AI Document Assist & Case Insights - corrected LLM proxy URL. Both return 200 with full AI-generated content (termination letters, case strategies). 2) Added AI Chatbot Widget (AIChatWidget.js) - floating chatbot on all public pages with quick questions, instant answers, CTAs. 3) All AI features working: intake analysis (GPT-4o), document drafting, case strategy. Please test: POST /api/ai/document-assist with Bearer token. POST /api/ai/case-insights with Bearer token. Test login flow: POST to Supabase auth, verify token, hit protected endpoints. Base URL: https://case-workspace-1.preview.emergentagent.com."
+      message: "AI ENHANCEMENT + WORKFLOW TESTING: 1) Fixed AI Document Assist & Case Insights - corrected LLM proxy URL. Both return 200 with full AI-generated content (termination letters, case strategies). 2) Added AI Chatbot Widget (AIChatWidget.js) - floating chatbot on all public pages with quick questions, instant answers, CTAs. 3) All AI features working: intake analysis (GPT-4o), document drafting, case strategy. Please test: POST /api/ai/document-assist with Bearer token. POST /api/ai/case-insights with Bearer token. Test login flow: POST to Supabase auth, verify token, hit protected endpoints. Base URL: https://infinity-staging.preview.emergentagent.com."
