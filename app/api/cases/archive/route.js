@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request) {
   try {
-    const { user, error, status } = await requirePermission(request, 'VIEW_CASES')
+    const { user, error, status } = await requirePermission(request, 'VIEW_ALL_CASES')
     if (error) return NextResponse.json({ error }, { status })
 
     const { data, error: dbErr } = await supabaseAdmin
