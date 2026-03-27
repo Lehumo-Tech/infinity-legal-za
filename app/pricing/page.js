@@ -82,24 +82,10 @@ const LEGAL_POLICIES = [
   },
 ]
 
-const FUNERAL_PLANS = [
-  {
-    id: 'funeral-a', name: 'Funeral Plan A', payout: 'R10 000', price: 'R55', period: '/month',
-    features: ['Cash payout within 48 hours of receiving all documents', 'Backed by tough lawyers for legal aspects', 'Cover for main member, spouse and children', 'Simple claims process'],
-  },
-  {
-    id: 'funeral-b', name: 'Funeral Plan B', payout: 'R15 000', price: 'R82', period: '/month',
-    features: ['Cash payout within 48 hours of receiving all documents', 'Backed by tough lawyers for legal aspects', 'Cover for main member, spouse and children', 'Simple claims process', 'Extended family cover option'],
-  },
-  {
-    id: 'funeral-c', name: 'Funeral Plan C', payout: 'R20 000', price: 'R110', period: '/month',
-    features: ['Cash payout within 48 hours of receiving all documents', 'Backed by tough lawyers for legal aspects', 'Cover for main member, spouse and children', 'Simple claims process', 'Extended family cover option', 'Repatriation assistance'],
-  },
-]
+// Legal Protection Only
 
 export default function PricingPage() {
   const { isAuthenticated, canAccessPortal } = useAuth()
-  const [activeTab, setActiveTab] = useState('legal')
   const [expandedPolicy, setExpandedPolicy] = useState(null)
 
   return (
@@ -133,7 +119,6 @@ export default function PricingPage() {
           </Link>
           <div className="hidden md:flex items-center gap-6">
             <Link href="/#policies" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy transition-colors">Legal Policies</Link>
-            <Link href="/#funeral" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy transition-colors">Funeral Plans</Link>
             <Link href="/intake" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy transition-colors">AI Legal Help</Link>
             <Link href="/#contact" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy transition-colors">Contact Us</Link>
           </div>
@@ -160,25 +145,17 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-center mb-10">
             <div className="inline-flex bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-1">
-              <button onClick={() => setActiveTab('legal')}
-                className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'legal' ? 'bg-infinity-navy text-white shadow-md' : 'text-gray-500 hover:text-infinity-navy'}`}>
+              <div className="px-8 py-3 rounded-lg text-sm font-bold bg-infinity-navy text-white shadow-md">
                 Personal Legal Policies
-              </button>
-              <button onClick={() => setActiveTab('funeral')}
-                className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'funeral' ? 'bg-infinity-navy text-white shadow-md' : 'text-gray-500 hover:text-infinity-navy'}`}>
-                Funeral Plans
-              </button>
+              </div>
             </div>
           </div>
 
-          {/* LEGAL POLICIES */}
-          {activeTab === 'legal' && (
-            <>
-              <p className="text-center text-gray-500 mb-10 max-w-3xl mx-auto">
-                Our affordable legal solutions give you unlimited access to expert advice through our 24-hour legal contact centre, paralegal assistance, access to tough lawyers, and legal representation in court.
-              </p>
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {LEGAL_POLICIES.map(policy => (
+          <p className="text-center text-gray-500 mb-10 max-w-3xl mx-auto">
+            Our affordable legal solutions give you unlimited access to expert advice through our 24-hour legal contact centre, paralegal assistance, access to tough lawyers, and legal representation in court.
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {LEGAL_POLICIES.map(policy => (
                   <div key={policy.id} className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-t-4 ${policy.color} overflow-hidden relative ${policy.popular ? 'ring-2 ring-infinity-gold' : ''}`}>
                     {policy.popular && (
                       <div className="absolute top-0 right-0 bg-infinity-gold text-infinity-navy text-[10px] font-bold px-3 py-1 rounded-bl-lg">MOST POPULAR</div>
@@ -233,45 +210,6 @@ export default function PricingPage() {
                   </div>
                 ))}
               </div>
-            </>
-          )}
-
-          {/* FUNERAL PLANS */}
-          {activeTab === 'funeral' && (
-            <>
-              <p className="text-center text-gray-500 mb-10 max-w-3xl mx-auto">
-                Our funeral plans provide you and your family with the financial means to bury your loved ones with dignity, and the backing of our tough lawyers to help you with the legal aspects.
-              </p>
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {FUNERAL_PLANS.map(plan => (
-                  <div key={plan.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow">
-                    <div className="bg-infinity-navy p-5 text-center">
-                      <h3 className="text-lg font-display font-bold text-white mb-1">{plan.name}</h3>
-                      <p className="text-xs text-white/60">Funeral benefit cash payout of</p>
-                    </div>
-                    <div className="p-6 text-center">
-                      <div className="text-4xl font-display font-bold text-infinity-navy dark:text-white mb-2">{plan.payout}</div>
-                      <div className="flex items-baseline justify-center gap-1 mb-6">
-                        <span className="text-xl font-bold text-gray-700 dark:text-gray-200">{plan.price}</span>
-                        <span className="text-sm text-gray-400">{plan.period}</span>
-                      </div>
-                      <ul className="text-left space-y-2 mb-6">
-                        {plan.features.map((f, i) => (
-                          <li key={i} className="flex gap-2 items-start text-xs text-gray-500 dark:text-gray-400">
-                            <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                      <Link href="/apply" className="block w-full py-3 bg-infinity-gold text-infinity-navy rounded-lg text-sm font-bold hover:bg-yellow-400 transition-colors shadow-sm">
-                        Find Out More
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
 
           {/* Comparison Table */}
           <div className="mt-16 max-w-5xl mx-auto">
