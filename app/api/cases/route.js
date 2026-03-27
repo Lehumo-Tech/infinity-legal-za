@@ -109,7 +109,7 @@ export async function POST(request) {
       client_id: body.client_id || user.id,
       case_type: case_type || 'other',
       case_subtype: case_subtype || title || '',
-      status: body.status || 'new',
+      status: body.status || 'intake',
       urgency: urgency || 'medium',
       court_date: court_date || null,
       court_location: court_location || null,

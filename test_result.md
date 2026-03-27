@@ -697,10 +697,26 @@ frontend:
           agent: "testing"
           comment: "COMPREHENSIVE PRODUCTION-READINESS TESTING COMPLETED: Tested ALL API endpoints as requested in review. Results: 27/29 tests passed (93.1% success rate). ✅ PUBLIC APIs: GET /api/plans (3 plans), GET /api/attorneys (3 attorneys), GET /api/emails (configured), GET /api/setup/migrate (working). ✅ AUTH APIs: POST /api/auth/signup creates users successfully with unique emails, handles duplicates correctly. ✅ PROTECTED APIs: All return 401 without auth - /api/cases, /api/leads, /api/notifications, /api/dashboard/stats, /api/tasks, /api/documents, /api/audit, /api/profile, /api/consultations. ✅ CASE METADATA API: GET/POST/PUT /api/cases/[id]/metadata properly secured (401 without auth). ✅ AUTH CALLBACK: GET /auth/callback redirects correctly. ✅ AI INTAKE: POST /api/intake/analyze working perfectly with correct request format (requires responses.problem field). ✅ ERROR HANDLING: No 500 server errors found. Minor issues: 404 endpoints return HTML (acceptable), AI intake validation working correctly. PRODUCTION READY - all core functionality secured and working."
 
+  - task: "Critical Flows Testing (Supabase Auth + AI APIs + Case Workflow)"
+    implemented: true
+    working: true
+    file: "All critical API endpoints"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE CRITICAL FLOWS TESTING COMPLETED SUCCESSFULLY: All 6 critical flows tested and working perfectly. ✅ SUPABASE LOGIN FLOW: Authentication via Supabase Auth API working correctly, returns valid access tokens, authenticated API calls work (200), unauthenticated calls properly return 401. ✅ AI DOCUMENT ASSIST API: POST /api/ai/document-assist with Bearer token working correctly, returns 200 with AI-generated content, properly returns 401 without auth. ✅ AI CASE INSIGHTS API: POST /api/ai/case-insights with Bearer token working correctly, returns 200 with strategy/timeline/success probability data, properly returns 401 without auth. ✅ END-TO-END CASE WORKFLOW: Complete workflow tested successfully - Case creation with proper Matter Number format (IL-YYYY-NNNN), timeline entry addition, case notes, task creation and completion, message addition, metadata retrieval all working correctly. ✅ HEALTH CHECK API: GET /api/health returns 200 with all required fields (status: healthy, services: mongodb connected, supabase connected). ✅ AI INTAKE API: POST /api/intake/analyze (no auth required) working perfectly, returns structured analysis with category, nextSteps, relevantLegislation. MINOR FIX APPLIED: Fixed case creation default status from 'new' to 'intake' to match database constraints. All authentication, validation, and core functionality working perfectly. System is production-ready for all critical flows."
+
+agent_communication:
+    - agent: "testing"
+      message: "CRITICAL FLOWS TESTING COMPLETED SUCCESSFULLY: All 6 critical flows specified in the review request are working perfectly (100% pass rate). Fixed one minor issue with case creation status constraint. Supabase authentication, AI APIs, case workflow, health check, and AI intake all functioning correctly. System is production-ready for the specified critical flows. No major issues found."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 8
+  test_sequence: 9
   run_ui: false
 
   - task: "Real-time Notifications on Document Workflow"
@@ -1123,3 +1139,5 @@ agent_communication:
       message: "PRODUCTION READINESS: Implemented the production checklist items: 1) Custom 404 page with navigation (Home, AI Legal Help, Contact Us). 2) robots.txt blocking /api/, /portal/, /dashboard/ and AI crawlers. 3) sitemap.xml with 17 public pages and priority ranking. 4) GET /api/health endpoint checking MongoDB, Supabase, env vars, memory. 5) POST/GET /api/analytics for privacy-compliant page view tracking (no cookies, no IP, POPIA compliant). 6) JSON-LD structured data (LegalService schema) in layout. 7) ErrorBoundary component wrapping the app. 8) Global error.js page with retry/home buttons. 9) Global loading.js spinner. 10) MongoDB indexes created for all collections. 11) Environment validation utility (lib/env-validation.js). 12) Monitoring/error logging utility (lib/monitoring.js). 13) Production documentation (docs/PRODUCTION_READINESS.md) covering backup strategy, rollback plan, staff training, UAT checklist. Please test: GET /api/health (should return healthy status), POST /api/analytics (track page views), GET /sitemap.xml, 404 page rendering."
     - agent: "testing"
       message: "PRODUCTION READINESS TESTING COMPLETED: All 6 production readiness endpoints tested and working perfectly. ✅ Health Check API: Returns proper status with MongoDB/Supabase connectivity, environment validation, memory usage, and 407ms response time. ✅ Analytics API: Privacy-compliant tracking working with proper validation and auth protection. ✅ Sitemap: Valid XML with 17 URLs, priority pages included, protected URLs excluded. ✅ Robots.txt: Proper content with sitemap reference and AI crawler blocking. ✅ Custom 404 Page: Branded 404 page with navigation options. ✅ Existing APIs: Plans and Attorneys APIs still working (3 plans, 3 attorneys found). All production readiness requirements met - platform ready for deployment."
+    - agent: "main"
+      message: "AI ENHANCEMENT + WORKFLOW TESTING: 1) Fixed AI Document Assist & Case Insights - corrected LLM proxy URL. Both return 200 with full AI-generated content (termination letters, case strategies). 2) Added AI Chatbot Widget (AIChatWidget.js) - floating chatbot on all public pages with quick questions, instant answers, CTAs. 3) All AI features working: intake analysis (GPT-4o), document drafting, case strategy. Please test: POST /api/ai/document-assist with Bearer token. POST /api/ai/case-insights with Bearer token. Test login flow: POST to Supabase auth, verify token, hit protected endpoints. Base URL: https://case-workspace-1.preview.emergentagent.com."

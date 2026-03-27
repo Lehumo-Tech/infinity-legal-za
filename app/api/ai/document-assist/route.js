@@ -3,7 +3,7 @@ import { getUserFromRequest } from '@/lib/rbac'
 export const dynamic = 'force-dynamic'
 
 const LLM_KEY = process.env.EMERGENT_LLM_KEY || process.env.LLM_API_KEY || ''
-const LLM_URL = 'https://llm-proxy.emergentagi.workers.dev/v1/chat/completions'
+const LLM_URL = 'https://integrations.emergentagent.com/llm/v1/chat/completions'
 
 /**
  * POST /api/ai/document-assist

@@ -11,6 +11,9 @@ const CookieConsent = dynamic(() => import('../components/CookieConsent'), {
 const AnalyticsTracker = dynamic(() => import('../components/AnalyticsTracker'), {
   ssr: false
 })
+const AIChatWidget = dynamic(() => import('../components/AIChatWidget'), {
+  ssr: false
+})
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -102,6 +105,7 @@ export default function RootLayout({ children }) {
             <CookieConsent />
             <LegalDisclaimer />
             <AnalyticsTracker />
+            <AIChatWidget />
           </ErrorBoundary>
         </AuthProvider>
       </body>
