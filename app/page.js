@@ -133,10 +133,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2 text-sm">
             <svg className="w-4 h-4 text-infinity-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-            <span className="hidden sm:inline font-medium">24-Hour Legal Help Line</span>
-            <a href="tel:0860000000" className="font-bold text-infinity-gold hover:text-white transition-colors">
-              0860 000 000
-            </a>
+            <span className="font-medium text-infinity-gold">Infinity Legal Protection</span>
           </div>
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
@@ -466,14 +463,14 @@ export default function LandingPage() {
 
           {/* Contact Methods */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-            <a href="tel:0860000000" className="bg-infinity-navy rounded-xl p-6 text-center hover:bg-[#1a3055] transition-colors group">
+            <Link href="/intake" className="bg-infinity-navy rounded-xl p-6 text-center hover:bg-[#1a3055] transition-colors group">
               <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-infinity-gold/20 transition-colors">
-                <svg className="w-6 h-6 text-infinity-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                <svg className="w-6 h-6 text-infinity-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
               </div>
-              <div className="text-sm font-bold text-white mb-1">Call Us</div>
-              <div className="text-xs text-white/60">24-Hour Legal Help Line</div>
-              <div className="text-lg font-bold text-infinity-gold mt-1">0860 000 000</div>
-            </a>
+              <div className="text-sm font-bold text-white mb-1">AI Legal Help</div>
+              <div className="text-xs text-white/60">Get instant assistance</div>
+              <div className="text-sm font-bold text-infinity-gold mt-1">Start Now →</div>
+            </Link>
 
             <a href="https://wa.me/27000000000" target="_blank" rel="noopener noreferrer" className="bg-green-600 rounded-xl p-6 text-center hover:bg-green-700 transition-colors group">
               <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-white/20 transition-colors">
@@ -618,10 +615,6 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-bold text-infinity-gold mb-3">Contact</h4>
               <div className="space-y-2">
-                <a href="tel:0860000000" className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                  0860 000 000
-                </a>
                 <a href="mailto:info@infinitylegal.org" className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                   info@infinitylegal.org

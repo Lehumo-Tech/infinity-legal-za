@@ -20,9 +20,9 @@ export default function ContactPage() {
               <a href="mailto:info@infinitylegal.org" className="text-sm text-infinity-gold hover:underline">info@infinitylegal.org</a>
             </div>
             <div className="p-5 bg-infinity-cream/50 dark:bg-gray-700/50 rounded-xl">
-              <div className="text-2xl mb-2">📞</div>
-              <h3 className="font-semibold text-infinity-navy dark:text-white mb-1">Phone</h3>
-              <a href="tel:+27681640095" className="text-sm text-infinity-gold hover:underline">+27 68 164 0095</a>
+              <div className="text-2xl mb-2">💬</div>
+              <h3 className="font-semibold text-infinity-navy dark:text-white mb-1">WhatsApp</h3>
+              <a href="https://wa.me/27000000000" target="_blank" rel="noopener noreferrer" className="text-sm text-infinity-gold hover:underline">Chat with us</a>
             </div>
             <div className="p-5 bg-infinity-cream/50 dark:bg-gray-700/50 rounded-xl">
               <div className="text-2xl mb-2">📍</div>

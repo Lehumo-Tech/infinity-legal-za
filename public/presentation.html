@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infinity Legal Platform - Comprehensive Overview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body { font-family: 'Inter', sans-serif; color: #1a1a2e; line-height: 1.6; }
+  
+  .page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 60px 80px;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .page:last-child { page-break-after: avoid; }
+  
+  /* Cover Page */
+  .cover {
+    background: linear-gradient(135deg, #0a1628 0%, #1a2744 50%, #0d1f3c 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+  }
+  
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: rgba(201, 169, 78, 0.08);
+    border-radius: 50%;
+  }
+  
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -150px;
+    left: -100px;
+    width: 500px;
+    height: 500px;
+    background: rgba(59, 130, 246, 0.05);
+    border-radius: 50%;
+  }
+  
+  .cover h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+  
+  .cover .gold { color: #c9a94e; }
+  
+  .cover .subtitle {
+    font-size: 20px;
+    color: rgba(255,255,255,0.6);
+    max-width: 600px;
+    margin-bottom: 40px;
+  }
+  
+  .cover .meta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 60px;
+  }
+  
+  .badge {
+    display: inline-block;
+    background: rgba(201, 169, 78, 0.15);
+    border: 1px solid rgba(201, 169, 78, 0.3);
+    color: #c9a94e;
+    padding: 6px 20px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  
+  /* Section Pages */
+  .section-page {
+    background: #ffffff;
+  }
+  
+  .section-page .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f5;
+  }
+  
+  .section-page .header-bar .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0a1628;
+  }
+  
+  .section-page .header-bar .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #c9a94e;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #0a1628;
+    margin-bottom: 12px;
+  }
+  
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #0a1628;
+    margin-bottom: 8px;
+    margin-top: 24px;
+  }
+  
+  .section-desc {
+    font-size: 15px;
+    color: #6b7280;
+    margin-bottom: 32px;
+    max-width: 700px;
+  }
+  
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 24px 0;
+  }
+  
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 24px 0;
+  }
+  
+  .card {
+    background: #f8f9fc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  
+  .card.gold-border {
+    border-color: #c9a94e;
+    border-width: 2px;
+  }
+  
+  .card .card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  
+  .card .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0a1628;
+    margin-bottom: 6px;
+  }
+  
+  .card .card-text {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+  
+  .card .card-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #0a1628;
+    margin: 8px 0 4px;
+  }
+  
+  .card .card-coverage {
+    font-size: 12px;
+    color: #c9a94e;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  
+  /* Feature List */
+  .feature-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .feature-list li .check {
+    color: #10b981;
+    font-weight: 800;
+    min-width: 18px;
+  }
+  
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  
+  table th {
+    background: #0a1628;
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f0f5;
+    color: #374151;
+  }
+  
+  table tr:nth-child(even) td {
+    background: #f8f9fc;
+  }
+  
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+  
+  .stat-box {
+    background: #0a1628;
+    color: white;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  
+  .stat-box .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: #c9a94e;
+  }
+  
+  .stat-box .stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+  
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+  
+  .flow-step {
+    background: #0a1628;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 120px;
+  }
+  
+  .flow-arrow {
+    color: #c9a94e;
+    font-size: 20px;
+    font-weight: 800;
+  }
+  
+  /* Dark Section */
+  .dark-section {
+    background: #0a1628;
+    color: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin: 24px 0;
+  }
+  
+  .dark-section h3 {
+    color: #c9a94e;
+    margin-top: 0;
+  }
+  
+  .dark-section p, .dark-section li {
+    color: rgba(255,255,255,0.7);
+  }
+  
+  /* Footer on each page */
+  .page-footer {
+    position: absolute;
+    bottom: 30px;
+    left: 80px;
+    right: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: #9ca3af;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .confidential {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  @media print {
+    .page { page-break-after: always; }
+    .page:last-child { page-break-after: avoid; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== COVER PAGE ========== -->
+<div class="page cover">
+  <div class="badge">Confidential Business Document</div>
+  <h1>Infinity Legal<br><span class="gold">Platform Overview</span></h1>
+  <p class="subtitle">
+    A comprehensive AI-powered legal protection platform for South Africa. 
+    Built for scale, designed for trust.
+  </p>
+  <div style="display:flex; gap:32px; margin-top:20px;">
+    <div style="text-align:center;">
+      <div style="font-size:28px; font-weight:800; color:#c9a94e;">3</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.4);">Legal Policies</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:28px; font-weight:800; color:#c9a94e;">20+</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.4);">Backend APIs</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:28px; font-weight:800; color:#c9a94e;">15+</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.4);">Portal Modules</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:28px; font-weight:800; color:#c9a94e;">AI</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.4);">Powered Intake</div>
+    </div>
+  </div>
+  <p class="meta">
+    Infinity Legal (Pty) Ltd &bull; March 2026 &bull; Version 2.0<br>
+    POPIA Compliant &bull; FSCA Registered
+  </p>
+</div>
+
+<!-- ========== TABLE OF CONTENTS ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">Table of Contents</div>
+  </div>
+  
+  <h2>Contents</h2>
+  <p class="section-desc">Complete overview of the Infinity Legal platform — from public-facing pages to the internal staff portal and backend architecture.</p>
+  
+  <table>
+    <tr><th style="width:50px">#</th><th>Section</th><th>Description</th></tr>
+    <tr><td><strong>01</strong></td><td>Platform Overview</td><td>Architecture, tech stack, and key stats</td></tr>
+    <tr><td><strong>02</strong></td><td>Public Website</td><td>Homepage, pricing, AI intake, contact, and more</td></tr>
+    <tr><td><strong>03</strong></td><td>Legal Policies & Pricing</td><td>Product tiers, coverage amounts, comparison</td></tr>
+    <tr><td><strong>04</strong></td><td>Membership Application Flow</td><td>6-step application wizard for new members</td></tr>
+    <tr><td><strong>05</strong></td><td>AI-Powered Legal Intake</td><td>Intelligent legal category selection + AI analysis</td></tr>
+    <tr><td><strong>06</strong></td><td>Authentication & Security</td><td>Supabase auth, RBAC, middleware protection</td></tr>
+    <tr><td><strong>07</strong></td><td>Staff Portal (Intranet)</td><td>Case management, calendar, billing, HR, documents, messaging, knowledge base</td></tr>
+    <tr><td><strong>08</strong></td><td>Case Management Workspace</td><td>Timeline, notes, tasks, messages, billing, documents — per case</td></tr>
+    <tr><td><strong>09</strong></td><td>Backend API Architecture</td><td>All API endpoints, MongoDB collections, data flow</td></tr>
+    <tr><td><strong>10</strong></td><td>Production Readiness</td><td>SEO, monitoring, analytics, backup, security</td></tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 2</span>
+  </div>
+</div>
+
+<!-- ========== PLATFORM OVERVIEW ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">01 &mdash; Platform Overview</div>
+  </div>
+  
+  <h2>Platform Architecture</h2>
+  <p class="section-desc">A modern full-stack application built with Next.js 14, powered by dual databases and AI integration.</p>
+  
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-value">Next.js 14</div>
+      <div class="stat-label">Frontend + API Routes</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">Supabase</div>
+      <div class="stat-label">Auth + PostgreSQL</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">MongoDB</div>
+      <div class="stat-label">Enterprise Data Store</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">AI/LLM</div>
+      <div class="stat-label">GPT-4o Integration</div>
+    </div>
+  </div>
+  
+  <h3>Technology Stack</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">Frontend</div>
+      <div class="card-text">Next.js 14 App Router, React 18, Tailwind CSS, shadcn/ui components, Recharts for analytics</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔒</div>
+      <div class="card-title">Authentication</div>
+      <div class="card-text">Supabase Auth with PKCE flow, 20+ role types, granular permissions, middleware protection</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🗄️</div>
+      <div class="card-title">Databases</div>
+      <div class="card-text">Supabase PostgreSQL (auth/core), MongoDB (enterprise features, case workspace, analytics)</div>
+    </div>
+  </div>
+  
+  <h3>Key Metrics</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📄</div>
+      <div class="card-title">15+ Pages</div>
+      <div class="card-text">Public website, portal modules, auth pages, legal compliance pages</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔗</div>
+      <div class="card-title">25+ API Endpoints</div>
+      <div class="card-text">RESTful APIs for cases, billing, calendar, HR, documents, messaging, knowledge, analytics</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛡️</div>
+      <div class="card-title">20+ Roles</div>
+      <div class="card-text">Managing Director, Senior Partner, Associate, Attorney, Paralegal, Client, and more</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 3</span>
+  </div>
+</div>
+
+<!-- ========== PUBLIC WEBSITE ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">02 &mdash; Public Website</div>
+  </div>
+  
+  <h2>Public-Facing Pages</h2>
+  <p class="section-desc">Professional, conversion-optimized pages modelled after industry leader Scorpion Legal Protection — adapted for Infinity Legal's brand and pricing.</p>
+  
+  <table>
+    <tr><th>Page</th><th>URL</th><th>Purpose</th><th>Status</th></tr>
+    <tr><td><strong>Homepage</strong></td><td>/</td><td>Hero, policies, contact, referral, AI chatbot CTA</td><td>✅ Live</td></tr>
+    <tr><td><strong>Pricing</strong></td><td>/pricing</td><td>Policy cards, comparison table, CTAs</td><td>✅ Live</td></tr>
+    <tr><td><strong>Apply / Join Now</strong></td><td>/apply</td><td>6-step membership application wizard</td><td>✅ Live</td></tr>
+    <tr><td><strong>AI Intake</strong></td><td>/intake</td><td>AI-powered legal issue categorisation &amp; analysis</td><td>✅ Live</td></tr>
+    <tr><td><strong>Book Consultation</strong></td><td>/book-consultation</td><td>Schedule attorney consultation</td><td>✅ Live</td></tr>
+    <tr><td><strong>Login</strong></td><td>/login</td><td>Member/staff authentication</td><td>✅ Live</td></tr>
+    <tr><td><strong>Signup</strong></td><td>/signup</td><td>Account registration</td><td>✅ Live</td></tr>
+    <tr><td><strong>Contact</strong></td><td>/contact</td><td>Email, WhatsApp, location, business hours</td><td>✅ Live</td></tr>
+    <tr><td><strong>Help Centre</strong></td><td>/help</td><td>FAQs with expandable answers</td><td>✅ Live</td></tr>
+    <tr><td><strong>Terms of Service</strong></td><td>/terms</td><td>Legal terms &amp; conditions</td><td>✅ Live</td></tr>
+    <tr><td><strong>Privacy Policy</strong></td><td>/privacy</td><td>POPIA-compliant privacy policy</td><td>✅ Live</td></tr>
+    <tr><td><strong>Custom 404</strong></td><td>/*</td><td>Branded 404 page with navigation options</td><td>✅ Live</td></tr>
+  </table>
+  
+  <h3>Homepage Sections (Scorpion-Style)</h3>
+  <ul class="feature-list">
+    <li><span class="check">✓</span> Top bar with brand identity + Member Login</li>
+    <li><span class="check">✓</span> Sticky navigation: Legal Policies, AI Legal Help, Legal Resources, Contact Us, Join Now</li>
+    <li><span class="check">✓</span> Bold hero: "Legal Protection That Fights For You" + hero image + stats</li>
+    <li><span class="check">✓</span> Expandable pricing cards with Read More / Close toggle</li>
+    <li><span class="check">✓</span> "Why Join Infinity Legal?" persuasion section</li>
+    <li><span class="check">✓</span> Referral Rewards banner</li>
+    <li><span class="check">✓</span> AI Legal Sidekick section</li>
+    <li><span class="check">✓</span> Legal Resources grid (Articles, Templates, FAQs, Claim Forms)</li>
+    <li><span class="check">✓</span> Multi-channel Contact (AI Help, WhatsApp, Email, Help Centre)</li>
+    <li><span class="check">✓</span> Online Query form with enquiry type dropdown</li>
+    <li><span class="check">✓</span> Professional footer with quick links + legal links</li>
+  </ul>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 4</span>
+  </div>
+</div>
+
+<!-- ========== LEGAL POLICIES ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">03 &mdash; Legal Policies &amp; Pricing</div>
+  </div>
+  
+  <h2>Legal Protection Policies</h2>
+  <p class="section-desc">Three tiers of affordable legal protection designed for South African families and individuals.</p>
+  
+  <div class="card-grid">
+    <div class="card" style="border-top: 4px solid #0ea5e9;">
+      <div class="card-title">Labour Shield</div>
+      <div class="card-text">Employment matters coverage</div>
+      <div class="card-price">R95<span style="font-size:14px; color:#6b7280;">/month</span></div>
+      <div class="card-coverage">Up to R72,300 per case</div>
+      <div class="card-text">
+        &bull; Employment law matters<br>
+        &bull; R11,000 accidental death benefit<br>
+        &bull; Free last will &amp; testament<br>
+        &bull; Tax advice<br>
+        &bull; 24-hour legal help line
+      </div>
+    </div>
+    <div class="card gold-border">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="card-title">Civil Guard</div>
+        <span style="background:#c9a94e; color:#0a1628; padding:2px 8px; border-radius:4px; font-size:9px; font-weight:700;">MOST POPULAR</span>
+      </div>
+      <div class="card-text">Civil matters coverage</div>
+      <div class="card-price">R115<span style="font-size:14px; color:#6b7280;">/month</span></div>
+      <div class="card-coverage">Up to R78,500 per case</div>
+      <div class="card-text">
+        &bull; Civil law matters<br>
+        &bull; R16,500 accidental death benefit<br>
+        &bull; Free last will &amp; testament<br>
+        &bull; Tax advice &amp; assistance<br>
+        &bull; 24-hour legal help line
+      </div>
+    </div>
+    <div class="card" style="border-top: 4px solid #0a1628;">
+      <div class="card-title">Complete Cover</div>
+      <div class="card-text">Most comprehensive policy</div>
+      <div class="card-price">R130<span style="font-size:14px; color:#6b7280;">/month</span></div>
+      <div class="card-coverage">Up to R100,000 per case</div>
+      <div class="card-text">
+        &bull; Employment + Civil + Criminal law<br>
+        &bull; R22,000 accidental death benefit<br>
+        &bull; Divorce &amp; child maintenance<br>
+        &bull; 20% conveyancing discount<br>
+        &bull; Legacy Accumulator benefit<br>
+        &bull; Tax submission services
+      </div>
+    </div>
+  </div>
+  
+  <h3>All Policies Include</h3>
+  <div class="card-grid">
+    <div class="card"><div class="card-icon">👨‍👩‍👧‍👦</div><div class="card-text">Cover for main member, spouse/life partner, and children under 21</div></div>
+    <div class="card"><div class="card-icon">📞</div><div class="card-text">24-hour access to experienced legal specialists</div></div>
+    <div class="card"><div class="card-icon">💼</div><div class="card-text">Pay no premiums for up to 12 months if retrenched or permanently disabled</div></div>
+  </div>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 5</span>
+  </div>
+</div>
+
+<!-- ========== APPLICATION FLOW ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">04 &mdash; Application Flow</div>
+  </div>
+  
+  <h2>Membership Application Wizard</h2>
+  <p class="section-desc">A comprehensive 6-step application process that captures all required information for legal policy onboarding.</p>
+  
+  <div class="flow">
+    <div class="flow-step">1. Personal<br>Details</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">2. Service<br>Plan</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">3. Dependants</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">4. Legal<br>Matter</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">5. Banking<br>Details</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">6. Declaration</div>
+  </div>
+  
+  <div class="card-grid-2">
+    <div class="card">
+      <div class="card-title">Step 1: Personal Details</div>
+      <div class="card-text">Title, full names, ID/passport number, email, cellphone, language preference, postal address</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Step 2: Service Plan</div>
+      <div class="card-text">Select from Labour Shield (R95), Civil Guard (R115), or Complete Cover (R130)</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Step 3: Dependants</div>
+      <div class="card-text">Add spouse/partner and children under 21 for family coverage</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Step 4: Legal Matter</div>
+      <div class="card-text">Describe current legal issue (if any) for immediate assignment</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Step 5: Banking Details</div>
+      <div class="card-text">Debit order setup for monthly premium collection</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Step 6: Declaration</div>
+      <div class="card-text">Terms acceptance, POPIA consent, digital signature</div>
+    </div>
+  </div>
+
+  <h3>AI-Powered Legal Intake</h3>
+  <p class="section-desc">Separate from the application, the AI Intake Wizard allows anyone to get immediate legal guidance.</p>
+  
+  <div class="flow">
+    <div class="flow-step">Select Legal<br>Category</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Describe<br>Issue</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">AI Analysis<br>(GPT-4o)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Legal<br>Guidance</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Attorney<br>Matching</div>
+  </div>
+  
+  <p style="font-size:13px; color:#6b7280; margin-top:16px;">
+    <strong>9 Legal Categories:</strong> Criminal Law, Family Law, Labour Law, Personal Injury, Property Law, Debt Recovery, Civil Litigation, Commercial Law, Other/Not Sure
+  </p>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 6</span>
+  </div>
+</div>
+
+<!-- ========== STAFF PORTAL ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">07 &mdash; Staff Portal (Intranet)</div>
+  </div>
+  
+  <h2>Staff Portal Modules</h2>
+  <p class="section-desc">A comprehensive internal portal accessible only to authenticated staff members. Protected by Supabase Auth + RBAC middleware.</p>
+  
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Case Management</div>
+      <div class="card-text">Create/manage cases, auto-generated Matter Numbers (IL-YYYY-NNNN), status workflows, tabbed workspace</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📅</div>
+      <div class="card-title">Calendar</div>
+      <div class="card-text">Firm-wide calendar, court dates, meeting scheduling, appointment management</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <div class="card-title">Billing</div>
+      <div class="card-text">Invoice creation, payment tracking, billing rate management, financial reporting</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">👥</div>
+      <div class="card-title">HR &amp; Leave</div>
+      <div class="card-text">Leave requests, approval workflows, staff directory, department management</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📄</div>
+      <div class="card-title">Documents</div>
+      <div class="card-text">Document management, templates, AI-assisted drafting, review workflows</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <div class="card-title">Messaging</div>
+      <div class="card-text">Internal messaging, conversations, unread tracking, announcements</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📚</div>
+      <div class="card-title">Knowledge Base</div>
+      <div class="card-text">Legal precedents, statutes, research memos, conflict checking</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Reports</div>
+      <div class="card-text">Cross-module analytics, case statistics, billing summaries, staff productivity</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Settings</div>
+      <div class="card-text">Notification preferences, profile management, firm configuration</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 7</span>
+  </div>
+</div>
+
+<!-- ========== CASE MANAGEMENT ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">08 &mdash; Case Management Workspace</div>
+  </div>
+  
+  <h2>Case Workspace (Module 2)</h2>
+  <p class="section-desc">Each case has a comprehensive tabbed workspace for managing all aspects of legal matters.</p>
+  
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📜</div>
+      <div class="card-title">Timeline</div>
+      <div class="card-text">Chronological event feed. Auto-generated entries for case creation, note additions, task completions, and messages.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📝</div>
+      <div class="card-title">Notes</div>
+      <div class="card-text">Internal attorney notes with categories: General, Strategy, Research, Client Update, Court Prep. Staff-only access.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">✅</div>
+      <div class="card-title">Tasks</div>
+      <div class="card-text">Case-specific task management with priorities (Low/Normal/High/Urgent), due dates, and status tracking.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <div class="card-title">Messages</div>
+      <div class="card-text">Case communication log with internal/external flag. Supports attorney-only messages.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <div class="card-title">Billing</div>
+      <div class="card-text">Time entries, budget tracking, billing rates, resource management per case.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Details</div>
+      <div class="card-text">SA prescription periods, milestones, case metadata, assignment history.</div>
+    </div>
+  </div>
+  
+  <h3>Case Workflow</h3>
+  <div class="flow">
+    <div class="flow-step" style="background:#10b981;">New</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="background:#3b82f6;">Active</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="background:#f59e0b; color:#0a1628;">Pending<br>Court</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="background:#8b5cf6;">In<br>Review</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="background:#0a1628;">Resolved</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="background:#6b7280;">Closed</div>
+  </div>
+  
+  <h3>Matter Number Format</h3>
+  <div class="dark-section">
+    <h3>IL-YYYY-NNNN</h3>
+    <p>Auto-generated sequential matter numbers. Example: <strong>IL-2026-0001</strong></p>
+    <p style="margin-top:8px;">IL = Infinity Legal, YYYY = Year, NNNN = Sequential number (zero-padded)</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 8</span>
+  </div>
+</div>
+
+<!-- ========== API ARCHITECTURE ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">09 &mdash; Backend API Architecture</div>
+  </div>
+  
+  <h2>API Endpoints</h2>
+  <p class="section-desc">RESTful API routes built with Next.js App Router. All endpoints prefixed with /api/.</p>
+  
+  <table>
+    <tr><th>Endpoint</th><th>Methods</th><th>Auth</th><th>Description</th></tr>
+    <tr><td>/api/cases</td><td>GET, POST</td><td>✅</td><td>List/create cases with auto Matter Numbers</td></tr>
+    <tr><td>/api/cases/[id]/timeline</td><td>GET, POST</td><td>✅</td><td>Case timeline events</td></tr>
+    <tr><td>/api/cases/[id]/notes</td><td>GET, POST</td><td>✅ Staff</td><td>Internal attorney notes</td></tr>
+    <tr><td>/api/cases/[id]/tasks</td><td>GET, POST, PUT</td><td>✅</td><td>Case task management</td></tr>
+    <tr><td>/api/cases/[id]/messages</td><td>GET, POST</td><td>✅</td><td>Case communications</td></tr>
+    <tr><td>/api/cases/[id]/assign</td><td>PUT</td><td>✅ RBAC</td><td>Attorney assignment</td></tr>
+    <tr><td>/api/cases/[id]/metadata</td><td>GET, POST, PUT</td><td>✅</td><td>Prescription, resources, milestones</td></tr>
+    <tr><td>/api/calendar</td><td>GET, POST, PUT, DEL</td><td>✅</td><td>Calendar events</td></tr>
+    <tr><td>/api/billing</td><td>GET, POST</td><td>✅</td><td>Invoices and billing</td></tr>
+    <tr><td>/api/hr</td><td>GET, POST, PUT</td><td>✅</td><td>Leave management</td></tr>
+    <tr><td>/api/documents</td><td>GET, POST</td><td>✅</td><td>Document management</td></tr>
+    <tr><td>/api/messages</td><td>GET, POST</td><td>✅</td><td>Internal messaging</td></tr>
+    <tr><td>/api/announcements</td><td>GET, POST, DEL</td><td>✅</td><td>Firm announcements</td></tr>
+    <tr><td>/api/knowledge</td><td>GET, POST</td><td>✅</td><td>Knowledge base</td></tr>
+    <tr><td>/api/ai/document-assist</td><td>POST</td><td>✅</td><td>AI document review/draft</td></tr>
+    <tr><td>/api/ai/case-insights</td><td>POST</td><td>✅</td><td>AI case strategy/risk</td></tr>
+    <tr><td>/api/health</td><td>GET</td><td>❌</td><td>System health check</td></tr>
+    <tr><td>/api/analytics</td><td>GET, POST</td><td>Mixed</td><td>Privacy-compliant analytics</td></tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 9</span>
+  </div>
+</div>
+
+<!-- ========== PRODUCTION READINESS ========== -->
+<div class="page section-page">
+  <div class="header-bar">
+    <div class="logo-text">Infinity Legal</div>
+    <div class="section-label">10 &mdash; Production Readiness</div>
+  </div>
+  
+  <h2>Production Checklist</h2>
+  <p class="section-desc">Comprehensive production readiness measures implemented across the platform.</p>
+  
+  <div class="card-grid-2">
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">SEO &amp; Structured Data</div>
+      <div class="card-text">JSON-LD LegalService schema, OpenGraph tags, Twitter Cards, auto-generated sitemap.xml with 17 pages, robots.txt blocking private routes &amp; AI crawlers</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Monitoring &amp; Health</div>
+      <div class="card-text">GET /api/health endpoint checking MongoDB, Supabase, env vars, memory usage. Error logging to MongoDB. Uptime monitoring ready.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <div class="card-title">Analytics (POPIA Compliant)</div>
+      <div class="card-text">Privacy-first analytics — no cookies, no IP tracking, no fingerprinting. Page views stored in MongoDB. Admin dashboard via GET /api/analytics.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛡️</div>
+      <div class="card-title">Security Headers</div>
+      <div class="card-text">CSP, HSTS, X-Frame-Options: DENY, XSS Protection, Referrer-Policy, Permissions-Policy. RBAC on all API endpoints.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💾</div>
+      <div class="card-title">Backup Strategy</div>
+      <div class="card-text">Supabase: automatic daily backups + point-in-time recovery. MongoDB: mongodump scheduled backups. Monthly restore testing.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <div class="card-title">Rollback Plan</div>
+      <div class="card-text">Emergent platform version history for code. Supabase PITR for PostgreSQL. MongoDB backup restore for enterprise data. Documented procedures.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚠️</div>
+      <div class="card-title">Error Handling</div>
+      <div class="card-text">Custom 404 page with navigation. Global error boundary. Error.js with retry. Client errors logged to /api/analytics.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🗃️</div>
+      <div class="card-title">Database Indexes</div>
+      <div class="card-text">14 MongoDB indexes created for optimal query performance across all collections (timeline, tasks, analytics, etc.)</div>
+    </div>
+  </div>
+  
+  <div class="dark-section">
+    <h3>Environment Validation</h3>
+    <p>Startup validation ensures all required environment variables are configured — no hardcoded defaults in production. The /api/health endpoint validates on every request.</p>
+    <p style="margin-top:8px;"><strong>Required:</strong> MONGO_URL, DB_NAME, NEXT_PUBLIC_BASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Infinity Legal (Pty) Ltd &bull; Confidential</span>
+    <span class="confidential">Confidential</span>
+    <span>Page 10</span>
+  </div>
+</div>
+
+<!-- ========== CLOSING PAGE ========== -->
+<div class="page cover" style="text-align:center;">
+  <div class="badge">Thank You</div>
+  <h1 style="font-size:48px;">Infinity Legal</h1>
+  <p class="subtitle" style="font-size:18px;">
+    Affordable. AI-Powered. Built for South Africa.<br>
+    Legal protection that fights for you.
+  </p>
+  <div style="margin-top:40px; padding:24px; border:1px solid rgba(201,169,78,0.3); border-radius:12px; display:inline-block;">
+    <p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:8px;">Contact</p>
+    <p style="color:#c9a94e; font-size:16px; font-weight:600;">info@infinitylegal.org</p>
+  </div>
+  <p class="meta">
+    © 2026 Infinity Legal (Pty) Ltd. All Rights Reserved.<br>
+    POPIA Compliant &bull; FSCA Registered &bull; South Africa
+  </p>
+</div>
+
+</body>
+</html>

@@ -95,8 +95,7 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2 text-sm">
             <svg className="w-4 h-4 text-infinity-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-            <span className="hidden sm:inline font-medium">24-Hour Legal Help Line</span>
-            <a href="tel:0860000000" className="font-bold text-infinity-gold hover:text-white transition-colors">0860 000 000</a>
+            <span className="font-medium text-infinity-gold">Infinity Legal Protection</span>
           </div>
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
@@ -270,8 +269,8 @@ export default function PricingPage() {
             <Link href="/apply" className="bg-infinity-navy text-white px-8 py-3.5 rounded-lg font-bold text-sm hover:bg-[#1a3055] transition-colors shadow-lg">
               Join Now →
             </Link>
-            <a href="tel:0860000000" className="bg-white text-infinity-navy px-8 py-3.5 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors shadow-lg">
-              Call 0860 000 000
+            <a href="mailto:info@infinitylegal.org" className="bg-white text-infinity-navy px-8 py-3.5 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors shadow-lg">
+              Email Us
             </a>
           </div>
         </div>
