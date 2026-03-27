@@ -14,10 +14,9 @@ const STEPS = [
 ]
 
 const PLANS = [
-  { id: 'free', name: 'Free', price: 'R0', period: '/month', features: ['1 AI legal consultation', 'Basic legal info', 'Community support'], popular: false },
-  { id: 'starter', name: 'Starter', price: 'R149', period: '/month', features: ['3 AI consultations/month', 'Attorney matching', 'Document templates', 'Email support'], popular: false },
-  { id: 'family', name: 'Family Protect', price: 'R299', period: '/month', features: ['Unlimited AI consultations', 'Family coverage (spouse + children)', 'Priority attorney matching', '24/7 legal helpline', 'Document vault'], popular: true },
-  { id: 'premium', name: 'Premium', price: 'R599', period: '/month', features: ['Everything in Family Protect', '2 attorney consultations/month', 'Court representation referral', 'Contract review', 'Dedicated case manager'], popular: false }
+  { id: 'labour-shield', name: 'Labour Shield', price: 'R95', period: '/month', coverage: 'R72,300 per case', features: ['Employment-related legal matters', '24-hour legal assistance', 'Accidental death benefit (R11,000)', 'Free last will & testament', 'Cover for member, spouse & children', 'Extended family protection option', 'Tax advice'], popular: false },
+  { id: 'civil-guard', name: 'Civil Guard', price: 'R115', period: '/month', coverage: 'R78,500 per case', features: ['Civil-related legal matters', '24-hour legal assistance', 'Accidental death benefit (R16,500)', 'Free last will & testament', 'Cover for member, spouse & children', 'Extended family protection option', 'Tax advice & assistance'], popular: true },
+  { id: 'complete-cover', name: 'Complete Cover', price: 'R130', period: '/month', coverage: 'R100,000 per case', features: ['Employment, civil & criminal matters', '24-hour legal assistance', 'Accidental death benefit (R22,000)', 'Free last will & testament', 'Cover for member, spouse & children', 'Extended family protection option', 'Tax advice, assistance & submission', 'Uncontested divorce & maintenance', 'Antenuptial contracts', 'Property conveyancing discount (20%)', 'Municipal services benefit', 'Legacy Accumulator benefit'], popular: false }
 ]
 
 const SA_LANGUAGES = ['English', 'Afrikaans', 'isiZulu', 'isiXhosa', 'Sesotho', 'Setswana', 'Sepedi', 'Xitsonga', 'siSwati', 'Tshivenda', 'isiNdebele']
@@ -45,7 +44,7 @@ export default function ApplyPage() {
     language: 'English',
     communicationPreference: 'email',
     // Step 2: Plan
-    selectedPlan: 'starter',
+    selectedPlan: 'civil-guard',
     // Step 3: Dependants
     spouse: { fullName: '', idNumber: '', dateOfBirth: '' },
     children: [
