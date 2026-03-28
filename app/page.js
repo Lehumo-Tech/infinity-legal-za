@@ -171,7 +171,7 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-6">
             <a href="#policies" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy dark:text-gray-300 dark:hover:text-white transition-colors">Legal Policies</a>
             <Link href="/intake" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy dark:text-gray-300 dark:hover:text-white transition-colors">AI Legal Help</Link>
-            <a href="#resources" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy dark:text-gray-300 dark:hover:text-white transition-colors">Legal Resources</a>
+            <Link href="/resources" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy dark:text-gray-300 dark:hover:text-white transition-colors">Legal Resources</Link>
             <a href="#contact" className="text-sm font-semibold text-gray-600 hover:text-infinity-navy dark:text-gray-300 dark:hover:text-white transition-colors">Contact Us</a>
           </div>
           <div className="flex items-center gap-3">
@@ -191,7 +191,7 @@ export default function LandingPage() {
           <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-4 py-3 space-y-2">
             <a href="#policies" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Legal Policies</a>
             <Link href="/intake" className="block py-2 text-sm font-semibold text-gray-700 dark:text-gray-300">AI Legal Help</Link>
-            <a href="#resources" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Legal Resources</a>
+            <Link href="/resources" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Legal Resources</Link>
             <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Contact Us</a>
             <Link href="/apply" className="block py-2 text-sm font-bold text-infinity-gold">Join Now →</Link>
           </div>
@@ -437,10 +437,10 @@ export default function LandingPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { icon: '📚', title: 'Legal Articles', desc: 'Stay informed about your rights', link: '/help' },
-              { icon: '📋', title: 'Contract Templates', desc: 'Free legal contract templates', link: '/help' },
-              { icon: '❓', title: 'FAQs', desc: 'Common legal questions answered', link: '/help' },
-              { icon: '📄', title: 'Claim Forms', desc: 'Download and submit claims', link: '/help' },
+              { icon: '📚', title: 'Legal Articles', desc: 'Stay informed about your rights', link: '/resources?tab=articles' },
+              { icon: '📋', title: 'Contract Templates', desc: 'Free legal contract templates', link: '/resources?tab=templates' },
+              { icon: '❓', title: 'FAQs', desc: 'Common legal questions answered', link: '/resources?tab=faqs' },
+              { icon: '📄', title: 'Claim Forms', desc: 'Download and submit claims', link: '/resources?tab=claims' },
             ].map((item, i) => (
               <Link key={i} href={item.link} className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-infinity-gold/50 transition-all group text-center">
                 <div className="text-3xl mb-3">{item.icon}</div>
@@ -490,7 +490,7 @@ export default function LandingPage() {
               <div className="text-sm font-bold text-white mt-1">info@infinitylegal.org</div>
             </a>
 
-            <Link href="/help" className="bg-purple-600 rounded-xl p-6 text-center hover:bg-purple-700 transition-colors group">
+            <Link href="/resources?tab=faqs" className="bg-purple-600 rounded-xl p-6 text-center hover:bg-purple-700 transition-colors group">
               <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-white/20 transition-colors">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
