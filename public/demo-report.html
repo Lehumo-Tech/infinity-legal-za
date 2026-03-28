@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1e293b;background:white}
+.page{width:100%;min-height:100vh;page-break-after:always;padding:0}
+.cover{background:linear-gradient(135deg,#0f2b46,#1a3d5c);color:white;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;text-align:center;position:relative}
+.cover h1{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;margin-bottom:16px}
+.cover-sub{font-size:18px;color:rgba(255,255,255,0.7);max-width:550px}
+.gold{color:#c9a961}
+.divider{width:80px;height:3px;background:#c9a961;margin:20px auto}
+.header{background:#0f2b46;color:white;padding:20px 50px;display:flex;justify-content:space-between;align-items:center}
+.header h2{font-family:'Playfair Display',serif;font-size:26px}
+.badge{padding:5px 14px;background:#c9a961;color:#0f2b46;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase}
+.body{padding:30px 50px}
+.screenshot{width:100%;border-radius:8px;border:1px solid #e2e8f0;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin:12px 0}
+.caption{text-align:center;font-size:11px;color:#64748b;margin-top:6px;font-style:italic}
+.half{width:48%;border-radius:8px;border:1px solid #e2e8f0;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.row{display:flex;gap:16px;justify-content:center;margin:12px 0}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}
+.card{border:1px solid #e2e8f0;border-radius:10px;padding:20px;background:white}
+.card h4{font-size:14px;font-weight:700;color:#0f2b46;margin-bottom:4px}
+.card p{font-size:11px;color:#64748b}
+.icon{width:40px;height:40px;border-radius:10px;background:#f5ecd6;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px}
+.footer{padding:12px 50px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:10px;color:#94a3b8}
+.highlight{background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-left:4px solid #c9a961;padding:16px 20px;border-radius:0 8px 8px 0;margin:16px 0}
+.highlight h4{color:#0f2b46;font-size:14px;margin-bottom:6px}
+.highlight li{font-size:12px;color:#64748b;margin:3px 0 3px 16px}
+</style></head><body>
+
+<!-- COVER -->
+<div class="page"><div class="cover">
+<img src="/logo-icon-256.png" style="height:80px;border-radius:16px;margin-bottom:20px">
+<h1>Infinity Legal Platform<br><span class="gold">Complete Demo Report</span></h1>
+<div class="divider"></div>
+<div class="cover-sub">Full-stack legal SaaS platform with Member Portal, Staff Portal, Admin Dashboard, AI Lead Scraper, and 3-tier subscription system.</div>
+<div style="margin-top:30px;font-size:13px;color:#c9a961;letter-spacing:2px;text-transform:uppercase">28 March 2026 — Confidential</div>
+</div></div>
+
+<!-- HOMEPAGE -->
+<div class="page">
+<div class="header"><h2>Public Website — Homepage</h2><span class="badge">Live</span></div>
+<div class="body">
+<img src="/report-ss/01_homepage.png" class="screenshot">
+<p class="caption">Homepage — "Legal Cover from R99/month" hero, image carousel, How It Works, pricing preview, testimonials</p>
+<div class="features">
+<div class="card"><div class="icon">🛡️</div><h4>Hero Section</h4><p>"Legal Cover from R99/month" with gold CTA, "Legal Excellence Without Limits" subhead</p></div>
+<div class="card"><div class="icon">🎠</div><h4>Image Carousel</h4><p>Auto-rotating slides showcasing AI analysis, Member Dashboard, Staff Centre, Lead Engine</p></div>
+<div class="card"><div class="icon">⭐</div><h4>Testimonials</h4><p>Auto-rotating reviews from members with 5-star ratings and plan badges</p></div>
+</div>
+</div>
+<div class="footer"><span><span class="gold">Infinity Legal</span> — Legal Excellence Without Limits</span><span>Page 2</span></div>
+</div>
+
+<!-- LOGIN -->
+<div class="page">
+<div class="header"><h2>Login & Authentication</h2><span class="badge">Demo Ready</span></div>
+<div class="body">
+<img src="/report-ss/04_login.png" class="screenshot">
+<p class="caption">Login page with demo credential quick-fill buttons for Member, Attorney, and Admin roles</p>
+<div class="highlight">
+<h4>Demo Credentials</h4>
+<ul>
+<li><strong>Member:</strong> member@demo.com / demo123 → Member Portal</li>
+<li><strong>Attorney:</strong> attorney@infinitylegal.org / demo123 → Staff Portal</li>
+<li><strong>Admin:</strong> tsatsi@infinitylegal.org / demo123 → Admin Portal</li>
+</ul>
+</div>
+</div>
+<div class="footer"><span class="gold">Infinity Legal</span><span>Page 3</span></div>
+</div>
+
+<!-- MEMBER PORTAL -->
+<div class="page">
+<div class="header"><h2>Member Portal</h2><span class="badge">Member Experience</span></div>
+<div class="body">
+<img src="/report-ss/06_member.png" class="screenshot">
+<p class="caption">Member Dashboard — Plan status (Premium), benefits remaining, active requests, quick actions</p>
+<div class="features">
+<div class="card"><div class="icon">🏠</div><h4>Dashboard</h4><p>Plan status, benefits usage, active requests count, recent activity</p></div>
+<div class="card"><div class="icon">📋</div><h4>Request System</h4><p>Submit requests, track status, view timeline, message attorney</p></div>
+<div class="card"><div class="icon">🛡️</div><h4>Plan Management</h4><p>View coverage, billing history, upgrade/cancel, download invoices</p></div>
+</div>
+<div class="highlight">
+<h4>Full Member Flow</h4>
+<ul>
+<li>Dashboard → Stats, benefits remaining, quick actions</li>
+<li>My Requests → List + New Request form (category, urgency, docs upload)</li>
+<li>Request Detail → Status timeline, messages, "Mark as Resolved"</li>
+<li>My Plan → Coverage details, usage bars, billing history</li>
+<li>Profile → Personal info, change password, notification prefs</li>
+</ul>
+</div>
+</div>
+<div class="footer"><span class="gold">Infinity Legal</span><span>Page 4</span></div>
+</div>
+
+<!-- STAFF PORTAL -->
+<div class="page">
+<div class="header"><h2>Staff Portal — Command Centre</h2><span class="badge">Attorney View</span></div>
+<div class="body">
+<img src="/report-ss/11_staff.png" class="screenshot">
+<p class="caption">Staff Dashboard — Assigned requests, pending tasks, recent activity, performance metrics</p>
+<div class="features">
+<div class="card"><div class="icon">📊</div><h4>4 KPI Cards</h4><p>Assigned requests, pending assignment, resolved this month, avg response time</p></div>
+<div class="card"><div class="icon">✅</div><h4>Task Management</h4><p>Checklist with due dates, urgency flags, case-linked tasks</p></div>
+<div class="card"><div class="icon">🔄</div><h4>Request Workspace</h4><p>Status updates, assign attorney, internal notes, member communication</p></div>
+</div>
+</div>
+<div class="footer"><span class="gold">Infinity Legal</span><span>Page 5</span></div>
+</div>
+
+<!-- LEAD SCRAPER -->
+<div class="page">
+<div class="header"><h2>AI Lead Scraper</h2><span class="badge">Intelligence Engine</span></div>
+<div class="body">
+<img src="/report-ss/14_leads.png" class="screenshot">
+<p class="caption">Lead Intelligence Engine — AI-powered web & social media scraping with 8 pre-loaded leads</p>
+<div class="highlight">
+<h4>Lead Scraper Features</h4>
+<ul>
+<li><strong>Multi-Source:</strong> LinkedIn, Twitter/X, Facebook, Reddit, Google Reviews, News sites</li>
+<li><strong>AI Scoring:</strong> Each lead scored 0-100 based on intent signals and legal relevance</li>
+<li><strong>Categories:</strong> Employment, Consumer, Property, Family, Criminal — auto-classified</li>
+<li><strong>Actions:</strong> Email, phone, mark as contacted/qualified, one-click follow-up</li>
+<li><strong>Live Scraping:</strong> Enter any URL → AI extracts leads in real-time</li>
+<li><strong>Filters:</strong> Source, category, status, score range</li>
+</ul>
+</div>
+</div>
+<div class="footer"><span class="gold">Infinity Legal</span><span>Page 6</span></div>
+</div>
+
+<!-- ADMIN PORTAL -->
+<div class="page">
+<div class="header"><h2>Admin Dashboard</h2><span class="badge">Full Control</span></div>
+<div class="body">
+<img src="/report-ss/16_admin.png" class="screenshot">
+<p class="caption">Admin Dashboard — Revenue (R797 MRR), members, requests, staff performance, scraped leads</p>
+<div class="features">
+<div class="card"><div class="icon">💰</div><h4>Revenue Analytics</h4><p>MRR breakdown by plan, subscription metrics, LTV, churn rate</p></div>
+<div class="card"><div class="icon">📊</div><h4>Reports Suite</h4><p>Subscription, request, member, and staff reports with CSV export</p></div>
+<div class="card"><div class="icon">👤</div><h4>Staff Management</h4><p>Add/deactivate staff, reset passwords, role assignment</p></div>
+</div>
+<div class="highlight">
+<h4>Admin Capabilities</h4>
+<ul>
+<li>Everything Staff Portal has + Revenue metrics</li>
+<li>4 Report Types: Subscriptions, Requests, Members, Staff Performance</li>
+<li>Staff Management: Add, edit, deactivate, reset passwords</li>
+<li>Full lead scraper access with team-wide analytics</li>
+</ul>
+</div>
+</div>
+<div class="footer"><span class="gold">Infinity Legal</span><span>Page 7</span></div>
+</div>
+
+<!-- COMPLETE MODULE LIST -->
+<div class="page">
+<div class="header"><h2>Complete Platform Summary</h2><span class="badge">All Features</span></div>
+<div class="body">
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+<thead><tr style="background:#0f2b46;color:white"><th style="padding:8px 12px;text-align:left">Module</th><th style="padding:8px">Status</th><th style="padding:8px">Description</th></tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px"><strong>Homepage</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Hero, carousel, How It Works, pricing preview, testimonials, footer</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc"><td style="padding:8px 12px"><strong>Pricing</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">3 plans (R99/R199/R499), comparison table, annual toggle</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px"><strong>Legal Resources</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">6 articles, 6 templates, 16 FAQs, 6 claim forms — all SA law-specific</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc"><td style="padding:8px 12px"><strong>Signup Wizard</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">3-step: Select Plan → Personal Details → Payment</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px"><strong>Login</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Demo credentials, quick-fill, role-based redirect</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc"><td style="padding:8px 12px"><strong>Member Dashboard</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Plan status, benefits, active requests, quick actions</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px"><strong>Member Requests</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Submit, track, message, resolve — full request lifecycle</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc"><td style="padding:8px 12px"><strong>Member Plan/Profile</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Coverage details, billing, invoices, profile settings</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px"><strong>Staff Dashboard</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">KPIs, task list, activity feed, assigned workload</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc"><td style="padding:8px 12px"><strong>Staff Request Workspace</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Status updates, assign, internal notes, contact member</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px"><strong>Lead Scraper</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Web/social scraping, AI scoring, multi-source, filters, actions</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc"><td style="padding:8px 12px"><strong>Admin Reports</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Subscription, request, member, staff reports + CSV export</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0"><td style="padding:8px 12px"><strong>Calendar</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">Monthly view, court dates, meetings, deadlines</td></tr>
+<tr><td style="padding:8px 12px"><strong>Public Intake Wizard</strong></td><td style="padding:8px;text-align:center"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">Live</span></td><td style="padding:8px">5-step Zod-validated form → MongoDB (conflict detection)</td></tr>
+</tbody>
+</table>
+
+<div style="margin-top:30px;text-align:center;padding:30px;background:#0f2b46;border-radius:12px;color:white">
+<div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px">Ready for Client Demo</div>
+<div style="color:#c9a961;font-size:13px">All features live and functional at the preview URL</div>
+<div style="margin-top:12px;font-size:12px;opacity:0.6">https://demo-staging-1.preview.emergentagent.com</div>
+</div>
+</div>
+<div class="footer"><span class="gold">Infinity Legal</span><span>Page 8</span></div>
+</div>
+
+</body></html>

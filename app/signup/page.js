@@ -1,177 +1,111 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import { PLANS } from '@/lib/demo-data'
 
 export default function SignupPage() {
+  const [step, setStep] = useState(1)
+  const [selectedPlan, setSelectedPlan] = useState('premium')
+  const [form, setForm] = useState({ name: '', email: '', phone: '', idNumber: '' })
+  const [card, setCard] = useState({ number: '', expiry: '', cvv: '' })
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    phone: '',
-    role: 'client'
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
-  const handleSignup = async (e) => {
+  const handleComplete = (e) => {
     e.preventDefault()
-    setLoading(true)
-    setError('')
-
-    try {
-      // Call our API route to create user and profile
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Signup failed')
-      }
-
-      // Now sign in the user
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password
-      })
-
-      if (signInError) {
-        throw new Error('Account created but login failed: ' + signInError.message)
-      }
-
-      // Redirect based on role
-      if (formData.role === 'attorney') {
-        router.push('/attorney/office')
-      } else {
-        router.push('/dashboard')
-      }
-    } catch (err) {
-      console.error('Signup error:', err)
-      setError(err.message || 'Signup failed')
-    } finally {
-      setLoading(false)
-    }
+    alert('✅ Welcome to Infinity Legal!\n\nYour account has been created successfully.\nCheck your email for login details.\n\nPlan: ' + PLANS.find(p => p.id === selectedPlan)?.name + '\nEmail: ' + form.email)
+    router.push('/login')
   }
 
   return (
-    <div className="min-h-screen bg-infinity-cream py-12 px-4">
-      <div className="container mx-auto max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-4">
-            <img src="/logo-icon-256.png" alt="Infinity Legal" className="h-16 mx-auto rounded-xl" />
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white border-b border-gray-100 px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-9 rounded-lg" />
+            <span className="text-lg font-bold text-[#0f2b46]" style={{ fontFamily: "'Playfair Display', serif" }}>Infinity Legal</span>
           </Link>
-          <h1 className="text-3xl font-bold text-infinity-navy mb-2">Create Account</h1>
-          <p className="text-infinity-navy/70">Join Infinity Legal today</p>
+          <Link href="/login" className="text-sm text-[#0f2b46] font-semibold">Already a member? Login</Link>
+        </div>
+      </nav>
+
+      <main className="max-w-2xl mx-auto px-4 py-10">
+        {/* Progress */}
+        <div className="flex items-center justify-between mb-8">
+          {['Select Plan', 'Your Details', 'Payment'].map((label, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step > i + 1 ? 'bg-green-500 text-white' : step === i + 1 ? 'bg-[#0f2b46] text-white' : 'bg-gray-200 text-gray-500'}`}>{step > i + 1 ? '✓' : i + 1}</div>
+              <span className={`text-sm font-medium hidden sm:block ${step === i + 1 ? 'text-[#0f2b46]' : 'text-gray-400'}`}>{label}</span>
+              {i < 2 && <div className="w-8 md:w-20 h-0.5 bg-gray-200 mx-2"><div className={`h-full bg-[#0f2b46] transition-all ${step > i + 1 ? 'w-full' : 'w-0'}`} /></div>}
+            </div>
+          ))}
         </div>
 
-        <div className="bg-white rounded-lg border border-infinity-gold/20 p-8">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-              {error}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          {/* Step 1: Select Plan */}
+          {step === 1 && (
+            <div>
+              <h2 className="text-xl font-bold text-[#0f2b46] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Select Your Plan</h2>
+              <div className="space-y-3">
+                {PLANS.map(plan => (
+                  <button key={plan.id} onClick={() => setSelectedPlan(plan.id)} className={`w-full text-left p-4 rounded-xl border-2 transition-all ${selectedPlan === plan.id ? 'border-[#c9a961] bg-[#c9a961]/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-[#0f2b46]">{plan.name}</span>
+                        {plan.popular && <span className="ml-2 text-xs bg-[#c9a961] text-[#0f2b46] px-2 py-0.5 rounded-full font-bold">POPULAR</span>}
+                      </div>
+                      <span className="text-lg font-bold text-[#0f2b46]">R{plan.price}<span className="text-sm text-gray-400 font-normal">/mo</span></span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{plan.features.slice(0, 3).join(' • ')}</p>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setStep(2)} className="w-full mt-6 py-3 bg-[#0f2b46] text-white font-bold rounded-xl hover:bg-[#1a365d] transition-colors">Continue →</button>
             </div>
           )}
 
-          <form onSubmit={handleSignup} className="space-y-4">
+          {/* Step 2: Personal Details */}
+          {step === 2 && (
             <div>
-              <label className="block text-sm font-medium text-infinity-navy mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                className="w-full px-4 py-3 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy"
-                placeholder="John Doe"
-              />
+              <h2 className="text-xl font-bold text-[#0f2b46] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Your Details</h2>
+              <div className="space-y-4">
+                <div><label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label><input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="e.g. Thabo Mbeki" required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50" /></div>
+                <div><label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label><input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="your.email@example.com" required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50" /></div>
+                <div><label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label><input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="+27 82 123 4567" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50" /></div>
+                <div><label className="block text-sm font-semibold text-gray-700 mb-1">SA ID Number</label><input value={form.idNumber} onChange={e => setForm({...form, idNumber: e.target.value})} placeholder="0001015009088" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50" /></div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setStep(1)} className="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50">← Back</button>
+                <button onClick={() => setStep(3)} className="flex-1 py-3 bg-[#0f2b46] text-white font-bold rounded-xl hover:bg-[#1a365d]">Continue →</button>
+              </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-infinity-navy mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy"
-                placeholder="john@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-infinity-navy mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-3 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy"
-                placeholder="0821234567"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-infinity-navy mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy"
-                placeholder="Minimum 6 characters"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-infinity-navy mb-2">
-                I am a
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full px-4 py-3 border border-infinity-gold/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-navy"
-              >
-                <option value="client">Client (seeking legal help)</option>
-                <option value="attorney">Attorney (providing legal services)</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-infinity-navy text-infinity-cream rounded-lg font-semibold hover:bg-infinity-navy/90 disabled:opacity-50"
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-infinity-navy/70">
-            Already have an account?{' '}
-            <Link href="/login" className="text-infinity-navy font-medium hover:underline">
-              Sign In
-            </Link>
-          </div>
+          {/* Step 3: Payment */}
+          {step === 3 && (
+            <form onSubmit={handleComplete}>
+              <h2 className="text-xl font-bold text-[#0f2b46] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Payment Details</h2>
+              <div className="bg-gray-50 rounded-xl p-4 mb-4 flex items-center justify-between">
+                <span className="text-sm text-gray-600">Plan: <strong>{PLANS.find(p => p.id === selectedPlan)?.name}</strong></span>
+                <span className="font-bold text-[#0f2b46]">R{PLANS.find(p => p.id === selectedPlan)?.price}/mo</span>
+              </div>
+              <div className="space-y-4">
+                <div><label className="block text-sm font-semibold text-gray-700 mb-1">Card Number</label><input value={card.number} onChange={e => setCard({...card, number: e.target.value})} placeholder="4242 4242 4242 4242" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50" /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-1">Expiry</label><input value={card.expiry} onChange={e => setCard({...card, expiry: e.target.value})} placeholder="12/28" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50" /></div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-1">CVV</label><input value={card.cvv} onChange={e => setCard({...card, cvv: e.target.value})} placeholder="123" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50" /></div>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 mt-3">🔒 Your payment is secured with 256-bit encryption. This is a demo — no real charge.</p>
+              <div className="flex gap-3 mt-6">
+                <button type="button" onClick={() => setStep(2)} className="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50">← Back</button>
+                <button type="submit" className="flex-1 py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37]">Complete Signup ✓</button>
+              </div>
+            </form>
+          )}
         </div>
-
-        <p className="text-xs text-center text-infinity-navy/50 mt-4">
-          By signing up, you agree to our{' '}
-          <Link href="/terms" className="underline">Terms</Link> and{' '}
-          <Link href="/privacy" className="underline">Privacy Policy</Link>
-        </p>
-      </div>
+      </main>
     </div>
   )
 }

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infinity Legal Platform — Progress Report | February 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: #1a1a1a; background: #fff; }
+    
+    .page { page-break-after: always; min-height: 100vh; padding: 0; }
+    .page:last-child { page-break-after: auto; }
+    
+    /* Cover Page */
+    .cover { 
+      background: linear-gradient(135deg, #0f2b46 0%, #1a4a7a 100%); 
+      color: white; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      text-align: center; 
+      min-height: 100vh;
+      padding: 60px;
+      position: relative;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201,169,97,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .cover-logo { width: 120px; margin-bottom: 40px; border-radius: 20px; }
+    .cover h1 { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 700; margin-bottom: 12px; }
+    .cover h2 { font-size: 22px; font-weight: 300; color: rgba(255,255,255,0.7); margin-bottom: 40px; }
+    .cover-badge { 
+      background: rgba(201,169,97,0.2); 
+      border: 1px solid rgba(201,169,97,0.4); 
+      color: #c9a961; 
+      font-size: 13px; 
+      font-weight: 600;
+      padding: 10px 24px; 
+      border-radius: 50px; 
+      text-transform: uppercase; 
+      letter-spacing: 2px;
+      margin-bottom: 60px;
+    }
+    .cover-meta { color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.8; }
+    .cover-meta strong { color: #c9a961; }
+    .gold { color: #c9a961; }
+    
+    /* Content Pages */
+    .content-page { padding: 50px 60px; }
+    .page-header { 
+      border-bottom: 3px solid #0f2b46; 
+      padding-bottom: 15px; 
+      margin-bottom: 35px; 
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .page-header h2 { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 32px; 
+      color: #0f2b46; 
+    }
+    .page-header .page-num { 
+      font-size: 12px; 
+      color: #999; 
+      text-transform: uppercase; 
+      letter-spacing: 2px; 
+    }
+    
+    .section { margin-bottom: 30px; }
+    .section h3 { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 20px; 
+      color: #0f2b46; 
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section p { color: #555; font-size: 14px; line-height: 1.7; }
+    
+    .screenshot { 
+      width: 100%; 
+      border-radius: 12px; 
+      border: 1px solid #e5e5e5; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+      margin: 15px 0; 
+    }
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 15px 0;
+    }
+    .screenshot-item {
+      text-align: center;
+    }
+    .screenshot-item img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #e5e5e5;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .screenshot-item .caption {
+      font-size: 11px;
+      color: #888;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #eee;
+    }
+    .stat-card .number { 
+      font-size: 36px; 
+      font-weight: 700; 
+      color: #0f2b46; 
+      font-family: 'Playfair Display', serif;
+    }
+    .stat-card .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+    
+    .feature-list { list-style: none; padding: 0; }
+    .feature-list li { 
+      padding: 10px 0; 
+      border-bottom: 1px solid #f0f0f0; 
+      font-size: 14px; 
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .feature-list li .check { 
+      width: 22px; 
+      height: 22px; 
+      background: #c9a961; 
+      color: #0f2b46; 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 12px; 
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    
+    .pricing-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .pricing-table th { 
+      background: #0f2b46; 
+      color: white; 
+      padding: 14px 18px; 
+      text-align: left; 
+      font-size: 13px; 
+      font-weight: 600;
+    }
+    .pricing-table th:first-child { border-radius: 10px 0 0 0; }
+    .pricing-table th:last-child { border-radius: 0 10px 0 0; }
+    .pricing-table td { 
+      padding: 12px 18px; 
+      font-size: 13px; 
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .pricing-table tr:nth-child(even) td { background: #fafafa; }
+    .pricing-table .popular { background: rgba(201,169,97,0.08); }
+    
+    .timeline { margin: 15px 0; }
+    .timeline-item { 
+      display: flex; 
+      gap: 16px; 
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .timeline-dot { 
+      width: 10px; 
+      height: 10px; 
+      background: #c9a961; 
+      border-radius: 50%; 
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .timeline-dot.done { background: #22c55e; }
+    .timeline-dot.progress { background: #f59e0b; }
+    .timeline-dot.upcoming { background: #94a3b8; }
+    .timeline-content .title { font-weight: 600; font-size: 14px; color: #0f2b46; }
+    .timeline-content .desc { font-size: 12px; color: #888; margin-top: 2px; }
+    
+    .badge { 
+      display: inline-block; 
+      padding: 3px 10px; 
+      border-radius: 20px; 
+      font-size: 10px; 
+      font-weight: 700; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+    }
+    .badge-done { background: #dcfce7; color: #16a34a; }
+    .badge-progress { background: #fef3c7; color: #d97706; }
+    .badge-upcoming { background: #e2e8f0; color: #64748b; }
+    .badge-gold { background: rgba(201,169,97,0.2); color: #8b6914; }
+    
+    .footer-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0f2b46;
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
+      padding: 8px 60px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .highlight-box {
+      background: linear-gradient(135deg, #0f2b46, #1a365d);
+      border-radius: 14px;
+      padding: 24px;
+      color: white;
+      margin: 20px 0;
+    }
+    .highlight-box h4 { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 8px; }
+    .highlight-box p { color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.6; }
+    .highlight-box .gold { color: #c9a961; }
+    
+    @media print {
+      .page { page-break-after: always; }
+      .page:last-child { page-break-after: auto; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════ PAGE 1: COVER ═══════════════ -->
+  <div class="page cover">
+    <img src="/logo-icon-256.png" alt="Infinity Legal" class="cover-logo">
+    <div class="cover-badge">Client Progress Report</div>
+    <h1>Infinity Legal <span class="gold">Platform</span></h1>
+    <h2>Development Progress Report — February 2026</h2>
+    <div class="cover-meta">
+      <p>Prepared for: <strong>Tidimalo Tsatsi — CEO & Founder</strong></p>
+      <p>Date: <strong>28 February 2026</strong></p>
+      <p>Status: <strong>Demo Environment Active — Client Presentation Ready</strong></p>
+      <p>Version: <strong>2.4.0</strong></p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PAGE 2: EXECUTIVE SUMMARY ═══════════════ -->
+  <div class="page content-page">
+    <div class="page-header">
+      <h2>Executive Summary</h2>
+      <span class="page-num">Page 2</span>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="number">22+</div>
+        <div class="label">Pages Built</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">3</div>
+        <div class="label">Portals</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">40+</div>
+        <div class="label">API Endpoints</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">100%</div>
+        <div class="label">Demo Ready</div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h3>Platform Overview</h3>
+      <p>The Infinity Legal Platform is a comprehensive legal tech SaaS designed for the South African market. It combines AI-powered legal intake, member management, attorney portals, and a lead intelligence engine into a unified enterprise-grade platform.</p>
+    </div>
+    
+    <div class="section">
+      <h3>Key Achievements This Sprint</h3>
+      <ul class="feature-list">
+        <li><span class="check">✓</span> <strong>Pricing Updated:</strong> All three plans now reflect official pricing — Basic R95, Premium R115, Business R130/month</li>
+        <li><span class="check">✓</span> <strong>Email Lead Capture:</strong> Premium template downloads now gated with email capture modal (name + email collection, POPIA compliant)</li>
+        <li><span class="check">✓</span> <strong>App Content Carousel:</strong> Homepage carousel now shows interactive mock-ups of AI Intake, Member Portal, Staff Portal, and Lead Engine</li>
+        <li><span class="check">✓</span> <strong>Three-Portal Architecture:</strong> Member, Staff, and Admin portals fully built with mock data for client demonstration</li>
+        <li><span class="check">✓</span> <strong>AI Legal Intake:</strong> 5-step wizard connected to MongoDB with Zod validation and GPT-4o analysis</li>
+        <li><span class="check">✓</span> <strong>Lead Scraper UI:</strong> Web & social media lead intelligence interface with scoring and filtering</li>
+        <li><span class="check">✓</span> <strong>Legal Resources Hub:</strong> 6 articles, 6 templates, 16 FAQs, 6 claim forms — all SA law specific</li>
+        <li><span class="check">✓</span> <strong>Brand Compliance:</strong> Official logo integrated across 22+ locations, Navy #0f2b46 & Gold #c9a961 throughout</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PAGE 3: HOMEPAGE & CAROUSEL ═══════════════ -->
+  <div class="page content-page">
+    <div class="page-header">
+      <h2>Homepage & Platform Preview</h2>
+      <span class="page-num">Page 3</span>
+    </div>
+    
+    <div class="section">
+      <h3>Homepage Hero Section</h3>
+      <p>The main landing page features the "Legal Cover from R95/month" headline, trust badges, and clear CTAs for plan selection and login.</p>
+      <img src="/report-ss/01_hero.png" alt="Homepage Hero" class="screenshot">
+    </div>
+    
+    <div class="section">
+      <h3>Interactive Platform Carousel</h3>
+      <p>A new "Platform Preview" carousel showcases interactive mock-ups of the four major platform features: AI Legal Analysis, Member Dashboard, Staff Command Centre, and Lead Intelligence Engine. Each slide includes a miniature UI representation.</p>
+      <img src="/report-ss/02_carousel.png" alt="Platform Carousel" class="screenshot">
+    </div>
+  </div>
+
+  <!-- ═══════════════ PAGE 4: PRICING ═══════════════ -->
+  <div class="page content-page">
+    <div class="page-header">
+      <h2>Pricing Plans</h2>
+      <span class="page-num">Page 4</span>
+    </div>
+    
+    <div class="section">
+      <h3>Official Pricing Structure</h3>
+      <p>Three tiered plans designed for the South African market, with annual billing offering 20% savings.</p>
+      <img src="/report-ss/fresh_pricing.png" alt="Pricing Page" class="screenshot">
+    </div>
+    
+    <table class="pricing-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Basic (R95/mo)</th>
+          <th class="popular">Premium (R115/mo)</th>
+          <th>Business (R130/mo)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Legal Consultations</td><td>2/month</td><td class="popular">Unlimited</td><td>Unlimited</td></tr>
+        <tr><td>Email Support</td><td>✓</td><td class="popular">✓</td><td>✓</td></tr>
+        <tr><td>Document Review</td><td>✓</td><td class="popular">✓</td><td>✓</td></tr>
+        <tr><td>Priority Support</td><td>—</td><td class="popular">✓</td><td>✓</td></tr>
+        <tr><td>Court Representation</td><td>—</td><td class="popular">✓</td><td>✓</td></tr>
+        <tr><td>CCMA Representation</td><td>—</td><td class="popular">✓</td><td>✓</td></tr>
+        <tr><td>24/7 Emergency Line</td><td>—</td><td class="popular">✓</td><td>✓</td></tr>
+        <tr><td>Dedicated Attorney</td><td>—</td><td class="popular">—</td><td>✓</td></tr>
+        <tr><td>Compliance Audit</td><td>—</td><td class="popular">—</td><td>✓</td></tr>
+        <tr><td>Monthly Legal Report</td><td>—</td><td class="popular">—</td><td>✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════ PAGE 5: PORTALS ═══════════════ -->
+  <div class="page content-page">
+    <div class="page-header">
+      <h2>Portal System</h2>
+      <span class="page-num">Page 5</span>
+    </div>
+    
+    <div class="section">
+      <h3>Authentication & Login</h3>
+      <p>Secure login with demo credential quick-fill for client presentations. Three distinct portals: Member, Staff (Attorney), and Admin.</p>
+      <img src="/report-ss/07_login.png" alt="Login Page" class="screenshot">
+    </div>
+
+    <div class="highlight-box">
+      <h4>Three-Portal Architecture</h4>
+      <p>
+        <strong class="gold">Member Portal</strong> — Members track requests, view case status, manage plans, and communicate with attorneys.<br>
+        <strong class="gold">Staff Portal</strong> — Attorneys manage assigned cases, review intakes, track deadlines, and access the lead intelligence engine.<br>
+        <strong class="gold">Admin Portal</strong> — Full system oversight: revenue analytics, member management, staff performance, and system settings.
+      </p>
+    </div>
+    
+    <div class="section">
+      <h3>Demo Credentials</h3>
+      <table class="pricing-table">
+        <thead>
+          <tr><th>Portal</th><th>Email</th><th>Password</th><th>Role</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Member</td><td>member@demo.com</td><td>demo123</td><td>Premium Member</td></tr>
+          <tr><td>Staff</td><td>attorney@infinitylegal.org</td><td>demo123</td><td>Attorney</td></tr>
+          <tr><td>Admin</td><td>tsatsi@infinitylegal.org</td><td>demo123</td><td>CEO / Admin</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PAGE 6: RESOURCES & EMAIL GATE ═══════════════ -->
+  <div class="page content-page">
+    <div class="page-header">
+      <h2>Legal Resources & Lead Capture</h2>
+      <span class="page-num">Page 6</span>
+    </div>
+    
+    <div class="section">
+      <h3>Legal Resources Hub</h3>
+      <p>A comprehensive free resource centre with 4 tabs: Legal Articles (6), Contract Templates (6), FAQs (16), and Claim Forms (6) — all specific to South African law.</p>
+      <img src="/report-ss/06_resources.png" alt="Legal Resources" class="screenshot">
+    </div>
+    
+    <div class="section">
+      <h3>Email Gate — Lead Capture Modal</h3>
+      <p>Premium contract templates require email capture before download. This generates qualified leads for the sales team while providing genuine value to visitors. The modal includes name/email collection, POPIA compliance notice, and a success confirmation.</p>
+      <div class="screenshot-grid">
+        <div class="screenshot-item">
+          <img src="/report-ss/08_email_gate_success.png" alt="Email Gate Success">
+          <div class="caption">Template Unlocked — Success State</div>
+        </div>
+        <div class="screenshot-item">
+          <img src="/report-ss/fresh_pricing.png" alt="Pricing with updated plans">
+          <div class="caption">Updated Pricing — R95 / R115 / R130</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PAGE 7: ROADMAP ═══════════════ -->
+  <div class="page content-page">
+    <div class="page-header">
+      <h2>Development Roadmap</h2>
+      <span class="page-num">Page 7</span>
+    </div>
+    
+    <div class="section">
+      <h3>Completed Milestones</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-content">
+            <div class="title">Phase 1: Public Intake Wizard <span class="badge badge-done">Done</span></div>
+            <div class="desc">5-step AI-powered intake form connected to MongoDB, Zod validation, GPT-4o legal analysis</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-content">
+            <div class="title">Phase 2: Cases Module — TS Clean Architecture <span class="badge badge-done">Done</span></div>
+            <div class="desc">Strict TypeScript entity → use-case → repository pattern for case management</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-content">
+            <div class="title">Demo Environment Build <span class="badge badge-done">Done</span></div>
+            <div class="desc">Complete mock portals (Member/Staff/Admin), localStorage auth, demo data arrays, Lead Scraper UI</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-content">
+            <div class="title">Brand Integration & Resources <span class="badge badge-done">Done</span></div>
+            <div class="desc">Official logo across 22+ locations, Legal Resources hub with 34+ items, email gate for templates</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-content">
+            <div class="title">Pricing Update & Carousel Enhancement <span class="badge badge-done">Done</span></div>
+            <div class="desc">Updated all pricing to R95/R115/R130, interactive app content carousel with mock UI previews</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h3>Upcoming Work</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot progress"></div>
+          <div class="timeline-content">
+            <div class="title">Phase 3: Leads Module — TS Rebuild <span class="badge badge-progress">In Progress</span></div>
+            <div class="desc">Migrate leads logic to strict TypeScript Clean Architecture pattern</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot upcoming"></div>
+          <div class="timeline-content">
+            <div class="title">Phase 4: Documents Module <span class="badge badge-upcoming">Upcoming</span></div>
+            <div class="desc">Document management with TS Clean Architecture</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot upcoming"></div>
+          <div class="timeline-content">
+            <div class="title">Convert Demo → Real Backends <span class="badge badge-upcoming">Upcoming</span></div>
+            <div class="desc">Wire Member/Staff/Admin portals to MongoDB and Supabase auth</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot upcoming"></div>
+          <div class="timeline-content">
+            <div class="title">Advanced Analytics Dashboard <span class="badge badge-upcoming">Future</span></div>
+            <div class="desc">Real reporting with charts, KPIs, and export functionality</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot upcoming"></div>
+          <div class="timeline-content">
+            <div class="title">PayFast Payment Integration <span class="badge badge-upcoming">On Hold</span></div>
+            <div class="desc">South African payment processing for subscriptions (awaiting instruction)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="highlight-box" style="margin-top: 30px;">
+      <h4>Live Demo URL</h4>
+      <p>
+        Access the full platform at: <strong class="gold">https://demo-staging-1.preview.emergentagent.com</strong><br>
+        Use the demo credentials on the login page to explore all three portals.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PAGE 8: TECH OVERVIEW ═══════════════ -->
+  <div class="page content-page">
+    <div class="page-header">
+      <h2>Technical Overview</h2>
+      <span class="page-num">Page 8</span>
+    </div>
+    
+    <div class="section">
+      <h3>Technology Stack</h3>
+      <table class="pricing-table">
+        <thead>
+          <tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Frontend</td><td>Next.js 14 (App Router)</td><td>Server-side rendering, file-based routing</td></tr>
+          <tr><td>Styling</td><td>Tailwind CSS + shadcn/ui</td><td>Utility-first CSS, enterprise UI components</td></tr>
+          <tr><td>Database</td><td>MongoDB</td><td>Document storage for intakes, cases, leads</td></tr>
+          <tr><td>Auth (Real)</td><td>Supabase</td><td>Authentication & user management</td></tr>
+          <tr><td>Auth (Demo)</td><td>localStorage</td><td>Mock auth for client presentations</td></tr>
+          <tr><td>AI</td><td>GPT-4o (Emergent Key)</td><td>Legal intake analysis and categorisation</td></tr>
+          <tr><td>Email</td><td>Brevo (SMTP)</td><td>Transactional emails and notifications</td></tr>
+          <tr><td>Architecture</td><td>Clean Architecture (TS)</td><td>Entity → Use-Case → Repository pattern</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="section">
+      <h3>Platform Statistics</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="number">22+</div>
+          <div class="label">Client Pages</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">40+</div>
+          <div class="label">API Routes</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">34+</div>
+          <div class="label">Legal Resources</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">3</div>
+          <div class="label">User Portals</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="highlight-box">
+      <h4>Confidentiality Notice</h4>
+      <p>This document is prepared exclusively for <strong class="gold">Infinity Legal (Pty) Ltd</strong> and contains proprietary information about the platform's architecture, features, and roadmap. Distribution to third parties requires written consent from Tidimalo Tsatsi.</p>
+    </div>
+    
+    <div style="text-align: center; margin-top: 50px; padding: 30px; border-top: 2px solid #eee;">
+      <img src="/logo-icon-128.png" alt="Infinity Legal" style="width: 60px; border-radius: 12px; margin-bottom: 12px;">
+      <p style="font-family: 'Playfair Display', serif; font-size: 18px; color: #0f2b46; margin-bottom: 4px;"><strong>Infinity Legal (Pty) Ltd</strong></p>
+      <p style="font-size: 12px; color: #999;">Legal Excellence Without Limits</p>
+      <p style="font-size: 11px; color: #bbb; margin-top: 8px;">Sandton, Johannesburg | info@infinitylegal.org | +27 10 XXX XXXX</p>
+    </div>
+  </div>
+
+</body>
+</html>

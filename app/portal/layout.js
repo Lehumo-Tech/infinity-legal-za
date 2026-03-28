@@ -125,6 +125,10 @@ export default function PortalLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
+  // Demo portal paths use their own auth - bypass Supabase layout
+  const isDemoPortal = pathname?.startsWith('/portal/member') || pathname?.startsWith('/portal/staff') || pathname?.startsWith('/portal/admin')
+  if (isDemoPortal) return <>{children}</>
+
   useEffect(() => {
     if (!loading && !isAuthenticated) router.push('/login?redirect=/portal')
     if (!loading && isAuthenticated && !canAccessPortal) router.push('/dashboard')

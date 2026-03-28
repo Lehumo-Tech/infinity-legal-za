@@ -3,7 +3,7 @@
 Infinity Legal Platform - FINAL Production-Readiness API Testing Suite
 Comprehensive test of ALL API endpoints as requested in the review.
 
-Base URL: https://phase-rebuild.preview.emergentagent.com
+Base URL: https://demo-staging-1.preview.emergentagent.com
 """
 
 import requests
@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 
 # Get base URL from environment
-BASE_URL = "https://phase-rebuild.preview.emergentagent.com"
+BASE_URL = "https://demo-staging-1.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class FinalAPITester:

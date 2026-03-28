@@ -366,7 +366,7 @@ const EXTENDED_FAQS = [
   { category: 'General', q: 'What does Infinity Legal Protection offer?', a: 'Infinity Legal provides affordable legal protection plans that cover consultation, representation, document preparation, and AI-powered legal assistance for South African individuals and families. Our plans start from R95/month.' },
   { category: 'General', q: 'How does the AI Legal Intake work?', a: 'Our AI analyses your legal situation using South African law, identifies the category (Labour, Family, Criminal, Civil, Property), assesses urgency, estimates costs and timelines, and connects you with a qualified attorney. The process takes under 5 minutes.' },
   { category: 'General', q: 'Is my information confidential?', a: 'Absolutely. All communications are protected by attorney-client privilege. We comply with POPIA (Protection of Personal Information Act). Your data is encrypted at rest, never shared without consent, and you can request deletion at any time.' },
-  { category: 'Membership', q: 'What subscription plans are available?', a: 'We offer three plans: Labour Shield (R95/mo — labour disputes), Civil Guard (R195/mo — adds civil & family law), and Complete Cover (R345/mo — full legal protection). All plans include AI analysis and attorney consultations.' },
+  { category: 'Membership', q: 'What subscription plans are available?', a: 'We offer three plans: Basic (R95/mo — essential legal cover), Premium (R115/mo — adds court representation & priority support), and Business (R130/mo — full legal protection with dedicated attorney). All plans include AI analysis and attorney consultations.' },
   { category: 'Membership', q: 'Can I cancel my subscription?', a: 'Yes, cancel anytime from your dashboard. Your coverage continues until the end of your billing period. No cancellation fees. No lock-in contracts.' },
   { category: 'Membership', q: 'Is there a waiting period?', a: 'For new matters arising after sign-up: no waiting period for consultations and AI services. For active representation coverage, there may be a 30-day waiting period depending on the plan.' },
   { category: 'Labour Law', q: 'I was fired without a hearing. What can I do?', a: 'In most cases, dismissal without a disciplinary hearing is procedurally unfair. You should file a referral at the CCMA within 30 days of your dismissal date. You may be entitled to reinstatement or compensation of up to 12 months\' salary.' },
@@ -391,13 +391,50 @@ function ResourcesPageContent() {
   const [expandedFaq, setExpandedFaq] = useState(null)
   const [faqFilter, setFaqFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
+  
+  /* Email Gate Modal State */
+  const [emailModalOpen, setEmailModalOpen] = useState(false)
+  const [emailModalTemplate, setEmailModalTemplate] = useState(null)
+  const [gateEmail, setGateEmail] = useState('')
+  const [gateName, setGateName] = useState('')
+  const [gateSubmitted, setGateSubmitted] = useState(false)
+  const [gateLoading, setGateLoading] = useState(false)
+  const [unlockedTemplates, setUnlockedTemplates] = useState([])
 
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab && ['articles', 'templates', 'faqs', 'claims'].includes(tab)) {
       setActiveTab(tab)
     }
+    // Load unlocked templates from localStorage
+    try {
+      const saved = localStorage.getItem('infinity_unlocked_templates')
+      if (saved) setUnlockedTemplates(JSON.parse(saved))
+    } catch (e) {}
   }, [searchParams])
+
+  const handleEmailGateSubmit = (e) => {
+    e.preventDefault()
+    setGateLoading(true)
+    // Simulate API call
+    setTimeout(() => {
+      setGateLoading(false)
+      setGateSubmitted(true)
+      const newUnlocked = [...unlockedTemplates, emailModalTemplate]
+      setUnlockedTemplates(newUnlocked)
+      try { localStorage.setItem('infinity_unlocked_templates', JSON.stringify(newUnlocked)) } catch(e) {}
+    }, 1500)
+  }
+
+  const openEmailGate = (templateId) => {
+    if (unlockedTemplates.includes(templateId)) return // already unlocked
+    setEmailModalTemplate(templateId)
+    setGateEmail('')
+    setGateName('')
+    setGateSubmitted(false)
+    setGateLoading(false)
+    setEmailModalOpen(true)
+  }
 
   const tabs = [
     { id: 'articles', label: 'Legal Articles', icon: '📚', count: LEGAL_ARTICLES.length },
@@ -415,6 +452,75 @@ function ResourcesPageContent() {
 
   return (
     <div className="min-h-screen bg-[#fafaf8]">
+      {/* ═══ EMAIL GATE MODAL ═══ */}
+      {emailModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setEmailModalOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-0 overflow-hidden" onClick={e => e.stopPropagation()}>
+            {!gateSubmitted ? (
+              <>
+                <div className="bg-[#0f2b46] p-6 text-center">
+                  <div className="w-14 h-14 bg-[#c9a961]/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">📋</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>Unlock Premium Template</h3>
+                  <p className="text-white/60 text-sm mt-1">Enter your details to access this free legal template</p>
+                </div>
+                <form onSubmit={handleEmailGateSubmit} className="p-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-[#0f2b46] mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={gateName}
+                      onChange={(e) => setGateName(e.target.value)}
+                      placeholder="e.g. Thabo Mbeki"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#0f2b46] mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={gateEmail}
+                      onChange={(e) => setGateEmail(e.target.value)}
+                      placeholder="your.email@example.com"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all"
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-400">By submitting, you agree to receive legal updates from Infinity Legal. You can unsubscribe anytime. We comply with POPIA.</p>
+                  <button
+                    type="submit"
+                    disabled={gateLoading}
+                    className="w-full py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                  >
+                    {gateLoading ? (
+                      <><span className="w-4 h-4 border-2 border-[#0f2b46]/30 border-t-[#0f2b46] rounded-full animate-spin" /> Processing...</>
+                    ) : (
+                      'Unlock Template →'
+                    )}
+                  </button>
+                  <button type="button" onClick={() => setEmailModalOpen(false)} className="w-full text-center text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                    Maybe later
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">✅</span>
+                </div>
+                <h3 className="text-xl font-bold text-[#0f2b46] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>Template Unlocked!</h3>
+                <p className="text-gray-500 text-sm mb-1">Thank you, {gateName}!</p>
+                <p className="text-gray-400 text-sm mb-6">The template sections are now visible below. We&apos;ve also sent a copy to <strong className="text-[#0f2b46]">{gateEmail}</strong></p>
+                <button onClick={() => setEmailModalOpen(false)} className="px-8 py-3 bg-[#0f2b46] text-white font-bold rounded-xl hover:bg-[#1a365d] transition-colors">
+                  View Template →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="bg-[#0f2b46] text-white">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -528,16 +634,29 @@ function ResourcesPageContent() {
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-2xl">📋</span>
                       <span className="text-xs font-semibold px-2.5 py-1 bg-[#c9a961]/20 text-[#78621e] rounded-full">{template.category}</span>
+                      {unlockedTemplates.includes(template.id) && (
+                        <span className="text-xs font-semibold px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Unlocked</span>
+                      )}
                     </div>
                     <h3 className="text-lg font-bold text-[#0f2b46] mb-1">{template.title}</h3>
                     <p className="text-sm text-gray-500 mb-4">{template.description}</p>
                     
-                    <button
-                      onClick={() => setExpandedTemplate(expandedTemplate === template.id ? null : template.id)}
-                      className="text-sm font-semibold text-[#c9a961] hover:text-[#0f2b46] transition-colors"
-                    >
-                      {expandedTemplate === template.id ? 'Hide Sections ▲' : 'View Sections ▼'}
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setExpandedTemplate(expandedTemplate === template.id ? null : template.id)}
+                        className="text-sm font-semibold text-[#c9a961] hover:text-[#0f2b46] transition-colors"
+                      >
+                        {expandedTemplate === template.id ? 'Hide Sections ▲' : 'View Sections ▼'}
+                      </button>
+                      {!unlockedTemplates.includes(template.id) && (
+                        <button
+                          onClick={() => openEmailGate(template.id)}
+                          className="text-sm font-semibold text-[#0f2b46] bg-[#0f2b46]/10 px-3 py-1.5 rounded-lg hover:bg-[#0f2b46]/20 transition-colors flex items-center gap-1"
+                        >
+                          🔒 Download Template
+                        </button>
+                      )}
+                    </div>
 
                     {expandedTemplate === template.id && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
