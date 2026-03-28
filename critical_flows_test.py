@@ -11,7 +11,7 @@ import sys
 from urllib.parse import urljoin
 
 # Base URL from environment
-BASE_URL = "https://infinity-staging.preview.emergentagent.com"
+BASE_URL = "https://phase-rebuild.preview.emergentagent.com"
 
 # Supabase Auth Configuration
 SUPABASE_URL = "https://qgjqrrxwcsggtjznjjqk.supabase.co"

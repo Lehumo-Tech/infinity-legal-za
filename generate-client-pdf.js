@@ -2,398 +2,270 @@ const { chromium } = require('/usr/lib/node_modules/@playwright/test/node_module
 const fs = require('fs');
 
 function img(name) {
-  const p = `/app/public/client-ss/${name}.png`;
+  const p = `/app/public/update-ss/${name}.png`;
   if (!fs.existsSync(p)) return '';
   return `data:image/png;base64,${fs.readFileSync(p).toString('base64')}`;
 }
 
-const ss = {
-  homepage: img('01_homepage'),
-  features: img('02_homepage_features'),
-  pricing: img('03_pricing'),
-  apply: img('04_apply'),
-  login: img('05_login'),
-  dashboard: img('06_dashboard'),
-  cases: img('07_cases'),
-  intakes: img('08_intakes'),
-  leads: img('09_leads'),
-  documents: img('10_documents'),
-  tasks: img('11_tasks'),
-  calendar: img('12_calendar'),
-  knowledge: img('13_knowledge'),
-  billing: img('14_billing'),
-  hr: img('15_hr'),
-  reports: img('16_reports'),
-  settings: img('17_settings'),
-  intakesDetail: img('18_intakes_detail'),
-  leadsForm: img('19_leads_form'),
-};
+const s = {};
+['01_intake_step1_empty','02_intake_step1_filled','03_intake_step2','04_intake_step2_filled',
+ '05_intake_step3','06_intake_step4','07_intake_step5','08_confirmation',
+ '09_dashboard','10_cases','11_intakes','12_intakes_detail','13_leads',
+ '14_documents','15_tasks','16_calendar','17_knowledge','18_homepage','19_pricing'
+].forEach(n => s[n] = img(n));
 
 const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Infinity Legal Platform — Client Evaluation Report</title>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Infinity Legal — Development Update Report</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;color:#1a2744;background:white}
-.page{width:100%;min-height:100vh;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:avoid}
+body{font-family:'Inter',sans-serif;color:#1a2744;background:#fff}
+.pg{width:100%;min-height:100vh;page-break-after:always;position:relative;overflow:hidden}
+.pg:last-child{page-break-after:avoid}
 
-/* Cover */
-.cover{background:linear-gradient(135deg,#1a2744 0%,#0d1422 60%,#1a2744 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:80px 60px}
-.cover .logo{width:80px;height:80px;background:#d4a853;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:30px}
-.cover h1{font-family:'Playfair Display',serif;font-size:52px;color:white;margin-bottom:12px;line-height:1.15}
-.cover h1 span{color:#d4a853}
-.cover .sub{font-size:18px;color:rgba(255,255,255,0.55);font-weight:300;letter-spacing:3px;text-transform:uppercase;margin-bottom:40px}
-.cover .desc{max-width:640px;color:rgba(255,255,255,0.6);font-size:15px;line-height:1.8;margin-bottom:40px}
-.cover .badge{display:inline-block;padding:10px 30px;border:1.5px solid #d4a853;color:#d4a853;border-radius:100px;font-size:13px;font-weight:600;letter-spacing:1.5px}
-.cover .meta{color:rgba(255,255,255,0.3);font-size:12px;margin-top:40px}
-.goldline{width:60px;height:3px;background:#d4a853;margin:0 auto 30px}
+.cover{background:linear-gradient(135deg,#0f2b46 0%,#0a1c30 50%,#0f2b46 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:80px 60px}
+.cover h1{font-family:'Playfair Display',serif;font-size:48px;color:#fff;margin-bottom:8px;line-height:1.15}
+.cover h1 b{color:#c9a961}
+.cover .sub{font-size:20px;color:rgba(255,255,255,0.5);font-weight:300;letter-spacing:3px;text-transform:uppercase;margin-bottom:36px}
+.cover .desc{max-width:600px;color:rgba(255,255,255,0.55);font-size:14px;line-height:1.8;margin-bottom:36px}
+.cover .bd{display:inline-block;padding:10px 28px;border:1.5px solid #c9a961;color:#c9a961;border-radius:100px;font-size:12px;font-weight:600;letter-spacing:1.5px}
+.cover .meta{color:rgba(255,255,255,0.25);font-size:11px;margin-top:36px}
+.gl{width:50px;height:3px;background:#c9a961;margin:0 auto 24px}
 
-/* Content */
-.content{padding:50px 56px}
-.hdr{margin-bottom:28px;padding-bottom:18px;border-bottom:2px solid #f0f0f0}
-.hdr .num{font-size:11px;color:#d4a853;font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:6px}
-.hdr h2{font-family:'Playfair Display',serif;font-size:32px;color:#1a2744;line-height:1.2}
-.hdr p{color:#888;font-size:13px;margin-top:4px}
+.ct{padding:44px 52px}
+.hd{margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #f0f0f0}
+.hd .nm{font-size:10px;color:#c9a961;font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:4px}
+.hd h2{font-family:'Playfair Display',serif;font-size:28px;color:#0f2b46;line-height:1.2}
+.hd p{color:#888;font-size:12px;margin-top:3px}
 
-.ss{border-radius:10px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);margin:16px 0;border:1px solid #e5e7eb}
+.ss{border-radius:8px;overflow:hidden;box-shadow:0 3px 16px rgba(0,0,0,0.07);margin:12px 0;border:1px solid #e5e7eb}
 .ss img{width:100%;display:block}
 
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
-.card{background:#f8f9fa;border-radius:10px;padding:18px;border-left:4px solid #d4a853}
-.card h4{font-size:14px;font-weight:700;color:#1a2744;margin-bottom:6px}
-.card p{font-size:11.5px;color:#666;line-height:1.65}
-.card .tag{display:inline-block;padding:2px 8px;background:#d4a853;color:white;border-radius:4px;font-size:9px;font-weight:700;margin-left:4px;vertical-align:middle}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+.cd{background:#f8f9fa;border-radius:8px;padding:14px;border-left:3px solid #c9a961}
+.cd h4{font-size:13px;font-weight:700;color:#0f2b46;margin-bottom:4px}
+.cd p{font-size:11px;color:#666;line-height:1.6}
+.cd .tg{display:inline-block;padding:1px 6px;background:#c9a961;color:#fff;border-radius:3px;font-size:8px;font-weight:700;margin-left:3px;vertical-align:middle}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
-.stat{background:linear-gradient(135deg,#1a2744,#2a3f6a);color:white;border-radius:10px;padding:16px;text-align:center}
-.stat .n{font-size:28px;font-weight:800;color:#d4a853}
-.stat .l{font-size:10px;opacity:0.65;margin-top:3px}
+.st{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.si{background:linear-gradient(135deg,#0f2b46,#1a3a5c);color:#fff;border-radius:8px;padding:14px;text-align:center}
+.si .n{font-size:26px;font-weight:800;color:#c9a961}
+.si .l{font-size:9px;opacity:0.6;margin-top:2px}
 
-.gold{background:linear-gradient(135deg,#d4a853,#b8882e);color:white;border-radius:10px;padding:18px;margin:16px 0}
-.gold h4{font-size:15px;font-weight:700;margin-bottom:6px}
-.gold p{font-size:12px;opacity:0.9;line-height:1.65}
+.gd{background:linear-gradient(135deg,#c9a961,#a88740);color:#fff;border-radius:8px;padding:16px;margin:14px 0}
+.gd h4{font-size:14px;font-weight:700;margin-bottom:4px}
+.gd p{font-size:11px;opacity:0.9;line-height:1.6}
 
-.col2{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.c2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.ck li{padding:4px 0;font-size:11px;color:#444;list-style:none;display:flex;gap:5px}
+.ck li::before{content:"✅";flex-shrink:0;font-size:10px}
 
-.check li{padding:5px 0;font-size:12px;color:#444;list-style:none;display:flex;align-items:start;gap:6px}
-.check li::before{content:"✅";flex-shrink:0;font-size:11px}
+.ft{position:absolute;bottom:14px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:8px;color:#bbb;border-top:1px solid #f0f0f0;padding-top:6px}
 
-.ft{position:absolute;bottom:16px;left:56px;right:56px;display:flex;justify-content:space-between;font-size:9px;color:#bbb;border-top:1px solid #f0f0f0;padding-top:8px}
-
-.api{list-style:none;margin:12px 0}
-.api li{padding:7px 10px;background:#f3f4f6;margin-bottom:5px;border-radius:6px;font-size:11px;font-family:'Courier New',monospace;color:#1a2744}
-.api .m{display:inline-block;padding:2px 5px;border-radius:3px;font-weight:700;font-size:9px;margin-right:6px;color:white}
-.api .get{background:#22c55e}.api .post{background:#3b82f6}.api .put{background:#f59e0b}
-
-.tech{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
-.tech-i{background:#f3f4f6;border-radius:8px;padding:12px;text-align:center}
-.tech-i .ic{font-size:22px;margin-bottom:3px}
-.tech-i .nm{font-size:11px;font-weight:600;color:#1a2744}
-.tech-i .de{font-size:9px;color:#888}
-</style>
-</head>
-<body>
+.new{display:inline-block;padding:1px 6px;background:#22c55e;color:#fff;border-radius:3px;font-size:8px;font-weight:700;margin-left:3px;vertical-align:middle}
+.upd{display:inline-block;padding:1px 6px;background:#3b82f6;color:#fff;border-radius:3px;font-size:8px;font-weight:700;margin-left:3px;vertical-align:middle}
+</style></head><body>
 
 <!-- COVER -->
-<div class="page cover">
-<div class="logo">⚖️</div>
-<h1>Infinity <span>Legal</span> Platform</h1>
-<div class="sub">Client Evaluation Report</div>
-<div class="goldline"></div>
-<p class="desc">A comprehensive review of the Infinity Legal Platform — South Africa's next-generation legal tech SaaS. This report covers all implemented features, portal modules, AI capabilities, and screenshots of every major system component.</p>
-<div class="badge">15+ MODULES • AI-POWERED • POPIA COMPLIANT</div>
-<div class="meta">March 2026 &nbsp;•&nbsp; Version 2.0 &nbsp;•&nbsp; Confidential</div>
+<div class="pg cover">
+<div style="font-size:36px;margin-bottom:20px">⚖️</div>
+<h1>Infinity <b>Legal</b> Platform</h1>
+<div class="sub">Development Update Report</div>
+<div class="gl"></div>
+<p class="desc">This report presents the latest development changes to the Infinity Legal Platform, including the new Client Intake Wizard, AI Intake-to-Case conversion, Document Versioning, Leads Pipeline, Case Archiving, and comprehensive portal updates — all with live screenshots.</p>
+<div class="bd">19 SCREENSHOTS • 6 NEW FEATURES • READY FOR REVIEW</div>
+<div class="meta">March 2026 &nbsp;•&nbsp; Prepared for Client Evaluation &nbsp;•&nbsp; Confidential</div>
 </div>
 
-<!-- TABLE OF CONTENTS -->
-<div class="page content">
-<div class="hdr"><div class="num">Contents</div><h2>Table of Contents</h2></div>
-<div style="margin-top:30px;columns:2;column-gap:40px">
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">01.</span> <span style="font-size:14px;font-weight:600">Executive Summary</span><br><span style="font-size:11px;color:#888">Platform overview, key stats, competitive advantages</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">02.</span> <span style="font-size:14px;font-weight:600">Public Website — Homepage</span><br><span style="font-size:11px;color:#888">Hero section, features, trust indicators</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">03.</span> <span style="font-size:14px;font-weight:600">Pricing Plans</span><br><span style="font-size:11px;color:#888">Three-tier legal protection packages</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">04.</span> <span style="font-size:14px;font-weight:600">Member Application</span><br><span style="font-size:11px;color:#888">Online join flow and plan selection</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">05.</span> <span style="font-size:14px;font-weight:600">Staff Portal — Dashboard</span><br><span style="font-size:11px;color:#888">Real-time metrics and workspace</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">06.</span> <span style="font-size:14px;font-weight:600">Case Management</span><br><span style="font-size:11px;color:#888">Full lifecycle with archiving</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">07.</span> <span style="font-size:14px;font-weight:600">AI Intake & Conversion</span><br><span style="font-size:11px;color:#888">GPT-powered analysis with case creation</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">08.</span> <span style="font-size:14px;font-weight:600">Leads Pipeline</span><br><span style="font-size:11px;color:#888">Full lead lifecycle and conversion</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">09.</span> <span style="font-size:14px;font-weight:600">Document Management</span><br><span style="font-size:11px;color:#888">Version control, check-in/out, workflow</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">10.</span> <span style="font-size:14px;font-weight:600">Tasks, Calendar & Knowledge</span><br><span style="font-size:11px;color:#888">Supporting workflow modules</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">11.</span> <span style="font-size:14px;font-weight:600">Billing, HR & Reports</span><br><span style="font-size:11px;color:#888">Enterprise operations modules</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">12.</span> <span style="font-size:14px;font-weight:600">Technical Architecture</span><br><span style="font-size:11px;color:#888">Tech stack, security, API summary</span></div>
-<div style="margin-bottom:20px"><span style="color:#d4a853;font-weight:700;font-size:13px">13.</span> <span style="font-size:14px;font-weight:600">Roadmap & Next Steps</span><br><span style="font-size:11px;color:#888">Upcoming features and enhancements</span></div>
+<!-- WHAT'S NEW -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Overview</div><h2>What's New in This Release</h2><p>Summary of all changes delivered</p></div>
+<div class="st">
+<div class="si"><div class="n">6</div><div class="l">New Features</div></div>
+<div class="si"><div class="n">15+</div><div class="l">Portal Modules</div></div>
+<div class="si"><div class="n">50+</div><div class="l">API Endpoints</div></div>
+<div class="si"><div class="n">0</div><div class="l">Known Bugs</div></div>
 </div>
+<div class="g2" style="margin-top:20px">
+<div class="cd"><h4>🆕 Client Intake Wizard <span class="new">NEW</span></h4><p>5-step guided form with Zod validation, SA phone format, Playfair/Navy/Gold branding. Steps: Contact → Case Details → Parties → Documents → Consent. Submits to API and redirects to confirmation page with case reference number.</p></div>
+<div class="cd"><h4>🤖 AI Intake → Case Conversion <span class="new">NEW</span></h4><p>GPT-4o analyses client problems, categorises legal matters, suggests SA legislation. Attorneys review and convert intakes to active cases with one click. AI analysis saved as case note.</p></div>
+<div class="cd"><h4>📋 Document Versioning <span class="new">NEW</span></h4><p>Full version history for every document. Upload new versions with change notes. Check-in/out locking with 4-hour auto-expiry to prevent edit conflicts.</p></div>
+<div class="cd"><h4>📊 Leads Pipeline <span class="upd">REBUILT</span></h4><p>Migrated from Supabase to MongoDB. Full CRUD with create, qualify, assign, convert workflow. SLA tracking (24hr paralegal, 48hr officer). 5 test leads seeded.</p></div>
+<div class="cd"><h4>🗄️ Case Archiving <span class="new">NEW</span></h4><p>Closed cases can be archived to read-only. Auto-archive for cases closed >30 days. Archived tab added to case filter. Full audit trail preserved.</p></div>
+<div class="cd"><h4>🏗️ Architecture Rebuild <span class="upd">UPGRADED</span></h4><p>TypeScript strict mode. Zod validation schemas. Clean separation: lib/ (no React) → hooks/ (bridge) → pages/ (UI only). react-hook-form + zodResolver.</p></div>
+</div>
+<div class="gd"><h4>Bug Fixes</h4><p>• Fixed tasks.updated_at Supabase column error — Tasks module now loads correctly<br>• Fixed RBAC permissions — Attorney role can now access Leads, Cases Archive, and all relevant modules<br>• Removed duplicate page.js/page.tsx conflicts</p></div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 2</span></div>
 </div>
 
-<!-- EXECUTIVE SUMMARY -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 01</div><h2>Executive Summary</h2><p>Platform capabilities and competitive positioning</p></div>
-<div class="stats">
-<div class="stat"><div class="n">15+</div><div class="l">Portal Modules</div></div>
-<div class="stat"><div class="n">6</div><div class="l">AI Features</div></div>
-<div class="stat"><div class="n">50+</div><div class="l">API Endpoints</div></div>
-<div class="stat"><div class="n">R95</div><div class="l">Starting Price/mo</div></div>
-</div>
-<div class="col2" style="margin-top:24px">
-<div>
-<h3 style="font-size:16px;margin-bottom:14px">Platform Modules</h3>
-<ul class="check">
-<li>Dashboard with real-time stats & quick actions</li>
-<li>Case Management — full lifecycle with archiving</li>
-<li>AI Intake — GPT-powered legal analysis & case creation</li>
-<li>Document Versioning with check-in/out & approval workflow</li>
-<li>Leads Pipeline with SLA tracking & conversion</li>
-<li>Task Management linked to cases</li>
-<li>Calendar with court date tracking</li>
-<li>Internal Messaging system</li>
-<li>Knowledge Base for legal research</li>
-<li>HR Module & Staff Management</li>
-<li>Billing & Time Tracking</li>
-<li>Reports & Analytics</li>
-<li>Role-Based Access Control (12+ roles)</li>
-</ul>
-</div>
-<div>
-<h3 style="font-size:16px;margin-bottom:14px">Competitive Advantages</h3>
-<div class="card" style="margin-bottom:10px"><h4>🤖 AI-Powered Legal Intake</h4><p>GPT-4o analyses problems in real-time, categorises matters, suggests legislation & next steps. Auto-creates cases. No competitor offers this.</p></div>
-<div class="card" style="margin-bottom:10px"><h4>📋 Document Version Control</h4><p>Full version history, check-in/out locking, 4-level approval workflow. Enterprise-grade document management.</p></div>
-<div class="card" style="margin-bottom:10px"><h4>🗄️ Case Archiving</h4><p>Closed cases auto-archive after 30 days. Archived cases become read-only for compliance. Full audit trail preserved.</p></div>
-<div class="card"><h4>🔐 POPIA Compliant</h4><p>End-to-end encryption, role-based access, audit logging, privilege protection. Built for SA legal requirements.</p></div>
-</div>
+<!-- INTAKE WIZARD STEP 1 -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Feature 01</div><h2>Client Intake Wizard — Contact Information</h2><p>Step 1: Capture client contact details with SA phone validation</p></div>
+<div class="ss"><img src="${s['01_intake_step1_empty']}" alt="Step 1 Empty" /></div>
+<div class="ss"><img src="${s['02_intake_step1_filled']}" alt="Step 1 Filled" /></div>
+<div class="g2">
+<div class="cd"><h4>Zod Validation</h4><p>First/Last name (min 2 chars), valid email format, SA phone regex (+27XXXXXXXXX or 0XXXXXXXXX). Cannot proceed until all fields valid.</p></div>
+<div class="cd"><h4>Step Progress</h4><p>Visual progress bar + numbered step indicators. Gold highlight on current step, checkmark on completed steps. "Step X of 5" label.</p></div>
 </div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 3</span></div>
 </div>
 
-<!-- HOMEPAGE -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 02</div><h2>Public Website — Homepage</h2><p>Consumer-facing legal protection marketplace</p></div>
-<div class="ss"><img src="${ss.homepage}" alt="Homepage" /></div>
-<div class="grid2">
-<div class="card"><h4>Hero Section</h4><p>"Legal Protection That Fights For You" — clear value proposition with R95/month pricing. AI-powered help, POPIA compliant badges. Trust stats: 500+ attorneys, &lt;5min response, 95% satisfaction.</p></div>
-<div class="card"><h4>Navigation & CTAs</h4><p>Legal Policies, AI Legal Help, Legal Resources, Contact Us. Dual CTAs: "Join Infinity Legal" and "Free AI Intake". Member Login for portal access.</p></div>
+<!-- INTAKE WIZARD STEP 2 -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Feature 01 (cont.)</div><h2>Client Intake Wizard — Case Details</h2><p>Step 2: Legal matter type, urgency level, and detailed description</p></div>
+<div class="ss"><img src="${s['03_intake_step2']}" alt="Step 2" /></div>
+<div class="ss"><img src="${s['04_intake_step2_filled']}" alt="Step 2 Filled" /></div>
+<div class="g2">
+<div class="cd"><h4>Case Type Selection</h4><p>8 categories: Labour, Criminal, Family, Civil, Commercial, Property, Personal Injury, Other. shadcn Select component with clean dropdown.</p></div>
+<div class="cd"><h4>Urgency Levels</h4><p>Low (no deadline), Medium (weeks), High (days), Emergency (immediate). Character counter on description field (max 5000). Min 20 chars required.</p></div>
 </div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 4</span></div>
 </div>
 
-<!-- HOMEPAGE FEATURES -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 02 (cont.)</div><h2>Homepage — Features & Trust</h2><p>Below-the-fold content showcasing platform capabilities</p></div>
-<div class="ss"><img src="${ss.features}" alt="Features" /></div>
-<div class="gold"><h4>Designed to Outclass Scorpion.biz</h4><p>The public website follows the Scorpion.biz model for legal protection plans but adds AI capabilities, modern design, and POPIA compliance that competitors lack. Exclusively focused on Legal Protection — no funeral plans, no distracting products.</p></div>
+<!-- INTAKE WIZARD STEPS 3-5 -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Feature 01 (cont.)</div><h2>Client Intake Wizard — Parties, Documents & Consent</h2><p>Steps 3-5: Opposing parties, evidence, and legal consent</p></div>
+<div class="c2">
+<div><h3 style="font-size:13px;margin-bottom:8px">Step 3: Parties Involved</h3><div class="ss"><img src="${s['05_intake_step3']}" alt="Step 3" /></div></div>
+<div><h3 style="font-size:13px;margin-bottom:8px">Step 4: Documents & Timeline</h3><div class="ss"><img src="${s['06_intake_step4']}" alt="Step 4" /></div></div>
+</div>
+<div style="margin-top:16px"><h3 style="font-size:13px;margin-bottom:8px">Step 5: Consent & Submission Summary</h3><div class="ss"><img src="${s['07_intake_step5']}" alt="Step 5" /></div></div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 5</span></div>
 </div>
 
-<!-- PRICING -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 03</div><h2>Pricing Plans</h2><p>Three-tier legal protection: Labour Shield, Civil Guard, Complete Cover</p></div>
-<div class="ss"><img src="${ss.pricing}" alt="Pricing" /></div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>Labour Shield — R95/mo</h4><p>Employment matters coverage up to R72,300. CCMA representation, disciplinary hearings, retrenchment advice. Perfect for workers needing labour protection.</p></div>
-<div class="card"><h4>Civil Guard — R150/mo <span class="tag">POPULAR</span></h4><p>Civil matters coverage up to R78,500. Consumer disputes, debt recovery, property matters, contractual disputes. Best value for comprehensive protection.</p></div>
+<!-- CONFIRMATION -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Feature 01 (cont.)</div><h2>Intake Confirmation Page</h2><p>Success page with case reference number and next steps</p></div>
+<div class="ss"><img src="${s['08_confirmation']}" alt="Confirmation" /></div>
+<div class="g2">
+<div class="cd"><h4>Reference Number</h4><p>Unique case ID generated (IL-2026-XXXX format). Large, prominent display for easy reference. Client instructed to keep for future correspondence.</p></div>
+<div class="cd"><h4>24-Hour Promise</h4><p>"We will contact you within 24 hours to discuss your matter." Two CTAs: Return to Home or Submit Another Intake. Branded with Infinity Legal identity.</p></div>
 </div>
+<div class="gd"><h4>Technical: Clean Architecture</h4><p>• schema.ts (Zod, no React) → workflow.ts (business logic, no React) → useIntakeWizard.ts (hook) → page.tsx (UI only)<br>• API route at /api/intake/submit validates server-side with same Zod schema<br>• react-hook-form + zodResolver for per-step field validation</p></div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 6</span></div>
 </div>
 
-<!-- APPLY -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 04</div><h2>Member Application</h2><p>Online join flow with plan selection and personal details</p></div>
-<div class="ss"><img src="${ss.apply}" alt="Apply" /></div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>Plan Selection</h4><p>Users select their preferred legal protection plan. Clear pricing displayed with coverage details. Seamless transition from pricing page.</p></div>
-<div class="card"><h4>Application Form</h4><p>Full name, email, phone, ID number, address. Terms acceptance. Secure submission. Account created automatically after signup.</p></div>
+<!-- DASHBOARD -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Portal</div><h2>Staff Portal — Dashboard</h2><p>Personalized workspace with real-time metrics</p></div>
+<div class="ss"><img src="${s['09_dashboard']}" alt="Dashboard" /></div>
+<div class="g2">
+<div class="cd"><h4>At-a-Glance Metrics</h4><p>Active Cases, Pending Tasks, Court Dates Today, Notifications. Role-aware greeting. Recent cases with status badges and case numbers.</p></div>
+<div class="cd"><h4>Quick Actions & Company Info</h4><p>New Case, Documents, Approvals, AI Research. Managing Director: Tidimalo Tsatsi. Full sidebar navigation to all 15+ modules.</p></div>
 </div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 7</span></div>
 </div>
 
-<!-- DASHBOARD -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 05</div><h2>Staff Portal — Dashboard</h2><p>Personalized workspace with real-time metrics and quick actions</p></div>
-<div class="ss"><img src="${ss.dashboard}" alt="Dashboard" /></div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>At-a-Glance Metrics</h4><p>Active Cases, Pending Tasks, Court Dates Today, Notifications. Role-aware greeting with department info. Recent cases with clickable status badges.</p></div>
-<div class="card"><h4>Quick Actions</h4><p>New Case, Documents, Approvals, AI Research — one-click access. Company info panel with managing director details. Full sidebar navigation to all 15+ modules.</p></div>
+<!-- CASES -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Portal</div><h2>Case Management</h2><p>Full lifecycle: New → Active → Court → Settlement → Closed → Archived</p></div>
+<div class="ss"><img src="${s['10_cases']}" alt="Cases" /></div>
+<div class="g2">
+<div class="cd"><h4>Case Workspace</h4><p>Tabbed: Timeline, Notes, Tasks, Messages, Billing, Details. Search & filter by status. Matter numbering: IL-2026-XXXX.</p></div>
+<div class="cd"><h4>🗄️ Archiving <span class="new">NEW</span></h4><p>Closed cases → Archive button → Read-only. Auto-archive for 30+ days closed. "Archived" filter tab added.</p></div>
 </div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 8</span></div>
 </div>
 
-<!-- CASES -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 06</div><h2>Case Management</h2><p>Full lifecycle: New → Active → Court → Settlement → Closed → Archived</p></div>
-<div class="ss"><img src="${ss.cases}" alt="Cases" /></div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>Case Workspace</h4><p>Tabbed interface: Timeline, Notes, Tasks, Messages, Billing, Details. Search & filter by status, type, number. Matter numbering: IL-2026-XXXX format.</p></div>
-<div class="card"><h4>🗄️ Case Archiving <span class="tag">NEW</span></h4><p>Closed cases can be archived to read-only. Auto-archive for cases closed &gt;30 days. Archived tab in filter. Full audit trail with timeline entries preserved.</p></div>
+<!-- AI INTAKES -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Portal</div><h2>AI Intake → Case Conversion</h2><p>GPT-4o analysis with one-click case creation</p></div>
+<div class="ss"><img src="${s['11_intakes']}" alt="AI Intakes" /></div>
+<div class="ss" style="margin-top:8px"><img src="${s['12_intakes_detail']}" alt="Detail" /></div>
+<div class="g2">
+<div class="cd"><h4>AI Analysis <span class="new">NEW</span></h4><p>Client problem → AI categorizes, identifies urgency, suggests next steps, relevant SA legislation, cost estimates, timeline.</p></div>
+<div class="cd"><h4>Convert to Case <span class="new">NEW</span></h4><p>One-click conversion. AI analysis saved as case note. Duplicate protection (409). Stats dashboard with filter tabs.</p></div>
 </div>
-<div class="gold"><h4>Prescription Period Tracking</h4><p>SA prescription periods auto-calculated: CCMA 6mo, Unfair Dismissal 12mo, General 3yr, Property 30yr. Visual urgency badges warn when deadlines approach.</p></div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 9</span></div>
 </div>
 
-<!-- AI INTAKES -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 07</div><h2>AI Intake & Case Conversion</h2><p>GPT-4o powered legal analysis with one-click case creation</p></div>
-<div class="ss"><img src="${ss.intakes}" alt="AI Intakes" /></div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>🤖 AI Legal Analysis <span class="tag">NEW</span></h4><p>Client describes problem → AI categorizes (Labour, Criminal, Family, etc.), identifies urgency, suggests next steps, relevant SA legislation, cost estimates, and timeline.</p></div>
-<div class="card"><h4>Convert to Case <span class="tag">NEW</span></h4><p>Attorneys review AI analysis and convert intakes to active cases with one click. AI analysis auto-saved as case note. Duplicate protection prevents double conversion.</p></div>
+<!-- LEADS -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Portal</div><h2>Leads Pipeline</h2><p>Full lifecycle: New → Contacted → Qualified → Converted → Lost</p></div>
+<div class="ss"><img src="${s['13_leads']}" alt="Leads" /></div>
+<div class="g2">
+<div class="cd"><h4>Lead Management <span class="upd">REBUILT</span></h4><p>Migrated to MongoDB. Create from web/referral/walk-in/call. Track urgency, case type, source. Status filters and search.</p></div>
+<div class="cd"><h4>Pipeline Workflow</h4><p>Qualify → Assign Paralegal (24hr SLA) → Strategy → Assign Officer (48hr SLA) → Convert. Notifications at each stage.</p></div>
 </div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 10</span></div>
 </div>
 
-<!-- INTAKES DETAIL -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 07 (cont.)</div><h2>AI Intake — Detail View</h2><p>Expanded view showing client problem and AI analysis side by side</p></div>
-<div class="ss"><img src="${ss.intakesDetail}" alt="Intake Detail" /></div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>Client's Problem</h4><p>Original description, timeline, desired outcome, involved parties, and documents — exactly as submitted by the client through the public AI intake form.</p></div>
-<div class="card"><h4>AI Analysis Panel</h4><p>Recommended next steps (numbered), relevant SA legislation with section references, warnings about time limits or evidence preservation, cost and timeline estimates.</p></div>
+<!-- DOCUMENTS -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Portal</div><h2>Document Management & Versioning</h2><p>Enterprise-grade workflow with version control</p></div>
+<div class="ss"><img src="${s['14_documents']}" alt="Documents" /></div>
+<div class="g2">
+<div class="cd"><h4>📋 Version History <span class="new">NEW</span></h4><p>Full version tracking. Upload new versions with change notes. History modal with timestamps, author, latest badge.</p></div>
+<div class="cd"><h4>🔒 Check-in/out <span class="new">NEW</span></h4><p>Lock documents while editing. 4-hour auto-expiry. Conflict prevention. Visual lock indicators.</p></div>
+<div class="cd"><h4>Workflow Approval</h4><p>Draft → Review → Approved → Signed. Legal Officer sign-off required. Paralegal UPL protection.</p></div>
+<div class="cd"><h4>AI Document Assistant</h4><p>AI-powered review, drafting, research. Templates for SA legal documents.</p></div>
 </div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 11</span></div>
 </div>
 
-<!-- LEADS -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 08</div><h2>Leads Pipeline</h2><p>Full lead lifecycle: New → Contacted → Qualified → Converted → Lost</p></div>
-<div class="ss"><img src="${ss.leads}" alt="Leads Pipeline" /></div>
-<div class="ss" style="margin-top:12px"><img src="${ss.leadsForm}" alt="New Lead Form" /></div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>Lead Management</h4><p>Create leads from web, referrals, walk-ins, phone calls. Track urgency (Emergency/High/Medium/Low), case type, source. Status filters and search.</p></div>
-<div class="card"><h4>Pipeline Workflow</h4><p>Qualify → Assign Paralegal (24hr SLA) → Strategy Review → Assign Officer (48hr SLA) → Convert to Case. Notifications at every stage.</p></div>
+<!-- TASKS CALENDAR KNOWLEDGE -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Portal</div><h2>Tasks, Calendar & Knowledge Base</h2><p>Supporting workflow modules</p></div>
+<div class="c2">
+<div><h3 style="font-size:12px;margin-bottom:6px">📋 Tasks</h3><div class="ss"><img src="${s['15_tasks']}" alt="Tasks" /></div><p style="font-size:10px;color:#666;margin-top:6px">Case-linked tasks, priority levels, due dates. Fixed: updated_at column error resolved.</p></div>
+<div><h3 style="font-size:12px;margin-bottom:6px">📅 Calendar</h3><div class="ss"><img src="${s['16_calendar']}" alt="Calendar" /></div><p style="font-size:10px;color:#666;margin-top:6px">Court dates, deadlines, meetings. Day/week/month views. Auto-syncs with case dates.</p></div>
 </div>
+<div style="margin-top:14px"><h3 style="font-size:12px;margin-bottom:6px">📚 Knowledge Base</h3><div class="ss"><img src="${s['17_knowledge']}" alt="Knowledge" /></div></div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 12</span></div>
 </div>
 
-<!-- DOCUMENTS -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 09</div><h2>Document Management & Versioning</h2><p>Enterprise-grade document workflow with version control</p></div>
-<div class="ss"><img src="${ss.documents}" alt="Documents" /></div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>📋 Version History <span class="tag">NEW</span></h4><p>Full version tracking for every document. Upload new versions with change notes. Version history modal with timestamps and author attribution. Latest version highlighted.</p></div>
-<div class="card"><h4>🔒 Check-in / Check-out <span class="tag">NEW</span></h4><p>Lock documents while editing to prevent conflicts. 4-hour auto-expiry. Only lock holder can upload new versions. Visual lock status indicators.</p></div>
-<div class="card"><h4>📄 Workflow Approval</h4><p>Draft → Review → Approved → Signed. Only Legal Officers can approve and sign. Paralegal UPL protection enforced automatically.</p></div>
-<div class="card"><h4>🤖 AI Document Assistant</h4><p>AI-powered document review, drafting suggestions, and legal research. Templates for common SA legal documents (contracts, pleadings, notices).</p></div>
+<!-- PUBLIC SITE -->
+<div class="pg ct">
+<div class="hd"><div class="nm">Public Website</div><h2>Homepage & Pricing</h2><p>Consumer-facing legal protection marketplace</p></div>
+<div class="c2">
+<div><h3 style="font-size:12px;margin-bottom:6px">Homepage</h3><div class="ss"><img src="${s['18_homepage']}" alt="Homepage" /></div></div>
+<div><h3 style="font-size:12px;margin-bottom:6px">Pricing Plans</h3><div class="ss"><img src="${s['19_pricing']}" alt="Pricing" /></div></div>
+</div>
+<div class="g2" style="margin-top:14px">
+<div class="cd"><h4>Scorpion.biz Model</h4><p>Legal Protection focused (no funeral plans). Hero stats: 500+ attorneys, <5min response, 95% satisfaction. Clean, accessible, POPIA compliant.</p></div>
+<div class="cd"><h4>Three-Tier Pricing</h4><p>Labour Shield R95/mo, Civil Guard R150/mo (Most Popular), Complete Cover R250/mo. Clear feature comparison. Online application flow.</p></div>
 </div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 13</span></div>
 </div>
 
-<!-- TASKS CALENDAR KNOWLEDGE -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 10</div><h2>Tasks, Calendar & Knowledge Base</h2><p>Supporting workflow modules for daily operations</p></div>
-<div class="col2">
-<div><h3 style="font-size:14px;margin-bottom:10px">📋 Task Management</h3><div class="ss"><img src="${ss.tasks}" alt="Tasks" /></div><p style="font-size:11px;color:#666;margin-top:8px">Create, assign, and track tasks linked to cases. Priority levels, due dates, status tracking. Filter by status or assignee.</p></div>
-<div><h3 style="font-size:14px;margin-bottom:10px">📅 Calendar</h3><div class="ss"><img src="${ss.calendar}" alt="Calendar" /></div><p style="font-size:11px;color:#666;margin-top:8px">Court dates, deadlines, meetings. Visual calendar with day/week/month views. Colour-coded by event type. Auto-syncs with case dates.</p></div>
+<!-- NEXT STEPS -->
+<div class="pg ct" style="background:linear-gradient(180deg,#fff 0%,#f8f9fa 100%)">
+<div class="hd"><div class="nm">Roadmap</div><h2>Next Steps & Recommendations</h2><p>Upcoming development priorities</p></div>
+<div class="g2" style="margin-top:16px">
+<div class="cd" style="border-left-color:#22c55e"><h4>✅ Delivered This Sprint</h4><p>• 5-step Client Intake Wizard (Zod + react-hook-form)<br>• AI Intake → Case conversion<br>• Document versioning & check-in/out<br>• Leads pipeline (MongoDB rebuild)<br>• Case archiving (read-only mode)<br>• TypeScript strict mode architecture<br>• RBAC permission fixes<br>• Tasks bug fix<br>• 17-page client PDF with 19 screenshots</p></div>
+<div class="cd" style="border-left-color:#3b82f6"><h4>🔵 Recommended Next</h4><p>• Connect Intake Wizard to real MongoDB (replace mock)<br>• PayFast payment integration (on hold per request)<br>• Client self-service portal<br>• Email/SMS notifications (SendGrid/Twilio)<br>• E-signature integration<br>• Mobile app or PWA<br>• Multi-language support (ZA languages)<br>• Advanced analytics dashboard</p></div>
 </div>
-<div style="margin-top:20px"><h3 style="font-size:14px;margin-bottom:10px">📚 Knowledge Base</h3><div class="ss"><img src="${ss.knowledge}" alt="Knowledge Base" /></div></div>
+<div style="text-align:center;margin-top:50px;padding:36px">
+<div style="font-size:40px;margin-bottom:14px">⚖️</div>
+<h3 style="font-family:'Playfair Display',serif;font-size:26px;color:#0f2b46;margin-bottom:4px">Infinity Legal (Pty) Ltd</h3>
+<p style="color:#888;font-size:12px">Block A, Eco Fusion 5, 1004 Witch-Hazel Avenue</p>
+<p style="color:#888;font-size:12px">Highveld Technopark, Centurion, South Africa</p>
+<div style="width:36px;height:2px;background:#c9a961;margin:14px auto"></div>
+<p style="color:#c9a961;font-size:12px;font-weight:600">Managing Director: Tidimalo Tsatsi</p>
+<p style="font-family:'Playfair Display',serif;color:#aaa;font-size:11px;margin-top:14px;font-style:italic">Legal Excellence Without Limits</p>
+<p style="color:#ccc;font-size:9px;margin-top:18px">This document is confidential and intended solely for client evaluation.</p>
+</div>
 <div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 14</span></div>
 </div>
 
-<!-- BILLING HR REPORTS -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 11</div><h2>Billing, HR & Reports</h2><p>Enterprise operations modules</p></div>
-<div class="col2">
-<div><h3 style="font-size:14px;margin-bottom:10px">💰 Billing & Time Tracking</h3><div class="ss"><img src="${ss.billing}" alt="Billing" /></div><p style="font-size:11px;color:#666;margin-top:8px">Time entries, billing rates, invoice generation. Track billable hours per case. Client billing summaries.</p></div>
-<div><h3 style="font-size:14px;margin-bottom:10px">👥 HR Management</h3><div class="ss"><img src="${ss.hr}" alt="HR" /></div><p style="font-size:11px;color:#666;margin-top:8px">Staff directory, role management, department organisation. Leave tracking and staff performance metrics.</p></div>
-</div>
-<div class="col2" style="margin-top:20px">
-<div><h3 style="font-size:14px;margin-bottom:10px">📊 Reports & Analytics</h3><div class="ss"><img src="${ss.reports}" alt="Reports" /></div><p style="font-size:11px;color:#666;margin-top:8px">Case analytics, revenue tracking, performance dashboards. Export capabilities for management review.</p></div>
-<div><h3 style="font-size:14px;margin-bottom:10px">⚙️ Settings</h3><div class="ss"><img src="${ss.settings}" alt="Settings" /></div><p style="font-size:11px;color:#666;margin-top:8px">Profile management, notification preferences, security settings. Two-factor authentication support.</p></div>
-</div>
-<div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 15</span></div>
-</div>
+</body></html>`;
 
-<!-- TECH ARCHITECTURE -->
-<div class="page content">
-<div class="hdr"><div class="num">Section 12</div><h2>Technical Architecture</h2><p>Modern, scalable, production-ready technology stack</p></div>
-<div class="tech">
-<div class="tech-i"><div class="ic">⚛️</div><div class="nm">Next.js 14</div><div class="de">App Router, SSR, API Routes</div></div>
-<div class="tech-i"><div class="ic">🍃</div><div class="nm">MongoDB</div><div class="de">Documents, Leads, Intakes, Versions</div></div>
-<div class="tech-i"><div class="ic">🔐</div><div class="nm">Supabase</div><div class="de">Auth, Users, Cases, RLS</div></div>
-<div class="tech-i"><div class="ic">🤖</div><div class="nm">GPT-4o</div><div class="de">Legal Analysis, Document Assist</div></div>
-<div class="tech-i"><div class="ic">🎨</div><div class="nm">Tailwind CSS</div><div class="de">Responsive, Dark Mode Ready</div></div>
-<div class="tech-i"><div class="ic">🔑</div><div class="nm">RBAC System</div><div class="de">12+ Roles, 30+ Permissions</div></div>
-</div>
-<div class="grid2" style="margin-top:16px">
-<div class="card"><h4>Security & Compliance</h4><p>POPIA compliant data handling. Role-based access control with 12+ roles. Audit logging for every action. Middleware-enforced authentication. Encrypted data at rest and in transit.</p></div>
-<div class="card"><h4>Production Readiness</h4><p>Health check API. SEO optimised (sitemap.xml, robots.txt, JSON-LD). Analytics tracking. Custom 404 page. Cookie consent. Responsive design for mobile & desktop.</p></div>
-</div>
-<div style="margin-top:20px">
-<h3 style="font-size:14px;margin-bottom:10px">Key API Endpoints (50+)</h3>
-<ul class="api">
-<li><span class="m post">POST</span>/api/intake/analyze — AI legal analysis</li>
-<li><span class="m get">GET</span>/api/intakes — List AI intake submissions</li>
-<li><span class="m post">POST</span>/api/intakes/{id}/convert — Convert intake to case</li>
-<li><span class="m get">GET</span>/api/leads — Leads pipeline</li>
-<li><span class="m post">POST</span>/api/documents/{id}/versions — Document versioning</li>
-<li><span class="m post">POST</span>/api/documents/{id}/lock — Check-in/out</li>
-<li><span class="m post">POST</span>/api/cases/archive — Case archiving</li>
-<li><span class="m get">GET</span>/api/health — System health check</li>
-</ul>
-</div>
-<div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 16</span></div>
-</div>
-
-<!-- ROADMAP -->
-<div class="page content" style="background:linear-gradient(180deg,white 0%,#f8f9fa 100%)">
-<div class="hdr"><div class="num">Section 13</div><h2>Roadmap & Next Steps</h2><p>Current release highlights and upcoming features</p></div>
-<div class="grid2" style="margin-top:20px">
-<div class="card" style="border-left-color:#22c55e"><h4>✅ Delivered (Current Release)</h4><p>
-• AI Intake → Case conversion with GPT-4o<br>
-• Document versioning & check-in/out<br>
-• Leads pipeline with full lifecycle<br>
-• Case archiving (read-only mode)<br>
-• 15+ portal modules fully functional<br>
-• Scorpion.biz competitive redesign<br>
-• RBAC with 12+ granular roles<br>
-• Production readiness (health, SEO, analytics)<br>
-• POPIA compliant architecture
-</p></div>
-<div class="card" style="border-left-color:#3b82f6"><h4>🔵 Upcoming Features</h4><p>
-• PayFast payment integration<br>
-• Client self-service portal<br>
-• Advanced reporting & analytics dashboard<br>
-• Email/SMS notification integration (SendGrid/Twilio)<br>
-• Mobile responsive portal enhancements<br>
-• Multi-language support (ZA official languages)<br>
-• E-signature integration<br>
-• Automated billing & invoicing<br>
-• Client feedback system
-</p></div>
-</div>
-<div style="text-align:center;margin-top:50px;padding:40px">
-<div style="font-size:44px;margin-bottom:16px">⚖️</div>
-<h3 style="font-family:'Playfair Display',serif;font-size:28px;color:#1a2744;margin-bottom:6px">Infinity Legal (Pty) Ltd</h3>
-<p style="color:#888;font-size:13px">Block A, Eco Fusion 5, 1004 Witch-Hazel Avenue</p>
-<p style="color:#888;font-size:13px">Highveld Technopark, Centurion, South Africa</p>
-<div style="width:40px;height:2px;background:#d4a853;margin:16px auto"></div>
-<p style="color:#d4a853;font-size:13px;font-weight:600">info@infinitylegal.co.za</p>
-<p style="color:#999;font-size:11px;margin-top:16px">Managing Director: Tidimalo Tsatsi</p>
-<p style="color:#ccc;font-size:10px;margin-top:20px">This document is confidential and intended solely for evaluation purposes.</p>
-</div>
-<div class="ft"><span>Infinity Legal (Pty) Ltd — Confidential</span><span>Page 17</span></div>
-</div>
-
-</body>
-</html>`;
-
-fs.writeFileSync('/app/public/client-presentation.html', html);
+fs.writeFileSync('/app/public/client-update-report.html', html);
 console.log('HTML written');
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
-  await page.goto('file:///app/public/client-presentation.html', { waitUntil: 'networkidle' });
+  await page.goto('file:///app/public/client-update-report.html', { waitUntil: 'networkidle' });
   await page.waitForTimeout(4000);
   await page.pdf({
-    path: '/app/public/Infinity_Legal_Client_Evaluation.pdf',
+    path: '/app/public/Infinity_Legal_Development_Update.pdf',
     format: 'A4',
     printBackground: true,
     margin: { top: '0', right: '0', bottom: '0', left: '0' },
   });
-  const sz = fs.statSync('/app/public/Infinity_Legal_Client_Evaluation.pdf').size;
-  console.log(`PDF: ${Math.round(sz/1024)}KB (${Math.round(sz/1024/1024*10)/10}MB)`);
+  const sz = fs.statSync('/app/public/Infinity_Legal_Development_Update.pdf').size;
+  console.log(`PDF: ${Math.round(sz/1024)}KB (${(sz/1024/1024).toFixed(1)}MB)`);
   await browser.close();
 })();

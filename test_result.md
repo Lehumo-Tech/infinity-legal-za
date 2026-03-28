@@ -757,6 +757,8 @@ agent_communication:
       message: "NEW FEATURES - P1 & P2: 1) Document Versioning & Check-in/out: GET/POST /api/documents/{id}/versions (version history, create new version), GET/POST /api/documents/{id}/lock (check-out/in with 4hr auto-expiry). Added version column + version history modal to portal/documents. 2) Case Archiving: GET/POST /api/cases/archive (list archived, archive single or auto-archive closed cases >30 days). Added Archived tab to cases page + archive button for closed cases. All APIs tested manually. Test user: test_intake@infinitylegal.org / TestPass2026!"
     - agent: "testing"
       message: "CONVERT INTAKE TO CASE TESTING COMPLETED SUCCESSFULLY: All 11 test scenarios passed (100% success rate). ✅ Authentication via Supabase working correctly. ✅ GET /api/intakes properly secured (401 without auth, returns intake list with auth). ✅ POST /api/intake/analyze creates intake submissions in MongoDB with intakeId tracking. ✅ POST /api/intakes/[id]/convert successfully converts intakes to cases with proper case numbers (IL-2026-0021), updates status to 'converted', prevents duplicates (409). ✅ GET /api/tasks working without updated_at column error. ✅ Filtering by status and category working correctly. All authentication, validation, MongoDB/Supabase integration, and core functionality working perfectly. Feature is production-ready."
+    - agent: "testing"
+      message: "P0 FIX TESTING COMPLETED SUCCESSFULLY: Public Intake Wizard DB Save working perfectly. All 11 test scenarios passed (100% success rate). ✅ POST /api/intake/submit creates intake submissions in MongoDB with proper caseId format (IL-YYYY-NNNNN-XXXX), source='public_wizard', and all required fields. ✅ Conflict detection working correctly (409 for same email+caseType within 7 days). ✅ All validation scenarios working (firstName length, email format, SA phone format, description length, consent requirements, caseType requirements). ✅ Different caseType for same email succeeds correctly. ✅ Staff portal compatibility verified - intakes appear in GET /api/intakes with searchable category field. ✅ MongoDB verification confirms proper document structure and data persistence. Refactored lib/modules/intake/workflow.ts to pure TS business logic working correctly. All authentication, validation, conflict detection, and database integration working perfectly. P0 fix is production-ready."
 
 metadata:
   created_by: "main_agent"
@@ -990,7 +992,19 @@ metadata:
           comment: "NEW: User notification preferences. GET /api/settings/notifications returns preferences with defaults. PUT updates preferences (upsert to MongoDB). Supports email toggles for cases, tasks, documents, announcements, leave, billing, and digest frequency."
         - working: true
           agent: "testing"
-          comment: "Comprehensive testing completed successfully. All authentication and functionality working correctly: 1) GET without auth correctly returns 401. 2) GET with auth returns notification preferences successfully with proper default values (email_case_updates, email_task_assignments, push_messages, digest_frequency, etc.). 3) PUT with auth successfully updates preferences with upsert functionality to MongoDB. 4) Preference structure includes all required notification types: email toggles for cases, tasks, documents, announcements, leave, billing, plus push notifications and digest frequency settings. 5) MongoDB integration working perfectly with proper upse
+          comment: "Comprehensive testing completed successfully. All authentication and functionality working correctly: 1) GET without auth correctly returns 401. 2) GET with auth returns notification preferences successfully with proper default values (email_case_updates, email_task_assignments, push_messages, digest_frequency, etc.). 3) PUT with auth successfully updates preferences with upsert functionality to MongoDB. 4) Preference structure includes all required notification types: email toggles for cases, tasks, documents, announcements, leave, billing, plus push notifications and digest frequency settings. 5) MongoDB integration working perfectly with proper upse"
+
+  - task: "Public Intake Wizard DB Save"
+    implemented: true
+    working: true
+    file: "app/api/intake/submit/route.ts, lib/modules/intake/workflow.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "P0 FIX TESTING COMPLETED SUCCESSFULLY: All 11 test scenarios passed (100% success rate). ✅ SUCCESSFUL SUBMISSION: POST /api/intake/submit with valid data returns 201 with success=true and proper caseId format (IL-YYYY-NNNNN-XXXX). ✅ CONFLICT DETECTION: Second submission with same email+caseType within 7 days correctly returns 409 with existingReference. ✅ VALIDATION ERRORS: All validation working correctly - short firstName (2 chars min), invalid email, invalid SA phone format, short description (20 chars min), missing consent, missing caseType all return 400 with proper error messages. ✅ DIFFERENT CASETYPE SAME EMAIL: Family law submission for same email as criminal law succeeds (different category = no conflict). ✅ EMPTY BODY: Returns 400 as expected. ✅ STAFF PORTAL COMPATIBILITY: Verified intake submissions appear in GET /api/intakes with source='public_wizard' and searchable analysis.category field. ✅ MONGODB VERIFICATION: Documents properly saved to intake_submissions collection with all required fields. Refactored workflow.ts to pure TS business logic working correctly. All authentication, validation, conflict detection, and database integration working perfectly."
 
   - task: "Document Versioning API (P1)"
     implemented: true
@@ -1196,10 +1210,21 @@ metadata:
           agent: "testing"
           comment: "Comprehensive production readiness testing completed successfully. GET /this-page-does-not-exist returns proper 404 status with custom HTML content. Page contains 404 branding, navigation options (Home, AI Legal Help, Contact), and proper Infinity Legal styling. Custom 404 page working correctly instead of default Next.js 404. Production ready."
 
+  - task: "Public Intake Wizard DB Save (P0)"
+    implemented: true
+    working: true
+    file: "app/api/intake/submit/route.ts, lib/modules/intake/workflow.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "P0 FIX COMPLETE: Wired up the public Intake Wizard to MongoDB. workflow.ts refactored to export pure business logic (validateIntake, buildIntakeDocument, detectConflicts, generateReferenceId). submit/route.ts now validates via Zod, queries MongoDB for conflict detection (same email+caseType within 7 days returns 409), builds document via pure function, saves to intake_submissions collection. Documents include source:'public_wizard' field for distinction. Staff portal listing at /api/intakes compatible with new format (analysis.category, analysis.summary searchable). Tested: successful save, conflict 409, validation 400."
+
 test_plan:
   current_focus:
-    - "Error Boundary"
-    - "SEO Structured Data"
+    - "Public Intake Wizard DB Save (P0)"
   stuck_tasks:
     - "Security Utilities"
   test_all: false
@@ -1221,8 +1246,10 @@ agent_communication:
     - agent: "testing"
       message: "PRODUCTION READINESS TESTING COMPLETED: All 6 production readiness endpoints tested and working perfectly. ✅ Health Check API: Returns proper status with MongoDB/Supabase connectivity, environment validation, memory usage, and 407ms response time. ✅ Analytics API: Privacy-compliant tracking working with proper validation and auth protection. ✅ Sitemap: Valid XML with 17 URLs, priority pages included, protected URLs excluded. ✅ Robots.txt: Proper content with sitemap reference and AI crawler blocking. ✅ Custom 404 Page: Branded 404 page with navigation options. ✅ Existing APIs: Plans and Attorneys APIs still working (3 plans, 3 attorneys found). All production readiness requirements met - platform ready for deployment."
     - agent: "main"
-      message: "AI ENHANCEMENT + WORKFLOW TESTING: 1) Fixed AI Document Assist & Case Insights - corrected LLM proxy URL. Both return 200 with full AI-generated content (termination letters, case strategies). 2) Added AI Chatbot Widget (AIChatWidget.js) - floating chatbot on all public pages with quick questions, instant answers, CTAs. 3) All AI features working: intake analysis (GPT-4o), document drafting, case strategy. Please test: POST /api/ai/document-assist with Bearer token. POST /api/ai/case-insights with Bearer token. Test login flow: POST to Supabase auth, verify token, hit protected endpoints. Base URL: https://infinity-staging.preview.emergentagent.com."
+      message: "AI ENHANCEMENT + WORKFLOW TESTING: 1) Fixed AI Document Assist & Case Insights - corrected LLM proxy URL. Both return 200 with full AI-generated content (termination letters, case strategies). 2) Added AI Chatbot Widget (AIChatWidget.js) - floating chatbot on all public pages with quick questions, instant answers, CTAs. 3) All AI features working: intake analysis (GPT-4o), document drafting, case strategy. Please test: POST /api/ai/document-assist with Bearer token. POST /api/ai/case-insights with Bearer token. Test login flow: POST to Supabase auth, verify token, hit protected endpoints. Base URL: https://phase-rebuild.preview.emergentagent.com."
     - agent: "main"
       message: "NEW FEATURES - P1 & P2: 1) Document Versioning & Check-in/out: GET/POST /api/documents/{id}/versions (version history, create new version), GET/POST /api/documents/{id}/lock (check-out/in with 4hr auto-expiry). Added version column + version history modal to portal/documents. 2) Case Archiving: GET/POST /api/cases/archive (list archived, archive single or auto-archive closed cases >30 days). Added Archived tab to cases page + archive button for closed cases. All APIs tested manually. Test user: test_intake@infinitylegal.org / TestPass2026!"
     - agent: "testing"
       message: "P1 & P2 FEATURES TESTING COMPLETED SUCCESSFULLY: 14/15 tests passed (93.3% success rate). ✅ P1 DOCUMENT VERSIONING: All 4 tests passed - version creation (v1, v2 with notes), version history retrieval (sorted desc), auth protection (401 without token). ✅ P1 DOCUMENT CHECK-IN/OUT: All 5 tests passed - checkout/checkin workflow, lock status checking, double checkout handling, unlock verification. ✅ P2 CASE ARCHIVING: 2/3 tests passed - auto-archive working, nonexistent case handling (404). Minor issue: GET /api/cases/archive returns 403 due to API using 'VIEW_CASES' permission which doesn't exist in RBAC (should use 'VIEW_ALL_CASES'). ✅ REGRESSION TESTS: All 3 previous features working - intakes, leads, tasks APIs all returning 200. Core P1 & P2 functionality working perfectly, only minor permission name mismatch needs fixing."
+    - agent: "main"
+      message: "P0 FIX - PUBLIC INTAKE WIZARD DB SAVE: Refactored lib/modules/intake/workflow.ts to pure TS business logic (validateIntake, buildIntakeDocument, detectConflicts, generateReferenceId). Wired up app/api/intake/submit/route.ts to MongoDB. Features: 1) Zod validation on all fields. 2) Conflict detection - queries MongoDB for same email+caseType within 7 days, returns 409 with existing reference. 3) Saves to intake_submissions with source:'public_wizard', compatible with staff portal listing. 4) Non-blocking notification on submission. Manually tested: POST returns 201 with caseId, duplicate returns 409, invalid data returns 400. Please test: POST /api/intake/submit with valid public wizard data, conflict detection, validation errors, and verify data appears in GET /api/intakes."
