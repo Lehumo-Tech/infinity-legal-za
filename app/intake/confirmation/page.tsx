@@ -17,8 +17,8 @@ function ConfirmationContent() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 flex flex-col">
       {/* Header */}
       <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-2">
-          <span className="text-xl">⚖️</span>
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-2.5">
+          <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-10 w-auto rounded-lg" />
           <span className="text-lg font-bold tracking-wide" style={{ color: NAVY, fontFamily: 'Playfair Display, serif' }}>
             INFINITY LEGAL
           </span>

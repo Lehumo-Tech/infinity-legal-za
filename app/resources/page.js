@@ -419,7 +419,7 @@ function ResourcesPageContent() {
       <header className="bg-[#0f2b46] text-white">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Infinity Legal" className="h-8" />
+            <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-10 rounded-lg" />
             <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Infinity Legal</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">

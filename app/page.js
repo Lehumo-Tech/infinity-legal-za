@@ -162,8 +162,8 @@ export default function LandingPage() {
       {/* ============================================ */}
       <nav className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Infinity Legal" className="h-9 w-auto" />
+          <Link href="/" className="flex items-center gap-2.5">
+            <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-10 w-auto rounded-lg" />
             <span className="text-xl font-display font-bold text-infinity-navy dark:text-white hidden sm:block">
               Infinity Legal
             </span>
@@ -579,7 +579,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo.png" alt="Infinity Legal" className="h-8 w-auto brightness-200" />
+                <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-10 w-auto rounded-lg" />
                 <span className="text-lg font-display font-bold">Infinity Legal</span>
               </div>
               <p className="text-sm text-white/50 leading-relaxed">

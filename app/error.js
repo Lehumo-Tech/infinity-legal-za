@@ -7,7 +7,7 @@ export default function Error({ error, reset }) {
     <div className="min-h-screen bg-gradient-to-b from-[#0a1628] to-[#1a2744] flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
         <div className="mb-6">
-          <img src="/logo.svg" alt="Infinity Legal" className="h-10 mx-auto opacity-70" />
+          <img src="/logo-icon-256.png" alt="Infinity Legal" className="h-14 mx-auto rounded-xl opacity-70" />
         </div>
         
         <div className="text-5xl mb-4">⚠️</div>

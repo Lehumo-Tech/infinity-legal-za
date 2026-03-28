@@ -155,7 +155,7 @@ export default function PortalLayout({ children }) {
           {/* Logo */}
           <div className="h-14 flex items-center px-4 border-b border-white/10 shrink-0">
             <Link href="/portal" className="flex items-center gap-2.5 min-w-0">
-              <img src="/logo.png" alt="Infinity" className="h-7 w-auto brightness-0 invert shrink-0" />
+              <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-9 w-auto rounded-lg shrink-0" />
               {!sidebarCollapsed && (
                 <div className="min-w-0">
                   <span className="text-white font-display font-bold text-sm block leading-none">Infinity OS</span>

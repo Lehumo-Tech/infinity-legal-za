@@ -113,7 +113,7 @@ export default function PricingPage() {
       <nav className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-16">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Infinity Legal" className="h-9 w-auto" />
+            <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-10 w-auto rounded-lg" />
             <span className="text-xl font-display font-bold text-infinity-navy dark:text-white hidden sm:block">Infinity Legal</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
@@ -280,7 +280,7 @@ export default function PricingPage() {
       <footer className="bg-infinity-navy text-white py-8">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Infinity Legal" className="h-6 w-auto brightness-200" />
+            <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-10 w-auto rounded-lg" />
             <span className="text-sm font-display font-bold">Infinity Legal</span>
           </div>
           <div className="flex gap-4 text-xs text-white/40">

@@ -206,7 +206,7 @@ export default function BookConsultationPage() {
         <div className="border-b border-infinity-gold/20 bg-white/80 backdrop-blur">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="Infinity Legal" className="h-8 w-auto" />
+              <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-10 w-auto rounded-lg" />
               <span className="font-bold text-lg text-infinity-navy">Infinity Legal</span>
             </Link>
           </div>
@@ -282,7 +282,7 @@ export default function BookConsultationPage() {
       <div className="border-b border-infinity-gold/20 bg-white/80 backdrop-blur">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="Infinity Legal" className="h-8 w-auto" />
+            <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-10 w-auto rounded-lg" />
             <span className="font-bold text-lg text-infinity-navy">Infinity Legal</span>
           </Link>
           <Link href="/" className="text-sm text-infinity-navy/70 hover:text-infinity-navy">

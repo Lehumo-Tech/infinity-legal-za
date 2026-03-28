@@ -6,7 +6,7 @@ export default function VerificationPage() {
       <div className="container mx-auto max-w-2xl">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-4">
-            <img src="/logo.png" alt="Infinity Legal" className="h-12 mx-auto" />
+            <img src="/logo-icon-256.png" alt="Infinity Legal" className="h-16 mx-auto rounded-xl" />
           </Link>
           <h1 className="text-3xl font-display font-bold text-infinity-navy dark:text-white mb-2">Attorney Verification</h1>
           <p className="text-infinity-navy/70 dark:text-white/50">How we ensure quality legal representation</p>

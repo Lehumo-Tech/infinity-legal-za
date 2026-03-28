@@ -11,7 +11,7 @@ export default function NotFound() {
       <div className="max-w-2xl w-full text-center">
         {/* Logo */}
         <div className="mb-8">
-          <img src="/logo.svg" alt="Infinity Legal" className="h-12 mx-auto opacity-80" />
+          <img src="/logo-icon-256.png" alt="Infinity Legal" className="h-16 mx-auto rounded-xl opacity-80" />
         </div>
 
         {/* 404 Display */}

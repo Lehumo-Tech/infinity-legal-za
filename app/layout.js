@@ -65,7 +65,7 @@ export default function RootLayout({ children }) {
     name: 'Infinity Legal',
     description: 'AI-powered legal assistance platform for South Africa. Affordable, confidential legal help from verified attorneys.',
     url: process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org',
-    logo: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/logo.png`,
+    logo: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/logo-icon-512.png`,
     image: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/hero-consultation.png`,
     telephone: '+27-000-000-0000',
     email: 'info@infinitylegal.org',

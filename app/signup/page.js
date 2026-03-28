@@ -65,7 +65,7 @@ export default function SignupPage() {
       <div className="container mx-auto max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-4">
-            <img src="/logo.png" alt="Infinity Legal" className="h-12 mx-auto" />
+            <img src="/logo-icon-256.png" alt="Infinity Legal" className="h-16 mx-auto rounded-xl" />
           </Link>
           <h1 className="text-3xl font-bold text-infinity-navy mb-2">Create Account</h1>
           <p className="text-infinity-navy/70">Join Infinity Legal today</p>
