@@ -37,8 +37,9 @@ Three portals powered by `lib/demo-data.js` and `lib/demo-auth.js`:
 - [x] Member/Staff/Admin Demo Portals
 - [x] Lead Scraper UI
 - [x] Homepage with app content carousel
-- [x] Pricing (R95/R115/R130)
-- [x] Email gate modal for premium templates
+- [x] Ask Infinity — AI Legal Information Assistant (GPT-4o + cached SA legislation)
+- [x] Pricing: Civil R99 / Labour R99 / Extensive R139 (court included)
+- [x] Dual Auth: Supabase (real) + localStorage (demo toggle)
 - [ ] Phase 3: Leads TS Rebuild
 - [ ] Phase 4: Documents Module
 - [ ] Convert Demo → Real Backends
