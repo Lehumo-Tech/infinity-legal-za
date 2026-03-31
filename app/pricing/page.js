@@ -1,107 +1,162 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { PLANS } from '@/lib/demo-data'
-
-const COMPARISON = [
-  { feature: 'Legal consultations', basic: '2/month', premium: 'Unlimited', business: 'Unlimited' },
-  { feature: 'Email support', basic: '✓', premium: '✓', business: '✓' },
-  { feature: 'Document review', basic: '✓', premium: '✓', business: '✓' },
-  { feature: 'Priority support', basic: '—', premium: '✓', business: '✓' },
-  { feature: 'Court representation', basic: '—', premium: '✓', business: '✓' },
-  { feature: 'Document drafting', basic: '—', premium: '✓', business: '✓' },
-  { feature: 'CCMA representation', basic: '—', premium: '✓', business: '✓' },
-  { feature: '24/7 emergency line', basic: '—', premium: '✓', business: '✓' },
-  { feature: 'Dedicated attorney', basic: '—', premium: '—', business: '✓' },
-  { feature: 'Compliance audit', basic: '—', premium: '—', business: '✓' },
-  { feature: 'Contract review', basic: '—', premium: '✓', business: '✓' },
-  { feature: 'Monthly legal report', basic: '—', premium: '—', business: '✓' },
-]
+import { PLANS, PLAN_DISCLAIMER, CORE_BENEFITS } from '@/lib/demo-data'
 
 export default function PricingPage() {
-  const [annual, setAnnual] = useState(false)
-
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-50 backdrop-blur-md bg-white/95">
+    <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <nav className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src="/logo-icon-128.png" alt="Infinity Legal" className="h-9 rounded-lg" />
             <span className="text-lg font-bold text-[#0f2b46]" style={{ fontFamily: "'Playfair Display', serif" }}>Infinity Legal</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm text-[#0f2b46] font-semibold">Login</Link>
-            <Link href="/resources" className="text-sm text-[#0f2b46] font-semibold">Resources</Link>
+            <Link href="/intake" className="text-sm text-[#c9a961] font-bold hover:text-[#0f2b46]">Free Legal Analysis</Link>
+            <Link href="/login" className="text-sm px-4 py-2 bg-[#0f2b46] text-white rounded-lg font-semibold hover:bg-[#1a365d]">Login</Link>
           </div>
         </div>
       </nav>
 
-      <section className="bg-[#0f2b46] py-16 text-center text-white">
-        <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Choose Your Legal Protection</h1>
-        <p className="text-white/60 text-lg mb-6">Simple, transparent pricing. No hidden fees.</p>
-        <div className="inline-flex bg-white/10 rounded-full p-1">
-          <button onClick={() => setAnnual(false)} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${!annual ? 'bg-[#c9a961] text-[#0f2b46]' : 'text-white/70'}`}>Monthly</button>
-          <button onClick={() => setAnnual(true)} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${annual ? 'bg-[#c9a961] text-[#0f2b46]' : 'text-white/70'}`}>Annual (Save 20%)</button>
+      <main className="max-w-6xl mx-auto px-4 py-16">
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Protection Plans</h1>
+          <p className="text-gray-500 text-lg max-w-2xl mx-auto">Choose the legal protection that matches your needs. <strong className="text-[#0f2b46]">Court representation included</strong> on all plans.</p>
         </div>
-      </section>
 
-      <section className="max-w-5xl mx-auto px-4 -mt-8 pb-16">
-        <div className="grid md:grid-cols-3 gap-6">
-          {PLANS.map(plan => {
-            const price = annual ? Math.round(plan.price * 0.8) : plan.price
-            return (
-              <div key={plan.id} className={`bg-white rounded-2xl border-2 p-6 shadow-lg transition-all hover:shadow-xl ${plan.popular ? 'border-[#c9a961] relative scale-[1.03]' : 'border-gray-200'}`}>
-                {plan.popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a961] text-[#0f2b46] text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div>}
-                <h3 className="text-xl font-bold text-[#0f2b46]">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mt-2 mb-1">
-                  <span className="text-4xl font-bold text-[#0f2b46]">R{price}</span>
-                  <span className="text-gray-400">/month</span>
+        {/* Core Benefits */}
+        <div className="bg-[#0f2b46] rounded-2xl p-6 mb-10 text-white">
+          <h3 className="text-sm font-bold text-[#c9a961] uppercase tracking-wider mb-3">Core Benefits — Included on All Plans</h3>
+          <div className="grid md:grid-cols-2 gap-2">
+            {CORE_BENEFITS.map((b, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm text-white/80">
+                <span className="text-[#c9a961]">✓</span>{b}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Plan Cards */}
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
+          {PLANS.map((plan) => (
+            <div key={plan.id} className={`relative bg-white rounded-2xl border-2 overflow-hidden transition-all hover:shadow-xl ${plan.popular ? 'border-[#c9a961] shadow-lg' : 'border-gray-200'}`}>
+              {plan.popular && (
+                <div className="bg-[#c9a961] text-[#0f2b46] text-xs font-bold text-center py-1.5 uppercase tracking-wider">Most Popular</div>
+              )}
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">{plan.emoji}</span>
+                  <h3 className="text-xl font-bold text-[#0f2b46]" style={{ fontFamily: "'Playfair Display', serif" }}>{plan.name}</h3>
                 </div>
-                {annual && <p className="text-xs text-green-600 font-semibold">Save R{(plan.price - price) * 12}/year</p>}
-                <hr className="my-4 border-gray-100" />
-                <ul className="space-y-2.5 mb-6">
-                  {plan.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600"><span className="text-[#c9a961] font-bold mt-0.5">✓</span>{f}</li>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-4xl font-bold text-[#0f2b46]">R{plan.price}</span>
+                  <span className="text-gray-400 text-sm">/month</span>
+                </div>
+                <p className="text-xs text-[#c9a961] font-bold mb-5">Coverage limit: R{(plan.coverageLimit || 82000).toLocaleString()} per case</p>
+
+                <h4 className="text-xs font-bold text-[#0f2b46] uppercase tracking-wider mb-2">Included Matters:</h4>
+                <ul className="space-y-2 mb-4">
+                  {(plan.coverage?.included || []).map((f, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="text-green-500 mt-0.5 font-bold text-base">✓</span>{f}
+                    </li>
                   ))}
                 </ul>
+
+                {plan.coverage?.excluded && (
+                  <div className="pt-3 border-t border-gray-100 mb-4">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Not Covered:</h4>
+                    <ul className="space-y-1.5">
+                      {plan.coverage.excluded.map((e, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-gray-400">
+                          <span className="text-red-400 mt-0.5">✗</span>{e}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {plan.additionalBenefits && plan.additionalBenefits.length > 0 && (
+                  <div className="pt-3 border-t border-gray-100 mb-5">
+                    <h4 className="text-xs font-bold text-[#c9a961] uppercase tracking-wider mb-2">Additional Benefits:</h4>
+                    {plan.additionalBenefits.map((b, i) => (
+                      <p key={i} className="text-xs text-gray-600 flex items-center gap-1 mb-1"><span className="text-[#c9a961]">★</span> {b}</p>
+                    ))}
+                  </div>
+                )}
+
                 <Link href="/signup" className={`block text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
-                  Select Plan
+                  Select This Plan
                 </Link>
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
 
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-[#0f2b46] text-center mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>Plan Comparison</h2>
+        {/* Quick Reference Table */}
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
+          <h3 className="text-xl font-bold text-[#0f2b46] p-6 border-b border-gray-100" style={{ fontFamily: "'Playfair Display', serif" }}>Quick Reference Table</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-[#0f2b46] text-white">
-                  <th className="text-left py-3 px-4 rounded-tl-xl">Feature</th>
-                  <th className="py-3 px-4">Basic (R95)</th>
-                  <th className="py-3 px-4 bg-[#c9a961] text-[#0f2b46]">Premium (R115)</th>
-                  <th className="py-3 px-4 rounded-tr-xl">Business (R130)</th>
+                  <th className="py-3 px-4 text-left">Feature</th>
+                  <th className="py-3 px-4">⚖️ Civil R99</th>
+                  <th className="py-3 px-4 bg-[#c9a961] text-[#0f2b46]">💼 Labour R99</th>
+                  <th className="py-3 px-4">🌟 Extensive R139</th>
                 </tr>
               </thead>
               <tbody>
-                {COMPARISON.map((row, i) => (
+                {[
+                  ['Coverage Limit', 'R82,000', 'R82,000', 'R100,000'],
+                  ['Civil Matters', true, false, true],
+                  ['Labour Matters', false, true, true],
+                  ['Criminal Matters', false, false, true],
+                  ['Court Representation', true, true, true],
+                  ['24-hour Contact Centre', true, true, true],
+                  ['Free Will & Testament', true, true, true],
+                  ['Family Cover', true, true, true],
+                  ['Tax Advice', true, true, true],
+                  ['Tax Submission', false, false, true],
+                  ['ANC Services', false, false, true],
+                  ['Conveyancing Discount', false, false, true],
+                  ['Priority Handling', false, false, true],
+                ].map(([feature, civil, labour, ext], i) => (
                   <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                    <td className="py-2.5 px-4 font-medium text-gray-700">{row.feature}</td>
-                    <td className="py-2.5 px-4 text-center">{row.basic === '✓' ? <span className="text-green-600 font-bold">✓</span> : row.basic === '—' ? <span className="text-gray-300">—</span> : row.basic}</td>
-                    <td className="py-2.5 px-4 text-center bg-[#c9a961]/5">{row.premium === '✓' ? <span className="text-green-600 font-bold">✓</span> : row.premium === '—' ? <span className="text-gray-300">—</span> : row.premium}</td>
-                    <td className="py-2.5 px-4 text-center">{row.business === '✓' ? <span className="text-green-600 font-bold">✓</span> : row.business === '—' ? <span className="text-gray-300">—</span> : row.business}</td>
+                    <td className="py-2.5 px-4 font-medium text-[#0f2b46]">{feature}</td>
+                    <td className="py-2.5 px-4 text-center">{typeof civil === 'string' ? <span className="font-bold text-[#0f2b46]">{civil}</span> : civil ? <span className="text-green-500 font-bold">✓</span> : <span className="text-red-300">✗</span>}</td>
+                    <td className="py-2.5 px-4 text-center bg-[#c9a961]/5">{typeof labour === 'string' ? <span className="font-bold text-[#0f2b46]">{labour}</span> : labour ? <span className="text-green-500 font-bold">✓</span> : <span className="text-red-300">✗</span>}</td>
+                    <td className="py-2.5 px-4 text-center">{typeof ext === 'string' ? <span className="font-bold text-[#0f2b46]">{ext}</span> : ext ? <span className="text-green-500 font-bold">✓</span> : <span className="text-red-300">✗</span>}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
-      </section>
 
-      <footer className="bg-[#0f2b46] py-8 text-center text-white/40 text-xs">
-        <p>© {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</p>
+        {/* Important Info */}
+        <div className="max-w-5xl mx-auto p-5 bg-gray-50 rounded-xl border border-gray-200 mb-8">
+          <h4 className="font-semibold text-[#0f2b46] mb-2">Implementation Notes</h4>
+          <ul className="text-sm text-gray-700 space-y-1">
+            <li>✓ <strong>Billing:</strong> Monthly debit order / EFT / card</li>
+            <li>✓ <strong>Waiting Period:</strong> 30 days for pre-existing matters; immediate for new matters</li>
+            <li>✓ <strong>Claims Process:</strong> Contact 24/7 centre → case logged → specialist assigned within 24h</li>
+            <li>✓ <strong>Cover:</strong> Main member, spouse/life partner, and children under 21</li>
+            <li>✓ <strong>Review Period:</strong> 31 days — cancel for full refund</li>
+            <li>✗ <strong>Exclusions:</strong> Matters arising before membership, frivolous claims</li>
+          </ul>
+        </div>
+
+        <div className="bg-[#0f2b46]/5 border-l-4 border-[#0f2b46] p-4 rounded-r-xl">
+          <p className="text-sm text-[#0f2b46]">{PLAN_DISCLAIMER}</p>
+        </div>
+      </main>
+
+      <footer className="bg-[#0f2b46] text-white py-8 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-sm text-white/50">© {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</p>
+        </div>
       </footer>
     </div>
   )

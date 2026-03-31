@@ -16,7 +16,7 @@ const GOLD = '#c9a961'
 
 const STEP_META = [
   { title: 'Contact Information', desc: 'Tell us how to reach you' },
-  { title: 'Case Details', desc: 'Describe your legal matter' },
+  { title: 'Matter Details', desc: 'Describe your legal matter' },
   { title: 'Parties Involved', desc: 'Who is involved in this matter?' },
   { title: 'Documents & Timeline', desc: 'Evidence and key dates' },
   { title: 'Consent & Submit', desc: 'Review and authorise your submission' },
@@ -231,6 +231,13 @@ function StepConsent({ form }: { form: ReturnType<typeof useIntakeWizard>['form'
             <FieldError message={errors.popiaConsent?.message} />
           </div>
         </div>
+
+        <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <input type="checkbox" required id="coverDisclaimer" className="mt-1 w-4 h-4 rounded" />
+          <label htmlFor="coverDisclaimer" className="cursor-pointer text-sm text-blue-900">
+            I understand the 30-day waiting period for pre-existing matters and that coverage limits apply (R82,000 or R100,000 per case depending on plan). *
+          </label>
+        </div>
       </div>
     </div>
   )
@@ -260,6 +267,16 @@ export default function IntakePage() {
       {/* Main */}
       <main className="flex-1 flex items-start justify-center px-4 py-8">
         <div className="w-full max-w-2xl">
+          {/* Cover Info */}
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+            <p className="text-sm text-blue-800">
+              ℹ️ <strong>Please Note:</strong> By submitting this intake, your matter will be analysed 
+              by our AI and assigned to a qualified legal specialist. All plans include court representation, 
+              24-hour contact centre access, and cover for your family. A 30-day waiting period applies 
+              for pre-existing matters.
+            </p>
+          </div>
+
           {/* Progress */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">

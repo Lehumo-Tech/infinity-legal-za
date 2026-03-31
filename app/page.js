@@ -2,31 +2,31 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { PLANS } from '@/lib/demo-data'
+import { PLANS, PLAN_DISCLAIMER, CORE_BENEFITS } from '@/lib/demo-data'
 
 const TESTIMONIALS = [
-  { name: 'Thabo M.', role: 'Premium Member', text: 'After being unfairly dismissed, Infinity Legal guided me through the CCMA process. I received 8 months compensation. Worth every cent of R115/month.', rating: 5 },
-  { name: 'Nomsa D.', role: 'Basic Member', text: 'My landlord tried to evict me illegally. One call to my Infinity Legal attorney and it was resolved within a week. Incredible service.', rating: 5 },
-  { name: 'Peter N.', role: 'Business Member', text: 'As a small business owner, having a dedicated attorney review all my contracts has saved me from multiple bad deals. Essential for any entrepreneur.', rating: 5 },
-  { name: 'Zanele K.', role: 'Premium Member', text: 'The 24/7 emergency line saved me when I was arrested on a Friday night. My attorney was at the station within 2 hours.', rating: 5 },
+  { name: 'Thabo M.', role: 'Labour Legal Plan Member', text: 'After being unfairly dismissed, Infinity Legal guided me through the CCMA process. I received 8 months compensation. Worth every cent of R99/month.', rating: 5 },
+  { name: 'Nomsa D.', role: 'Civil Legal Plan Member', text: 'My landlord tried to evict me illegally. One call to my Infinity Legal specialist and it was resolved within a week. Incredible service.', rating: 5 },
+  { name: 'Peter N.', role: 'Extensive Plan Member', text: 'As a small business owner, having a dedicated legal specialist review all my contracts and handle a criminal matter saved me thousands. Essential.', rating: 5 },
+  { name: 'Zanele K.', role: 'Labour Legal Plan Member', text: 'The 24-hour contact centre saved me when I faced a disciplinary hearing with no notice. My specialist prepped me perfectly.', rating: 5 },
 ]
 
 const CAROUSEL_SLIDES = [
   { 
     title: 'AI-Powered Legal Analysis', 
-    desc: 'Our AI instantly analyses your legal situation, identifies the relevant area of law, and connects you with the right attorney — all in under 5 minutes.',
+    desc: 'Our AI instantly analyses your legal situation, identifies whether it falls under Civil or Employment cover, and connects you with the right legal advisor.',
     gradient: 'from-[#0f2b46] to-[#1a4a7a]',
     mockUI: 'intake',
   },
   { 
     title: 'Member Dashboard', 
-    desc: 'Track your legal requests, manage your plan, view attorney communications, and monitor case progress — all in one secure portal.',
+    desc: 'Track your legal matters, manage your cover, view advisor communications, and monitor progress — all in one secure portal.',
     gradient: 'from-[#1a365d] to-[#0f2b46]',
     mockUI: 'member',
   },
   { 
-    title: 'Staff Command Centre', 
-    desc: 'Attorneys manage cases, track deadlines, review intake submissions, and collaborate efficiently through our enterprise-grade portal.',
+    title: 'Legal Advisor Centre', 
+    desc: 'Legal advisors manage matters, track deadlines, review intake submissions, and collaborate efficiently through our enterprise-grade portal.',
     gradient: 'from-[#0d2236] to-[#1a4a7a]',
     mockUI: 'staff',
   },
@@ -50,8 +50,8 @@ function MockIntakeUI() {
         <div className="bg-[#0f2b46]/5 rounded-lg p-2.5">
           <div className="text-[10px] font-bold text-[#0f2b46] mb-1">Step 3 of 5 — Legal Category</div>
           <div className="flex flex-wrap gap-1.5">
-            {['Labour Law','Family Law','Criminal','Civil','Property'].map(c => (
-              <span key={c} className={`text-[9px] px-2 py-1 rounded-full ${c === 'Labour Law' ? 'bg-[#c9a961] text-[#0f2b46] font-bold' : 'bg-gray-100 text-gray-500'}`}>{c}</span>
+            {['Employment','Civil','Consumer','Property','Business'].map(c => (
+              <span key={c} className={`text-[9px] px-2 py-1 rounded-full ${c === 'Employment' ? 'bg-[#c9a961] text-[#0f2b46] font-bold' : 'bg-gray-100 text-gray-500'}`}>{c}</span>
             ))}
           </div>
         </div>
@@ -60,8 +60,8 @@ function MockIntakeUI() {
           <div className="text-[9px] text-green-600 mt-0.5">Matched: Unfair Dismissal — CCMA Referral recommended</div>
         </div>
         <div className="bg-[#c9a961]/10 rounded-lg p-2">
-          <div className="text-[9px] text-gray-500">Estimated Timeline</div>
-          <div className="text-[11px] font-bold text-[#0f2b46]">3-6 months • Attorney: Adv. Johnson</div>
+          <div className="text-[9px] text-gray-500">Cover Match</div>
+          <div className="text-[11px] font-bold text-[#0f2b46]">Employment Legal Cover • Advisor: Sarah J.</div>
         </div>
       </div>
     </div>
@@ -77,10 +77,10 @@ function MockMemberUI() {
       </div>
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-full bg-[#0f2b46] flex items-center justify-center text-white text-xs font-bold">TM</div>
-        <div><div className="text-xs font-bold text-[#0f2b46]">Thabo Mbeki</div><div className="text-[9px] text-[#c9a961]">Premium Plan — R115/mo</div></div>
+        <div><div className="text-xs font-bold text-[#0f2b46]">Thabo Mbeki</div><div className="text-[9px] text-[#c9a961]">Employment Legal Cover — R99/mo</div></div>
       </div>
       <div className="grid grid-cols-2 gap-1.5 mb-2.5">
-        {[{l:'Active Requests',v:'2',c:'text-blue-600'},{l:'Resolved',v:'5',c:'text-green-600'},{l:'Consults Left',v:'3',c:'text-[#c9a961]'},{l:'Documents',v:'5',c:'text-purple-600'}].map(s => (
+        {[{l:'Active Matters',v:'2',c:'text-blue-600'},{l:'Resolved',v:'5',c:'text-green-600'},{l:'Consultations',v:'∞',c:'text-[#c9a961]'},{l:'Documents',v:'5',c:'text-purple-600'}].map(s => (
           <div key={s.l} className="bg-gray-50 rounded-lg p-2 text-center">
             <div className={`text-sm font-bold ${s.c}`}>{s.v}</div>
             <div className="text-[8px] text-gray-400">{s.l}</div>
@@ -95,7 +95,7 @@ function MockMemberUI() {
         </div>
         <div className="flex items-center gap-2 bg-yellow-50 rounded-lg p-2">
           <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"/>
-          <span className="text-[9px] text-gray-700 flex-1">Lease deposit dispute</span>
+          <span className="text-[9px] text-gray-700 flex-1">CCMA referral preparation</span>
           <span className="text-[8px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-bold">MED</span>
         </div>
       </div>
@@ -108,19 +108,19 @@ function MockStaffUI() {
     <div className="bg-white rounded-xl shadow-2xl p-4 w-full max-w-[340px] text-left transform scale-[0.85] origin-top-right">
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
         <div className="flex gap-1"><div className="w-2.5 h-2.5 rounded-full bg-red-400"/><div className="w-2.5 h-2.5 rounded-full bg-yellow-400"/><div className="w-2.5 h-2.5 rounded-full bg-green-400"/></div>
-        <span className="text-[10px] text-gray-400 ml-2">Staff Portal — Adv. Sarah Johnson</span>
+        <span className="text-[10px] text-gray-400 ml-2">Legal Advisor Centre — Sarah Johnson</span>
       </div>
       <div className="grid grid-cols-3 gap-1.5 mb-2.5">
-        {[{l:'My Cases',v:'8'},{l:'Pending',v:'3'},{l:'This Week',v:'12'}].map(s => (
+        {[{l:'My Matters',v:'8'},{l:'Pending',v:'3'},{l:'This Week',v:'12'}].map(s => (
           <div key={s.l} className="bg-[#0f2b46] rounded-lg p-2 text-center">
             <div className="text-sm font-bold text-[#c9a961]">{s.v}</div>
             <div className="text-[8px] text-white/60">{s.l}</div>
           </div>
         ))}
       </div>
-      <div className="text-[10px] font-bold text-[#0f2b46] mb-1.5">Assigned Cases</div>
+      <div className="text-[10px] font-bold text-[#0f2b46] mb-1.5">Assigned Matters</div>
       <div className="space-y-1.5">
-        {[{n:'Thabo Mbeki',c:'Employment',s:'In Progress'},{n:'Nomsa Dlamini',c:'Family',s:'New'},{n:'Peter Naidoo',c:'Corporate',s:'Resolved'}].map((r,i) => (
+        {[{n:'Thabo Mbeki',c:'Employment',s:'In Progress'},{n:'Nomsa Dlamini',c:'Civil',s:'New'},{n:'Peter Naidoo',c:'Business',s:'Resolved'}].map((r,i) => (
           <div key={i} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
             <div className="w-6 h-6 rounded-full bg-[#0f2b46]/10 flex items-center justify-center text-[8px] font-bold text-[#0f2b46]">{r.n.split(' ').map(w=>w[0]).join('')}</div>
             <div className="flex-1"><div className="text-[9px] font-semibold text-[#0f2b46]">{r.n}</div><div className="text-[8px] text-gray-400">{r.c}</div></div>
@@ -167,7 +167,6 @@ function MockLeadsUI() {
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
 
   const nextSlide = useCallback(() => {
@@ -194,14 +193,15 @@ export default function HomePage() {
             <span className="text-xl font-bold text-[#0f2b46] hidden sm:block" style={{ fontFamily: "'Playfair Display', serif" }}>Infinity Legal</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link href="/pricing" className="hover:text-[#0f2b46] transition-colors">Plans</Link>
+            <Link href="/intake" className="text-[#c9a961] font-bold hover:text-[#0f2b46] transition-colors">Free Legal Analysis</Link>
+            <Link href="/pricing" className="hover:text-[#0f2b46] transition-colors">Cover Options</Link>
             <Link href="/resources" className="hover:text-[#0f2b46] transition-colors">Resources</Link>
             <a href="#how-it-works" className="hover:text-[#0f2b46] transition-colors">How It Works</a>
             <a href="#testimonials" className="hover:text-[#0f2b46] transition-colors">Reviews</a>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/login" className="text-sm px-4 py-2 text-[#0f2b46] font-semibold hover:bg-gray-50 rounded-lg transition-colors">Login</Link>
-            <Link href="/pricing" className="text-sm px-5 py-2 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] transition-colors shadow-sm">View Plans</Link>
+            <Link href="/intake" className="text-sm px-5 py-2 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] transition-colors shadow-sm">Get Legal Help</Link>
           </div>
         </div>
       </nav>
@@ -215,29 +215,71 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-20 md:py-28 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-[#c9a961]/20 text-[#c9a961] text-xs font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">
-              Trusted by 2,500+ South Africans
+              Court Representation Included • From R99/month
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Legal Cover from <span className="text-[#c9a961]">R95/month</span>
+              Legal Cover from <span className="text-[#c9a961]">R99/month</span>
             </h1>
             <p className="text-xl md:text-2xl text-[#c9a961] font-medium mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
               Legal Excellence Without Limits
             </p>
             <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto">
-              Affordable legal protection for individuals, families, and businesses. Expert attorneys on call when you need them most.
+              Legal protection for individuals, families, and businesses. Choose Civil, Labour, or Extensive cover — court representation included on all plans.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Link href="/pricing" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-all shadow-lg shadow-[#c9a961]/20 text-lg">
-                View Plans →
+              <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-all shadow-lg shadow-[#c9a961]/20 text-lg">
+                Get Free Legal Analysis →
               </Link>
-              <Link href="/login" className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
-                Login
+              <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
+                View Cover Options
               </Link>
             </div>
             <div className="flex justify-center gap-8 mt-10 text-white/50 text-sm">
-              <span>✓ No contracts</span>
-              <span>✓ Cancel anytime</span>
-              <span>✓ POPIA compliant</span>
+              <span>✓ Court representation</span>
+              <span>✓ Family covered</span>
+              <span>✓ 24/7 Contact Centre</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ AI INTAKE CTA ═══ */}
+      <section className="py-12 bg-gradient-to-r from-[#c9a961]/10 to-[#0f2b46]/5 border-y border-[#c9a961]/20">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full mb-3">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                AI-Powered • Free • 5 Minutes
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#0f2b46] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Not sure where to start?
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Our AI analyses your legal situation, identifies the right area of law, and connects you with a qualified legal advisor — completely free, even without a membership.
+              </p>
+              <Link href="/intake" className="inline-flex items-center gap-2 px-6 py-3 bg-[#0f2b46] text-white font-bold rounded-xl hover:bg-[#1a365d] transition-colors shadow-md">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                Start Free AI Legal Analysis
+              </Link>
+            </div>
+            <div className="flex-shrink-0">
+              <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 max-w-[280px]">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#0f2b46] flex items-center justify-center text-white text-lg">1</div>
+                    <div><div className="text-sm font-bold text-[#0f2b46]">Describe Your Situation</div><div className="text-xs text-gray-400">5-step guided form</div></div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#c9a961] flex items-center justify-center text-[#0f2b46] text-lg font-bold">2</div>
+                    <div><div className="text-sm font-bold text-[#0f2b46]">AI Analyses Your Matter</div><div className="text-xs text-gray-400">Instant legal categorisation</div></div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center text-white text-lg">3</div>
+                    <div><div className="text-sm font-bold text-[#0f2b46]">Get Matched to an Advisor</div><div className="text-xs text-gray-400">Qualified legal advisor assigned</div></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -288,9 +330,9 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '1', icon: '🛡️', title: 'Join', desc: 'Choose a plan that fits your needs. Sign up in under 2 minutes. No contracts, no hidden fees.' },
-              { step: '2', icon: '📋', title: 'Request', desc: 'Submit your legal matter through our portal or call your attorney directly. AI analysis included.' },
-              { step: '3', icon: '✅', title: 'Resolved', desc: 'Your dedicated attorney handles everything — consultations, documents, court representation.' },
+              { step: '1', icon: '🛡️', title: 'Choose Your Plan', desc: 'Select Civil, Labour, or Extensive protection. All include court representation from R99/month.' },
+              { step: '2', icon: '📋', title: 'Submit Your Matter', desc: 'Describe your legal matter through our AI-powered intake. We analyse and match you to a specialist.' },
+              { step: '3', icon: '✅', title: 'Get Expert Representation', desc: 'Your legal specialist handles everything — advice, documents, court representation, and resolution.' },
             ].map((s, i) => (
               <div key={i} className="text-center group">
                 <div className="w-20 h-20 rounded-2xl bg-[#0f2b46] text-white flex items-center justify-center text-3xl mx-auto mb-4 group-hover:bg-[#c9a961] group-hover:text-[#0f2b46] transition-colors shadow-lg">
@@ -305,38 +347,74 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ PRICING PREVIEW ═══ */}
+      {/* ═══ COVER OPTIONS PREVIEW ═══ */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Choose Your Plan</h2>
-            <p className="text-gray-500 text-lg">Affordable legal protection for every need</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Protection Plans</h2>
+            <p className="text-gray-500 text-lg">Court representation included on all plans</p>
           </div>
+
+          {/* Core Benefits Banner */}
+          <div className="bg-[#0f2b46] rounded-2xl p-6 mb-8 text-white">
+            <h3 className="text-sm font-bold text-[#c9a961] uppercase tracking-wider mb-3">Core Benefits — All Plans</h3>
+            <div className="grid md:grid-cols-2 gap-2">
+              {CORE_BENEFITS.map((b, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-white/80">
+                  <span className="text-[#c9a961]">✓</span>{b}
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-6">
             {PLANS.map((plan) => (
               <div key={plan.id} className={`relative bg-white rounded-2xl border-2 p-6 transition-all hover:shadow-xl ${plan.popular ? 'border-[#c9a961] shadow-lg scale-[1.02]' : 'border-gray-200'}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a961] text-[#0f2b46] text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">Most Popular</div>
                 )}
-                <h3 className="text-lg font-bold text-[#0f2b46] mb-1">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">{plan.emoji}</span>
+                  <h3 className="text-lg font-bold text-[#0f2b46]">{plan.name}</h3>
+                </div>
+                <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-4xl font-bold text-[#0f2b46]">R{plan.price}</span>
                   <span className="text-gray-400 text-sm">/month</span>
                 </div>
-                <ul className="space-y-2 mb-6">
-                  {plan.features.slice(0, 4).map((f, i) => (
+                <p className="text-xs text-[#c9a961] font-bold mb-4">Coverage limit: R{(plan.coverageLimit || 82000).toLocaleString()} per case</p>
+                <ul className="space-y-2 mb-4">
+                  {(plan.coverage?.included || []).slice(0, 5).map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                      <span className="text-[#c9a961] mt-0.5 font-bold">✓</span>{f}
+                      <span className="text-green-500 mt-0.5 font-bold">✓</span>{f}
                     </li>
                   ))}
                 </ul>
+                {plan.additionalBenefits && (
+                  <div className="mb-4 pt-3 border-t border-gray-100">
+                    <p className="text-[10px] text-[#c9a961] font-bold uppercase mb-1">Additional Benefits:</p>
+                    {plan.additionalBenefits.slice(0, 2).map((b, i) => (
+                      <p key={i} className="text-xs text-gray-500 flex items-center gap-1"><span className="text-[#c9a961]">★</span> {b}</p>
+                    ))}
+                  </div>
+                )}
                 <Link href="/signup" className={`block text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
-                  Select Plan
+                  Select This Plan
                 </Link>
               </div>
             ))}
           </div>
-          <div className="text-center mt-8">
+          {/* Cover info */}
+          <div className="max-w-5xl mx-auto mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 className="font-semibold text-[#0f2b46] mb-2">Important Information</h4>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>✓ All plans include court representation and access to legal specialists</li>
+              <li>✓ Cover extends to main member, spouse/life partner, and children under 21</li>
+              <li>✓ 30-day waiting period for pre-existing matters; immediate for new matters</li>
+              <li>✓ 31-day review period — cancel within 31 days for full refund</li>
+              <li>✓ Premium waiver for up to 12 months in case of retrenchment or disability</li>
+            </ul>
+          </div>
+          <div className="text-center mt-6">
             <Link href="/pricing" className="text-[#c9a961] font-semibold hover:text-[#0f2b46] transition-colors">
               See full comparison →
             </Link>
@@ -357,7 +435,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-white text-lg md:text-xl leading-relaxed mb-6 italic">
-                "{TESTIMONIALS[currentTestimonial].text}"
+                &quot;{TESTIMONIALS[currentTestimonial].text}&quot;
               </p>
               <div>
                 <p className="text-white font-bold">{TESTIMONIALS[currentTestimonial].name}</p>
@@ -379,8 +457,8 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Ready to Get Protected?</h2>
           <p className="text-gray-500 mb-8 text-lg">Join thousands of South Africans who trust Infinity Legal with their legal matters.</p>
           <div className="flex justify-center gap-3">
-            <Link href="/pricing" className="px-8 py-3.5 bg-[#0f2b46] text-white font-bold rounded-xl hover:bg-[#1a365d] transition-colors text-lg">View Plans</Link>
-            <Link href="/login" className="px-8 py-3.5 border-2 border-[#0f2b46] text-[#0f2b46] font-bold rounded-xl hover:bg-[#0f2b46] hover:text-white transition-colors text-lg">Login</Link>
+            <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors text-lg shadow-md">Get Free Legal Analysis</Link>
+            <Link href="/pricing" className="px-8 py-3.5 border-2 border-[#0f2b46] text-[#0f2b46] font-bold rounded-xl hover:bg-[#0f2b46] hover:text-white transition-colors text-lg">View Cover Options</Link>
           </div>
         </div>
       </section>
@@ -399,8 +477,9 @@ export default function HomePage() {
             <h4 className="font-bold text-sm mb-3 text-[#c9a961]">Company</h4>
             <ul className="space-y-2 text-sm text-white/60">
               <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-              <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+              <li><Link href="/pricing" className="hover:text-white transition-colors">Cover Options</Link></li>
               <li><Link href="/resources" className="hover:text-white transition-colors">Resources</Link></li>
+              <li><Link href="/intake" className="hover:text-white transition-colors">AI Legal Intake</Link></li>
             </ul>
           </div>
           <div>
@@ -421,7 +500,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-white/10 text-center text-xs text-white/30">
-          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.
+          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved. Advisory services only — court appearances not included.
         </div>
       </footer>
     </div>

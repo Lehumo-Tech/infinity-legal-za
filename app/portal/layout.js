@@ -19,12 +19,12 @@ function getNavSections(role, roleTier, checks) {
     ]
   })
 
-  // Case Management (Legal Staff + Intake)
+  // Legal Matter Management (Legal Staff + Intake)
   if (checks.isLegalStaff || checks.isIntakeAgent) {
     sections.push({
-      title: 'Case Management',
+      title: 'Legal Matters',
       items: [
-        { label: 'Cases', href: '/portal/cases', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
+        { label: 'Legal Matters', href: '/portal/cases', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
         { label: 'AI Intakes', href: '/portal/intakes', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
         ...(checks.isOfficer ? [{ label: 'Approvals', href: '/portal/approvals', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }] : []),
         { label: 'Documents', href: '/portal/documents', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
@@ -99,14 +99,14 @@ function getNavSections(role, roleTier, checks) {
 
 const ROLE_COLORS = {
   managing_director: 'bg-amber-500', deputy_md: 'bg-amber-600',
-  senior_partner: 'bg-purple-600', associate: 'bg-infinity-navy', junior_attorney: 'bg-blue-600',
+  senior_partner: 'bg-purple-600', associate: 'bg-infinity-navy', junior_legal_advisor: 'bg-blue-600',
   paralegal: 'bg-teal-600', legal_assistant: 'bg-cyan-600',
   operations_director: 'bg-slate-600', office_manager: 'bg-slate-500',
   cfo: 'bg-emerald-600', billing_specialist: 'bg-emerald-500',
   marketing_director: 'bg-pink-600', client_relations: 'bg-rose-500', intake_agent: 'bg-orange-500',
   it_director: 'bg-indigo-600', systems_admin: 'bg-indigo-500',
   hr_director: 'bg-violet-600', admin: 'bg-gray-600', client: 'bg-gray-500',
-  managing_partner: 'bg-amber-500', legal_officer: 'bg-infinity-navy', attorney: 'bg-infinity-navy', it_admin: 'bg-indigo-500',
+  managing_partner: 'bg-amber-500', legal_officer: 'bg-infinity-navy', legal_advisor: 'bg-infinity-navy', it_admin: 'bg-indigo-500',
 }
 
 function SvgIcon({ d }) {
@@ -249,7 +249,7 @@ export default function PortalLayout({ children }) {
           <div className="hidden md:flex flex-1 max-w-md">
             <div className="relative w-full">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              <input type="text" placeholder="Search cases, documents, clients..." className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-infinity-navy dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-infinity-gold/40 focus:border-infinity-gold" />
+              <input type="text" placeholder="Search matters, documents, clients..." className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-infinity-navy dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-infinity-gold/40 focus:border-infinity-gold" />
             </div>
           </div>
 

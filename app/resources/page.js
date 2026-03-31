@@ -364,9 +364,9 @@ const CLAIM_FORMS = [
 
 const EXTENDED_FAQS = [
   { category: 'General', q: 'What does Infinity Legal Protection offer?', a: 'Infinity Legal provides affordable legal protection plans that cover consultation, representation, document preparation, and AI-powered legal assistance for South African individuals and families. Our plans start from R95/month.' },
-  { category: 'General', q: 'How does the AI Legal Intake work?', a: 'Our AI analyses your legal situation using South African law, identifies the category (Labour, Family, Criminal, Civil, Property), assesses urgency, estimates costs and timelines, and connects you with a qualified attorney. The process takes under 5 minutes.' },
-  { category: 'General', q: 'Is my information confidential?', a: 'Absolutely. All communications are protected by attorney-client privilege. We comply with POPIA (Protection of Personal Information Act). Your data is encrypted at rest, never shared without consent, and you can request deletion at any time.' },
-  { category: 'Membership', q: 'What subscription plans are available?', a: 'We offer three plans: Basic (R95/mo — essential legal cover), Premium (R115/mo — adds court representation & priority support), and Business (R130/mo — full legal protection with dedicated attorney). All plans include AI analysis and attorney consultations.' },
+  { category: 'General', q: 'How does the AI Legal Intake work?', a: 'Our AI analyses your legal situation using South African law, identifies the category (Employment, Civil, Property, Consumer), assesses urgency, and connects you with a qualified legal advisor. The process takes under 5 minutes.' },
+  { category: 'General', q: 'Is my information confidential?', a: 'Absolutely. All communications are protected by legal privilege. We comply with POPIA (Protection of Personal Information Act). Your data is encrypted at rest, never shared without consent, and you can request deletion at any time.' },
+  { category: 'Membership', q: 'What cover options are available?', a: 'We offer three plans: Civil Legal Plan (R99/mo — contract, consumer, property disputes), Labour Legal Plan (R99/mo — unfair dismissal, CCMA, workplace issues), and Extensive Plan (R139/mo — all civil, labour, AND criminal matters with priority handling). All plans include court representation, 24-hour contact centre, free will & testament, and family cover.' },
   { category: 'Membership', q: 'Can I cancel my subscription?', a: 'Yes, cancel anytime from your dashboard. Your coverage continues until the end of your billing period. No cancellation fees. No lock-in contracts.' },
   { category: 'Membership', q: 'Is there a waiting period?', a: 'For new matters arising after sign-up: no waiting period for consultations and AI services. For active representation coverage, there may be a 30-day waiting period depending on the plan.' },
   { category: 'Labour Law', q: 'I was fired without a hearing. What can I do?', a: 'In most cases, dismissal without a disciplinary hearing is procedurally unfair. You should file a referral at the CCMA within 30 days of your dismissal date. You may be entitled to reinstatement or compensation of up to 12 months\' salary.' },
@@ -684,7 +684,7 @@ function ResourcesPageContent() {
 
             <div className="mt-8 bg-[#0f2b46] rounded-xl p-6 text-center text-white">
               <h3 className="text-lg font-bold mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>Need a Customised Contract?</h3>
-              <p className="text-white/70 text-sm mb-4">Our attorneys can draft, review, or customise any legal document for your specific needs.</p>
+              <p className="text-white/70 text-sm mb-4">Our legal advisors can draft, review, or customise any legal document for your specific needs.</p>
               <Link href="/intake" className="inline-block px-6 py-2.5 bg-[#c9a961] text-[#0f2b46] font-semibold rounded-lg hover:bg-[#d4b872] transition-colors text-sm">
                 Request Legal Document →
               </Link>

@@ -1,34 +1,30 @@
-# Test Credentials
+# Test Credentials — Infinity Legal Platform
 
-## Demo Accounts (localStorage auth)
+## Demo Mode Credentials (localStorage auth)
 
 ### Member Portal
-- Email: member@demo.com
-- Password: demo123
-- Portal: /portal/member
+- Email: `member@demo.com`
+- Password: `demo123`
+- Plan: Labour Legal Plan (R99/mo)
+- Portal: `/portal/member`
 
-### Staff Portal (Attorney)
-- Email: attorney@infinitylegal.org
-- Password: demo123
-- Portal: /portal/staff
+### Legal Advisor Portal
+- Email: `advisor@infinitylegal.org`
+- Password: `demo123`
+- Role: Senior Legal Advisor
+- Portal: `/portal/staff`
 
 ### Admin Portal
-- Email: tsatsi@infinitylegal.org
-- Password: demo123
-- Portal: /portal/admin
+- Email: `tsatsi@infinitylegal.org`
+- Password: `demo123`
+- Role: CEO & Founder
+- Portal: `/portal/admin`
 
-## Additional Member Accounts
-- nomsa@demo.com / demo123 (Basic plan)
-- peter@demo.com / demo123 (Business plan)
+## Real Auth (Supabase)
+- Toggle "Real Login" on the login page
+- Supabase URL: https://qgjqrrxwcsggtjznjjqk.supabase.co
 
-## Additional Staff Accounts
-- chen@infinitylegal.org / demo123 (Attorney)
-
-## Legacy Portal (Supabase Auth)
-- Email: portal_demo@infinitylegal.org
-- Role: Attorney / Legal Officer
-- Password: TestPass2026!
-
-## Base URL
-- App: https://demo-staging-1.preview.emergentagent.com
+## App URLs
+- Frontend: https://demo-staging-1.preview.emergentagent.com
 - API: https://demo-staging-1.preview.emergentagent.com/api
+- PDF Report: https://demo-staging-1.preview.emergentagent.com/Infinity_Legal_Mar2026_Report.pdf
