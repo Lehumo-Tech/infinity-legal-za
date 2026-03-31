@@ -15,7 +15,7 @@ import time
 from datetime import datetime, timedelta
 
 # Get base URL from environment
-BASE_URL = "https://demo-staging-1.preview.emergentagent.com"
+BASE_URL = "https://infinity-legal-sa-1.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class EnterpriseModulesAPITester:

@@ -20,9 +20,22 @@ export default function PricingPage() {
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Protection Plans</h1>
-          <p className="text-gray-500 text-lg max-w-2xl mx-auto">Choose the legal protection that matches your needs. <strong className="text-[#0f2b46]">Court representation included</strong> on all plans.</p>
+        {/* Hero Banner with Image */}
+        <div className="relative bg-[#0f2b46] rounded-3xl overflow-hidden mb-12 shadow-xl">
+          <div className="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=1200&q=80" alt="" className="w-full h-full object-cover opacity-15" />
+          </div>
+          <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center p-8 md:p-12">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Protection Plans</h1>
+              <p className="text-white/70 text-lg">Choose the legal protection that matches your needs. <strong className="text-[#c9a961]">Court representation included</strong> on all plans.</p>
+            </div>
+            <div className="hidden md:flex justify-end">
+              <div className="rounded-2xl overflow-hidden shadow-xl border-2 border-white/20 max-w-[280px]">
+                <img src="https://images.pexels.com/photos/5668768/pexels-photo-5668768.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Legal professional" className="w-full h-48 object-cover" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Core Benefits */}

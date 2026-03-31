@@ -25,6 +25,6 @@
 - Supabase URL: https://qgjqrrxwcsggtjznjjqk.supabase.co
 
 ## App URLs
-- Frontend: https://demo-staging-1.preview.emergentagent.com
-- API: https://demo-staging-1.preview.emergentagent.com/api
-- PDF Report: https://demo-staging-1.preview.emergentagent.com/Infinity_Legal_Mar2026_Report.pdf
+- Frontend: https://infinity-legal-sa-1.preview.emergentagent.com
+- API: https://infinity-legal-sa-1.preview.emergentagent.com/api
+- PDF Report: https://infinity-legal-sa-1.preview.emergentagent.com/Infinity_Legal_Mar2026_Report.pdf

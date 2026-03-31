@@ -68,7 +68,23 @@ export default function LoginPage() {
         </div>
       </nav>
 
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
+      <main className="flex-1 flex">
+        {/* Left - Image Panel (hidden on mobile) */}
+        <div className="hidden lg:flex lg:w-1/2 relative bg-[#0f2b46]">
+          <img src="https://images.pexels.com/photos/5668768/pexels-photo-5668768.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Professional legal advisor" className="w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0f2b46] via-[#0f2b46]/50 to-transparent" />
+          <div className="absolute bottom-12 left-8 right-8 text-white z-10">
+            <h2 className="text-3xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Legal Excellence <span className="text-[#c9a961]">Without Limits</span></h2>
+            <p className="text-white/70 text-sm mb-4">Access your member portal, track your legal matters, and connect with your dedicated legal advisor — all in one place.</p>
+            <div className="flex gap-4 text-xs text-white/50">
+              <span>✓ Court Representation</span>
+              <span>✓ Family Cover</span>
+              <span>✓ 24/7 Support</span>
+            </div>
+          </div>
+        </div>
+        {/* Right - Login Form */}
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <img src="/logo-icon-256.png" alt="Infinity Legal" className="h-16 mx-auto rounded-xl mb-4" />
@@ -136,6 +152,7 @@ export default function LoginPage() {
               </div>
             </div>
           )}
+        </div>
         </div>
       </main>
     </div>

@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
   const page = await browser.newPage();
   
   // Navigate to the HTML report
-  await page.goto('https://demo-staging-1.preview.emergentagent.com/progress-report-feb2026.html', {
+  await page.goto('https://infinity-legal-sa-1.preview.emergentagent.com/progress-report-feb2026.html', {
     waitUntil: 'networkidle',
     timeout: 30000
   });

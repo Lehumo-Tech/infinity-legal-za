@@ -5,11 +5,22 @@ import Link from 'next/link'
 import { PLANS, PLAN_DISCLAIMER, CORE_BENEFITS } from '@/lib/demo-data'
 
 const TESTIMONIALS = [
-  { name: 'Thabo M.', role: 'Labour Legal Plan Member', text: 'After being unfairly dismissed, Infinity Legal guided me through the CCMA process. I received 8 months compensation. Worth every cent of R99/month.', rating: 5 },
-  { name: 'Nomsa D.', role: 'Civil Legal Plan Member', text: 'My landlord tried to evict me illegally. One call to my Infinity Legal specialist and it was resolved within a week. Incredible service.', rating: 5 },
-  { name: 'Peter N.', role: 'Extensive Plan Member', text: 'As a small business owner, having a dedicated legal specialist review all my contracts and handle a criminal matter saved me thousands. Essential.', rating: 5 },
-  { name: 'Zanele K.', role: 'Labour Legal Plan Member', text: 'The 24-hour contact centre saved me when I faced a disciplinary hearing with no notice. My specialist prepped me perfectly.', rating: 5 },
+  { name: 'Thabo M.', role: 'Labour Legal Plan Member', text: 'After being unfairly dismissed, Infinity Legal guided me through the CCMA process. I received 8 months compensation. Worth every cent of R99/month.', rating: 5, avatar: 'TM' },
+  { name: 'Nomsa D.', role: 'Civil Legal Plan Member', text: 'My landlord tried to evict me illegally. One call to my Infinity Legal specialist and it was resolved within a week. Incredible service.', rating: 5, avatar: 'ND' },
+  { name: 'Peter N.', role: 'Extensive Plan Member', text: 'As a small business owner, having a dedicated legal specialist review all my contracts and handle a criminal matter saved me thousands. Essential.', rating: 5, avatar: 'PN' },
+  { name: 'Zanele K.', role: 'Labour Legal Plan Member', text: 'The 24-hour contact centre saved me when I faced a disciplinary hearing with no notice. My specialist prepped me perfectly.', rating: 5, avatar: 'ZK' },
 ]
+
+const PEOPLE_IMAGES = {
+  hero: 'https://images.unsplash.com/photo-1622675363311-3e1904dc1885?w=1200&q=80',
+  family: 'https://images.pexels.com/photos/3875437/pexels-photo-3875437.jpeg?auto=compress&cs=tinysrgb&w=800',
+  workplace: 'https://images.pexels.com/photos/5466277/pexels-photo-5466277.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  teamwork: 'https://images.pexels.com/photos/5257005/pexels-photo-5257005.jpeg?auto=compress&cs=tinysrgb&w=800',
+  consultation: 'https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=1200&q=80',
+  professional: 'https://images.pexels.com/photos/5668768/pexels-photo-5668768.jpeg?auto=compress&cs=tinysrgb&w=800',
+  advisor: 'https://images.pexels.com/photos/7581115/pexels-photo-7581115.jpeg?auto=compress&cs=tinysrgb&w=600',
+  colleagues: 'https://images.pexels.com/photos/5946219/pexels-photo-5946219.jpeg?auto=compress&cs=tinysrgb&w=800',
+}
 
 const CAROUSEL_SLIDES = [
   { 
@@ -212,32 +223,66 @@ export default function HomePage() {
           <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-[#c9a961] blur-[200px]" />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-[#c9a961] blur-[150px]" />
         </div>
-        <div className="max-w-7xl mx-auto px-4 py-20 md:py-28 relative z-10">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-[#c9a961]/20 text-[#c9a961] text-xs font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">
-              Court Representation Included • From R99/month
+        <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-10">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            {/* Left - Copy */}
+            <div className="text-center md:text-left">
+              <div className="inline-flex items-center gap-2 bg-[#c9a961]/20 text-[#c9a961] text-xs font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">
+                Court Representation Included • From R99/month
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Legal Cover from <span className="text-[#c9a961]">R99/month</span>
+              </h1>
+              <p className="text-xl md:text-2xl text-[#c9a961] font-medium mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Legal Excellence Without Limits
+              </p>
+              <p className="text-lg text-white/70 mb-8 max-w-xl">
+                Legal protection for individuals, families, and businesses. Choose Civil, Labour, or Extensive cover — court representation included on all plans.
+              </p>
+              <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-all shadow-lg shadow-[#c9a961]/20 text-lg">
+                  Get Free Legal Analysis →
+                </Link>
+                <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
+                  View Cover Options
+                </Link>
+              </div>
+              <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-8 text-white/50 text-sm">
+                <span>✓ Court representation</span>
+                <span>✓ Family covered</span>
+                <span>✓ 24/7 Contact Centre</span>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Legal Cover from <span className="text-[#c9a961]">R99/month</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-[#c9a961] font-medium mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Legal Excellence Without Limits
-            </p>
-            <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto">
-              Legal protection for individuals, families, and businesses. Choose Civil, Labour, or Extensive cover — court representation included on all plans.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-all shadow-lg shadow-[#c9a961]/20 text-lg">
-                Get Free Legal Analysis →
-              </Link>
-              <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
-                View Cover Options
-              </Link>
-            </div>
-            <div className="flex justify-center gap-8 mt-10 text-white/50 text-sm">
-              <span>✓ Court representation</span>
-              <span>✓ Family covered</span>
-              <span>✓ 24/7 Contact Centre</span>
+            {/* Right - Image Collage */}
+            <div className="hidden md:block relative">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-3">
+                  <div className="rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10">
+                    <img src={PEOPLE_IMAGES.hero} alt="Professional legal consultation" className="w-full h-48 object-cover" loading="eager" />
+                  </div>
+                  <div className="rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10">
+                    <img src={PEOPLE_IMAGES.family} alt="Happy family protected by legal cover" className="w-full h-36 object-cover" />
+                  </div>
+                </div>
+                <div className="space-y-3 pt-6">
+                  <div className="rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10">
+                    <img src={PEOPLE_IMAGES.professional} alt="Professional legal advisor" className="w-full h-36 object-cover" />
+                  </div>
+                  <div className="rounded-2xl overflow-hidden shadow-2xl border-2 border-[#c9a961]/30">
+                    <img src={PEOPLE_IMAGES.colleagues} alt="Legal team collaboration" className="w-full h-48 object-cover" />
+                  </div>
+                </div>
+              </div>
+              {/* Floating badge */}
+              <div className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-xl px-4 py-3 flex items-center gap-3 border border-gray-100">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <span className="text-green-600 text-lg">✓</span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[#0f2b46]">10,000+ Members</p>
+                  <p className="text-xs text-gray-400">Trusted across South Africa</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -279,6 +324,56 @@ export default function HomePage() {
                     <div><div className="text-sm font-bold text-[#0f2b46]">Get Matched to an Advisor</div><div className="text-xs text-gray-400">Qualified legal advisor assigned</div></div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ TRUST — PEOPLE SECTION ═══ */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            {/* Left - Image Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl overflow-hidden shadow-lg">
+                <img src={PEOPLE_IMAGES.workplace} alt="Legal team discussion" className="w-full h-52 object-cover hover:scale-105 transition-transform duration-500" />
+              </div>
+              <div className="rounded-2xl overflow-hidden shadow-lg mt-6">
+                <img src={PEOPLE_IMAGES.consultation} alt="Professional legal consultation" className="w-full h-52 object-cover hover:scale-105 transition-transform duration-500" />
+              </div>
+              <div className="rounded-2xl overflow-hidden shadow-lg -mt-3">
+                <img src={PEOPLE_IMAGES.teamwork} alt="Team collaborating on legal matters" className="w-full h-44 object-cover hover:scale-105 transition-transform duration-500" />
+              </div>
+              <div className="rounded-2xl overflow-hidden shadow-lg mt-3">
+                <img src={PEOPLE_IMAGES.advisor} alt="Legal advisor reviewing documents" className="w-full h-44 object-cover hover:scale-105 transition-transform duration-500" />
+              </div>
+            </div>
+            {/* Right - Copy */}
+            <div>
+              <div className="inline-flex items-center gap-2 bg-[#0f2b46]/5 text-[#0f2b46] text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-wider">
+                Why Infinity Legal
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Real People. Real Protection. <span className="text-[#c9a961]">Real Results.</span>
+              </h2>
+              <p className="text-gray-600 mb-6 text-lg leading-relaxed">
+                Infinity Legal was built for ordinary South Africans who deserve extraordinary legal protection. Our network of experienced legal advisors is ready to fight for your rights — in the office, at the CCMA, and in court.
+              </p>
+              <div className="space-y-4">
+                {[
+                  { icon: '⚖️', title: 'Court Representation Included', desc: 'All plans cover legal representation in Magistrate & High Court.' },
+                  { icon: '👨‍👩‍👧‍👦', title: 'Family Cover Built In', desc: 'Your spouse and children under 21 are protected at no extra cost.' },
+                  { icon: '📞', title: '24/7 Legal Contact Centre', desc: 'Speak to a legal advisor any time — emergencies don\'t keep office hours.' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-[#0f2b46]/5 flex items-center justify-center text-xl flex-shrink-0">{item.icon}</div>
+                    <div>
+                      <h3 className="font-bold text-[#0f2b46] mb-0.5">{item.title}</h3>
+                      <p className="text-sm text-gray-500">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -423,12 +518,20 @@ export default function HomePage() {
       </section>
 
       {/* ═══ TESTIMONIALS ═══ */}
-      <section id="testimonials" className="py-20 bg-[#0f2b46]">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      <section id="testimonials" className="py-20 bg-[#0f2b46] relative overflow-hidden">
+        {/* Background image overlay */}
+        <div className="absolute inset-0">
+          <img src={PEOPLE_IMAGES.colleagues} alt="" className="w-full h-full object-cover opacity-[0.07]" />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>What Our Members Say</h2>
           <p className="text-white/50 mb-10">Real stories from real South Africans</p>
           <div className="relative min-h-[200px]">
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 md:p-10 border border-white/10">
+              {/* Avatar */}
+              <div className="w-16 h-16 rounded-full bg-[#c9a961]/20 border-2 border-[#c9a961] flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-[#c9a961]">{TESTIMONIALS[currentTestimonial].avatar}</span>
+              </div>
               <div className="flex justify-center gap-1 mb-4">
                 {Array.from({ length: TESTIMONIALS[currentTestimonial].rating }).map((_, i) => (
                   <span key={i} className="text-[#c9a961] text-xl">★</span>
@@ -453,12 +556,27 @@ export default function HomePage() {
 
       {/* ═══ CTA ═══ */}
       <section className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Ready to Get Protected?</h2>
-          <p className="text-gray-500 mb-8 text-lg">Join thousands of South Africans who trust Infinity Legal with their legal matters.</p>
-          <div className="flex justify-center gap-3">
-            <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors text-lg shadow-md">Get Free Legal Analysis</Link>
-            <Link href="/pricing" className="px-8 py-3.5 border-2 border-[#0f2b46] text-[#0f2b46] font-bold rounded-xl hover:bg-[#0f2b46] hover:text-white transition-colors text-lg">View Cover Options</Link>
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="relative bg-gradient-to-r from-[#0f2b46] to-[#1a4a7a] rounded-3xl overflow-hidden shadow-2xl">
+            {/* Background image */}
+            <div className="absolute inset-0">
+              <img src={PEOPLE_IMAGES.teamwork} alt="" className="w-full h-full object-cover opacity-10" />
+            </div>
+            <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center p-8 md:p-12">
+              <div>
+                <h2 className="text-3xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Ready to Get Protected?</h2>
+                <p className="text-white/70 mb-6 text-lg">Join thousands of South Africans who trust Infinity Legal with their legal matters.</p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors text-lg shadow-md">Get Free Legal Analysis</Link>
+                  <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">View Cover Options</Link>
+                </div>
+              </div>
+              <div className="hidden md:block">
+                <div className="rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
+                  <img src={PEOPLE_IMAGES.family} alt="Family protected by Infinity Legal" className="w-full h-64 object-cover" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -500,7 +618,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-white/10 text-center text-xs text-white/30">
-          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved. Advisory services only — court appearances not included.
+          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved. Court representation included on all plans — subject to terms and coverage limits.
         </div>
       </footer>
     </div>

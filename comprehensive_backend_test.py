@@ -3,7 +3,7 @@
 Infinity Legal Platform - COMPREHENSIVE Production-Readiness API Testing Suite
 Tests ALL API endpoints for production readiness as requested.
 
-Base URL: https://demo-staging-1.preview.emergentagent.com
+Base URL: https://infinity-legal-sa-1.preview.emergentagent.com
 
 Test Coverage:
 1. Public APIs (no auth needed)
@@ -21,7 +21,7 @@ import time
 from datetime import datetime
 
 # Get base URL from environment
-BASE_URL = "https://demo-staging-1.preview.emergentagent.com"
+BASE_URL = "https://infinity-legal-sa-1.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class ComprehensiveAPITester:

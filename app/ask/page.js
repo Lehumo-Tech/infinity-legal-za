@@ -93,8 +93,12 @@ export default function AskInfinityPage() {
           {/* Welcome State */}
           {messages.length === 0 && (
             <div className="text-center py-8">
-              <div className="w-20 h-20 bg-[#0f2b46] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <span className="text-3xl">⚖️</span>
+              {/* Advisor Image Circle */}
+              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 shadow-lg border-4 border-[#0f2b46]/10 relative">
+                <img src="https://images.pexels.com/photos/7581115/pexels-photo-7581115.jpeg?auto=compress&cs=tinysrgb&w=200" alt="AI Legal Advisor" className="w-full h-full object-cover" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#0f2b46] rounded-full flex items-center justify-center border-2 border-white">
+                  <span className="text-[10px]">⚖️</span>
+                </div>
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-[#0f2b46] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                 Ask Infinity
