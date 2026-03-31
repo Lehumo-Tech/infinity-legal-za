@@ -1216,17 +1216,35 @@ metadata:
     file: "app/api/intake/submit/route.ts, lib/modules/intake/workflow.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
           comment: "P0 FIX COMPLETE: Wired up the public Intake Wizard to MongoDB. workflow.ts refactored to export pure business logic (validateIntake, buildIntakeDocument, detectConflicts, generateReferenceId). submit/route.ts now validates via Zod, queries MongoDB for conflict detection (same email+caseType within 7 days returns 409), builds document via pure function, saves to intake_submissions collection. Documents include source:'public_wizard' field for distinction. Staff portal listing at /api/intakes compatible with new format (analysis.category, analysis.summary searchable). Tested: successful save, conflict 409, validation 400."
+        - working: true
+          agent: "testing"
+          comment: "Regression testing completed successfully. POST /api/intake/submit working correctly - creates intake with proper caseId format (IL-2026-31509-7ZV5), validates all required fields, and integrates with staff portal listing. All validation and core functionality confirmed working."
+
+  - task: "Ask Infinity API"
+    implemented: true
+    working: true
+    file: "app/api/ask/route.js, lib/sa-legislation.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "ASK INFINITY - AI LEGAL ASSISTANT: Built complete 'Ask Infinity' feature — a public-facing AI legal information assistant for SA law. Components: 1) /lib/sa-legislation.js — Cached JSON of top 10+ SA Acts with 40+ sections, keyword matching engine, and plan recommendation logic. 2) /app/api/ask/route.js — POST endpoint that does rule-based keyword matching against cached legislation, then enhances with GPT-4o (Emergent LLM key) for plain-language responses. Follows strict response template with legislation citations, plain English explanations, practical bullets, and CTA after 2 messages. 3) /app/ask/page.js — Mobile-responsive chat UI with suggested questions, formatted responses (bold, italic, bullets, links), typing indicators, and compliance disclaimer footer."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE ASK INFINITY API TESTING COMPLETED SUCCESSFULLY: All 12 test scenarios passed (100% success rate). ✅ PRIMARY FOCUS TESTS: 1) GET /api/ask returns proper service info (service: Ask Infinity, status: active, description and disclaimer present). 2) POST /api/ask labour question returns LRA/BCEA legislation citations with 'Relevant Legislation' section and no CTA for messageCount < 2. 3) POST /api/ask consumer question cites Consumer Protection Act correctly. 4) POST /api/ask rental question mentions Rental Housing Act and 14 days. 5) POST /api/ask with messageCount >= 2 triggers CTA with plan recommendations (R99/R139) and court representation. ✅ VALIDATION TESTS: 6) Empty query returns 400 'Please provide a question'. 7) Missing query field returns 400. 8) Long query (>1000 chars) returns 400 'Question too long'. ✅ HISTORY CONTEXT: 9) POST /api/ask with history context processes correctly and returns legislation citations. ✅ REGRESSION TESTS: 10) GET /api/health returns healthy status. 11) GET /api/intakes with auth works correctly. 12) POST /api/intake/submit creates intake successfully. All authentication, validation, legislation matching, CTA triggering, and AI integration working perfectly. API uses GPT-4o via Emergent LLM proxy with proper fallback to rule-based responses. Production ready."
 
 test_plan:
   current_focus:
+    - "Ask Infinity Chat UI"
     - "Public Intake Wizard DB Save (P0)"
-  stuck_tasks:
-    - "Security Utilities"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
@@ -1253,3 +1271,7 @@ agent_communication:
       message: "P1 & P2 FEATURES TESTING COMPLETED SUCCESSFULLY: 14/15 tests passed (93.3% success rate). ✅ P1 DOCUMENT VERSIONING: All 4 tests passed - version creation (v1, v2 with notes), version history retrieval (sorted desc), auth protection (401 without token). ✅ P1 DOCUMENT CHECK-IN/OUT: All 5 tests passed - checkout/checkin workflow, lock status checking, double checkout handling, unlock verification. ✅ P2 CASE ARCHIVING: 2/3 tests passed - auto-archive working, nonexistent case handling (404). Minor issue: GET /api/cases/archive returns 403 due to API using 'VIEW_CASES' permission which doesn't exist in RBAC (should use 'VIEW_ALL_CASES'). ✅ REGRESSION TESTS: All 3 previous features working - intakes, leads, tasks APIs all returning 200. Core P1 & P2 functionality working perfectly, only minor permission name mismatch needs fixing."
     - agent: "main"
       message: "P0 FIX - PUBLIC INTAKE WIZARD DB SAVE: Refactored lib/modules/intake/workflow.ts to pure TS business logic (validateIntake, buildIntakeDocument, detectConflicts, generateReferenceId). Wired up app/api/intake/submit/route.ts to MongoDB. Features: 1) Zod validation on all fields. 2) Conflict detection - queries MongoDB for same email+caseType within 7 days, returns 409 with existing reference. 3) Saves to intake_submissions with source:'public_wizard', compatible with staff portal listing. 4) Non-blocking notification on submission. Manually tested: POST returns 201 with caseId, duplicate returns 409, invalid data returns 400. Please test: POST /api/intake/submit with valid public wizard data, conflict detection, validation errors, and verify data appears in GET /api/intakes."
+    - agent: "main"
+      message: "ASK INFINITY - AI LEGAL ASSISTANT: Built complete 'Ask Infinity' feature — a public-facing AI legal information assistant for SA law. Components: 1) /lib/sa-legislation.js — Cached JSON of top 10+ SA Acts with 40+ sections, keyword matching engine, and plan recommendation logic. 2) /app/api/ask/route.js — POST endpoint that does rule-based keyword matching against cached legislation, then enhances with GPT-4o (Emergent LLM key) for plain-language responses. Follows strict response template with legislation citations, plain English explanations, practical bullets, and CTA after 2 messages. 3) /app/ask/page.js — Mobile-responsive chat UI with suggested questions, formatted responses (bold, italic, bullets, links), typing indicators, and compliance disclaimer footer. Also updated: Homepage nav now links to Ask Infinity, plan structure updated to Civil R99 / Labour R99 / Extensive R139 with court representation included. Please test: 1) GET /api/ask returns service info. 2) POST /api/ask with query about dismissal/consumer/rent returns legislation citations. 3) POST /api/ask with empty query returns 400. 4) POST /api/ask with very long query returns 400. 5) Verify CTA appears after messageCount >= 2. 6) Test with non-legal query. Base URL: https://demo-staging-1.preview.emergentagent.com"
+    - agent: "testing"
+      message: "ASK INFINITY API TESTING COMPLETED SUCCESSFULLY: All 12 test scenarios passed (100% success rate). ✅ PRIMARY FOCUS: Ask Infinity API fully functional - GET /api/ask returns proper service info (service: Ask Infinity, status: active), POST /api/ask handles all test scenarios correctly: labour questions cite LRA/BCEA with 'Relevant Legislation' section, consumer questions cite Consumer Protection Act, rental questions mention Rental Housing Act and 14 days, CTA triggers correctly for messageCount >= 2 with plan recommendations (R99/R139) and court representation. ✅ VALIDATION: All validation working perfectly - empty query returns 400 'Please provide a question', missing query field returns 400, long query (>1000 chars) returns 400 'Question too long'. ✅ HISTORY CONTEXT: POST /api/ask with history context processes correctly and returns legislation citations. ✅ REGRESSION: Core APIs still working - GET /api/health returns healthy status, GET /api/intakes with auth works, POST /api/intake/submit creates intakes successfully. All authentication, validation, legislation matching, CTA triggering, and AI integration working perfectly. API uses GPT-4o via Emergent LLM proxy with proper fallback to rule-based responses. Production ready."

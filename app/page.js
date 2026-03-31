@@ -193,11 +193,11 @@ export default function HomePage() {
             <span className="text-xl font-bold text-[#0f2b46] hidden sm:block" style={{ fontFamily: "'Playfair Display', serif" }}>Infinity Legal</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link href="/intake" className="text-[#c9a961] font-bold hover:text-[#0f2b46] transition-colors">Free Legal Analysis</Link>
-            <Link href="/pricing" className="hover:text-[#0f2b46] transition-colors">Cover Options</Link>
+            <Link href="/ask" className="text-[#c9a961] font-bold hover:text-[#0f2b46] transition-colors">Ask Infinity</Link>
+            <Link href="/intake" className="hover:text-[#0f2b46] transition-colors">Free Legal Analysis</Link>
+            <Link href="/pricing" className="hover:text-[#0f2b46] transition-colors">Plans</Link>
             <Link href="/resources" className="hover:text-[#0f2b46] transition-colors">Resources</Link>
             <a href="#how-it-works" className="hover:text-[#0f2b46] transition-colors">How It Works</a>
-            <a href="#testimonials" className="hover:text-[#0f2b46] transition-colors">Reviews</a>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/login" className="text-sm px-4 py-2 text-[#0f2b46] font-semibold hover:bg-gray-50 rounded-lg transition-colors">Login</Link>
