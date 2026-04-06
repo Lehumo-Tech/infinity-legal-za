@@ -1,30 +1,30 @@
-# Test Credentials — Infinity Legal Platform
+# Infinity Legal - Test Credentials
 
-## Demo Mode Credentials (localStorage auth)
+## Real Login (Supabase Auth) → Full Infinity OS Portal
+- **Email:** tsatsi@infinitylegal.org
+- **Password:** Infinity2026!
+- **Role:** Admin (Full Access - Managing Director level)
+- **Portal:** /portal (Real Login mode on /login page)
 
-### Member Portal
-- Email: `member@demo.com`
-- Password: `demo123`
-- Plan: Labour Legal Plan (R99/mo)
-- Portal: `/portal/member`
+## Demo Mode Logins → Demo Portals
+All demo passwords: `demo123`
 
-### Legal Advisor Portal
-- Email: `advisor@infinitylegal.org`
-- Password: `demo123`
-- Role: Senior Legal Advisor
-- Portal: `/portal/staff`
+### Admin Demo Portal
+- **Email:** tsatsi@infinitylegal.org
+- **Password:** demo123
+- **Portal:** /portal/admin
 
-### Admin Portal
-- Email: `tsatsi@infinitylegal.org`
-- Password: `demo123`
-- Role: CEO & Founder
-- Portal: `/portal/admin`
+### Member Demo Portal
+- **Email:** member@demo.com
+- **Password:** demo123
+- **Portal:** /portal/member
 
-## Real Auth (Supabase)
-- Toggle "Real Login" on the login page
-- Supabase URL: https://qgjqrrxwcsggtjznjjqk.supabase.co
+### Legal Advisor (Staff) Demo Portal
+- **Email:** advisor@infinitylegal.org
+- **Password:** demo123
+- **Portal:** /portal/staff
 
-## App URLs
-- Frontend: https://infinity-legal-sa-1.preview.emergentagent.com
-- API: https://infinity-legal-sa-1.preview.emergentagent.com/api
-- PDF Report: https://infinity-legal-sa-1.preview.emergentagent.com/Infinity_Legal_Mar2026_Report.pdf
+## How to Login
+1. Go to /login
+2. For **Real Login**: Keep "Real Login" selected → Enter email/password above → Redirects to /portal
+3. For **Demo Mode**: Click "Demo Mode" toggle → Use demo credentials or quick-login buttons → Redirects to /portal/member, /portal/staff, or /portal/admin

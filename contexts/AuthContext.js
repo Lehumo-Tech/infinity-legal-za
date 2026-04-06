@@ -6,20 +6,21 @@ import { supabase } from '@/lib/supabase'
 const AuthContext = createContext({})
 
 const ROLE_TIERS = {
-  managing_director: 100, deputy_md: 95,
+  managing_director: 100, deputy_md: 95, admin: 100,
   senior_partner: 90, associate: 80, junior_attorney: 70,
   paralegal: 50, legal_assistant: 40,
   operations_director: 75, office_manager: 60,
   cfo: 85, billing_specialist: 55,
   marketing_director: 65, client_relations: 45, intake_agent: 30,
   it_director: 75, systems_admin: 70,
-  hr_director: 75, admin: 60, client: 10,
+  hr_director: 75, client: 10,
   // Legacy
   managing_partner: 100, legal_officer: 80, attorney: 80, it_admin: 70,
 }
 
 const ROLE_LABELS = {
   managing_director: 'Managing Director', deputy_md: 'Deputy Managing Director',
+  admin: 'Administrator (Full Access)',
   senior_partner: 'Senior Partner', associate: 'Associate Attorney',
   junior_attorney: 'Junior Attorney', paralegal: 'Paralegal',
   legal_assistant: 'Legal Assistant',
@@ -28,7 +29,7 @@ const ROLE_LABELS = {
   marketing_director: 'Marketing Director', client_relations: 'Client Relations',
   intake_agent: 'Intake Specialist',
   it_director: 'IT Director', systems_admin: 'Systems Administrator',
-  hr_director: 'HR Director', admin: 'Administrator', client: 'Client',
+  hr_director: 'HR Director', client: 'Client',
   // Legacy
   managing_partner: 'Managing Partner', legal_officer: 'Legal Officer',
   attorney: 'Attorney', it_admin: 'IT Administrator',
@@ -36,6 +37,7 @@ const ROLE_LABELS = {
 
 const DEPARTMENTS = {
   managing_director: 'Executive', deputy_md: 'Executive',
+  admin: 'Executive',
   senior_partner: 'Legal', associate: 'Legal', junior_attorney: 'Legal',
   paralegal: 'Legal', legal_assistant: 'Legal',
   operations_director: 'Operations', office_manager: 'Operations',
@@ -43,7 +45,7 @@ const DEPARTMENTS = {
   marketing_director: 'Business Development', client_relations: 'Business Development',
   intake_agent: 'Business Development',
   it_director: 'IT & Technology', systems_admin: 'IT & Technology',
-  hr_director: 'Human Resources', admin: 'Operations', client: 'Client',
+  hr_director: 'Human Resources', client: 'Client',
   managing_partner: 'Executive', legal_officer: 'Legal', attorney: 'Legal', it_admin: 'IT & Technology',
 }
 
@@ -109,13 +111,13 @@ export function AuthProvider({ children }) {
   const roleLabel = ROLE_LABELS[role] || role
   const department = DEPARTMENTS[role] || 'General'
 
-  // Legal staff groups
-  const legalRoles = ['managing_director', 'deputy_md', 'senior_partner', 'associate', 'junior_attorney', 'paralegal', 'legal_assistant', 'managing_partner', 'legal_officer', 'attorney']
-  const officerRoles = ['managing_director', 'deputy_md', 'senior_partner', 'associate', 'junior_attorney', 'managing_partner', 'legal_officer', 'attorney']
-  const directorRoles = ['managing_director', 'deputy_md', 'operations_director', 'cfo', 'marketing_director', 'it_director', 'hr_director', 'managing_partner']
-  const financeRoles = ['managing_director', 'deputy_md', 'cfo', 'billing_specialist', 'managing_partner']
-  const hrRoles = ['managing_director', 'deputy_md', 'hr_director', 'managing_partner']
-  const itRoles = ['managing_director', 'deputy_md', 'it_director', 'systems_admin', 'managing_partner', 'it_admin']
+  // Legal staff groups - admin gets full access to everything
+  const legalRoles = ['managing_director', 'deputy_md', 'senior_partner', 'associate', 'junior_attorney', 'paralegal', 'legal_assistant', 'managing_partner', 'legal_officer', 'attorney', 'admin']
+  const officerRoles = ['managing_director', 'deputy_md', 'senior_partner', 'associate', 'junior_attorney', 'managing_partner', 'legal_officer', 'attorney', 'admin']
+  const directorRoles = ['managing_director', 'deputy_md', 'operations_director', 'cfo', 'marketing_director', 'it_director', 'hr_director', 'managing_partner', 'admin']
+  const financeRoles = ['managing_director', 'deputy_md', 'cfo', 'billing_specialist', 'managing_partner', 'admin']
+  const hrRoles = ['managing_director', 'deputy_md', 'hr_director', 'managing_partner', 'admin']
+  const itRoles = ['managing_director', 'deputy_md', 'it_director', 'systems_admin', 'managing_partner', 'it_admin', 'admin']
 
   const value = {
     user, profile, loading: loading || !mounted, signOut, refreshProfile,
@@ -149,11 +151,12 @@ export function AuthProvider({ children }) {
     isManagingPartner: role === 'managing_director' || role === 'managing_partner',
     isLegalOfficer: officerRoles.includes(role),
     isAttorney: officerRoles.includes(role),
-    isAdmin: role === 'admin' || role === 'operations_director' || role === 'office_manager',
+    isAdmin: role === 'admin' || role === 'managing_director' || role === 'operations_director' || role === 'office_manager',
     isITAdmin: itRoles.includes(role),
 
-    // Permission checker
+    // Permission checker — admin has all permissions
     hasPermission: (permission) => {
+      if (role === 'admin') return true
       const PERMS = {
         VIEW_ALL_CASES: [...officerRoles, 'paralegal'],
         CREATE_CASE: [...officerRoles, 'paralegal', 'intake_agent'],
@@ -162,10 +165,10 @@ export function AuthProvider({ children }) {
         VIEW_PRIVILEGED_NOTES: officerRoles,
         CREATE_PRIVILEGED_NOTES: officerRoles,
         VIEW_LEADS: [...officerRoles, 'paralegal', 'intake_agent', 'client_relations', 'marketing_director'],
-        CREATE_LEAD: ['managing_director', 'deputy_md', 'intake_agent', 'client_relations', 'managing_partner'],
-        QUALIFY_LEAD: ['managing_director', 'deputy_md', 'intake_agent', 'managing_partner'],
-        MANAGE_USERS: ['managing_director', 'deputy_md', 'it_director', 'systems_admin', 'hr_director', 'managing_partner', 'it_admin'],
-        VIEW_AUDIT_LOGS: ['managing_director', 'deputy_md', 'it_director', 'systems_admin', 'managing_partner', 'it_admin'],
+        CREATE_LEAD: ['managing_director', 'deputy_md', 'intake_agent', 'client_relations', 'managing_partner', 'admin'],
+        QUALIFY_LEAD: ['managing_director', 'deputy_md', 'intake_agent', 'managing_partner', 'admin'],
+        MANAGE_USERS: ['managing_director', 'deputy_md', 'it_director', 'systems_admin', 'hr_director', 'managing_partner', 'it_admin', 'admin'],
+        VIEW_AUDIT_LOGS: ['managing_director', 'deputy_md', 'it_director', 'systems_admin', 'managing_partner', 'it_admin', 'admin'],
         VIEW_BILLING: [...financeRoles, 'senior_partner'],
         SEND_TO_CLIENT: officerRoles,
         VIEW_HR: hrRoles,
