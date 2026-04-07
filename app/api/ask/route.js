@@ -45,9 +45,9 @@ function buildRuleBasedResponse(query, matches, messageCount) {
     response += `🚀 **Need Personalised Help?**\n\n`
     response += `For your type of matter, we recommend the **${rec.plan}** (${rec.price}/month):\n`
     response += `✓ Dedicated legal specialist\n`
-    response += `✓ Court representation (up to ${rec.coverage} per case)\n`
+    response += `✓ Unlimited legal consultations\n`
     response += `✓ 24/7 Legal Contact Centre\n`
-    response += `✓ Cover for your whole family\n`
+    response += `✓ Family plan included\n`
     response += `→ [Select This Plan](/signup)\n\n`
   }
 
@@ -109,9 +109,9 @@ RESPONSE TEMPLATE:
 ${showCTA ? `🚀 **Need Personalised Help?**
 For your type of matter, we recommend the **${rec.plan}** (${rec.price}/month):
 ✓ Dedicated legal specialist
-✓ Court representation (up to ${rec.coverage} per case)
+✓ Unlimited legal consultations
 ✓ 24/7 Legal Contact Centre
-✓ Cover for your whole family
+✓ Family plan included
 → [Select This Plan](/signup)` : ''}
 
 ⚠️ This is general legal information based on South African legislation — not legal advice. No attorney-client relationship is created. Outcomes depend on your specific circumstances. For personalised assistance, join Infinity Legal.
@@ -163,7 +163,7 @@ STRICT RULES:
 
 ${showCTA ? `After answering, add:
 🚀 **Need Personalised Help?**
-Infinity Legal members get a dedicated legal specialist, court representation (up to R82k-R100k per case), and 24/7 support from ${rec.price}/month.
+Infinity Legal members get a dedicated legal specialist, unlimited consultations, and 24/7 support from ${rec.price}/month.
 → [View Plans](/pricing)` : ''}
 
 Always end with:

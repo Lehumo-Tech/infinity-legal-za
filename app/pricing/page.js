@@ -28,7 +28,7 @@ export default function PricingPage() {
           <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center p-8 md:p-12">
             <div>
               <h1 className="text-4xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Protection Plans</h1>
-              <p className="text-white/70 text-lg">Choose the legal protection that matches your needs. <strong className="text-[#c9a961]">Court representation included</strong> on all plans.</p>
+              <p className="text-white/70 text-lg">Choose the legal protection that matches your needs. <strong className="text-[#c9a961]">Unlimited legal support</strong> on all plans.</p>
             </div>
             <div className="hidden md:flex justify-end">
               <div className="rounded-2xl overflow-hidden shadow-xl border-2 border-white/20 max-w-[280px]">
@@ -66,11 +66,11 @@ export default function PricingPage() {
                   <span className="text-4xl font-bold text-[#0f2b46]">R{plan.price}</span>
                   <span className="text-gray-400 text-sm">/month</span>
                 </div>
-                <p className="text-xs text-[#c9a961] font-bold mb-5">Coverage limit: R{(plan.coverageLimit || 82000).toLocaleString()} per case</p>
+                <p className="text-xs text-[#c9a961] font-bold mb-5">Unlimited legal support</p>
 
                 <h4 className="text-xs font-bold text-[#0f2b46] uppercase tracking-wider mb-2">Included Matters:</h4>
                 <ul className="space-y-2 mb-4">
-                  {(plan.coverage?.included || []).map((f, i) => (
+                  {(plan.features || plan.coverage?.included || []).map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
                       <span className="text-green-500 mt-0.5 font-bold text-base">✓</span>{f}
                     </li>
@@ -79,7 +79,7 @@ export default function PricingPage() {
 
                 {plan.coverage?.excluded && (
                   <div className="pt-3 border-t border-gray-100 mb-4">
-                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Not Covered:</h4>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Exclusions:</h4>
                     <ul className="space-y-1.5">
                       {plan.coverage.excluded.map((e, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-gray-400">
@@ -122,14 +122,14 @@ export default function PricingPage() {
               </thead>
               <tbody>
                 {[
-                  ['Coverage Limit', 'R82,000', 'R82,000', 'R100,000'],
+                  ['Unlimited Consultations', true, true, true],
                   ['Civil Matters', true, false, true],
                   ['Labour Matters', false, true, true],
                   ['Criminal Matters', false, false, true],
-                  ['Court Representation', true, true, true],
+                  ['Document Preparation', true, true, true],
                   ['24-hour Contact Centre', true, true, true],
                   ['Free Will & Testament', true, true, true],
-                  ['Family Cover', true, true, true],
+                  ['Family Plan', true, true, true],
                   ['Tax Advice', true, true, true],
                   ['Tax Submission', false, false, true],
                   ['ANC Services', false, false, true],
@@ -155,7 +155,7 @@ export default function PricingPage() {
             <li>✓ <strong>Billing:</strong> Monthly debit order / EFT / card</li>
             <li>✓ <strong>Waiting Period:</strong> 30 days for pre-existing matters; immediate for new matters</li>
             <li>✓ <strong>Claims Process:</strong> Contact 24/7 centre → case logged → specialist assigned within 24h</li>
-            <li>✓ <strong>Cover:</strong> Main member, spouse/life partner, and children under 21</li>
+            <li>✓ <strong>Plan:</strong> Main member, spouse/life partner, and children under 21</li>
             <li>✓ <strong>Review Period:</strong> 31 days — cancel for full refund</li>
             <li>✗ <strong>Exclusions:</strong> Matters arising before membership, frivolous claims</li>
           </ul>

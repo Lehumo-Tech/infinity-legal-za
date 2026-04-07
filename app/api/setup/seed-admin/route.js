@@ -92,9 +92,9 @@ export async function POST(request) {
       // Also seed some demo data into MongoDB for the portals
       // Seed members
       const members = [
-        { email: 'member@demo.com', name: 'Thabo Mbeki', phone: '+27 82 123 4567', plan: 'labour', planName: 'Labour Legal Plan', planPrice: 99, coverageLimit: 82000, status: 'active', joinDate: '2026-01-15' },
-        { email: 'nomsa@demo.com', name: 'Nomsa Dlamini', phone: '+27 83 234 5678', plan: 'civil', planName: 'Civil Legal Plan', planPrice: 99, coverageLimit: 82000, status: 'active', joinDate: '2026-02-01' },
-        { email: 'peter@demo.com', name: 'Peter Naidoo', phone: '+27 84 345 6789', plan: 'extensive', planName: 'Extensive Plan', planPrice: 139, coverageLimit: 100000, status: 'active', joinDate: '2026-01-20' },
+        { email: 'member@demo.com', name: 'Thabo Mbeki', phone: '+27 82 123 4567', plan: 'labour', planName: 'Labour Legal Plan', planPrice: 99, status: 'active', joinDate: '2026-01-15' },
+        { email: 'nomsa@demo.com', name: 'Nomsa Dlamini', phone: '+27 83 234 5678', plan: 'civil', planName: 'Civil Legal Plan', planPrice: 99, status: 'active', joinDate: '2026-02-01' },
+        { email: 'peter@demo.com', name: 'Peter Naidoo', phone: '+27 84 345 6789', plan: 'extensive', planName: 'Extensive Plan', planPrice: 139, status: 'active', joinDate: '2026-01-20' },
       ]
       for (const m of members) {
         await db.collection('members').updateOne(

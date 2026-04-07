@@ -226,7 +226,7 @@ export default function AskInfinityPage() {
           {/* Disclaimer Footer */}
           <p className="text-[9px] text-gray-400 mt-2 text-center leading-relaxed">
             Ask Infinity provides general legal information based on SA legislation. Not legal advice. No attorney-client relationship created. 
-            Join <Link href="/pricing" className="text-[#c9a961] hover:underline">Infinity Legal</Link> for personalised assistance. Subject to terms, waiting periods, coverage limits.
+            Join <Link href="/pricing" className="text-[#c9a961] hover:underline">Infinity Legal</Link> for personalised assistance. Subject to terms and waiting periods.
           </p>
         </div>
       </div>

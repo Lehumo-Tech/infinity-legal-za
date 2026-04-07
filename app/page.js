@@ -442,12 +442,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ COVER OPTIONS PREVIEW ═══ */}
+      {/* ═══ PLAN OPTIONS PREVIEW ═══ */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Protection Plans</h2>
-            <p className="text-gray-500 text-lg">Court representation included on all plans</p>
+            <p className="text-gray-500 text-lg">Unlimited legal support on all plans</p>
           </div>
 
           {/* Core Benefits Banner */}
@@ -476,9 +476,9 @@ export default function HomePage() {
                   <span className="text-4xl font-bold text-[#0f2b46]">R{plan.price}</span>
                   <span className="text-gray-400 text-sm">/month</span>
                 </div>
-                <p className="text-xs text-[#c9a961] font-bold mb-4">Coverage limit: R{(plan.coverageLimit || 82000).toLocaleString()} per case</p>
+                <p className="text-xs text-[#c9a961] font-bold mb-4">Unlimited legal support</p>
                 <ul className="space-y-2 mb-4">
-                  {(plan.coverage?.included || []).slice(0, 5).map((f, i) => (
+                  {(plan.features || plan.coverage?.included || []).slice(0, 5).map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
                       <span className="text-green-500 mt-0.5 font-bold">✓</span>{f}
                     </li>
@@ -498,12 +498,12 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          {/* Cover info */}
+          {/* Plan info */}
           <div className="max-w-5xl mx-auto mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-semibold text-[#0f2b46] mb-2">Important Information</h4>
             <ul className="text-sm text-gray-700 space-y-1">
-              <li>✓ All plans include court representation and access to legal specialists</li>
-              <li>✓ Cover extends to main member, spouse/life partner, and children under 21</li>
+              <li>✓ All plans include unlimited consultations and access to legal specialists</li>
+              <li>✓ Plan extends to main member, spouse/life partner, and children under 21</li>
               <li>✓ 30-day waiting period for pre-existing matters; immediate for new matters</li>
               <li>✓ 31-day review period — cancel within 31 days for full refund</li>
               <li>✓ Premium waiver for up to 12 months in case of retrenchment or disability</li>
@@ -568,7 +568,7 @@ export default function HomePage() {
                 <p className="text-white/70 mb-6 text-lg">Join thousands of South Africans who trust Infinity Legal with their legal matters.</p>
                 <div className="flex flex-wrap gap-3">
                   <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors text-lg shadow-md">Get Free Legal Analysis</Link>
-                  <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">View Cover Options</Link>
+                  <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">View Plan Options</Link>
                 </div>
               </div>
               <div className="hidden md:block">
@@ -595,7 +595,7 @@ export default function HomePage() {
             <h4 className="font-bold text-sm mb-3 text-[#c9a961]">Company</h4>
             <ul className="space-y-2 text-sm text-white/60">
               <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-              <li><Link href="/pricing" className="hover:text-white transition-colors">Cover Options</Link></li>
+              <li><Link href="/pricing" className="hover:text-white transition-colors">Plan Options</Link></li>
               <li><Link href="/resources" className="hover:text-white transition-colors">Resources</Link></li>
               <li><Link href="/intake" className="hover:text-white transition-colors">AI Legal Intake</Link></li>
             </ul>
@@ -618,7 +618,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-white/10 text-center text-xs text-white/30">
-          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved. Court representation included on all plans — subject to terms and coverage limits.
+          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved. Unlimited legal support on all plans — subject to terms and conditions.
         </div>
       </footer>
     </div>

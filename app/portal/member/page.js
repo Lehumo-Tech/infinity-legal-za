@@ -40,13 +40,12 @@ export default function MemberDashboard() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-[#0f2b46] mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>Welcome, {user.name?.split(' ')[0]}</h1>
-      <p className="text-gray-500 text-sm mb-6">Here&apos;s your legal cover overview</p>
+      <p className="text-gray-500 text-sm mb-6">Here&apos;s your legal plan overview</p>
 
-      {/* Cover Info Notice */}
+      {/* Plan Info Notice */}
       <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
         <p className="text-sm text-blue-800">
-          ℹ️ Your plan includes court representation, 24-hour contact centre, free will & testament, and cover for your family. 
-          Coverage limit: R{(user.coverageLimit || plan?.coverageLimit || 82000).toLocaleString()} per case.
+          ℹ️ Your plan includes unlimited consultations, 24-hour contact centre, free will & testament, and family plan. 
         </p>
       </div>
 
@@ -57,9 +56,9 @@ export default function MemberDashboard() {
           <div className="text-xs text-green-600 font-semibold mt-1">Active</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <div className="text-sm text-gray-500 mb-1">Coverage Limit</div>
-          <div className="text-xl font-bold text-[#c9a961]">R{(plan?.coverageLimit || 82000).toLocaleString()}</div>
-          <div className="text-xs text-gray-400 mt-1">Per case • R{plan?.price || user.planPrice}/month</div>
+          <div className="text-sm text-gray-500 mb-1">Monthly Premium</div>
+          <div className="text-xl font-bold text-[#c9a961]">R{plan?.price || user.planPrice}/mo</div>
+          <div className="text-xs text-gray-400 mt-1">Unlimited legal support</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="text-sm text-gray-500 mb-1">Active Legal Matters</div>
@@ -127,10 +126,10 @@ export default function MemberDashboard() {
         </table>
       </div>
 
-      {/* Cover upgrade for non-Extensive */}
+      {/* Plan upgrade for non-Extensive */}
       {user.plan !== 'extensive' && (
         <div className="mt-6 bg-[#c9a961]/10 rounded-xl p-5 text-center">
-          <p className="text-sm text-[#0f2b46] font-semibold">Need Civil, Labour AND Criminal cover? Upgrade to the Extensive Plan — R139/mo with R100,000 coverage</p>
+          <p className="text-sm text-[#0f2b46] font-semibold">Need Civil, Labour AND Criminal support? Upgrade to the Extensive Plan — R139/mo with unlimited legal support</p>
           <Link href="/pricing" className="inline-block mt-2 px-5 py-2 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg text-sm hover:bg-[#d4af37]">View All Plans →</Link>
         </div>
       )}

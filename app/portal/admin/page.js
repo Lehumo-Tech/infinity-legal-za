@@ -74,9 +74,9 @@ export default function AdminDashboard() {
       )}
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
-        {/* Revenue by Cover */}
+        {/* Revenue by Plan */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="font-bold text-[#0f2b46] mb-4">Revenue by Cover Type</h3>
+          <h3 className="font-bold text-[#0f2b46] mb-4">Revenue by Plan Type</h3>
           <div className="space-y-3">
             {[
               { name: 'Civil Plan (R99)', count: MEMBERS.filter(m => m.plan === 'civil').length, revenue: MEMBERS.filter(m => m.plan === 'civil').length * 99, color: 'bg-purple-500' },

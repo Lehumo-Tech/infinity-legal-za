@@ -14,9 +14,9 @@ const STEPS = [
 ]
 
 const PLANS = [
-  { id: 'labour-shield', name: 'Labour Shield', price: 'R95', period: '/month', coverage: 'R72,300 per case', features: ['Employment-related legal matters', '24-hour legal assistance', 'Accidental death benefit (R11,000)', 'Free last will & testament', 'Cover for member, spouse & children', 'Extended family protection option', 'Tax advice'], popular: false },
-  { id: 'civil-guard', name: 'Civil Guard', price: 'R115', period: '/month', coverage: 'R78,500 per case', features: ['Civil-related legal matters', '24-hour legal assistance', 'Accidental death benefit (R16,500)', 'Free last will & testament', 'Cover for member, spouse & children', 'Extended family protection option', 'Tax advice & assistance'], popular: true },
-  { id: 'complete-cover', name: 'Complete Cover', price: 'R130', period: '/month', coverage: 'R100,000 per case', features: ['Employment, civil & criminal matters', '24-hour legal assistance', 'Accidental death benefit (R22,000)', 'Free last will & testament', 'Cover for member, spouse & children', 'Extended family protection option', 'Tax advice, assistance & submission', 'Uncontested divorce & maintenance', 'Antenuptial contracts', 'Property conveyancing discount (20%)', 'Municipal services benefit', 'Legacy Accumulator benefit'], popular: false }
+  { id: 'civil', name: 'Civil Legal Plan', price: 'R99', period: '/month', features: ['Contract disputes', 'Consumer rights', 'Property advisory', 'Debt collection', 'Defamation claims', 'Small claims assistance', 'Personal income tax advice', '24-hour contact centre', 'Free will & testament', 'Family plan included'], popular: false },
+  { id: 'labour', name: 'Labour Legal Plan', price: 'R99', period: '/month', features: ['Unfair dismissal disputes', 'CCMA representation', 'Workplace discrimination', 'Contract reviews', 'Disciplinary hearings', 'Retrenchment support', 'Personal income tax advice', '24-hour contact centre', 'Free will & testament', 'Family plan included'], popular: true },
+  { id: 'extensive', name: 'Extensive Plan', price: 'R139', period: '/month', features: ['All Civil + Labour matters', 'Criminal matters & bail', 'Traffic offence defence', 'Domestic violence orders', 'Tax advice + submission', 'Antenuptial contracts', 'Conveyancing discount', 'Priority case handling', '24-hour contact centre', 'Family plan included'], popular: false }
 ]
 
 const SA_LANGUAGES = ['English', 'Afrikaans', 'isiZulu', 'isiXhosa', 'Sesotho', 'Setswana', 'Sepedi', 'Xitsonga', 'siSwati', 'Tshivenda', 'isiNdebele']
@@ -273,7 +273,7 @@ export default function ApplyPage() {
               <p className="text-xs text-gray-400">
                 {step === 1 && 'Complete in print - all fields marked * are required'}
                 {step === 2 && 'Select your preferred service plan'}
-                {step === 3 && 'Family Protect and Premium plans cover spouses and children under 21'}
+                {step === 3 && 'All plans include family — spouses and children under 21'}
                 {step === 4 && 'Tell us about your legal matter (optional)'}
                 {step === 5 && 'For debit order payment processing (no post office accounts)'}
                 {step === 6 && 'Please read carefully before signing'}

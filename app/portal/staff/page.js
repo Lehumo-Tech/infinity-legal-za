@@ -61,16 +61,16 @@ export default function StaffDashboard() {
             <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Live Data</span>
           </div>
           <table className="w-full text-sm">
-            <thead><tr className="bg-gray-50 text-gray-500 text-xs uppercase"><th className="text-left px-5 py-2">Name</th><th className="text-left px-5 py-2">Category</th><th className="text-left px-5 py-2">Urgency</th><th className="text-left px-5 py-2">Cover Match</th><th className="text-left px-5 py-2">Status</th></tr></thead>
+            <thead><tr className="bg-gray-50 text-gray-500 text-xs uppercase"><th className="text-left px-5 py-2">Name</th><th className="text-left px-5 py-2">Category</th><th className="text-left px-5 py-2">Urgency</th><th className="text-left px-5 py-2">Plan Match</th><th className="text-left px-5 py-2">Status</th></tr></thead>
             <tbody>
               {realIntakes.slice(0, 5).map((intake, i) => {
-                const coverMatch = ['labour', 'employment'].includes(intake.caseType) ? 'Employment' : ['civil', 'property', 'personal_injury'].includes(intake.caseType) ? 'Civil' : 'SME'
+                const planMatch = ['labour', 'employment'].includes(intake.caseType) ? 'Employment' : ['civil', 'property', 'personal_injury'].includes(intake.caseType) ? 'Civil' : 'SME'
                 return (
                   <tr key={intake.id || i} className="border-t border-gray-50 hover:bg-gray-50">
                     <td className="px-5 py-3 text-gray-700 font-medium">{intake.firstName} {intake.lastName}</td>
                     <td className="px-5 py-3 text-gray-500 text-xs capitalize">{(intake.caseType || '').replace('_', ' ')}</td>
                     <td className="px-5 py-3"><span className={`text-xs font-bold px-2 py-0.5 rounded-full ${intake.urgency === 'high' || intake.urgency === 'emergency' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-700'}`}>{intake.urgency}</span></td>
-                    <td className="px-5 py-3"><span className={`text-xs font-bold px-2 py-0.5 rounded-full ${coverMatch === 'Employment' ? 'bg-blue-100 text-blue-700' : coverMatch === 'Civil' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>{coverMatch} Cover</span></td>
+                    <td className="px-5 py-3"><span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${planMatch === 'Employment' ? 'bg-blue-100 text-blue-700' : planMatch === 'Civil' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>{planMatch} Plan</span></td>
                     <td className="px-5 py-3"><span className="text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-800">{intake.status || 'Pending'}</span></td>
                   </tr>
                 )

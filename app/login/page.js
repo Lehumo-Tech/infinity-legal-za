@@ -77,8 +77,8 @@ export default function LoginPage() {
             <h2 className="text-3xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Legal Excellence <span className="text-[#c9a961]">Without Limits</span></h2>
             <p className="text-white/70 text-sm mb-4">Access your member portal, track your legal matters, and connect with your dedicated legal advisor — all in one place.</p>
             <div className="flex gap-4 text-xs text-white/50">
-              <span>✓ Court Representation</span>
-              <span>✓ Family Cover</span>
+              <span>✓ Unlimited Consultations</span>
+              <span>✓ Family Plan</span>
               <span>✓ 24/7 Support</span>
             </div>
           </div>

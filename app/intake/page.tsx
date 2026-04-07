@@ -235,7 +235,7 @@ function StepConsent({ form }: { form: ReturnType<typeof useIntakeWizard>['form'
         <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
           <input type="checkbox" required id="coverDisclaimer" className="mt-1 w-4 h-4 rounded" />
           <label htmlFor="coverDisclaimer" className="cursor-pointer text-sm text-blue-900">
-            I understand the 30-day waiting period for pre-existing matters and that coverage limits apply (R82,000 or R100,000 per case depending on plan). *
+            I understand the 30-day waiting period for pre-existing matters. *
           </label>
         </div>
       </div>
@@ -271,7 +271,7 @@ export default function IntakePage() {
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
             <p className="text-sm text-blue-800">
               ℹ️ <strong>Please Note:</strong> By submitting this intake, your matter will be analysed 
-              by our AI and assigned to a qualified legal specialist. All plans include court representation, 
+              by our AI and assigned to a qualified legal specialist. All plans include unlimited consultations, 
               24-hour contact centre access, and cover for your family. A 30-day waiting period applies 
               for pre-existing matters.
             </p>
