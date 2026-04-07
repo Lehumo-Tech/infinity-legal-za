@@ -25,13 +25,13 @@ const PEOPLE_IMAGES = {
 const CAROUSEL_SLIDES = [
   { 
     title: 'AI-Powered Legal Analysis', 
-    desc: 'Our AI instantly analyses your legal situation, identifies whether it falls under Civil or Employment cover, and connects you with the right legal advisor.',
+    desc: 'Our AI instantly analyses your legal situation, identifies whether it falls under Civil or Employment law, and connects you with the right legal advisor.',
     gradient: 'from-[#0f2b46] to-[#1a4a7a]',
     mockUI: 'intake',
   },
   { 
     title: 'Member Dashboard', 
-    desc: 'Track your legal matters, manage your cover, view advisor communications, and monitor progress — all in one secure portal.',
+    desc: 'Track your legal matters, manage your plan, view advisor communications, and monitor progress — all in one secure portal.',
     gradient: 'from-[#1a365d] to-[#0f2b46]',
     mockUI: 'member',
   },
@@ -71,8 +71,8 @@ function MockIntakeUI() {
           <div className="text-[9px] text-green-600 mt-0.5">Matched: Unfair Dismissal — CCMA Referral recommended</div>
         </div>
         <div className="bg-[#c9a961]/10 rounded-lg p-2">
-          <div className="text-[9px] text-gray-500">Cover Match</div>
-          <div className="text-[11px] font-bold text-[#0f2b46]">Employment Legal Cover • Advisor: Sarah J.</div>
+          <div className="text-[9px] text-gray-500">Plan Match</div>
+          <div className="text-[11px] font-bold text-[#0f2b46]">Employment Legal Plan • Advisor: Sarah J.</div>
         </div>
       </div>
     </div>
@@ -88,7 +88,7 @@ function MockMemberUI() {
       </div>
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-full bg-[#0f2b46] flex items-center justify-center text-white text-xs font-bold">TM</div>
-        <div><div className="text-xs font-bold text-[#0f2b46]">Thabo Mbeki</div><div className="text-[9px] text-[#c9a961]">Employment Legal Cover — R99/mo</div></div>
+        <div><div className="text-xs font-bold text-[#0f2b46]">Thabo Mbeki</div><div className="text-[9px] text-[#c9a961]">Employment Legal Plan — R99/mo</div></div>
       </div>
       <div className="grid grid-cols-2 gap-1.5 mb-2.5">
         {[{l:'Active Matters',v:'2',c:'text-blue-600'},{l:'Resolved',v:'5',c:'text-green-600'},{l:'Consultations',v:'∞',c:'text-[#c9a961]'},{l:'Documents',v:'5',c:'text-purple-600'}].map(s => (
@@ -228,28 +228,28 @@ export default function HomePage() {
             {/* Left - Copy */}
             <div className="text-center md:text-left">
               <div className="inline-flex items-center gap-2 bg-[#c9a961]/20 text-[#c9a961] text-xs font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">
-                Court Representation Included • From R99/month
+                Unlimited Legal Support • From R99/month
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Legal Cover from <span className="text-[#c9a961]">R99/month</span>
+                Legal Plans from <span className="text-[#c9a961]">R99/month</span>
               </h1>
               <p className="text-xl md:text-2xl text-[#c9a961] font-medium mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
                 Legal Excellence Without Limits
               </p>
               <p className="text-lg text-white/70 mb-8 max-w-xl">
-                Legal protection for individuals, families, and businesses. Choose Civil, Labour, or Extensive cover — court representation included on all plans.
+                Legal protection for individuals, families, and businesses. Choose Civil, Labour, or Extensive plans — unlimited consultations and document preparation included.
               </p>
               <div className="flex flex-wrap justify-center md:justify-start gap-3">
                 <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-all shadow-lg shadow-[#c9a961]/20 text-lg">
                   Get Free Legal Analysis →
                 </Link>
                 <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
-                  View Cover Options
+                  View Plan Options
                 </Link>
               </div>
               <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-8 text-white/50 text-sm">
-                <span>✓ Court representation</span>
-                <span>✓ Family covered</span>
+                <span>✓ Unlimited consultations</span>
+                <span>✓ Family included</span>
                 <span>✓ 24/7 Contact Centre</span>
               </div>
             </div>
@@ -358,12 +358,12 @@ export default function HomePage() {
                 Real People. Real Protection. <span className="text-[#c9a961]">Real Results.</span>
               </h2>
               <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-                Infinity Legal was built for ordinary South Africans who deserve extraordinary legal protection. Our network of experienced legal advisors is ready to fight for your rights — in the office, at the CCMA, and in court.
+                Infinity Legal was built for ordinary South Africans who deserve extraordinary legal protection. Our network of experienced legal advisors provides expert guidance, document preparation, and AI-powered advisory services.
               </p>
               <div className="space-y-4">
                 {[
-                  { icon: '⚖️', title: 'Court Representation Included', desc: 'All plans cover legal representation in Magistrate & High Court.' },
-                  { icon: '👨‍👩‍👧‍👦', title: 'Family Cover Built In', desc: 'Your spouse and children under 21 are protected at no extra cost.' },
+                  { icon: '⚖️', title: 'Unlimited Legal Consultations', desc: 'Speak to qualified legal advisors as often as you need — no caps, no limits.' },
+                  { icon: '👨‍👩‍👧‍👦', title: 'Family Plan Built In', desc: 'Your spouse and children under 21 are included at no extra cost.' },
                   { icon: '📞', title: '24/7 Legal Contact Centre', desc: 'Speak to a legal advisor any time — emergencies don\'t keep office hours.' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
@@ -425,9 +425,9 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '1', icon: '🛡️', title: 'Choose Your Plan', desc: 'Select Civil, Labour, or Extensive protection. All include court representation from R99/month.' },
+              { step: '1', icon: '🛡️', title: 'Choose Your Plan', desc: 'Select Civil, Labour, or Extensive protection — unlimited legal support from R99/month.' },
               { step: '2', icon: '📋', title: 'Submit Your Matter', desc: 'Describe your legal matter through our AI-powered intake. We analyse and match you to a specialist.' },
-              { step: '3', icon: '✅', title: 'Get Expert Representation', desc: 'Your legal specialist handles everything — advice, documents, court representation, and resolution.' },
+              { step: '3', icon: '✅', title: 'Get Expert Guidance', desc: 'Your legal specialist handles everything — advice, documents, negotiations, and resolution.' },
             ].map((s, i) => (
               <div key={i} className="text-center group">
                 <div className="w-20 h-20 rounded-2xl bg-[#0f2b46] text-white flex items-center justify-center text-3xl mx-auto mb-4 group-hover:bg-[#c9a961] group-hover:text-[#0f2b46] transition-colors shadow-lg">

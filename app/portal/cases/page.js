@@ -145,11 +145,19 @@ export default function PortalCasesPage() {
     fetchMeta()
   }, [token, cases.length])
 
-  // Fetch staff for assignment
+  // Fetch staff for assignment — from profiles via Supabase (auth system)
   useEffect(() => {
     if (!token) return
-    supabase.from('profiles').select('id, full_name, role, department').neq('role', 'client').order('full_name')
-      .then(({ data }) => { if (data) setStaff(data) })
+    const fetchStaff = async () => {
+      try {
+        const { data } = await supabase.from('profiles').select('id, full_name, role').neq('role', 'client').order('full_name')
+        if (data) setStaff(data)
+      } catch (e) {
+        // Fallback: create minimal staff list from current user
+        setStaff([{ id: user?.id, full_name: profile?.full_name || 'Current User', role: role || 'admin' }])
+      }
+    }
+    fetchStaff()
   }, [token])
 
   // Tab data fetchers
