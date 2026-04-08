@@ -1,51 +1,57 @@
-# Infinity Legal Platform — Product Requirements Document
+# Infinity Legal Platform - Product Requirements Document
 
 ## Overview
-Comprehensive legal tech SaaS platform for the South African market. Provides AI-powered legal intake, member management, attorney portals, lead intelligence, and legal resources.
+Infinity Legal is a legal tech platform for the South African market, providing AI-powered legal analysis, case management, and document vault functionality.
 
-## Brand Guidelines
-- **Primary Navy:** #0f2b46
-- **Gold Accent:** #c9a961
-- **Font:** Playfair Display (headings), Inter (body)
-- **Logo:** `/public/logo-icon-*.png` (official, processed)
+## Current State: Pre-Launch MVP (CIPC Pending)
 
-## Pricing (Official)
-| Plan     | Monthly | Annual (20% off) |
-|----------|---------|-------------------|
-| Basic    | R95     | R76/mo            |
-| Premium  | R115    | R92/mo            |
-| Business | R130    | R104/mo           |
+### Core Constraints
+- **Zero Payments / Free Tier Only**: All payment gateways disabled pending CIPC approval
+- **Waitlist Mode**: All pricing CTAs replaced with "Join Waitlist" buttons
+- **POPIA Compliance**: Full privacy compliance with consent checkboxes and data export
+- **No Legacy Terminology**: No "cover/coverage", "court representations", "coverage limits", or "Attorney" — uses "Plan", "Unlimited Legal Support", "Legal Advisor"
 
-## Architecture
-- Next.js 14 App Router + Tailwind + shadcn/ui
-- MongoDB (intakes, cases, leads, documents)
-- Supabase (real auth — paused)
-- localStorage (demo auth — active)
-- GPT-4o via Emergent LLM Key (AI intake)
-- Brevo (email notifications)
+### Implemented Features (Pre-Launch MVP)
 
-## Demo Mode (ACTIVE)
-Three portals powered by `lib/demo-data.js` and `lib/demo-auth.js`:
-- Member Portal: `/portal/member`
-- Staff Portal: `/portal/staff`
-- Admin Portal: `/portal/admin`
+#### Public Pages
+- Homepage with CIPC disclaimer banner, Join Waitlist modal, WhatsApp floating button
+- Pricing page with all CTAs as "Join Waitlist" (opening waitlist modal)
+- Signup page converted to waitlist-only flow (no payment step, POPIA checkbox)
+- Login page with Real Login (Supabase Auth) and Demo Mode
+- Privacy Policy page (/privacy)
+- Free AI Legal Analysis (/intake)
 
-## Key Features
-- [x] AI Legal Intake Wizard (5-step, MongoDB, Zod)
-- [x] Cases Module (TS Clean Architecture)
-- [x] Legal Resources Hub (34+ items, email gate)
-- [x] Member/Staff/Admin Demo Portals
-- [x] Lead Scraper UI
-- [x] Homepage with app content carousel
-- [x] Ask Infinity — AI Legal Information Assistant (GPT-4o + cached SA legislation)
-- [x] Pricing: Civil R99 / Labour R99 / Extensive R139 (court included)
-- [x] Dual Auth: Supabase (real) + localStorage (demo toggle)
-- [ ] Phase 3: Leads TS Rebuild
-- [ ] Phase 4: Documents Module
-- [ ] Convert Demo → Real Backends
-- [ ] PayFast Integration (ON HOLD)
+#### API Endpoints
+- `POST /api/waitlist` — Join waitlist with POPIA consent
+- `GET /api/waitlist` — Admin: view waitlist count and recent entries
+- `POST /api/analyze` — Free-tier mock AI legal analysis (6 categories)
+- `GET /api/user/export` — POPIA data export (authenticated)
+- Full Cases, Tasks, Documents, Leads, Intakes CRUD (MongoDB)
+- AI Intake Analysis, Document Assist, Case Insights (Emergent LLM)
 
-## Reports Generated
-- `/public/Infinity_Legal_Feb2026_Report.pdf` (Latest)
-- `/public/Infinity_Legal_Progress_Report.pdf`
-- `/public/Infinity_Legal_Demo_Report.pdf`
+#### Portal Dashboard
+- CIPC pending banner ("Premium features pending CIPC approval")
+- "Free Tier Active" badge with green indicator
+- "Free AI Analysis" CTA button
+- Contact Support section (Email + WhatsApp)
+- Quick actions: AI Analysis, Documents, Approvals, AI Research
+
+#### Settings Page (/portal/settings)
+- Profile tab: Account info, plan status with "Free Tier Active" badge
+- Privacy tab: "Export My Data" button (POPIA Section 23), privacy rights info
+- Notifications tab: Preference toggles
+
+### Tech Stack
+- **Frontend**: Next.js 14 App Router, Tailwind CSS, shadcn/ui
+- **Auth**: Supabase Authentication
+- **Database**: MongoDB (business data), Supabase (auth profiles only)
+- **AI**: Emergent LLM Key (OpenAI-compatible proxy)
+
+### Admin Credentials
+- Email: tsatsi@infinitylegal.org
+- Password: Infinity2026!
+- Role: Administrator (Full Access)
+
+### Future Tasks (ON HOLD)
+- PayFast payment integration (pending CIPC approval)
+- NextAuth.js migration (if explicitly requested)
