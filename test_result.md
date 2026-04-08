@@ -762,15 +762,45 @@ agent_communication:
     - agent: "testing"
       message: "COMPREHENSIVE MONGODB BACKEND TESTING COMPLETED SUCCESSFULLY: All core API routes tested as requested in review. Results: 45/48 tests passed (93.8% success rate). ✅ AUTHENTICATION: All endpoints properly secured with Bearer token auth, return 401 without auth as expected. ✅ CASES CRUD: Complete workflow tested - GET lists cases, POST creates cases with proper IL-YYYY-NNNN format, PUT updates status, auto-generates timeline entries. ✅ CASE RELATED APIS: Timeline, Notes, Tasks, Messages, Metadata all working correctly with MongoDB backend. ✅ ALL OTHER CORE APIS: Dashboard Stats, Clients, Leads, Documents, Tasks, Intakes, Notifications, Calendar, Messages all functioning perfectly. ✅ MONGODB INTEGRATION: All data storage and retrieval working correctly. Minor issues: 3 endpoints return 405 for unsupported POST methods (expected behavior). All core functionality working perfectly with MongoDB backend migration complete."
     - agent: "main"
-      message: "PRE-LAUNCH MVP IMPLEMENTATION: 1) NEW POST /api/analyze endpoint (mock free-tier AI analysis, no auth required, supports 6 legal categories). 2) Updated pricing page - all plan CTAs now say 'Join Waitlist' opening waitlist modal instead of linking to signup. 3) Updated portal dashboard - added CIPC pending banner, 'Free Tier Active' badge, 'Free AI Analysis' CTA button, Contact Support section (email + WhatsApp). 4) Overhauled signup page - removed payment step, added POPIA consent checkbox, converted to waitlist-only flow. 5) Created /portal/settings page with 'Export My Data' button (POPIA Section 23 compliance), privacy rights info, notification preferences. Please test: POST /api/analyze with {description, category, location}, POST /api/waitlist, GET /api/user/export (auth required)."
+      message: "LEAD CAPTURE + SOCIAL LISTENING IMPLEMENTATION: 1) Upgraded POST /api/waitlist with lead scoring (0-5 scale: CCMA=+3, Divorce/Eviction=+2, .co.za=+1, phone=+1). Leads now have score, priority (hot/warm/cool/cold), legal_need, status fields. GET returns stats breakdown + sorted leads. 2) Created GET /api/reddit-leads — Reddit RSS social listener for r/SouthAfrica, filters legal keywords, scores + prioritizes posts. 3) Removed ALL 'waitlist' narrative from public UI — replaced with 'Get Started Free', 'Register Now'. Internal API endpoint name kept. 4) Added legal_need dropdown to all registration forms (Homepage modal, Pricing modal, Signup page). 5) Created /portal/leads-dashboard with Registered Leads tab (table with priority/score/legal need) + Social Listening tab (Reddit feed with View Post and Respond Publicly buttons). 6) Added Lead Intelligence to portal sidebar. Please test: POST /api/waitlist with legal_need field, GET /api/waitlist (stats + leads), GET /api/reddit-leads."
     - agent: "testing"
-      message: "PRE-LAUNCH MVP API TESTING COMPLETED SUCCESSFULLY: All 3 NEW endpoints tested and working perfectly (100% success rate). ✅ POST /api/analyze: All 6 test scenarios passed - Labour law (Labour Law, high urgency), Criminal law (Criminal Law, emergency urgency), Property law with location, General case (Civil Law default), validation errors for short descriptions and empty body. Response structure includes all required fields: success, analysis (legalArea, category, urgency, summary, relevantLegislation, nextSteps, suggestedPlan, estimatedTimeline, confidenceScore), disclaimer, freeTier flag. ✅ POST/GET /api/waitlist: All 5 test scenarios passed - new entry creation (201), duplicate email handling (200 with alreadyJoined: true), validation for missing email/phone (400), phone-only entries (201), GET count and recent entries (200). MongoDB integration working perfectly. ✅ GET /api/user/export: Both test scenarios passed - unauthorized access blocked (401), authenticated access returns complete POPIA-compliant data export with all required sections (cases, tasks, notes, messages, leads, documents, intakes) and summary counts. Supabase authentication working correctly. All Pre-Launch MVP APIs are production-ready."
+      message: "LEAD CAPTURE + REDDIT SOCIAL LISTENING TESTING COMPLETED SUCCESSFULLY: All 3 upgraded endpoints tested and working perfectly (100% success rate). ✅ POST /api/waitlist: Enhanced lead scoring working correctly - CCMA lead with .co.za email + phone scored 5.0 (hot priority), Divorce lead scored 2.5 (warm priority), Eviction lead with phone scored 3.5 (warm priority), General enquiry scored 0 (cold priority). Duplicate email handling, validation, and phone-only entries all working correctly. ✅ GET /api/waitlist: Returns proper structure with count, stats breakdown (total/hot/warm/cool/cold), and leads sorted by score descending. Priority filtering working correctly. ✅ GET /api/reddit-leads: Returns 8 legal-related posts from r/SouthAfrica with proper structure (title, link, subreddit, matchedKeywords, score, priority). POPIA compliance disclaimer present. Response time 1.16s (excellent performance). All lead scoring algorithms, MongoDB integration, Reddit RSS parsing, and filtering functionality working perfectly. System ready for production use."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 12
-  run_ui: true
+  test_sequence: 13
+  run_ui: false
+
+  - task: "Lead Capture API with Scoring"
+    implemented: true
+    working: true
+    file: "app/api/waitlist/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "UPGRADED POST /api/waitlist with lead scoring system. Scores 0-5 based on: legal_need (CCMA=3, Divorce/Eviction=2, Consumer=1), .co.za email (+1), phone provided (+1). Priority: hot (>=4), warm (>=2.5), cool (>=1), cold. GET /api/waitlist returns stats with hot/warm/cool/cold breakdown + leads sorted by score. Returning leads now also have 'priority' filters."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE LEAD CAPTURE TESTING COMPLETED SUCCESSFULLY: All 7 test scenarios passed (100% success rate). ✅ POST /api/waitlist: CCMA lead with .co.za email + phone correctly scored 5.0 (hot priority), Divorce lead scored 2.5 (warm priority), Eviction lead with phone scored 3.5 (warm priority), General enquiry scored 0 (cold priority), Criminal phone-only scored 3.5 (warm priority). ✅ Duplicate email handling working correctly (200 with 'Welcome back' message). ✅ Validation working (400 for missing email/phone). ✅ GET /api/waitlist: Returns proper structure with count, stats (total/hot/warm/cool/cold breakdown), and leads sorted by score descending. ✅ Priority filtering working correctly. ✅ Lead scoring algorithm working perfectly: CCMA=3, .co.za=+1, phone=+1, name=+0.5. All authentication, validation, MongoDB integration, and scoring functionality working perfectly."
+
+  - task: "Reddit RSS Social Listening"
+    implemented: true
+    working: true
+    file: "app/api/reddit-leads/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/reddit-leads fetches Reddit RSS from r/SouthAfrica, filters for legal keywords (CCMA, eviction, divorce, etc.), scores posts, returns sorted by priority. Uses public RSS feed, no API key. Cached 1 hour."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE REDDIT SOCIAL LISTENING TESTING COMPLETED SUCCESSFULLY: All test scenarios passed (100% success rate). ✅ GET /api/reddit-leads: Returns proper JSON structure with success, total, subreddits, lastFetched, disclaimer, and posts array. ✅ Found 8 legal-related posts from r/SouthAfrica with proper scoring and priority assignment. ✅ Post structure correct with all required fields: title, link, subreddit, matchedKeywords, score, priority. ✅ POPIA compliance: Disclaimer properly mentions POPIA and consent form requirements. ✅ Performance: Response time 1.16 seconds (well under 30s limit). ✅ Legal keyword matching working correctly (CCMA posts found and scored). ✅ RSS parsing and filtering working perfectly. All functionality ready for production use."
 
   - task: "Mock Analyze API (Free Tier)"
     implemented: true
@@ -1293,8 +1323,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Ask Infinity Chat UI"
-    - "Public Intake Wizard DB Save (P0)"
+    - "Lead Capture and Reddit Social Listening APIs tested successfully"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

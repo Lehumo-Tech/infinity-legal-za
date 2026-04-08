@@ -5,26 +5,28 @@ import Link from 'next/link'
 import { PLANS, PLAN_DISCLAIMER, CORE_BENEFITS } from '@/lib/demo-data'
 
 export default function PricingPage() {
-  const [showWaitlist, setShowWaitlist] = useState(false)
-  const [waitlistPlan, setWaitlistPlan] = useState('')
-  const [wlEmail, setWlEmail] = useState('')
-  const [wlName, setWlName] = useState('')
-  const [wlPopia, setWlPopia] = useState(false)
-  const [wlSubmitted, setWlSubmitted] = useState(false)
-  const [wlLoading, setWlLoading] = useState(false)
-  const [wlMsg, setWlMsg] = useState('')
+  const [showRegister, setShowRegister] = useState(false)
+  const [registerPlan, setRegisterPlan] = useState('')
+  const [regEmail, setRegEmail] = useState('')
+  const [regName, setRegName] = useState('')
+  const [regPhone, setRegPhone] = useState('')
+  const [regLegalNeed, setRegLegalNeed] = useState('')
+  const [regPopia, setRegPopia] = useState(false)
+  const [regSubmitted, setRegSubmitted] = useState(false)
+  const [regLoading, setRegLoading] = useState(false)
+  const [regMsg, setRegMsg] = useState('')
 
-  const handleWaitlist = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault()
-    if (!wlPopia) return
-    setWlLoading(true)
+    if (!regPopia) return
+    setRegLoading(true)
     try {
-      const res = await fetch('/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: wlEmail, name: wlName, plan: waitlistPlan, source: 'pricing' }) })
+      const res = await fetch('/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: regEmail, name: regName, phone: regPhone, legal_need: regLegalNeed, plan: registerPlan, source: 'pricing' }) })
       const data = await res.json()
-      setWlMsg(data.message)
-      setWlSubmitted(true)
-    } catch { setWlMsg('Something went wrong.') }
-    finally { setWlLoading(false) }
+      setRegMsg(data.message)
+      setRegSubmitted(true)
+    } catch { setRegMsg('Something went wrong.') }
+    finally { setRegLoading(false) }
   }
 
   return (
@@ -33,36 +35,51 @@ export default function PricingPage() {
       <div className="bg-amber-50 border-b border-amber-200">
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-2 text-xs text-amber-800">
           <span>⚠️</span>
-          <span>CIPC Registration Pending | <strong>Free Tier Active</strong> — Premium plans launching soon. <button onClick={() => { setWaitlistPlan('general'); setShowWaitlist(true) }} className="underline font-bold">Join Waitlist</button></span>
+          <span>Infinity Legal (Pty) Ltd — CIPC Registration Pending | <strong>Free Tier Active</strong> — Premium plans launching soon. <button onClick={() => { setRegisterPlan('general'); setShowRegister(true) }} className="underline font-bold">Register Now</button></span>
         </div>
       </div>
 
-      {/* Waitlist Modal */}
-      {showWaitlist && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowWaitlist(false)}>
+      {/* Registration Modal */}
+      {showRegister && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowRegister(false)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowWaitlist(false)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl">×</button>
-            {wlSubmitted ? (
+            <button onClick={() => setShowRegister(false)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl">×</button>
+            {regSubmitted ? (
               <div className="text-center py-6">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><span className="text-3xl">✅</span></div>
-                <h3 className="text-xl font-bold text-[#0f2b46] mb-2">You&apos;re on the list!</h3>
-                <p className="text-gray-600 text-sm">{wlMsg}</p>
-                <button onClick={() => setShowWaitlist(false)} className="mt-4 px-6 py-2 bg-[#0f2b46] text-white rounded-lg">Done</button>
+                <h3 className="text-xl font-bold text-[#0f2b46] mb-2">You&apos;re All Set!</h3>
+                <p className="text-gray-600 text-sm">{regMsg}</p>
+                <Link href="/intake" className="inline-block mt-4 px-6 py-2 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] transition-colors">Try Free AI Analysis →</Link>
               </div>
             ) : (
               <>
                 <div className="text-center mb-4">
-                  <h3 className="text-xl font-bold text-[#0f2b46]">Join the Waitlist</h3>
-                  <p className="text-sm text-gray-500 mt-1">Be first to access: <strong>{waitlistPlan}</strong></p>
+                  <h3 className="text-xl font-bold text-[#0f2b46]">Get Started Free</h3>
+                  <p className="text-sm text-gray-500 mt-1">Register for: <strong>{registerPlan}</strong></p>
                 </div>
-                <form onSubmit={handleWaitlist} className="space-y-3">
-                  <input type="text" placeholder="Full Name" value={wlName} onChange={e => setWlName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm" />
-                  <input type="email" placeholder="Email *" required value={wlEmail} onChange={e => setWlEmail(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm" />
+                <form onSubmit={handleRegister} className="space-y-3">
+                  <input type="text" placeholder="Full Name" value={regName} onChange={e => setRegName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
+                  <input type="email" placeholder="Email *" required value={regEmail} onChange={e => setRegEmail(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
+                  <input type="tel" placeholder="Phone (optional)" value={regPhone} onChange={e => setRegPhone(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
+                  <select value={regLegalNeed} onChange={e => setRegLegalNeed(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50 text-gray-700">
+                    <option value="">What legal matter do you need help with?</option>
+                    <option value="CCMA">CCMA / Unfair Dismissal</option>
+                    <option value="Labour Dispute">Labour Dispute</option>
+                    <option value="Divorce">Divorce / Family</option>
+                    <option value="Eviction">Eviction / Housing</option>
+                    <option value="Criminal">Criminal Matter</option>
+                    <option value="Custody">Child Custody / Maintenance</option>
+                    <option value="Debt Review">Debt Review / Collections</option>
+                    <option value="Consumer">Consumer Complaint</option>
+                    <option value="Property">Property / Contract</option>
+                    <option value="General">General Legal Enquiry</option>
+                    <option value="Other">Other</option>
+                  </select>
                   <label className="flex items-start gap-2 cursor-pointer">
-                    <input type="checkbox" required checked={wlPopia} onChange={e => setWlPopia(e.target.checked)} className="mt-1 rounded border-gray-300" />
+                    <input type="checkbox" required checked={regPopia} onChange={e => setRegPopia(e.target.checked)} className="mt-1 rounded border-gray-300" />
                     <span className="text-xs text-gray-500">I consent to processing per POPIA. <Link href="/privacy" className="text-[#c9a961] hover:underline">Privacy Policy</Link></span>
                   </label>
-                  <button type="submit" disabled={wlLoading || !wlPopia} className="w-full py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] disabled:opacity-50">{wlLoading ? 'Joining...' : 'Join Waitlist →'}</button>
+                  <button type="submit" disabled={regLoading || !regPopia} className="w-full py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] disabled:opacity-50">{regLoading ? 'Registering...' : 'Register Now →'}</button>
                 </form>
               </>
             )}
@@ -163,8 +180,8 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <button onClick={() => { setWaitlistPlan(plan.name); setShowWaitlist(true) }} className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
-                  Join Waitlist — {plan.name}
+                <button onClick={() => { setRegisterPlan(plan.name); setShowRegister(true) }} className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
+                  Get Started — {plan.name}
                 </button>
               </div>
             </div>

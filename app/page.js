@@ -4,11 +4,12 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { PLANS, PLAN_DISCLAIMER, CORE_BENEFITS } from '@/lib/demo-data'
 
-// ═══ WAITLIST MODAL COMPONENT ═══
-function WaitlistModal({ isOpen, onClose, selectedPlan }) {
+// ═══ GET STARTED MODAL COMPONENT ═══
+function GetStartedModal({ isOpen, onClose, selectedPlan }) {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [name, setName] = useState('')
+  const [legalNeed, setLegalNeed] = useState('')
   const [popia, setPopia] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -22,7 +23,7 @@ function WaitlistModal({ isOpen, onClose, selectedPlan }) {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, phone, name, plan: selectedPlan || 'general', source: 'homepage' }),
+        body: JSON.stringify({ email, phone, name, legal_need: legalNeed, plan: selectedPlan || 'general', source: 'homepage' }),
       })
       const data = await res.json()
       setMessage(data.message)
@@ -44,30 +45,44 @@ function WaitlistModal({ isOpen, onClose, selectedPlan }) {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">✅</span>
             </div>
-            <h3 className="text-xl font-bold text-[#0f2b46] mb-2">You&apos;re on the list!</h3>
+            <h3 className="text-xl font-bold text-[#0f2b46] mb-2">You&apos;re All Set!</h3>
             <p className="text-gray-600 text-sm">{message}</p>
-            <button onClick={onClose} className="mt-4 px-6 py-2 bg-[#0f2b46] text-white rounded-lg hover:bg-[#1a3c5e] transition-colors">Done</button>
+            <Link href="/intake" className="inline-block mt-4 px-6 py-2 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] transition-colors">Try Free AI Analysis →</Link>
           </div>
         ) : (
           <>
             <div className="text-center mb-4">
               <div className="w-12 h-12 bg-[#c9a961]/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-2xl">🚀</span>
+                <span className="text-2xl">⚖️</span>
               </div>
-              <h3 className="text-xl font-bold text-[#0f2b46]">Join the Waitlist</h3>
-              <p className="text-sm text-gray-500 mt-1">Be first to access premium legal plans when we launch.</p>
-              {selectedPlan && <span className="inline-block mt-1 text-xs bg-[#c9a961]/10 text-[#c9a961] px-2 py-0.5 rounded-full font-semibold">Interested in: {selectedPlan}</span>}
+              <h3 className="text-xl font-bold text-[#0f2b46]">Get Started Free</h3>
+              <p className="text-sm text-gray-500 mt-1">Register to access our legal services and get matched with a specialist.</p>
+              {selectedPlan && <span className="inline-block mt-1 text-xs bg-[#c9a961]/10 text-[#c9a961] px-2 py-0.5 rounded-full font-semibold">Plan: {selectedPlan}</span>}
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
               <input type="email" placeholder="Email Address *" required value={email} onChange={e => setEmail(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
               <input type="tel" placeholder="Phone (optional)" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
+              <select value={legalNeed} onChange={e => setLegalNeed(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50 text-gray-700">
+                <option value="">What legal matter do you need help with?</option>
+                <option value="CCMA">CCMA / Unfair Dismissal</option>
+                <option value="Labour Dispute">Labour Dispute</option>
+                <option value="Divorce">Divorce / Family</option>
+                <option value="Eviction">Eviction / Housing</option>
+                <option value="Criminal">Criminal Matter</option>
+                <option value="Custody">Child Custody / Maintenance</option>
+                <option value="Debt Review">Debt Review / Collections</option>
+                <option value="Consumer">Consumer Complaint</option>
+                <option value="Property">Property / Contract</option>
+                <option value="General">General Legal Enquiry</option>
+                <option value="Other">Other</option>
+              </select>
               <label className="flex items-start gap-2 cursor-pointer">
                 <input type="checkbox" required checked={popia} onChange={e => setPopia(e.target.checked)} className="mt-1 rounded border-gray-300 text-[#c9a961] focus:ring-[#c9a961]" />
                 <span className="text-xs text-gray-500">I consent to the processing of my personal information per POPIA. <Link href="/privacy" className="text-[#c9a961] hover:underline">Privacy Policy</Link></span>
               </label>
               <button type="submit" disabled={loading || !popia} className="w-full py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] transition-colors disabled:opacity-50">
-                {loading ? 'Joining...' : 'Join Waitlist →'}
+                {loading ? 'Registering...' : 'Register Now →'}
               </button>
             </form>
           </>
@@ -252,12 +267,12 @@ function MockLeadsUI() {
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
-  const [showWaitlist, setShowWaitlist] = useState(false)
-  const [waitlistPlan, setWaitlistPlan] = useState('')
+  const [showRegister, setShowRegister] = useState(false)
+  const [registerPlan, setRegisterPlan] = useState('')
 
-  const openWaitlist = (plan = '') => {
-    setWaitlistPlan(plan)
-    setShowWaitlist(true)
+  const openRegister = (plan = '') => {
+    setRegisterPlan(plan)
+    setShowRegister(true)
   }
 
   const nextSlide = useCallback(() => {
@@ -284,8 +299,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Waitlist Modal */}
-      <WaitlistModal isOpen={showWaitlist} onClose={() => setShowWaitlist(false)} selectedPlan={waitlistPlan} />
+      {/* Registration Modal */}
+      <GetStartedModal isOpen={showRegister} onClose={() => setShowRegister(false)} selectedPlan={registerPlan} />
 
       {/* WhatsApp Floating Button */}
       <a href="https://wa.me/27682011186?text=Hi%20Infinity%20Legal%2C%20I%20need%20legal%20assistance" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 transition-all hover:scale-110" title="Chat on WhatsApp">
@@ -339,8 +354,8 @@ export default function HomePage() {
                 <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-all shadow-lg shadow-[#c9a961]/20 text-lg">
                   Get Free Legal Analysis →
                 </Link>
-                <button onClick={() => openWaitlist()} className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
-                  Join Waitlist 🚀
+                <button onClick={() => openRegister()} className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
+                  Get Started Free ⚖️
                 </button>
               </div>
               <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-8 text-white/50 text-sm">
@@ -588,8 +603,8 @@ export default function HomePage() {
                     ))}
                   </div>
                 )}
-                <button onClick={() => openWaitlist(plan.name)} className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
-                  Join Waitlist — {plan.name}
+                <button onClick={() => openRegister(plan.name)} className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
+                  Get Started — {plan.name}
                 </button>
               </div>
             ))}
@@ -664,7 +679,7 @@ export default function HomePage() {
                 <p className="text-white/70 mb-6 text-lg">Join thousands of South Africans who trust Infinity Legal with their legal matters.</p>
                 <div className="flex flex-wrap gap-3">
                   <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors text-lg shadow-md">Get Free Legal Analysis</Link>
-                  <button onClick={() => openWaitlist()} className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">Join Waitlist 🚀</button>
+                  <button onClick={() => openRegister()} className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">Get Started Free ⚖️</button>
                 </div>
               </div>
               <div className="hidden md:block">

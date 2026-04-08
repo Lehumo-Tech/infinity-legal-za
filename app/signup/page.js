@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function SignupPage() {
-  const [form, setForm] = useState({ name: '', email: '', phone: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', legalNeed: '' })
   const [popia, setPopia] = useState(false)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -24,12 +24,13 @@ export default function SignupPage() {
           email: form.email,
           phone: form.phone,
           name: form.name,
+          legal_need: form.legalNeed,
           plan: 'general',
           source: 'signup',
         }),
       })
       const data = await res.json()
-      setMessage(data.message || 'You have been added to the waitlist!')
+      setMessage(data.message || 'Registration successful! We\'ll be in touch shortly.')
       setSubmitted(true)
     } catch {
       setMessage('Something went wrong. Please try again.')
@@ -64,9 +65,9 @@ export default function SignupPage() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">✅</span>
             </div>
-            <h2 className="text-2xl font-bold text-[#0f2b46] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>You&apos;re on the list!</h2>
+            <h2 className="text-2xl font-bold text-[#0f2b46] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>You&apos;re All Set!</h2>
             <p className="text-gray-600 text-sm mb-4">{message}</p>
-            <p className="text-xs text-gray-400 mb-6">We&apos;ll notify you as soon as premium plans launch after CIPC approval.</p>
+            <p className="text-xs text-gray-400 mb-6">Our team will review your details and reach out to you shortly.</p>
             <div className="flex gap-3 justify-center">
               <Link href="/intake" className="px-6 py-2.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] transition-colors text-sm">
                 Try Free AI Analysis →
@@ -84,7 +85,7 @@ export default function SignupPage() {
                 Free Tier • No Payment Required
               </div>
               <h1 className="text-3xl font-bold text-[#0f2b46]" style={{ fontFamily: "'Playfair Display', serif" }}>Join Infinity Legal</h1>
-              <p className="text-gray-500 text-sm mt-2">Get early access to our legal platform. Join the waitlist and try our free AI legal analysis today.</p>
+              <p className="text-gray-500 text-sm mt-2">Register to access our legal services. Get a free AI legal analysis and connect with a specialist.</p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
@@ -119,6 +120,27 @@ export default function SignupPage() {
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">What legal matter do you need help with?</label>
+                  <select
+                    value={form.legalNeed}
+                    onChange={e => setForm({...form, legalNeed: e.target.value})}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all text-gray-700"
+                  >
+                    <option value="">Select your legal matter...</option>
+                    <option value="CCMA">CCMA / Unfair Dismissal</option>
+                    <option value="Labour Dispute">Labour Dispute</option>
+                    <option value="Divorce">Divorce / Family</option>
+                    <option value="Eviction">Eviction / Housing</option>
+                    <option value="Criminal">Criminal Matter</option>
+                    <option value="Custody">Child Custody / Maintenance</option>
+                    <option value="Debt Review">Debt Review / Collections</option>
+                    <option value="Consumer">Consumer Complaint</option>
+                    <option value="Property">Property / Contract</option>
+                    <option value="General">General Legal Enquiry</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
 
                 {/* POPIA Consent */}
                 <div className="pt-2 border-t border-gray-100">
@@ -145,7 +167,7 @@ export default function SignupPage() {
                   disabled={loading || !popia}
                   className="w-full py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] disabled:opacity-50 transition-colors text-sm"
                 >
-                  {loading ? 'Joining...' : 'Join Waitlist — Free Access →'}
+                  {loading ? 'Registering...' : 'Register Now — Free Access →'}
                 </button>
               </form>
 
