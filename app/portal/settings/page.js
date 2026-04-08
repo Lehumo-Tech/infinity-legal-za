@@ -108,10 +108,7 @@ export default function SettingsPage() {
                 Free Tier Active
               </span>
             </div>
-            <p className="text-xs text-gray-500">You are currently on the free tier. Premium plans are pending CIPC registration and will be available soon.</p>
-            <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg">
-              <p className="text-xs text-amber-700 dark:text-amber-400">Premium features pending CIPC approval. <Link href="/pricing" className="font-bold underline">View plans</Link></p>
-            </div>
+            <p className="text-xs text-gray-500">You are currently on the free tier. <Link href="/pricing" className="text-infinity-gold font-bold hover:underline">Upgrade to a premium plan →</Link></p>
           </div>
         </div>
       )}

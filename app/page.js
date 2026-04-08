@@ -291,13 +291,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* ═══ CIPC DISCLAIMER BANNER ═══ */}
-      <div className="bg-amber-50 border-b border-amber-200">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-2 text-xs text-amber-800">
-          <span>⚠️</span>
-          <span>Infinity Legal (Pty) Ltd — CIPC Registration Pending | <strong>Free Tier Active</strong> — Premium plans launching soon</span>
-        </div>
-      </div>
 
       {/* Registration Modal */}
       <GetStartedModal isOpen={showRegister} onClose={() => setShowRegister(false)} selectedPlan={registerPlan} />
@@ -729,7 +722,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-white/10 text-center text-xs text-white/30">
-          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd — CIPC Registration Pending. All rights reserved. Unlimited legal support on all plans — subject to terms and conditions. <Link href="/privacy" className="text-[#c9a961] hover:underline">Privacy Policy</Link>
+          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved. Unlimited legal support on all plans — subject to terms and conditions. <Link href="/privacy" className="text-[#c9a961] hover:underline">Privacy Policy</Link>
         </div>
       </footer>
     </div>

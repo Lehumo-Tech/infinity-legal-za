@@ -71,15 +71,6 @@ export default function PortalDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* CIPC Pending Banner */}
-      <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl flex items-center gap-3">
-        <span className="text-lg">⚠️</span>
-        <div className="flex-1">
-          <p className="text-xs font-bold text-amber-800 dark:text-amber-400">Premium features pending CIPC approval</p>
-          <p className="text-[10px] text-amber-600 dark:text-amber-500">Infinity Legal (Pty) Ltd — CIPC registration in progress. Free tier features are fully available. Premium plans launching soon.</p>
-        </div>
-        <Link href="/pricing" className="shrink-0 text-[10px] font-bold text-amber-700 dark:text-amber-400 hover:underline">View Plans →</Link>
-      </div>
 
       {/* Welcome Header */}
       <div className="mb-6">

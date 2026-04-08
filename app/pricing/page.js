@@ -31,13 +31,6 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* CIPC Banner */}
-      <div className="bg-amber-50 border-b border-amber-200">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-2 text-xs text-amber-800">
-          <span>⚠️</span>
-          <span>Infinity Legal (Pty) Ltd — CIPC Registration Pending | <strong>Free Tier Active</strong> — Premium plans launching soon. <button onClick={() => { setRegisterPlan('general'); setShowRegister(true) }} className="underline font-bold">Register Now</button></span>
-        </div>
-      </div>
 
       {/* Registration Modal */}
       {showRegister && (
