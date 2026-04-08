@@ -55,18 +55,18 @@ function StepContact({ form }: { form: ReturnType<typeof useIntakeWizard>['form'
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="firstName">First Name *</Label>
-          <Input id="firstName" placeholder="Tidimalo" {...register('firstName')} className="mt-1" />
+          <Input id="firstName" placeholder="John" {...register('firstName')} className="mt-1" />
           <FieldError message={errors.firstName?.message} />
         </div>
         <div>
           <Label htmlFor="lastName">Last Name *</Label>
-          <Input id="lastName" placeholder="Tsatsi" {...register('lastName')} className="mt-1" />
+          <Input id="lastName" placeholder="Doe" {...register('lastName')} className="mt-1" />
           <FieldError message={errors.lastName?.message} />
         </div>
       </div>
       <div>
         <Label htmlFor="email">Email Address *</Label>
-        <Input id="email" type="email" placeholder="tidimalo@infinitylegal.co.za" {...register('email')} className="mt-1" />
+        <Input id="email" type="email" placeholder="john.doe@example.com" {...register('email')} className="mt-1" />
         <FieldError message={errors.email?.message} />
       </div>
       <div>

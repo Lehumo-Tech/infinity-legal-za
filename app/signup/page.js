@@ -94,7 +94,7 @@ export default function SignupPage() {
                   <input
                     value={form.name}
                     onChange={e => setForm({...form, name: e.target.value})}
-                    placeholder="e.g. Thabo Mbeki"
+                    placeholder="e.g. John Doe"
                     required
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all"
                   />
