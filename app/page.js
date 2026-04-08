@@ -4,6 +4,79 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { PLANS, PLAN_DISCLAIMER, CORE_BENEFITS } from '@/lib/demo-data'
 
+// ═══ WAITLIST MODAL COMPONENT ═══
+function WaitlistModal({ isOpen, onClose, selectedPlan }) {
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [name, setName] = useState('')
+  const [popia, setPopia] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!popia) return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, phone, name, plan: selectedPlan || 'general', source: 'homepage' }),
+      })
+      const data = await res.json()
+      setMessage(data.message)
+      setSubmitted(true)
+    } catch {
+      setMessage('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!isOpen) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl">×</button>
+        {submitted ? (
+          <div className="text-center py-6">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">✅</span>
+            </div>
+            <h3 className="text-xl font-bold text-[#0f2b46] mb-2">You&apos;re on the list!</h3>
+            <p className="text-gray-600 text-sm">{message}</p>
+            <button onClick={onClose} className="mt-4 px-6 py-2 bg-[#0f2b46] text-white rounded-lg hover:bg-[#1a3c5e] transition-colors">Done</button>
+          </div>
+        ) : (
+          <>
+            <div className="text-center mb-4">
+              <div className="w-12 h-12 bg-[#c9a961]/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-2xl">🚀</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#0f2b46]">Join the Waitlist</h3>
+              <p className="text-sm text-gray-500 mt-1">Be first to access premium legal plans when we launch.</p>
+              {selectedPlan && <span className="inline-block mt-1 text-xs bg-[#c9a961]/10 text-[#c9a961] px-2 py-0.5 rounded-full font-semibold">Interested in: {selectedPlan}</span>}
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
+              <input type="email" placeholder="Email Address *" required value={email} onChange={e => setEmail(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
+              <input type="tel" placeholder="Phone (optional)" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a961]/50" />
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" required checked={popia} onChange={e => setPopia(e.target.checked)} className="mt-1 rounded border-gray-300 text-[#c9a961] focus:ring-[#c9a961]" />
+                <span className="text-xs text-gray-500">I consent to the processing of my personal information per POPIA. <Link href="/privacy" className="text-[#c9a961] hover:underline">Privacy Policy</Link></span>
+              </label>
+              <button type="submit" disabled={loading || !popia} className="w-full py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] transition-colors disabled:opacity-50">
+                {loading ? 'Joining...' : 'Join Waitlist →'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 const TESTIMONIALS = [
   { name: 'Thabo M.', role: 'Labour Legal Plan Member', text: 'After being unfairly dismissed, Infinity Legal guided me through the CCMA process. I received 8 months compensation. Worth every cent of R99/month.', rating: 5, avatar: 'TM' },
   { name: 'Nomsa D.', role: 'Civil Legal Plan Member', text: 'My landlord tried to evict me illegally. One call to my Infinity Legal specialist and it was resolved within a week. Incredible service.', rating: 5, avatar: 'ND' },
@@ -179,6 +252,13 @@ function MockLeadsUI() {
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [showWaitlist, setShowWaitlist] = useState(false)
+  const [waitlistPlan, setWaitlistPlan] = useState('')
+
+  const openWaitlist = (plan = '') => {
+    setWaitlistPlan(plan)
+    setShowWaitlist(true)
+  }
 
   const nextSlide = useCallback(() => {
     setCurrentSlide(p => (p + 1) % CAROUSEL_SLIDES.length)
@@ -196,6 +276,22 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+      {/* ═══ CIPC DISCLAIMER BANNER ═══ */}
+      <div className="bg-amber-50 border-b border-amber-200">
+        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-2 text-xs text-amber-800">
+          <span>⚠️</span>
+          <span>Infinity Legal (Pty) Ltd — CIPC Registration Pending | <strong>Free Tier Active</strong> — Premium plans launching soon</span>
+        </div>
+      </div>
+
+      {/* Waitlist Modal */}
+      <WaitlistModal isOpen={showWaitlist} onClose={() => setShowWaitlist(false)} selectedPlan={waitlistPlan} />
+
+      {/* WhatsApp Floating Button */}
+      <a href="https://wa.me/27682011186?text=Hi%20Infinity%20Legal%2C%20I%20need%20legal%20assistance" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 transition-all hover:scale-110" title="Chat on WhatsApp">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+
       {/* ═══ NAV ═══ */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -243,9 +339,9 @@ export default function HomePage() {
                 <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-all shadow-lg shadow-[#c9a961]/20 text-lg">
                   Get Free Legal Analysis →
                 </Link>
-                <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
-                  View Plan Options
-                </Link>
+                <button onClick={() => openWaitlist()} className="px-8 py-3.5 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-lg">
+                  Join Waitlist 🚀
+                </button>
               </div>
               <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-8 text-white/50 text-sm">
                 <span>✓ Unlimited consultations</span>
@@ -492,9 +588,9 @@ export default function HomePage() {
                     ))}
                   </div>
                 )}
-                <Link href="/signup" className={`block text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
-                  Select This Plan
-                </Link>
+                <button onClick={() => openWaitlist(plan.name)} className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
+                  Join Waitlist — {plan.name}
+                </button>
               </div>
             ))}
           </div>
@@ -568,7 +664,7 @@ export default function HomePage() {
                 <p className="text-white/70 mb-6 text-lg">Join thousands of South Africans who trust Infinity Legal with their legal matters.</p>
                 <div className="flex flex-wrap gap-3">
                   <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors text-lg shadow-md">Get Free Legal Analysis</Link>
-                  <Link href="/pricing" className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">View Plan Options</Link>
+                  <button onClick={() => openWaitlist()} className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">Join Waitlist 🚀</button>
                 </div>
               </div>
               <div className="hidden md:block">
@@ -618,7 +714,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-white/10 text-center text-xs text-white/30">
-          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved. Unlimited legal support on all plans — subject to terms and conditions.
+          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd — CIPC Registration Pending. All rights reserved. Unlimited legal support on all plans — subject to terms and conditions. <Link href="/privacy" className="text-[#c9a961] hover:underline">Privacy Policy</Link>
         </div>
       </footer>
     </div>

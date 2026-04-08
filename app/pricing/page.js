@@ -1,11 +1,75 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { PLANS, PLAN_DISCLAIMER, CORE_BENEFITS } from '@/lib/demo-data'
 
 export default function PricingPage() {
+  const [showWaitlist, setShowWaitlist] = useState(false)
+  const [waitlistPlan, setWaitlistPlan] = useState('')
+  const [wlEmail, setWlEmail] = useState('')
+  const [wlName, setWlName] = useState('')
+  const [wlPopia, setWlPopia] = useState(false)
+  const [wlSubmitted, setWlSubmitted] = useState(false)
+  const [wlLoading, setWlLoading] = useState(false)
+  const [wlMsg, setWlMsg] = useState('')
+
+  const handleWaitlist = async (e) => {
+    e.preventDefault()
+    if (!wlPopia) return
+    setWlLoading(true)
+    try {
+      const res = await fetch('/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: wlEmail, name: wlName, plan: waitlistPlan, source: 'pricing' }) })
+      const data = await res.json()
+      setWlMsg(data.message)
+      setWlSubmitted(true)
+    } catch { setWlMsg('Something went wrong.') }
+    finally { setWlLoading(false) }
+  }
+
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+      {/* CIPC Banner */}
+      <div className="bg-amber-50 border-b border-amber-200">
+        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-2 text-xs text-amber-800">
+          <span>⚠️</span>
+          <span>CIPC Registration Pending | <strong>Free Tier Active</strong> — Premium plans launching soon. <button onClick={() => { setWaitlistPlan('general'); setShowWaitlist(true) }} className="underline font-bold">Join Waitlist</button></span>
+        </div>
+      </div>
+
+      {/* Waitlist Modal */}
+      {showWaitlist && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowWaitlist(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowWaitlist(false)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl">×</button>
+            {wlSubmitted ? (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><span className="text-3xl">✅</span></div>
+                <h3 className="text-xl font-bold text-[#0f2b46] mb-2">You&apos;re on the list!</h3>
+                <p className="text-gray-600 text-sm">{wlMsg}</p>
+                <button onClick={() => setShowWaitlist(false)} className="mt-4 px-6 py-2 bg-[#0f2b46] text-white rounded-lg">Done</button>
+              </div>
+            ) : (
+              <>
+                <div className="text-center mb-4">
+                  <h3 className="text-xl font-bold text-[#0f2b46]">Join the Waitlist</h3>
+                  <p className="text-sm text-gray-500 mt-1">Be first to access: <strong>{waitlistPlan}</strong></p>
+                </div>
+                <form onSubmit={handleWaitlist} className="space-y-3">
+                  <input type="text" placeholder="Full Name" value={wlName} onChange={e => setWlName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm" />
+                  <input type="email" placeholder="Email *" required value={wlEmail} onChange={e => setWlEmail(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm" />
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" required checked={wlPopia} onChange={e => setWlPopia(e.target.checked)} className="mt-1 rounded border-gray-300" />
+                    <span className="text-xs text-gray-500">I consent to processing per POPIA. <Link href="/privacy" className="text-[#c9a961] hover:underline">Privacy Policy</Link></span>
+                  </label>
+                  <button type="submit" disabled={wlLoading || !wlPopia} className="w-full py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-lg hover:bg-[#d4af37] disabled:opacity-50">{wlLoading ? 'Joining...' : 'Join Waitlist →'}</button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <nav className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
@@ -99,9 +163,9 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <Link href="/signup" className={`block text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
-                  Select This Plan
-                </Link>
+                <button onClick={() => { setWaitlistPlan(plan.name); setShowWaitlist(true) }} className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
+                  Join Waitlist — {plan.name}
+                </button>
               </div>
             </div>
           ))}

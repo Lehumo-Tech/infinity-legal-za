@@ -71,7 +71,7 @@ SELECT * FROM cases;
 
 Once the schema is created, test the platform:
 
-1. Go to: https://infinity-legal-sa-1.preview.emergentagent.com/pricing
+1. Go to: https://waitlist-legal-sa.preview.emergentagent.com/pricing
 2. Click on any paid plan (Starter, Family Protect, or Premium)
 3. Accept the terms
 4. Click "Pay with PayFast"

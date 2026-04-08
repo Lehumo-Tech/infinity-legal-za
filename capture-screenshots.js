@@ -7,7 +7,7 @@ const fs = require('fs');
   const page = await context.newPage();
   const dir = '/app/public/update-ss';
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const BASE = 'https://infinity-legal-sa-1.preview.emergentagent.com';
+  const BASE = 'https://waitlist-legal-sa.preview.emergentagent.com';
 
   async function snap(name, label) {
     await page.waitForTimeout(2000);

@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Infinity Legal Platform
-Testing all core API routes that have been rebuilt to use MongoDB instead of Supabase for data storage.
-All APIs require Bearer token authentication except public endpoints.
+Backend API Testing for Infinity Legal Platform - Pre-Launch MVP Endpoints
+Testing the three NEW endpoints: /api/analyze, /api/waitlist, /api/user/export
 """
 
 import requests
 import json
 import time
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # Configuration
-BASE_URL = "https://infinity-legal-sa-1.preview.emergentagent.com"
+BASE_URL = "https://waitlist-legal-sa.preview.emergentagent.com"
 SUPABASE_URL = "https://qgjqrrxwcsggtjznjjqk.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnanFycnh3Y3NnZ3Rqem5qanFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODU0NTksImV4cCI6MjA4OTc2MTQ1OX0.C8YSkrSSbx8LtcgaaFS5mhMU3Tvr0IMk7byurQEqUgw"
 
@@ -20,698 +19,436 @@ SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 TEST_EMAIL = "tsatsi@infinitylegal.org"
 TEST_PASSWORD = "Infinity2026!"
 
-class TestResults:
-    def __init__(self):
-        self.passed = 0
-        self.failed = 0
-        self.results = []
-    
-    def add_result(self, test_name, passed, details=""):
-        self.results.append({
-            "test": test_name,
-            "passed": passed,
-            "details": details,
-            "timestamp": datetime.now().isoformat()
-        })
-        if passed:
-            self.passed += 1
-            print(f"✅ {test_name}: PASSED - {details}")
-        else:
-            self.failed += 1
-            print(f"❌ {test_name}: FAILED - {details}")
-    
-    def summary(self):
-        total = self.passed + self.failed
-        success_rate = (self.passed / total * 100) if total > 0 else 0
-        print(f"\n{'='*60}")
-        print(f"TEST SUMMARY: {self.passed}/{total} tests passed ({success_rate:.1f}%)")
-        print(f"{'='*60}")
-        return self.passed, self.failed, success_rate
-
-def login_to_supabase():
-    """Login to Supabase and get access token"""
+def get_auth_token():
+    """Get authentication token from Supabase"""
     try:
-        print(f"🔐 Logging in to Supabase as {TEST_EMAIL}...")
-        
-        login_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
+        auth_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
+        auth_data = {
+            "email": TEST_EMAIL,
+            "password": TEST_PASSWORD
+        }
         headers = {
             "apikey": SUPABASE_ANON_KEY,
             "Content-Type": "application/json"
         }
-        data = {
-            "email": TEST_EMAIL,
-            "password": TEST_PASSWORD
-        }
         
-        response = requests.post(login_url, headers=headers, json=data)
-        
+        response = requests.post(auth_url, json=auth_data, headers=headers)
         if response.status_code == 200:
-            token_data = response.json()
-            access_token = token_data.get("access_token")
-            print(f"✅ Login successful, token obtained")
-            return access_token
+            data = response.json()
+            return data.get("access_token")
         else:
-            print(f"❌ Login failed: {response.status_code} - {response.text}")
+            print(f"❌ Auth failed: {response.status_code} - {response.text}")
             return None
-            
     except Exception as e:
-        print(f"❌ Login error: {str(e)}")
+        print(f"❌ Auth error: {e}")
         return None
 
-def test_without_auth(results, endpoint, method="GET"):
-    """Test that endpoints require authentication"""
-    try:
-        url = f"{BASE_URL}{endpoint}"
-        if method == "GET":
-            response = requests.get(url)
-        elif method == "POST":
-            response = requests.post(url, json={})
-        elif method == "PUT":
-            response = requests.put(url, json={})
-        
-        if response.status_code == 401:
-            results.add_result(f"Auth Required - {method} {endpoint}", True, "Correctly returns 401 without auth")
-        else:
-            results.add_result(f"Auth Required - {method} {endpoint}", False, f"Expected 401, got {response.status_code}")
-    except Exception as e:
-        results.add_result(f"Auth Required - {method} {endpoint}", False, f"Exception: {str(e)}")
-
-def test_cases_crud(token, results):
-    """Test Cases CRUD operations"""
-    if not token:
-        results.add_result("Cases CRUD", False, "No auth token available")
-        return None
+def test_analyze_api():
+    """Test POST /api/analyze endpoint - Free-tier mock AI legal analysis"""
+    print("\n🔍 Testing POST /api/analyze (Free-tier AI Analysis)")
+    print("=" * 60)
     
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    case_id = None
-    
-    try:
-        # Test GET /api/cases (List all cases)
-        response = requests.get(f"{BASE_URL}/api/cases", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            cases = data.get("cases", [])
-            results.add_result("Cases GET", True, f"Retrieved {len(cases)} cases")
-        else:
-            results.add_result("Cases GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/cases (Create case)
-        case_data = {
-            "title": "Test Legal Matter - Contract Dispute",
-            "case_type": "commercial",
-            "description": "Testing case creation with MongoDB backend",
-            "urgency": "high",
-            "client_name": "Test Client Corp"
+    test_cases = [
+        {
+            "name": "Labour law case",
+            "data": {
+                "description": "I was unfairly dismissed from my job without notice",
+                "category": "labour"
+            },
+            "expected_legal_area": "Labour Law",
+            "expected_urgency": "high"
+        },
+        {
+            "name": "Criminal law case", 
+            "data": {
+                "description": "I was arrested for something I did not do",
+                "category": "criminal"
+            },
+            "expected_legal_area": "Criminal Law",
+            "expected_urgency": "emergency"
+        },
+        {
+            "name": "Property law case with location",
+            "data": {
+                "description": "My landlord is trying to evict me illegally",
+                "category": "property",
+                "location": "Johannesburg"
+            },
+            "expected_legal_area": "Property Law"
+        },
+        {
+            "name": "General case (default)",
+            "data": {
+                "description": "I need help with a legal matter in South Africa"
+            },
+            "expected_legal_area": "Civil Law"
+        },
+        {
+            "name": "Validation error - too short",
+            "data": {
+                "description": "short"
+            },
+            "expect_error": True,
+            "expected_status": 400
+        },
+        {
+            "name": "Validation error - empty body",
+            "data": {},
+            "expect_error": True,
+            "expected_status": 400
         }
-        response = requests.post(f"{BASE_URL}/api/cases", headers=headers, json=case_data)
-        if response.status_code == 201:
-            data = response.json()
-            case = data.get("case", {})
-            case_id = case.get("id")
-            case_number = case.get("case_number", "")
-            if case_id and case_number.startswith("IL-"):
-                results.add_result("Cases POST", True, f"Created case {case_number} with ID {case_id}")
-            else:
-                results.add_result("Cases POST", False, f"Missing case ID or invalid case number format")
-        else:
-            results.add_result("Cases POST", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test PUT /api/cases (Update case)
-        if case_id:
-            update_data = {
-                "id": case_id,
-                "status": "active",
-                "description": "Updated description for testing"
-            }
-            response = requests.put(f"{BASE_URL}/api/cases", headers=headers, json=update_data)
-            if response.status_code == 200:
-                data = response.json()
-                updated_case = data.get("case", {})
-                if updated_case.get("status") == "active":
-                    results.add_result("Cases PUT", True, f"Updated case status to active")
-                else:
-                    results.add_result("Cases PUT", False, f"Status not updated correctly")
-            else:
-                results.add_result("Cases PUT", False, f"Status {response.status_code}: {response.text}")
-        
-    except Exception as e:
-        results.add_result("Cases CRUD", False, f"Exception: {str(e)}")
-    
-    return case_id
-
-def test_case_timeline(token, case_id, results):
-    """Test Case Timeline API"""
-    if not token or not case_id:
-        results.add_result("Case Timeline", False, "No auth token or case ID available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}"}
-    
-    try:
-        response = requests.get(f"{BASE_URL}/api/cases/{case_id}/timeline", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            entries = data.get("entries", [])
-            results.add_result("Case Timeline GET", True, f"Retrieved {len(entries)} timeline entries")
-        else:
-            results.add_result("Case Timeline GET", False, f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        results.add_result("Case Timeline GET", False, f"Exception: {str(e)}")
-
-def test_case_notes(token, case_id, results):
-    """Test Case Notes API"""
-    if not token or not case_id:
-        results.add_result("Case Notes", False, "No auth token or case ID available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/cases/{caseId}/notes
-        response = requests.get(f"{BASE_URL}/api/cases/{case_id}/notes", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            notes = data.get("notes", [])
-            results.add_result("Case Notes GET", True, f"Retrieved {len(notes)} notes")
-        else:
-            results.add_result("Case Notes GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/cases/{caseId}/notes
-        note_data = {
-            "content": "This is a test note for the case",
-            "category": "general"
-        }
-        response = requests.post(f"{BASE_URL}/api/cases/{case_id}/notes", headers=headers, json=note_data)
-        if response.status_code == 201:
-            data = response.json()
-            note = data.get("note", {})
-            if note.get("content") == note_data["content"]:
-                results.add_result("Case Notes POST", True, f"Created note with ID {note.get('id')}")
-            else:
-                results.add_result("Case Notes POST", False, f"Note content mismatch")
-        else:
-            results.add_result("Case Notes POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Case Notes", False, f"Exception: {str(e)}")
-
-def test_case_tasks(token, case_id, results):
-    """Test Case Tasks API"""
-    if not token or not case_id:
-        results.add_result("Case Tasks", False, "No auth token or case ID available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    task_id = None
-    
-    try:
-        # Test GET /api/cases/{caseId}/tasks
-        response = requests.get(f"{BASE_URL}/api/cases/{case_id}/tasks", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            tasks = data.get("tasks", [])
-            results.add_result("Case Tasks GET", True, f"Retrieved {len(tasks)} tasks")
-        else:
-            results.add_result("Case Tasks GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/cases/{caseId}/tasks
-        task_data = {
-            "title": "Review contract documents",
-            "priority": "high",
-            "dueDate": (datetime.now() + timedelta(days=7)).isoformat()
-        }
-        response = requests.post(f"{BASE_URL}/api/cases/{case_id}/tasks", headers=headers, json=task_data)
-        if response.status_code == 201:
-            data = response.json()
-            task = data.get("task", {})
-            task_id = task.get("id")
-            if task.get("title") == task_data["title"]:
-                results.add_result("Case Tasks POST", True, f"Created task with ID {task_id}")
-            else:
-                results.add_result("Case Tasks POST", False, f"Task title mismatch")
-        else:
-            results.add_result("Case Tasks POST", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test PUT /api/cases/{caseId}/tasks (Update task)
-        if task_id:
-            update_data = {
-                "taskId": task_id,
-                "status": "completed"
-            }
-            response = requests.put(f"{BASE_URL}/api/cases/{case_id}/tasks", headers=headers, json=update_data)
-            if response.status_code == 200:
-                results.add_result("Case Tasks PUT", True, f"Updated task status to completed")
-            else:
-                results.add_result("Case Tasks PUT", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Case Tasks", False, f"Exception: {str(e)}")
-
-def test_case_messages(token, case_id, results):
-    """Test Case Messages API"""
-    if not token or not case_id:
-        results.add_result("Case Messages", False, "No auth token or case ID available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/cases/{caseId}/messages
-        response = requests.get(f"{BASE_URL}/api/cases/{case_id}/messages", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            messages = data.get("messages", [])
-            results.add_result("Case Messages GET", True, f"Retrieved {len(messages)} messages")
-        else:
-            results.add_result("Case Messages GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/cases/{caseId}/messages
-        message_data = {
-            "content": "This is a test message for the case",
-            "isInternal": True
-        }
-        response = requests.post(f"{BASE_URL}/api/cases/{case_id}/messages", headers=headers, json=message_data)
-        if response.status_code == 201:
-            data = response.json()
-            message = data.get("message", {})
-            if message.get("content") == message_data["content"]:
-                results.add_result("Case Messages POST", True, f"Created message with ID {message.get('id')}")
-            else:
-                results.add_result("Case Messages POST", False, f"Message content mismatch")
-        else:
-            results.add_result("Case Messages POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Case Messages", False, f"Exception: {str(e)}")
-
-def test_case_metadata(token, case_id, results):
-    """Test Case Metadata API"""
-    if not token or not case_id:
-        results.add_result("Case Metadata", False, "No auth token or case ID available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/cases/{caseId}/metadata
-        response = requests.get(f"{BASE_URL}/api/cases/{case_id}/metadata", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            metadata = data.get("metadata", {})
-            results.add_result("Case Metadata GET", True, f"Retrieved metadata")
-        else:
-            results.add_result("Case Metadata GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/cases/{caseId}/metadata
-        metadata_data = {
-            "jurisdiction": "Gauteng High Court",
-            "opposing_counsel": "Smith & Associates",
-            "case_value": 500000
-        }
-        response = requests.post(f"{BASE_URL}/api/cases/{case_id}/metadata", headers=headers, json=metadata_data)
-        if response.status_code == 200:
-            results.add_result("Case Metadata POST", True, f"Saved metadata successfully")
-        else:
-            results.add_result("Case Metadata POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Case Metadata", False, f"Exception: {str(e)}")
-
-def test_dashboard_stats(token, results):
-    """Test Dashboard Stats API"""
-    if not token:
-        results.add_result("Dashboard Stats", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}"}
-    
-    try:
-        response = requests.get(f"{BASE_URL}/api/dashboard/stats", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            stats = data.get("stats", {})
-            recent_cases = data.get("recentCases", [])
-            required_fields = ["totalCases", "activeCases", "pendingTasks"]
-            
-            if all(field in stats for field in required_fields):
-                results.add_result("Dashboard Stats", True, f"Retrieved stats: {stats['totalCases']} total cases, {stats['activeCases']} active, {len(recent_cases)} recent")
-            else:
-                results.add_result("Dashboard Stats", False, f"Missing required fields in stats")
-        else:
-            results.add_result("Dashboard Stats", False, f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        results.add_result("Dashboard Stats", False, f"Exception: {str(e)}")
-
-def test_clients_crud(token, results):
-    """Test Clients CRUD operations"""
-    if not token:
-        results.add_result("Clients CRUD", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/clients
-        response = requests.get(f"{BASE_URL}/api/clients", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            clients = data.get("clients", [])
-            results.add_result("Clients GET", True, f"Retrieved {len(clients)} clients")
-        else:
-            results.add_result("Clients GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/clients
-        client_data = {
-            "name": "Test Client Corporation",
-            "email": "testclient@example.co.za",
-            "phone": "+27821234567"
-        }
-        response = requests.post(f"{BASE_URL}/api/clients", headers=headers, json=client_data)
-        if response.status_code == 201:
-            data = response.json()
-            client = data.get("client", {})
-            if client.get("name") == client_data["name"]:
-                results.add_result("Clients POST", True, f"Created client with ID {client.get('id')}")
-            else:
-                results.add_result("Clients POST", False, f"Client name mismatch")
-        else:
-            results.add_result("Clients POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Clients CRUD", False, f"Exception: {str(e)}")
-
-def test_leads_crud(token, results):
-    """Test Leads CRUD operations"""
-    if not token:
-        results.add_result("Leads CRUD", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/leads
-        response = requests.get(f"{BASE_URL}/api/leads", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            leads = data.get("leads", [])
-            results.add_result("Leads GET", True, f"Retrieved {len(leads)} leads")
-        else:
-            results.add_result("Leads GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/leads
-        lead_data = {
-            "name": "Test Lead Person",
-            "email": "testlead@example.co.za",
-            "phone": "+27821234567",
-            "source": "website",
-            "category": "commercial"
-        }
-        response = requests.post(f"{BASE_URL}/api/leads", headers=headers, json=lead_data)
-        if response.status_code == 201:
-            data = response.json()
-            lead = data.get("lead", {})
-            if lead.get("name") == lead_data["name"]:
-                results.add_result("Leads POST", True, f"Created lead with ID {lead.get('id')}")
-            else:
-                results.add_result("Leads POST", False, f"Lead name mismatch")
-        else:
-            results.add_result("Leads POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Leads CRUD", False, f"Exception: {str(e)}")
-
-def test_documents_crud(token, results):
-    """Test Documents CRUD operations"""
-    if not token:
-        results.add_result("Documents CRUD", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/documents
-        response = requests.get(f"{BASE_URL}/api/documents", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            documents = data.get("documents", [])
-            results.add_result("Documents GET", True, f"Retrieved {len(documents)} documents")
-        else:
-            results.add_result("Documents GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/documents
-        doc_data = {
-            "title": "Test Contract Document",
-            "type": "contract",
-            "content": "This is a test document content for testing purposes"
-        }
-        response = requests.post(f"{BASE_URL}/api/documents", headers=headers, json=doc_data)
-        if response.status_code == 201:
-            data = response.json()
-            document = data.get("document", {})
-            if document.get("title") == doc_data["title"]:
-                results.add_result("Documents POST", True, f"Created document with ID {document.get('id')}")
-            else:
-                results.add_result("Documents POST", False, f"Document title mismatch")
-        else:
-            results.add_result("Documents POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Documents CRUD", False, f"Exception: {str(e)}")
-
-def test_tasks_crud(token, results):
-    """Test Tasks CRUD operations"""
-    if not token:
-        results.add_result("Tasks CRUD", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/tasks
-        response = requests.get(f"{BASE_URL}/api/tasks", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            tasks = data.get("tasks", [])
-            results.add_result("Tasks GET", True, f"Retrieved {len(tasks)} tasks")
-        else:
-            results.add_result("Tasks GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/tasks
-        task_data = {
-            "title": "Review legal documents",
-            "priority": "high"
-        }
-        response = requests.post(f"{BASE_URL}/api/tasks", headers=headers, json=task_data)
-        if response.status_code == 201:
-            data = response.json()
-            task = data.get("task", {})
-            if task.get("title") == task_data["title"]:
-                results.add_result("Tasks POST", True, f"Created task with ID {task.get('id')}")
-            else:
-                results.add_result("Tasks POST", False, f"Task title mismatch")
-        else:
-            results.add_result("Tasks POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Tasks CRUD", False, f"Exception: {str(e)}")
-
-def test_intakes_api(token, results):
-    """Test Intakes API"""
-    if not token:
-        results.add_result("Intakes API", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}"}
-    
-    try:
-        response = requests.get(f"{BASE_URL}/api/intakes", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            intakes = data.get("intakes", [])
-            results.add_result("Intakes GET", True, f"Retrieved {len(intakes)} intakes")
-        else:
-            results.add_result("Intakes GET", False, f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        results.add_result("Intakes API", False, f"Exception: {str(e)}")
-
-def test_notifications_api(token, results):
-    """Test Notifications API"""
-    if not token:
-        results.add_result("Notifications API", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/notifications
-        response = requests.get(f"{BASE_URL}/api/notifications", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            notifications = data.get("notifications", [])
-            unread_count = data.get("unreadCount", 0)
-            results.add_result("Notifications GET", True, f"Retrieved {len(notifications)} notifications, {unread_count} unread")
-        else:
-            results.add_result("Notifications GET", False, f"Status {response.status_code}: {response.text}")
-    except Exception as e:
-        results.add_result("Notifications API", False, f"Exception: {str(e)}")
-
-def test_calendar_api(token, results):
-    """Test Calendar API"""
-    if not token:
-        results.add_result("Calendar API", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/calendar
-        response = requests.get(f"{BASE_URL}/api/calendar", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            events = data.get("events", [])
-            results.add_result("Calendar GET", True, f"Retrieved {len(events)} calendar events")
-        else:
-            results.add_result("Calendar GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/calendar
-        event_data = {
-            "title": "Test Meeting",
-            "date": (datetime.now() + timedelta(days=1)).isoformat().split('T')[0],
-            "type": "meeting"
-        }
-        response = requests.post(f"{BASE_URL}/api/calendar", headers=headers, json=event_data)
-        if response.status_code == 201:
-            data = response.json()
-            event = data.get("event", {})
-            if event.get("title") == event_data["title"]:
-                results.add_result("Calendar POST", True, f"Created event with ID {event.get('id')}")
-            else:
-                results.add_result("Calendar POST", False, f"Event title mismatch")
-        else:
-            results.add_result("Calendar POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Calendar API", False, f"Exception: {str(e)}")
-
-def test_messages_api(token, results):
-    """Test Messages API"""
-    if not token:
-        results.add_result("Messages API", False, "No auth token available")
-        return
-    
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    
-    try:
-        # Test GET /api/messages
-        response = requests.get(f"{BASE_URL}/api/messages", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            messages = data.get("messages", [])
-            results.add_result("Messages GET", True, f"Retrieved {len(messages)} messages")
-        else:
-            results.add_result("Messages GET", False, f"Status {response.status_code}: {response.text}")
-        
-        # Test POST /api/messages
-        message_data = {
-            "content": "This is a test message",
-            "recipientId": "test_recipient"
-        }
-        response = requests.post(f"{BASE_URL}/api/messages", headers=headers, json=message_data)
-        if response.status_code == 201:
-            data = response.json()
-            message = data.get("message", {})
-            if message.get("content") == message_data["content"]:
-                results.add_result("Messages POST", True, f"Created message with ID {message.get('id')}")
-            else:
-                results.add_result("Messages POST", False, f"Message content mismatch")
-        else:
-            results.add_result("Messages POST", False, f"Status {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        results.add_result("Messages API", False, f"Exception: {str(e)}")
-
-def main():
-    """Main test execution"""
-    print("🚀 Starting Comprehensive Backend Testing for Infinity Legal Platform")
-    print(f"Base URL: {BASE_URL}")
-    print(f"Test User: {TEST_EMAIL}")
-    print(f"Testing all core API routes that have been rebuilt to use MongoDB")
-    
-    results = TestResults()
-    
-    # Step 1: Test authentication endpoints without auth (should return 401)
-    print(f"\n{'='*60}")
-    print("TESTING AUTHENTICATION REQUIREMENTS")
-    print(f"{'='*60}")
-    
-    auth_required_endpoints = [
-        "/api/cases", "/api/tasks", "/api/clients", "/api/leads", "/api/documents",
-        "/api/dashboard/stats", "/api/intakes", "/api/notifications", "/api/calendar", "/api/messages"
     ]
     
-    for endpoint in auth_required_endpoints:
-        test_without_auth(results, endpoint, "GET")
-        test_without_auth(results, endpoint, "POST")
+    passed = 0
+    total = len(test_cases)
     
-    # Step 2: Login and get token
-    print(f"\n{'='*60}")
-    print("AUTHENTICATION")
-    print(f"{'='*60}")
+    for i, test_case in enumerate(test_cases, 1):
+        try:
+            print(f"\n{i}. {test_case['name']}")
+            
+            response = requests.post(
+                f"{BASE_URL}/api/analyze",
+                json=test_case['data'],
+                headers={"Content-Type": "application/json"}
+            )
+            
+            print(f"   Status: {response.status_code}")
+            
+            if test_case.get('expect_error'):
+                if response.status_code == test_case['expected_status']:
+                    print(f"   ✅ Expected error status {test_case['expected_status']} received")
+                    passed += 1
+                else:
+                    print(f"   ❌ Expected status {test_case['expected_status']}, got {response.status_code}")
+            else:
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Check response structure
+                    required_fields = ['success', 'analysis', 'disclaimer', 'freeTier']
+                    analysis_fields = ['legalArea', 'category', 'urgency', 'summary', 'relevantLegislation', 'nextSteps', 'suggestedPlan', 'estimatedTimeline', 'confidenceScore']
+                    
+                    structure_ok = True
+                    for field in required_fields:
+                        if field not in data:
+                            print(f"   ❌ Missing field: {field}")
+                            structure_ok = False
+                    
+                    if 'analysis' in data:
+                        for field in analysis_fields:
+                            if field not in data['analysis']:
+                                print(f"   ❌ Missing analysis field: {field}")
+                                structure_ok = False
+                    
+                    if structure_ok:
+                        print(f"   ✅ Response structure correct")
+                        
+                        # Check specific expectations
+                        if 'expected_legal_area' in test_case:
+                            if data['analysis']['legalArea'] == test_case['expected_legal_area']:
+                                print(f"   ✅ Legal area: {data['analysis']['legalArea']}")
+                            else:
+                                print(f"   ❌ Expected legal area: {test_case['expected_legal_area']}, got: {data['analysis']['legalArea']}")
+                                structure_ok = False
+                        
+                        if 'expected_urgency' in test_case:
+                            if data['analysis']['urgency'] == test_case['expected_urgency']:
+                                print(f"   ✅ Urgency: {data['analysis']['urgency']}")
+                            else:
+                                print(f"   ❌ Expected urgency: {test_case['expected_urgency']}, got: {data['analysis']['urgency']}")
+                                structure_ok = False
+                        
+                        # Check freeTier flag
+                        if data.get('freeTier') == True:
+                            print(f"   ✅ Free tier flag set correctly")
+                        else:
+                            print(f"   ❌ Free tier flag not set correctly")
+                            structure_ok = False
+                        
+                        if structure_ok:
+                            passed += 1
+                    
+                else:
+                    print(f"   ❌ Expected 200, got {response.status_code}")
+                    print(f"   Response: {response.text}")
+                    
+        except Exception as e:
+            print(f"   ❌ Test error: {e}")
     
-    token = login_to_supabase()
-    if not token:
-        results.add_result("Authentication", False, "Could not obtain auth token")
-        print("❌ Cannot proceed with authenticated tests without token")
-        results.summary()
-        return False
+    print(f"\n📊 Analyze API Results: {passed}/{total} tests passed")
+    return passed == total
+
+def test_waitlist_api():
+    """Test POST /api/waitlist and GET /api/waitlist endpoints"""
+    print("\n📝 Testing Waitlist API")
+    print("=" * 60)
     
-    # Step 3: Test all core API endpoints with authentication
-    print(f"\n{'='*60}")
-    print("TESTING CORE API ENDPOINTS WITH AUTHENTICATION")
-    print(f"{'='*60}")
+    passed = 0
+    total = 5
     
-    # Test Cases CRUD (most important)
-    case_id = test_cases_crud(token, results)
+    # Test 1: Create new waitlist entry
+    try:
+        print("\n1. Create new waitlist entry")
+        unique_email = f"test_{int(time.time())}@example.com"
+        
+        response = requests.post(
+            f"{BASE_URL}/api/waitlist",
+            json={
+                "email": unique_email,
+                "name": "Test User",
+                "phone": "+27821234567",
+                "plan": "Labour Legal Plan",
+                "source": "pricing"
+            },
+            headers={"Content-Type": "application/json"}
+        )
+        
+        print(f"   Status: {response.status_code}")
+        
+        if response.status_code == 201:
+            data = response.json()
+            if 'message' in data and 'entry' in data:
+                print(f"   ✅ Waitlist entry created successfully")
+                print(f"   Message: {data['message']}")
+                passed += 1
+            else:
+                print(f"   ❌ Missing required fields in response")
+        else:
+            print(f"   ❌ Expected 201, got {response.status_code}")
+            print(f"   Response: {response.text}")
+            
+    except Exception as e:
+        print(f"   ❌ Test error: {e}")
     
-    # Test case-related endpoints if we have a case ID
-    if case_id:
-        test_case_timeline(token, case_id, results)
-        test_case_notes(token, case_id, results)
-        test_case_tasks(token, case_id, results)
-        test_case_messages(token, case_id, results)
-        test_case_metadata(token, case_id, results)
+    # Test 2: Duplicate email
+    try:
+        print("\n2. Duplicate email test")
+        
+        response = requests.post(
+            f"{BASE_URL}/api/waitlist",
+            json={
+                "email": unique_email,
+                "name": "Test User 2",
+                "phone": "+27821234568"
+            },
+            headers={"Content-Type": "application/json"}
+        )
+        
+        print(f"   Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('alreadyJoined') == True:
+                print(f"   ✅ Duplicate email handled correctly")
+                print(f"   Message: {data['message']}")
+                passed += 1
+            else:
+                print(f"   ❌ alreadyJoined flag not set correctly")
+        else:
+            print(f"   ❌ Expected 200, got {response.status_code}")
+            
+    except Exception as e:
+        print(f"   ❌ Test error: {e}")
     
-    # Test other core endpoints
-    test_dashboard_stats(token, results)
-    test_clients_crud(token, results)
-    test_leads_crud(token, results)
-    test_documents_crud(token, results)
-    test_tasks_crud(token, results)
-    test_intakes_api(token, results)
-    test_notifications_api(token, results)
-    test_calendar_api(token, results)
-    test_messages_api(token, results)
+    # Test 3: Missing email and phone
+    try:
+        print("\n3. Missing email and phone validation")
+        
+        response = requests.post(
+            f"{BASE_URL}/api/waitlist",
+            json={
+                "name": "Test User"
+            },
+            headers={"Content-Type": "application/json"}
+        )
+        
+        print(f"   Status: {response.status_code}")
+        
+        if response.status_code == 400:
+            print(f"   ✅ Validation error returned correctly")
+            passed += 1
+        else:
+            print(f"   ❌ Expected 400, got {response.status_code}")
+            
+    except Exception as e:
+        print(f"   ❌ Test error: {e}")
     
-    # Final Summary
-    passed, failed, success_rate = results.summary()
+    # Test 4: Phone only (no email)
+    try:
+        print("\n4. Phone only entry")
+        
+        response = requests.post(
+            f"{BASE_URL}/api/waitlist",
+            json={
+                "phone": "+27821234569",
+                "name": "Phone Only User"
+            },
+            headers={"Content-Type": "application/json"}
+        )
+        
+        print(f"   Status: {response.status_code}")
+        
+        if response.status_code == 201:
+            print(f"   ✅ Phone-only entry created successfully")
+            passed += 1
+        else:
+            print(f"   ❌ Expected 201, got {response.status_code}")
+            
+    except Exception as e:
+        print(f"   ❌ Test error: {e}")
     
-    # Detailed results
-    print(f"\n{'='*60}")
-    print("DETAILED TEST RESULTS")
-    print(f"{'='*60}")
-    for result in results.results:
-        status = "✅ PASS" if result["passed"] else "❌ FAIL"
-        print(f"{status}: {result['test']} - {result['details']}")
+    # Test 5: GET waitlist count
+    try:
+        print("\n5. GET waitlist count and recent entries")
+        
+        response = requests.get(f"{BASE_URL}/api/waitlist")
+        
+        print(f"   Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            if 'count' in data and 'recent' in data:
+                print(f"   ✅ Waitlist data retrieved successfully")
+                print(f"   Count: {data['count']}")
+                print(f"   Recent entries: {len(data['recent'])}")
+                passed += 1
+            else:
+                print(f"   ❌ Missing required fields in response")
+        else:
+            print(f"   ❌ Expected 200, got {response.status_code}")
+            
+    except Exception as e:
+        print(f"   ❌ Test error: {e}")
     
-    print(f"\n🎯 TESTING COMPLETED")
-    print(f"📊 Success Rate: {success_rate:.1f}% ({passed}/{passed + failed})")
+    print(f"\n📊 Waitlist API Results: {passed}/{total} tests passed")
+    return passed == total
+
+def test_user_export_api():
+    """Test GET /api/user/export endpoint - POPIA data export"""
+    print("\n📤 Testing GET /api/user/export (POPIA Data Export)")
+    print("=" * 60)
     
-    if failed == 0:
-        print("🎉 ALL TESTS PASSED! All core API routes are working correctly with MongoDB backend.")
+    passed = 0
+    total = 2
+    
+    # Test 1: Without authentication
+    try:
+        print("\n1. Without authentication")
+        
+        response = requests.get(f"{BASE_URL}/api/user/export")
+        
+        print(f"   Status: {response.status_code}")
+        
+        if response.status_code == 401:
+            print(f"   ✅ Unauthorized access correctly blocked")
+            passed += 1
+        else:
+            print(f"   ❌ Expected 401, got {response.status_code}")
+            
+    except Exception as e:
+        print(f"   ❌ Test error: {e}")
+    
+    # Test 2: With authentication
+    try:
+        print("\n2. With authentication")
+        
+        token = get_auth_token()
+        if not token:
+            print(f"   ❌ Could not get auth token")
+            return False
+        
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.get(f"{BASE_URL}/api/user/export", headers=headers)
+        
+        print(f"   Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Check response structure
+            required_fields = ['exportDate', 'user', 'data', 'summary', 'notice']
+            data_sections = ['cases', 'tasks', 'notes', 'messages', 'leads', 'documents', 'intakes']
+            summary_fields = ['totalCases', 'totalTasks', 'totalNotes', 'totalMessages', 'totalLeads', 'totalDocuments', 'totalIntakes']
+            
+            structure_ok = True
+            
+            for field in required_fields:
+                if field not in data:
+                    print(f"   ❌ Missing field: {field}")
+                    structure_ok = False
+            
+            if 'data' in data:
+                for section in data_sections:
+                    if section not in data['data']:
+                        print(f"   ❌ Missing data section: {section}")
+                        structure_ok = False
+            
+            if 'summary' in data:
+                for field in summary_fields:
+                    if field not in data['summary']:
+                        print(f"   ❌ Missing summary field: {field}")
+                        structure_ok = False
+            
+            if structure_ok:
+                print(f"   ✅ Response structure correct")
+                print(f"   Export date: {data['exportDate']}")
+                print(f"   User ID: {data['user']['id']}")
+                print(f"   Total cases: {data['summary']['totalCases']}")
+                print(f"   Total tasks: {data['summary']['totalTasks']}")
+                print(f"   POPIA notice: {data['notice'][:50]}...")
+                passed += 1
+            
+        else:
+            print(f"   ❌ Expected 200, got {response.status_code}")
+            print(f"   Response: {response.text}")
+            
+    except Exception as e:
+        print(f"   ❌ Test error: {e}")
+    
+    print(f"\n📊 User Export API Results: {passed}/{total} tests passed")
+    return passed == total
+
+def main():
+    """Run all tests"""
+    print("🚀 Starting Pre-Launch MVP API Testing")
+    print("=" * 80)
+    print(f"Base URL: {BASE_URL}")
+    print(f"Test Email: {TEST_EMAIL}")
+    print(f"Timestamp: {datetime.now().isoformat()}")
+    
+    results = []
+    
+    # Test all three NEW endpoints
+    results.append(("Analyze API", test_analyze_api()))
+    results.append(("Waitlist API", test_waitlist_api()))
+    results.append(("User Export API", test_user_export_api()))
+    
+    # Summary
+    print("\n" + "=" * 80)
+    print("🏁 FINAL RESULTS")
+    print("=" * 80)
+    
+    total_passed = 0
+    total_tests = len(results)
+    
+    for test_name, passed in results:
+        status = "✅ PASS" if passed else "❌ FAIL"
+        print(f"{test_name}: {status}")
+        if passed:
+            total_passed += 1
+    
+    print(f"\nOverall: {total_passed}/{total_tests} test suites passed")
+    
+    if total_passed == total_tests:
+        print("🎉 ALL TESTS PASSED - Pre-Launch MVP APIs are working correctly!")
+        return True
     else:
-        print(f"⚠️  {failed} test(s) failed. Please review the issues above.")
-    
-    return failed == 0
+        print("⚠️  Some tests failed - see details above")
+        return False
 
 if __name__ == "__main__":
     success = main()

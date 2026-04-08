@@ -1,179 +1,206 @@
-export default function PrivacyPolicyPage() {
-  return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
-        
-        <div className="prose prose-slate max-w-none">
-          <p className="text-muted-foreground mb-6">
-            Last Updated: {new Date().toLocaleDateString()}
-          </p>
+'use client'
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">1. POPIA Compliance</h2>
-            <p className="mb-4">
-              Infinity Legal ("we", "our", "us") complies with the Protection of Personal Information Act (POPIA), 2013 (Act No. 4 of 2013). 
-              This Privacy Policy explains how we collect, use, disclose, and safeguard your information.
+import Link from 'next/link'
+
+export default function PrivacyPage() {
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-[#0f2b46] border-b border-[#c9a961]/20">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#c9a961] rounded-lg flex items-center justify-center">
+              <span className="text-[#0f2b46] text-lg font-bold">∞</span>
+            </div>
+            <span className="text-white font-bold text-lg">Infinity Legal</span>
+          </Link>
+          <Link href="/" className="text-white/60 hover:text-white text-sm transition-colors">← Back to Home</Link>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-4 py-12">
+        <div className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Privacy Policy
+          </h1>
+          <p className="text-gray-500">Protection of Personal Information Act (POPIA) Compliance</p>
+          <p className="text-sm text-gray-400 mt-1">Last Updated: April 2026 | Effective: April 2026</p>
+          <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            <p className="text-sm text-amber-800 font-medium">
+              ⚠️ Infinity Legal (Pty) Ltd — CIPC Registration Pending. This policy will be updated upon final registration.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">1. Introduction</h2>
+            <p className="text-gray-700 leading-relaxed">
+              Infinity Legal (Pty) Ltd (&quot;Infinity Legal&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;) is committed to protecting your personal information in accordance with the Protection of Personal Information Act, 4 of 2013 (&quot;POPIA&quot;) and the Electronic Communications and Transactions Act, 25 of 2002 (&quot;ECTA&quot;).
+            </p>
+            <p className="text-gray-700 leading-relaxed mt-2">
+              This Privacy Policy describes how we collect, use, store, and share your personal information when you use our legal services platform, AI-powered tools, and related services.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">2. Information We Collect</h2>
-            <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Personal Information:</strong> Name, email, phone number, ID number (when required)</li>
-              <li><strong>Legal Information:</strong> Case details, documents, communications with attorneys</li>
-              <li><strong>Usage Data:</strong> IP address, browser type, pages visited, time spent</li>
-              <li><strong>Payment Information:</strong> Processed securely through PayFast (we do not store card details)</li>
-            </ul>
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">2. Responsible Party</h2>
+            <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-1">
+              <p><strong>Name:</strong> Infinity Legal (Pty) Ltd (CIPC Registration Pending)</p>
+              <p><strong>Information Officer:</strong> Tidimalo Tsatsi</p>
+              <p><strong>Email:</strong> <a href="mailto:legal@infinitylegal.org" className="text-[#c9a961] hover:underline">legal@infinitylegal.org</a></p>
+              <p><strong>Alternative Contact:</strong> <a href="mailto:jaytmokwena@gmail.com" className="text-[#c9a961] hover:underline">jaytmokwena@gmail.com</a></p>
+              <p><strong>Phone:</strong> +27 68 201 1186</p>
+            </div>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">3. How We Use Your Information</h2>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>To provide legal intake and matching services</li>
-              <li>To facilitate communication between clients and attorneys</li>
-              <li>To process payments for platform fees</li>
-              <li>To improve our AI models and platform functionality</li>
-              <li>To comply with legal obligations</li>
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">3. Information We Collect</h2>
+            <div className="space-y-3">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold text-[#0f2b46] mb-1">3.1 Information You Provide</h3>
+                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                  <li>Full name, email address, phone number, ID number</li>
+                  <li>Physical and postal address</li>
+                  <li>Legal matter details (descriptions, documents, case information)</li>
+                  <li>Subscription and plan preferences</li>
+                  <li>Communications with our team or AI assistant</li>
+                </ul>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold text-[#0f2b46] mb-1">3.2 Information Collected Automatically</h3>
+                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                  <li>IP address, browser type, device information</li>
+                  <li>Usage data (pages visited, features used, time spent)</li>
+                  <li>Cookies and session identifiers</li>
+                </ul>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold text-[#0f2b46] mb-1">3.3 Special Personal Information</h3>
+                <p className="text-sm text-gray-600">
+                  In the course of providing legal services, we may process special personal information including criminal records, health information, or trade union membership where relevant to your legal matter. This is processed only with your explicit consent or where required by law.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">4. Purpose of Processing</h2>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>To provide legal advisory services and manage your legal matters</li>
+              <li>To operate our AI-powered legal analysis and intake system</li>
+              <li>To communicate with you regarding your account and services</li>
+              <li>To comply with legal and regulatory obligations</li>
+              <li>To improve our platform and services</li>
               <li>To prevent fraud and ensure platform security</li>
             </ul>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">4. Legal Basis for Processing (POPIA Section 11)</h2>
-            <p className="mb-2">We process your personal information based on:</p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Consent:</strong> You provide explicit consent for AI processing and data sharing</li>
-              <li><strong>Contract Performance:</strong> Processing is necessary to provide our services</li>
-              <li><strong>Legal Obligations:</strong> We must comply with SA legal and regulatory requirements</li>
-              <li><strong>Legitimate Interests:</strong> Fraud prevention, security, platform improvement</li>
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">5. Legal Basis (POPIA Section 11)</h2>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li><strong>Consent:</strong> Your express consent (s11(1)(a))</li>
+              <li><strong>Contract:</strong> Necessary for performing our services (s11(1)(b))</li>
+              <li><strong>Legal Obligation:</strong> Required by law (s11(1)(c))</li>
+              <li><strong>Legitimate Interest:</strong> Our legitimate business interests (s11(1)(f))</li>
             </ul>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">5. Cross-Border Data Transfers (POPIA Section 72)</h2>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-              <p className="font-semibold mb-2">⚠️ Important Notice:</p>
-              <p>
-                Our AI services use OpenAI (USA) for legal intake analysis. By using our platform, you consent to the 
-                transfer of your redacted case information to the United States. We ensure:
-              </p>
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">6. Your Rights Under POPIA</h2>
+            <div className="grid md:grid-cols-2 gap-3">
+              {[
+                { right: 'Right of Access (s23)', desc: 'Request confirmation of what personal information we hold about you' },
+                { right: 'Right to Correction (s24)', desc: 'Request correction or deletion of inaccurate personal information' },
+                { right: 'Right to Deletion (s24)', desc: 'Request deletion where retention is no longer necessary' },
+                { right: 'Right to Object (s11(3))', desc: 'Object to processing for direct marketing' },
+                { right: 'Right to Data Portability', desc: 'Request your information in a structured, machine-readable format' },
+                { right: 'Right to Withdraw Consent', desc: 'Withdraw consent at any time where processing is consent-based' },
+              ].map((item, i) => (
+                <div key={i} className="bg-[#0f2b46]/5 rounded-lg p-3">
+                  <h4 className="font-semibold text-[#0f2b46] text-sm">{item.right}</h4>
+                  <p className="text-xs text-gray-600 mt-1">{item.desc}</p>
+                </div>
+              ))}
             </div>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>All personally identifiable information is redacted before transfer</li>
-              <li>OpenAI is GDPR-compliant (adequate protection level)</li>
-              <li>Data Processing Agreements are in place</li>
-              <li>You can withdraw consent at any time</li>
+            <p className="text-gray-700 mt-3 text-sm">
+              To exercise any of these rights, contact <a href="mailto:legal@infinitylegal.org" className="text-[#c9a961] hover:underline">legal@infinitylegal.org</a>. We will respond within 30 days.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">7. Data Security</h2>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>Encryption of data in transit (TLS/SSL) and at rest</li>
+              <li>Secure authentication with multi-factor options</li>
+              <li>Role-based access controls for staff</li>
+              <li>Regular security assessments and monitoring</li>
+              <li>Secure hosting infrastructure with industry-standard protections</li>
             </ul>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">6. Your Rights Under POPIA</h2>
-            <p className="mb-2">You have the right to:</p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Access:</strong> Request a copy of your personal information</li>
-              <li><strong>Correction:</strong> Update inaccurate or incomplete information</li>
-              <li><strong>Deletion:</strong> Request deletion of your data (subject to legal retention requirements)</li>
-              <li><strong>Objection:</strong> Object to processing for direct marketing</li>
-              <li><strong>Data Portability:</strong> Receive your data in a machine-readable format</li>
-              <li><strong>Withdraw Consent:</strong> Withdraw consent at any time (may affect service availability)</li>
-            </ul>
-            <p className="mt-4">
-              To exercise these rights, contact: <a href="mailto:privacy@infinitylegal.org" className="text-primary underline">privacy@infinitylegal.org</a>
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">8. Data Retention</h2>
+            <p className="text-gray-700 leading-relaxed">
+              We retain your personal information only for as long as necessary. Legal matter records are retained for a minimum of 5 years after conclusion, in accordance with the Legal Practice Act and prescription periods.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">7. Data Security</h2>
-            <p className="mb-4">
-              We implement industry-standard security measures:
-            </p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>End-to-end encryption for sensitive communications</li>
-              <li>Row-level security in database (users only see their own data)</li>
-              <li>Regular security audits and penetration testing</li>
-              <li>Access controls and authentication requirements</li>
-              <li>Incident response and breach notification procedures</li>
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">9. Third-Party Sharing</h2>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>Legal advisors and specialists assigned to your matter</li>
+              <li>Courts, tribunals, or regulatory bodies where required</li>
+              <li>Service providers assisting platform operations (bound by data processing agreements)</li>
+              <li>Law enforcement where required by law</li>
+            </ul>
+            <p className="text-gray-700 mt-2 font-semibold text-sm">We do not sell your personal information to third parties.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">10. AI-Powered Processing</h2>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>Your queries are processed by AI models to provide legal information</li>
+              <li>AI responses are for informational purposes only — not legal advice</li>
+              <li>AI processing is subject to the same data protection measures</li>
+              <li>You may request human review of any AI-generated analysis</li>
             </ul>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">8. Data Retention</h2>
-            <p className="mb-4">
-              We retain your data for:
-            </p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Active Cases:</strong> Duration of case + 5 years</li>
-              <li><strong>Closed Cases:</strong> 5 years from closure (then archived)</li>
-              <li><strong>Financial Records:</strong> 7 years (SARS requirement)</li>
-              <li><strong>Marketing Consent:</strong> Until withdrawn</li>
-            </ul>
+          <section>
+            <h2 className="text-xl font-bold text-[#0f2b46] border-b border-gray-200 pb-2 mb-3">11. Complaints</h2>
+            <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-1">
+              <p><strong>Information Regulator (South Africa)</strong></p>
+              <p>JD House, 27 Stiemens Street, Braamfontein, Johannesburg, 2001</p>
+              <p>Email: <a href="mailto:enquiries@inforegulator.org.za" className="text-[#c9a961]">enquiries@inforegulator.org.za</a></p>
+              <p>Tel: 012 406 4818</p>
+            </div>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">9. Cookies and Tracking</h2>
-            <p className="mb-4">
-              We use cookies for:
-            </p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Essential:</strong> Authentication, security, session management</li>
-              <li><strong>Analytics:</strong> Usage statistics, performance monitoring</li>
-              <li><strong>Preferences:</strong> Language, display settings</li>
-            </ul>
-            <p className="mt-4">
-              You can control cookies through your browser settings. See our <a href="/cookie-policy" className="text-primary underline">Cookie Policy</a> for details.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">10. Third-Party Services</h2>
-            <p className="mb-4">We share data with:</p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Supabase (USA/EU):</strong> Database hosting</li>
-              <li><strong>OpenAI (USA):</strong> AI legal analysis (redacted data only)</li>
-              <li><strong>PayFast (South Africa):</strong> Payment processing</li>
-              <li><strong>Sentry (USA):</strong> Error tracking</li>
-            </ul>
-            <p className="mt-4">
-              All third parties are contractually bound to protect your data and comply with POPIA requirements.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">11. Children's Privacy</h2>
-            <p>
-              Our platform is not intended for individuals under 18. We do not knowingly collect information from minors. 
-              If you believe we have collected data from a minor, contact us immediately.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">12. Changes to This Policy</h2>
-            <p>
-              We may update this Privacy Policy periodically. We will notify you of significant changes via email or platform notice. 
-              Continued use after changes constitutes acceptance.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">13. Information Officer Contact</h2>
-            <div className="bg-card border border-border rounded-lg p-6">
-              <p className="mb-2"><strong>Information Officer:</strong> [Name]</p>
-              <p className="mb-2"><strong>Email:</strong> privacy@infinitylegal.org</p>
-              <p className="mb-2"><strong>Phone:</strong> [Phone Number]</p>
-              <p className="mb-2"><strong>Address:</strong> [Physical Address]</p>
-              <p className="mt-4 text-sm text-muted-foreground">
-                If you are unsatisfied with our response, you may lodge a complaint with the Information Regulator: 
-                <a href="https://inforegulator.org.za" className="text-primary underline">inforegulator.org.za</a>
-              </p>
+          <section className="bg-[#0f2b46] text-white rounded-xl p-6">
+            <h2 className="text-xl font-bold mb-3">Contact Us</h2>
+            <p className="text-white/70 mb-4">For any privacy-related queries or to exercise your rights:</p>
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-[#c9a961] font-semibold mb-1">Email</p>
+                <a href="mailto:legal@infinitylegal.org" className="text-white hover:text-[#c9a961]">legal@infinitylegal.org</a>
+                <br />
+                <a href="mailto:jaytmokwena@gmail.com" className="text-white hover:text-[#c9a961]">jaytmokwena@gmail.com</a>
+              </div>
+              <div>
+                <p className="text-[#c9a961] font-semibold mb-1">Phone / WhatsApp</p>
+                <a href="https://wa.me/27682011186" className="text-white hover:text-[#c9a961]">+27 68 201 1186</a>
+              </div>
             </div>
           </section>
         </div>
+      </main>
 
-        <div className="mt-12 pt-8 border-t border-border">
-          <a href="/" className="text-primary hover:underline">← Back to Home</a>
+      <footer className="bg-gray-50 border-t border-gray-200 py-6 mt-12">
+        <div className="max-w-4xl mx-auto px-4 text-center text-xs text-gray-400">
+          © {new Date().getFullYear()} Infinity Legal (Pty) Ltd — CIPC Registration Pending. All rights reserved.
         </div>
-      </div>
+      </footer>
     </div>
   )
 }

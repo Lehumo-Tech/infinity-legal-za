@@ -1,288 +1,216 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-
-const NOTIFICATION_GROUPS = [
-  {
-    title: 'Case & Legal',
-    items: [
-      { key: 'email_case_updates', label: 'Case updates', desc: 'New assignments, status changes, deadline alerts' },
-      { key: 'email_task_assignments', label: 'Task notifications', desc: 'New tasks, completions, overdue reminders' },
-      { key: 'email_document_workflow', label: 'Document workflow', desc: 'Review requests, approvals, rejections' },
-    ],
-  },
-  {
-    title: 'Communication',
-    items: [
-      { key: 'push_messages', label: 'Direct messages', desc: 'New messages from colleagues' },
-      { key: 'email_announcements', label: 'Firm announcements', desc: 'Company-wide updates and news' },
-      { key: 'push_calendar_reminders', label: 'Calendar reminders', desc: 'Event and deadline reminders' },
-    ],
-  },
-  {
-    title: 'Finance & HR',
-    items: [
-      { key: 'email_billing_alerts', label: 'Billing alerts', desc: 'Invoice updates, payment notifications' },
-      { key: 'email_leave_updates', label: 'Leave updates', desc: 'Leave request approvals and rejections' },
-    ],
-  },
-]
+import Link from 'next/link'
 
 export default function SettingsPage() {
-  const { profile, user, roleLabel, department, refreshProfile } = useAuth()
-  const [token, setToken] = useState(null)
+  const { profile, role, roleLabel, department } = useAuth()
+  const [exporting, setExporting] = useState(false)
+  const [exportResult, setExportResult] = useState(null)
+  const [exportError, setExportError] = useState('')
   const [activeTab, setActiveTab] = useState('profile')
-  const [fullName, setFullName] = useState(profile?.full_name || '')
-  const [phone, setPhone] = useState(profile?.phone || '')
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [pwSaving, setPwSaving] = useState(false)
-  const [pwMessage, setPwMessage] = useState({ type: '', text: '' })
 
-  // Notification prefs
-  const [notifPrefs, setNotifPrefs] = useState({})
-  const [notifLoading, setNotifLoading] = useState(true)
-  const [notifSaving, setNotifSaving] = useState(false)
-  const [notifSaved, setNotifSaved] = useState(false)
-  const [digestFrequency, setDigestFrequency] = useState('daily')
-
-  useEffect(() => {
-    async function init() {
-      const { data } = await supabase.auth.getSession()
-      setToken(data?.session?.access_token || null)
-    }
-    init()
-  }, [])
-
-  const fetchNotifPrefs = useCallback(async () => {
-    if (!token) return
-    setNotifLoading(true)
+  const handleExportData = async () => {
+    setExporting(true)
+    setExportError('')
+    setExportResult(null)
     try {
-      const res = await fetch('/api/settings/notifications', { headers: { Authorization: `Bearer ${token}` } })
-      if (res.ok) {
-        const d = await res.json()
-        const prefs = d.preferences || {}
-        setNotifPrefs(prefs)
-        setDigestFrequency(prefs.digest_frequency || 'daily')
+      const { data: session } = await supabase.auth.getSession()
+      const token = session?.session?.access_token
+      if (!token) {
+        setExportError('You must be logged in to export your data.')
+        return
       }
-    } catch (err) { console.error(err) }
-    finally { setNotifLoading(false) }
-  }, [token])
 
-  useEffect(() => { fetchNotifPrefs() }, [fetchNotifPrefs])
-
-  const handleSaveProfile = async () => {
-    setSaving(true)
-    setSaved(false)
-    try {
-      const { error } = await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
-      if (error) throw error
-      await refreshProfile()
-      setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
-    } catch (err) { console.error(err) }
-    finally { setSaving(false) }
-  }
-
-  const handleChangePassword = async () => {
-    setPwMessage({ type: '', text: '' })
-    if (newPassword !== confirmPassword) { setPwMessage({ type: 'error', text: 'Passwords do not match' }); return }
-    if (newPassword.length < 6) { setPwMessage({ type: 'error', text: 'Password must be at least 6 characters' }); return }
-    setPwSaving(true)
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword })
-      if (error) throw error
-      setPwMessage({ type: 'success', text: 'Password updated successfully' })
-      setNewPassword(''); setConfirmPassword('')
-    } catch (err) { setPwMessage({ type: 'error', text: err.message || 'Failed to update password' }) }
-    finally { setPwSaving(false) }
-  }
-
-  const toggleNotif = (key) => {
-    setNotifPrefs(prev => ({ ...prev, [key]: !prev[key] }))
-  }
-
-  const handleSaveNotifications = async () => {
-    setNotifSaving(true)
-    setNotifSaved(false)
-    try {
-      const prefs = { ...notifPrefs, digest_frequency: digestFrequency }
-      const res = await fetch('/api/settings/notifications', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ preferences: prefs }),
+      const res = await fetch('/api/user/export', {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      if (res.ok) {
-        setNotifSaved(true)
-        setTimeout(() => setNotifSaved(false), 3000)
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to export data')
       }
-    } catch (err) { console.error(err) }
-    finally { setNotifSaving(false) }
+
+      const data = await res.json()
+
+      // Trigger download as JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `infinity_legal_data_export_${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      setExportResult(data.summary)
+    } catch (error) {
+      setExportError(error.message)
+    } finally {
+      setExporting(false)
+    }
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-display font-bold text-infinity-navy dark:text-white">Settings</h1>
-        <p className="text-sm text-infinity-navy/50 dark:text-white/40">Manage your profile, security, and preferences</p>
+        <p className="text-sm text-infinity-navy/50 dark:text-white/40 mt-0.5">Manage your account and preferences</p>
       </div>
 
-      {/* Tab Selector */}
-      <div className="flex gap-1 mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-0.5">
-        {['profile', 'security', 'notifications'].map(t => (
-          <button key={t} onClick={() => setActiveTab(t)}
-            className={`flex-1 py-2 rounded-md text-xs font-semibold transition-colors capitalize ${activeTab === t ? 'bg-infinity-navy text-white dark:bg-infinity-gold dark:text-infinity-navy' : 'text-gray-500 hover:text-infinity-navy'}`}>
-            {t}
-          </button>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+        {['profile', 'privacy', 'notifications'].map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 px-3 rounded-md text-xs font-semibold transition-colors capitalize ${
+            activeTab === tab ? 'bg-white dark:bg-gray-700 text-infinity-navy dark:text-white shadow-sm' : 'text-gray-500 hover:text-infinity-navy dark:hover:text-white'
+          }`}>{tab}</button>
         ))}
       </div>
 
-      {/* PROFILE TAB */}
+      {/* Profile Tab */}
       {activeTab === 'profile' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white mb-4">Profile Information</h2>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div className="w-14 h-14 bg-infinity-navy rounded-xl flex items-center justify-center text-white text-xl font-bold">
-                {profile?.full_name?.charAt(0) || '?'}
+        <div className="space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white mb-4">Account Information</h2>
+            <div className="grid gap-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Full Name</label>
+                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm text-infinity-navy dark:text-white">{profile?.full_name || '—'}</div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
+                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm text-infinity-navy dark:text-white">{profile?.email || '—'}</div>
+                </div>
               </div>
-              <div>
-                <div className="text-sm font-bold text-infinity-navy dark:text-white">{profile?.full_name || 'User'}</div>
-                <div className="text-xs text-gray-400">{roleLabel} • {department}</div>
-                <div className="text-[10px] text-gray-400">{user?.email}</div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Role</label>
+                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm text-infinity-navy dark:text-white">{roleLabel || '—'}</div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Department</label>
+                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm text-infinity-navy dark:text-white">{department || '—'}</div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Full Name</label>
-                <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-infinity-navy dark:text-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Phone</label>
-                <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-infinity-navy dark:text-white" />
-              </div>
+          {/* Plan Status */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white mb-4">Plan Status</h2>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Free Tier Active
+              </span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
-                <input type="email" value={user?.email || ''} disabled
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700/50 text-gray-400 cursor-not-allowed" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Role</label>
-                <input type="text" value={`${roleLabel} — ${department}`} disabled
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-700/50 text-gray-400 cursor-not-allowed" />
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button onClick={handleSaveProfile} disabled={saving}
-                className="px-5 py-2 bg-infinity-navy hover:bg-infinity-navy-light text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors">
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-              {saved && <span className="text-xs text-green-600 font-semibold">✓ Profile updated</span>}
+            <p className="text-xs text-gray-500">You are currently on the free tier. Premium plans are pending CIPC registration and will be available soon.</p>
+            <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg">
+              <p className="text-xs text-amber-700 dark:text-amber-400">Premium features pending CIPC approval. <Link href="/pricing" className="font-bold underline">View plans & join waitlist</Link></p>
             </div>
           </div>
         </div>
       )}
 
-      {/* SECURITY TAB */}
-      {activeTab === 'security' && (
-        <div className="space-y-6">
+      {/* Privacy Tab */}
+      {activeTab === 'privacy' && (
+        <div className="space-y-4">
+          {/* POPIA Data Export */}
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white mb-4">Change Password</h2>
-            {pwMessage.text && (
-              <div className={`mb-3 p-2 rounded-lg text-xs font-medium ${pwMessage.type === 'error' ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'}`}>
-                {pwMessage.text}
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-infinity-navy/10 dark:bg-infinity-navy/30 flex items-center justify-center text-xl">📋</div>
+              <div>
+                <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white">Export My Data (POPIA)</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Download a copy of all your personal data stored on our platform, in compliance with POPIA Section 23 (Right of Access).</p>
+              </div>
+            </div>
+
+            <button onClick={handleExportData} disabled={exporting} className="inline-flex items-center gap-2 px-5 py-2.5 bg-infinity-navy hover:bg-infinity-navy-light text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
+              {exporting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Preparing Export...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  Export My Data
+                </>
+              )}
+            </button>
+
+            {exportError && (
+              <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-lg">
+                <p className="text-xs text-red-700 dark:text-red-400">{exportError}</p>
               </div>
             )}
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">New Password</label>
-                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-infinity-navy dark:text-white" placeholder="Min. 6 characters" />
+
+            {exportResult && (
+              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 rounded-lg">
+                <p className="text-xs text-green-700 dark:text-green-400 font-bold mb-1">Export downloaded successfully!</p>
+                <div className="text-xs text-green-600 dark:text-green-500 space-y-0.5">
+                  <p>Cases: {exportResult.totalCases} | Tasks: {exportResult.totalTasks} | Notes: {exportResult.totalNotes}</p>
+                  <p>Messages: {exportResult.totalMessages} | Documents: {exportResult.totalDocuments} | Intakes: {exportResult.totalIntakes}</p>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Confirm New Password</label>
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-infinity-navy dark:text-white" />
-              </div>
-              <button onClick={handleChangePassword} disabled={pwSaving}
-                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors">
-                {pwSaving ? 'Updating...' : 'Update Password'}
-              </button>
-            </div>
+            )}
           </div>
 
-          <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-200 dark:border-amber-800/30 p-5">
-            <h3 className="text-sm font-bold text-amber-700 dark:text-amber-400 mb-1">Security Best Practices</h3>
-            <ul className="text-xs text-amber-600 dark:text-amber-400/80 space-y-1 list-disc pl-4">
-              <li>Use a strong, unique password (12+ characters recommended)</li>
-              <li>Never share your credentials with colleagues</li>
-              <li>Lock your workstation when stepping away</li>
-              <li>Report any suspicious activity to IT immediately</li>
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {/* NOTIFICATIONS TAB */}
-      {activeTab === 'notifications' && (
-        <div className="space-y-4">
-          {notifLoading ? (
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center text-sm text-gray-400">Loading preferences...</div>
-          ) : (
-            <>
-              {NOTIFICATION_GROUPS.map((group, gi) => (
-                <div key={gi} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                  <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700">
-                    <h3 className="text-sm font-display font-bold text-infinity-navy dark:text-white">{group.title}</h3>
-                  </div>
-                  <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    {group.items.map(item => (
-                      <div key={item.key} className="flex items-center justify-between px-5 py-3">
-                        <div>
-                          <div className="text-xs font-semibold text-infinity-navy dark:text-white">{item.label}</div>
-                          <div className="text-[10px] text-gray-400">{item.desc}</div>
-                        </div>
-                        <button onClick={() => toggleNotif(item.key)}
-                          className={`w-10 h-5 rounded-full relative transition-colors ${notifPrefs[item.key] !== false ? 'bg-infinity-navy dark:bg-infinity-gold' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                          <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform ${notifPrefs[item.key] !== false ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                        </button>
-                      </div>
-                    ))}
+          {/* Privacy Info */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white mb-3">Your Privacy Rights (POPIA)</h2>
+            <div className="space-y-2">
+              {[
+                { right: 'Right of Access', desc: 'You can request a copy of all personal data we hold about you.' },
+                { right: 'Right to Rectification', desc: 'You can request correction of inaccurate personal data.' },
+                { right: 'Right to Erasure', desc: 'You can request deletion of your personal data, subject to legal retention requirements.' },
+                { right: 'Right to Object', desc: 'You can object to the processing of your personal information.' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="text-infinity-gold text-xs mt-0.5">●</span>
+                  <div>
+                    <span className="text-xs font-bold text-infinity-navy dark:text-white">{item.right}:</span>
+                    <span className="text-xs text-gray-500 ml-1">{item.desc}</span>
                   </div>
                 </div>
               ))}
+            </div>
+            <p className="text-xs text-gray-400 mt-3">For privacy-related requests, contact: <a href="mailto:legal@infinitylegal.org" className="text-infinity-gold hover:underline">legal@infinitylegal.org</a></p>
+            <Link href="/privacy" className="inline-block mt-2 text-xs text-infinity-gold font-semibold hover:underline">View Full Privacy Policy →</Link>
+          </div>
+        </div>
+      )}
 
-              {/* Email Digest */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-                <h3 className="text-sm font-display font-bold text-infinity-navy dark:text-white mb-3">Email Digest Frequency</h3>
-                <div className="flex gap-2">
-                  {['realtime', 'daily', 'weekly', 'never'].map(f => (
-                    <button key={f} onClick={() => setDigestFrequency(f)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors capitalize ${digestFrequency === f ? 'bg-infinity-navy text-white dark:bg-infinity-gold dark:text-infinity-navy' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
-                      {f === 'realtime' ? 'Real-time' : f}
-                    </button>
-                  ))}
+      {/* Notifications Tab */}
+      {activeTab === 'notifications' && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-sm font-display font-bold text-infinity-navy dark:text-white mb-4">Notification Preferences</h2>
+          <div className="space-y-3">
+            {[
+              { label: 'Case Status Updates', desc: 'Receive notifications when your case status changes', defaultOn: true },
+              { label: 'Task Reminders', desc: 'Get reminded about upcoming deadlines', defaultOn: true },
+              { label: 'New Messages', desc: 'Notifications for new messages from your team', defaultOn: true },
+              { label: 'Platform Announcements', desc: 'Updates about new features and platform changes', defaultOn: false },
+            ].map((pref, i) => (
+              <div key={i} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                <div>
+                  <div className="text-xs font-semibold text-infinity-navy dark:text-white">{pref.label}</div>
+                  <div className="text-[10px] text-gray-400">{pref.desc}</div>
+                </div>
+                <div className="relative">
+                  <input type="checkbox" defaultChecked={pref.defaultOn} className="sr-only peer" id={`pref-${i}`} />
+                  <label htmlFor={`pref-${i}`} className="block w-9 h-5 bg-gray-200 dark:bg-gray-600 rounded-full cursor-pointer peer-checked:bg-infinity-gold transition-colors">
+                    <span className="block w-4 h-4 bg-white rounded-full shadow mt-0.5 ml-0.5 peer-checked:ml-4.5 transition-all" />
+                  </label>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <button onClick={handleSaveNotifications} disabled={notifSaving}
-                  className="px-5 py-2 bg-infinity-navy hover:bg-infinity-navy-light text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors">
-                  {notifSaving ? 'Saving...' : 'Save Preferences'}
-                </button>
-                {notifSaved && <span className="text-xs text-green-600 font-semibold">✓ Preferences saved</span>}
-              </div>
-            </>
-          )}
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-4">Notification preferences are stored locally. Email notification settings coming soon.</p>
         </div>
       )}
     </div>

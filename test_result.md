@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Build a comprehensive legal tech platform (Infinity Legal Platform) using Next.js, Tailwind, and Supabase for the South African market. Serve both clients and attorneys with case management, document vault, task manager, calendar, and AI-powered intake."
+user_problem_statement: "Build a comprehensive legal tech platform (Infinity Legal Platform) using Next.js, Tailwind, and Supabase for the South African market. Pre-Launch MVP (CIPC Pending) - Zero Payments, Free Tier Only, POPIA compliance, Waitlist mode, Dashboard shell with Free Tier badge."
 
 backend:
   - task: "User Signup API"
@@ -761,12 +761,61 @@ agent_communication:
       message: "P0 FIX TESTING COMPLETED SUCCESSFULLY: Public Intake Wizard DB Save working perfectly. All 11 test scenarios passed (100% success rate). ✅ POST /api/intake/submit creates intake submissions in MongoDB with proper caseId format (IL-YYYY-NNNNN-XXXX), source='public_wizard', and all required fields. ✅ Conflict detection working correctly (409 for same email+caseType within 7 days). ✅ All validation scenarios working (firstName length, email format, SA phone format, description length, consent requirements, caseType requirements). ✅ Different caseType for same email succeeds correctly. ✅ Staff portal compatibility verified - intakes appear in GET /api/intakes with searchable category field. ✅ MongoDB verification confirms proper document structure and data persistence. Refactored lib/modules/intake/workflow.ts to pure TS business logic working correctly. All authentication, validation, conflict detection, and database integration working perfectly. P0 fix is production-ready."
     - agent: "testing"
       message: "COMPREHENSIVE MONGODB BACKEND TESTING COMPLETED SUCCESSFULLY: All core API routes tested as requested in review. Results: 45/48 tests passed (93.8% success rate). ✅ AUTHENTICATION: All endpoints properly secured with Bearer token auth, return 401 without auth as expected. ✅ CASES CRUD: Complete workflow tested - GET lists cases, POST creates cases with proper IL-YYYY-NNNN format, PUT updates status, auto-generates timeline entries. ✅ CASE RELATED APIS: Timeline, Notes, Tasks, Messages, Metadata all working correctly with MongoDB backend. ✅ ALL OTHER CORE APIS: Dashboard Stats, Clients, Leads, Documents, Tasks, Intakes, Notifications, Calendar, Messages all functioning perfectly. ✅ MONGODB INTEGRATION: All data storage and retrieval working correctly. Minor issues: 3 endpoints return 405 for unsupported POST methods (expected behavior). All core functionality working perfectly with MongoDB backend migration complete."
+    - agent: "main"
+      message: "PRE-LAUNCH MVP IMPLEMENTATION: 1) NEW POST /api/analyze endpoint (mock free-tier AI analysis, no auth required, supports 6 legal categories). 2) Updated pricing page - all plan CTAs now say 'Join Waitlist' opening waitlist modal instead of linking to signup. 3) Updated portal dashboard - added CIPC pending banner, 'Free Tier Active' badge, 'Free AI Analysis' CTA button, Contact Support section (email + WhatsApp). 4) Overhauled signup page - removed payment step, added POPIA consent checkbox, converted to waitlist-only flow. 5) Created /portal/settings page with 'Export My Data' button (POPIA Section 23 compliance), privacy rights info, notification preferences. Please test: POST /api/analyze with {description, category, location}, POST /api/waitlist, GET /api/user/export (auth required)."
+    - agent: "testing"
+      message: "PRE-LAUNCH MVP API TESTING COMPLETED SUCCESSFULLY: All 3 NEW endpoints tested and working perfectly (100% success rate). ✅ POST /api/analyze: All 6 test scenarios passed - Labour law (Labour Law, high urgency), Criminal law (Criminal Law, emergency urgency), Property law with location, General case (Civil Law default), validation errors for short descriptions and empty body. Response structure includes all required fields: success, analysis (legalArea, category, urgency, summary, relevantLegislation, nextSteps, suggestedPlan, estimatedTimeline, confidenceScore), disclaimer, freeTier flag. ✅ POST/GET /api/waitlist: All 5 test scenarios passed - new entry creation (201), duplicate email handling (200 with alreadyJoined: true), validation for missing email/phone (400), phone-only entries (201), GET count and recent entries (200). MongoDB integration working perfectly. ✅ GET /api/user/export: Both test scenarios passed - unauthorized access blocked (401), authenticated access returns complete POPIA-compliant data export with all required sections (cases, tasks, notes, messages, leads, documents, intakes) and summary counts. Supabase authentication working correctly. All Pre-Launch MVP APIs are production-ready."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 10
+  test_sequence: 11
   run_ui: false
+
+  - task: "Mock Analyze API (Free Tier)"
+    implemented: true
+    working: true
+    file: "app/api/analyze/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW: POST /api/analyze - Free-tier mock AI legal analysis. Accepts {description, category, location}. Returns structured response with legalArea, urgency, relevantLegislation, nextSteps, suggestedPlan, estimatedTimeline, confidenceScore, and disclaimer. Supports labour, criminal, family, property, consumer, and general categories. No auth required."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All 6 test scenarios passed (100% success rate): 1) Labour law case correctly returns legalArea: 'Labour Law', urgency: 'high' with proper legislation and next steps. 2) Criminal law case correctly returns legalArea: 'Criminal Law', urgency: 'emergency' with constitutional rights guidance. 3) Property law case with location correctly returns legalArea: 'Property Law' with rental housing legislation. 4) General case defaults to legalArea: 'Civil Law' with constitutional references. 5) Validation correctly returns 400 for descriptions under 10 characters. 6) Validation correctly returns 400 for empty request body. All response structures include required fields: success, analysis (legalArea, category, urgency, summary, relevantLegislation, nextSteps, suggestedPlan, estimatedTimeline, confidenceScore), disclaimer, freeTier flag. Free-tier mock AI analysis working perfectly for pre-launch MVP."
+
+  - task: "Waitlist API"
+    implemented: true
+    working: true
+    file: "app/api/waitlist/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/waitlist - Join waitlist with email, phone, name, plan, source. Checks for duplicates. GET /api/waitlist returns count and recent entries."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All 5 test scenarios passed (100% success rate): 1) POST /api/waitlist creates new waitlist entries successfully with proper response structure (message, entry with id and email). 2) Duplicate email handling works correctly - returns 200 status with alreadyJoined: true flag and appropriate message. 3) Validation correctly returns 400 error when both email and phone are missing. 4) Phone-only entries (without email) are accepted and created successfully. 5) GET /api/waitlist returns count and recent entries array correctly. MongoDB integration working perfectly. All required fields validated properly. Waitlist functionality ready for pre-launch MVP."
+
+  - task: "User Data Export API (POPIA)"
+    implemented: true
+    working: true
+    file: "app/api/user/export/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/user/export - POPIA compliance data export. Requires auth. Returns all user data from MongoDB (cases, tasks, notes, messages, leads, documents, intakes) with summary counts."
+        - working: true
+          agent: "testing"
+          comment: "Comprehensive testing completed successfully. All 2 test scenarios passed (100% success rate): 1) GET /api/user/export without authentication correctly returns 401 Unauthorized as expected. 2) GET /api/user/export with valid Bearer token authentication returns complete user data export with proper structure. Response includes all required fields: exportDate, user (id, email, created_at), data sections (cases, tasks, notes, messages, leads, documents, intakes), summary counts (totalCases: 5, totalTasks: 3, etc.), and POPIA compliance notice. Authentication via Supabase working correctly. MongoDB data retrieval working perfectly. POPIA Section 23 compliance fully implemented for user data access rights."
 
   - task: "Real-time Notifications on Document Workflow"
     implemented: true
@@ -1266,7 +1315,7 @@ agent_communication:
     - agent: "testing"
       message: "PRODUCTION READINESS TESTING COMPLETED: All 6 production readiness endpoints tested and working perfectly. ✅ Health Check API: Returns proper status with MongoDB/Supabase connectivity, environment validation, memory usage, and 407ms response time. ✅ Analytics API: Privacy-compliant tracking working with proper validation and auth protection. ✅ Sitemap: Valid XML with 17 URLs, priority pages included, protected URLs excluded. ✅ Robots.txt: Proper content with sitemap reference and AI crawler blocking. ✅ Custom 404 Page: Branded 404 page with navigation options. ✅ Existing APIs: Plans and Attorneys APIs still working (3 plans, 3 attorneys found). All production readiness requirements met - platform ready for deployment."
     - agent: "main"
-      message: "AI ENHANCEMENT + WORKFLOW TESTING: 1) Fixed AI Document Assist & Case Insights - corrected LLM proxy URL. Both return 200 with full AI-generated content (termination letters, case strategies). 2) Added AI Chatbot Widget (AIChatWidget.js) - floating chatbot on all public pages with quick questions, instant answers, CTAs. 3) All AI features working: intake analysis (GPT-4o), document drafting, case strategy. Please test: POST /api/ai/document-assist with Bearer token. POST /api/ai/case-insights with Bearer token. Test login flow: POST to Supabase auth, verify token, hit protected endpoints. Base URL: https://infinity-legal-sa-1.preview.emergentagent.com."
+      message: "AI ENHANCEMENT + WORKFLOW TESTING: 1) Fixed AI Document Assist & Case Insights - corrected LLM proxy URL. Both return 200 with full AI-generated content (termination letters, case strategies). 2) Added AI Chatbot Widget (AIChatWidget.js) - floating chatbot on all public pages with quick questions, instant answers, CTAs. 3) All AI features working: intake analysis (GPT-4o), document drafting, case strategy. Please test: POST /api/ai/document-assist with Bearer token. POST /api/ai/case-insights with Bearer token. Test login flow: POST to Supabase auth, verify token, hit protected endpoints. Base URL: https://waitlist-legal-sa.preview.emergentagent.com."
     - agent: "main"
       message: "NEW FEATURES - P1 & P2: 1) Document Versioning & Check-in/out: GET/POST /api/documents/{id}/versions (version history, create new version), GET/POST /api/documents/{id}/lock (check-out/in with 4hr auto-expiry). Added version column + version history modal to portal/documents. 2) Case Archiving: GET/POST /api/cases/archive (list archived, archive single or auto-archive closed cases >30 days). Added Archived tab to cases page + archive button for closed cases. All APIs tested manually. Test user: test_intake@infinitylegal.org / TestPass2026!"
     - agent: "testing"
@@ -1274,6 +1323,6 @@ agent_communication:
     - agent: "main"
       message: "P0 FIX - PUBLIC INTAKE WIZARD DB SAVE: Refactored lib/modules/intake/workflow.ts to pure TS business logic (validateIntake, buildIntakeDocument, detectConflicts, generateReferenceId). Wired up app/api/intake/submit/route.ts to MongoDB. Features: 1) Zod validation on all fields. 2) Conflict detection - queries MongoDB for same email+caseType within 7 days, returns 409 with existing reference. 3) Saves to intake_submissions with source:'public_wizard', compatible with staff portal listing. 4) Non-blocking notification on submission. Manually tested: POST returns 201 with caseId, duplicate returns 409, invalid data returns 400. Please test: POST /api/intake/submit with valid public wizard data, conflict detection, validation errors, and verify data appears in GET /api/intakes."
     - agent: "main"
-      message: "ASK INFINITY - AI LEGAL ASSISTANT: Built complete 'Ask Infinity' feature — a public-facing AI legal information assistant for SA law. Components: 1) /lib/sa-legislation.js — Cached JSON of top 10+ SA Acts with 40+ sections, keyword matching engine, and plan recommendation logic. 2) /app/api/ask/route.js — POST endpoint that does rule-based keyword matching against cached legislation, then enhances with GPT-4o (Emergent LLM key) for plain-language responses. Follows strict response template with legislation citations, plain English explanations, practical bullets, and CTA after 2 messages. 3) /app/ask/page.js — Mobile-responsive chat UI with suggested questions, formatted responses (bold, italic, bullets, links), typing indicators, and compliance disclaimer footer. Also updated: Homepage nav now links to Ask Infinity, plan structure updated to Civil R99 / Labour R99 / Extensive R139 with court representation included. Please test: 1) GET /api/ask returns service info. 2) POST /api/ask with query about dismissal/consumer/rent returns legislation citations. 3) POST /api/ask with empty query returns 400. 4) POST /api/ask with very long query returns 400. 5) Verify CTA appears after messageCount >= 2. 6) Test with non-legal query. Base URL: https://infinity-legal-sa-1.preview.emergentagent.com"
+      message: "ASK INFINITY - AI LEGAL ASSISTANT: Built complete 'Ask Infinity' feature — a public-facing AI legal information assistant for SA law. Components: 1) /lib/sa-legislation.js — Cached JSON of top 10+ SA Acts with 40+ sections, keyword matching engine, and plan recommendation logic. 2) /app/api/ask/route.js — POST endpoint that does rule-based keyword matching against cached legislation, then enhances with GPT-4o (Emergent LLM key) for plain-language responses. Follows strict response template with legislation citations, plain English explanations, practical bullets, and CTA after 2 messages. 3) /app/ask/page.js — Mobile-responsive chat UI with suggested questions, formatted responses (bold, italic, bullets, links), typing indicators, and compliance disclaimer footer. Also updated: Homepage nav now links to Ask Infinity, plan structure updated to Civil R99 / Labour R99 / Extensive R139 with court representation included. Please test: 1) GET /api/ask returns service info. 2) POST /api/ask with query about dismissal/consumer/rent returns legislation citations. 3) POST /api/ask with empty query returns 400. 4) POST /api/ask with very long query returns 400. 5) Verify CTA appears after messageCount >= 2. 6) Test with non-legal query. Base URL: https://waitlist-legal-sa.preview.emergentagent.com"
     - agent: "testing"
       message: "ASK INFINITY API TESTING COMPLETED SUCCESSFULLY: All 12 test scenarios passed (100% success rate). ✅ PRIMARY FOCUS: Ask Infinity API fully functional - GET /api/ask returns proper service info (service: Ask Infinity, status: active), POST /api/ask handles all test scenarios correctly: labour questions cite LRA/BCEA with 'Relevant Legislation' section, consumer questions cite Consumer Protection Act, rental questions mention Rental Housing Act and 14 days, CTA triggers correctly for messageCount >= 2 with plan recommendations (R99/R139) and court representation. ✅ VALIDATION: All validation working perfectly - empty query returns 400 'Please provide a question', missing query field returns 400, long query (>1000 chars) returns 400 'Question too long'. ✅ HISTORY CONTEXT: POST /api/ask with history context processes correctly and returns legislation citations. ✅ REGRESSION: Core APIs still working - GET /api/health returns healthy status, GET /api/intakes with auth works, POST /api/intake/submit creates intakes successfully. All authentication, validation, legislation matching, CTA triggering, and AI integration working perfectly. API uses GPT-4o via Emergent LLM proxy with proper fallback to rule-based responses. Production ready."
