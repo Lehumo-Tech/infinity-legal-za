@@ -341,7 +341,7 @@ export default function HomePage() {
                 Legal Excellence Without Limits
               </p>
               <p className="text-lg text-white/70 mb-8 max-w-xl">
-                Legal protection for individuals, families, and businesses. Choose Civil, Labour, or Extensive plans — unlimited consultations and document preparation included.
+                Legal protection for individuals, families, and SME's. Choose Civil, Labour, or Extensive plans — unlimited consultations and document preparation included.
               </p>
               <div className="flex flex-wrap justify-center md:justify-start gap-3">
                 <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-all shadow-lg shadow-[#c9a961]/20 text-lg">
