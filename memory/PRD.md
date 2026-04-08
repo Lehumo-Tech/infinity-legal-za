@@ -7,45 +7,51 @@ Infinity Legal is a legal tech platform for the South African market, providing 
 
 ### Core Constraints
 - **Zero Payments / Free Tier Only**: All payment gateways disabled pending CIPC approval
-- **Waitlist Mode**: All pricing CTAs replaced with "Join Waitlist" buttons
+- **No Waitlist Language**: Public-facing UI uses "Get Started Free" / "Register Now" — no "waitlist" references
 - **POPIA Compliance**: Full privacy compliance with consent checkboxes and data export
-- **No Legacy Terminology**: No "cover/coverage", "court representations", "coverage limits", or "Attorney" — uses "Plan", "Unlimited Legal Support", "Legal Advisor"
+- **No Legacy Terminology**: No "cover/coverage", "court representations", "coverage limits", or "Attorney"
 
-### Implemented Features (Pre-Launch MVP)
+### Implemented Features
 
-#### Public Pages
-- Homepage with CIPC disclaimer banner, Join Waitlist modal, WhatsApp floating button
-- Pricing page with all CTAs as "Join Waitlist" (opening waitlist modal)
-- Signup page converted to waitlist-only flow (no payment step, POPIA checkbox)
-- Login page with Real Login (Supabase Auth) and Demo Mode
-- Privacy Policy page (/privacy)
-- Free AI Legal Analysis (/intake)
+#### Lead Capture & Scoring System
+- **Registration forms** on Homepage (modal), Pricing (modal), and Signup page
+- **Legal need dropdown**: CCMA, Labour Dispute, Divorce, Eviction, Criminal, Custody, Debt Review, Consumer, Property, General, Other
+- **Lead scoring** (0-5): CCMA/Labour=+3, Divorce/Eviction=+2, Consumer/Property=+1, .co.za email=+1, phone=+1, name=+0.5
+- **Priority classification**: Hot (≥4), Warm (≥2.5), Cool (≥1), Cold (<1)
+- POPIA consent checkbox required on all forms
+
+#### Reddit RSS Social Listening
+- Fetches public posts from r/SouthAfrica via RSS (no API key, $0 cost)
+- Filters for legal keywords: CCMA, eviction, divorce, unfair dismissal, etc.
+- Scores and prioritizes posts by urgency + recency
+- Ethics: Only public posts, no DMs, always links to consent form
+
+#### Advisor Leads Dashboard (`/portal/leads-dashboard`)
+- **Registered Leads tab**: Full table with priority, name, email, legal need, score, plan, source, date
+- **Social Listening tab**: Reddit feed with View Post + Respond Publicly buttons
+- Priority filters: All, Hot, Warm, Cool, Cold
+- Stats cards: Total, Hot, Warm, Cool, Cold counts
+- POPIA compliance banner
 
 #### API Endpoints
-- `POST /api/waitlist` — Join waitlist with POPIA consent
-- `GET /api/waitlist` — Admin: view waitlist count and recent entries
+- `POST /api/waitlist` — Lead capture with scoring, legal_need, POPIA consent
+- `GET /api/waitlist` — Admin lead list with stats, filters, sorted by score
+- `GET /api/reddit-leads` — Reddit RSS social listener
 - `POST /api/analyze` — Free-tier mock AI legal analysis (6 categories)
 - `GET /api/user/export` — POPIA data export (authenticated)
 - Full Cases, Tasks, Documents, Leads, Intakes CRUD (MongoDB)
-- AI Intake Analysis, Document Assist, Case Insights (Emergent LLM)
 
-#### Portal Dashboard
-- CIPC pending banner ("Premium features pending CIPC approval")
-- "Free Tier Active" badge with green indicator
-- "Free AI Analysis" CTA button
-- Contact Support section (Email + WhatsApp)
-- Quick actions: AI Analysis, Documents, Approvals, AI Research
-
-#### Settings Page (/portal/settings)
-- Profile tab: Account info, plan status with "Free Tier Active" badge
-- Privacy tab: "Export My Data" button (POPIA Section 23), privacy rights info
-- Notifications tab: Preference toggles
+#### Portal Features
+- Dashboard: CIPC banner, Free Tier badge, AI Analysis CTA, Contact Support (Email + WhatsApp)
+- Settings: Profile, Privacy (Export My Data), Notifications
+- Lead Intelligence: Leads table + Reddit social listening
 
 ### Tech Stack
 - **Frontend**: Next.js 14 App Router, Tailwind CSS, shadcn/ui
 - **Auth**: Supabase Authentication
 - **Database**: MongoDB (business data), Supabase (auth profiles only)
-- **AI**: Emergent LLM Key (OpenAI-compatible proxy)
+- **AI**: Emergent LLM Key (OpenAI-compatible)
+- **Social Listening**: Reddit public RSS feed ($0 cost)
 
 ### Admin Credentials
 - Email: tsatsi@infinitylegal.org
@@ -54,4 +60,4 @@ Infinity Legal is a legal tech platform for the South African market, providing 
 
 ### Future Tasks (ON HOLD)
 - PayFast payment integration (pending CIPC approval)
-- NextAuth.js migration (if explicitly requested)
+- NextAuth.js migration (if requested)
