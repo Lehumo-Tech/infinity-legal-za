@@ -12,15 +12,18 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [demoMode, setDemoMode] = useState(false)
+  const [loginMethod, setLoginMethod] = useState('password') // 'password' | 'otp'
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
   const router = useRouter()
 
-  const handleSubmit = async (e) => {
+  const handlePasswordLogin = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     if (demoMode) {
-      // Demo auth (localStorage)
       setTimeout(() => {
         const result = demoAuth.login(email, password)
         if (result.success) {
@@ -31,7 +34,6 @@ export default function LoginPage() {
         setLoading(false)
       }, 500)
     } else {
-      // Real Supabase auth
       try {
         const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
         if (authError) {
@@ -47,8 +49,39 @@ export default function LoginPage() {
     }
   }
 
+  const handleSendOTP = async (e) => {
+    e.preventDefault()
+    setError('')
+    setSuccessMsg('')
+    setLoading(true)
+    try {
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+        },
+      })
+      if (otpError) {
+        // If user doesn't exist, show helpful message
+        if (otpError.message.includes('not') || otpError.message.includes('Signups')) {
+          setError('No account found with this email. Please register first.')
+        } else {
+          setError(otpError.message)
+        }
+      } else {
+        setOtpSent(true)
+        setSuccessMsg('Magic link sent! Check your email inbox (and spam folder).')
+      }
+    } catch (err) {
+      setError('Failed to send login link. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const quickLogin = (em) => {
     setDemoMode(true)
+    setLoginMethod('password')
     setEmail(em)
     setPassword('demo123')
   }
@@ -69,7 +102,7 @@ export default function LoginPage() {
       </nav>
 
       <main className="flex-1 flex">
-        {/* Left - Image Panel (hidden on mobile) */}
+        {/* Left - Image Panel */}
         <div className="hidden lg:flex lg:w-1/2 relative bg-[#0f2b46]">
           <img src="https://images.pexels.com/photos/5668768/pexels-photo-5668768.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Professional legal advisor" className="w-full h-full object-cover opacity-30" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0f2b46] via-[#0f2b46]/50 to-transparent" />
@@ -92,42 +125,124 @@ export default function LoginPage() {
             <p className="text-gray-500 text-sm">Sign in to your account</p>
           </div>
 
-          {/* Mode Toggle */}
+          {/* Mode Toggle: Real / Demo */}
           <div className="flex items-center justify-center gap-2 mb-4">
             <button 
-              onClick={() => setDemoMode(false)} 
+              onClick={() => { setDemoMode(false); setOtpSent(false); setError(''); setSuccessMsg('') }} 
               className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-colors ${!demoMode ? 'bg-[#0f2b46] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
             >
               Real Login
             </button>
             <button 
-              onClick={() => setDemoMode(true)} 
+              onClick={() => { setDemoMode(true); setLoginMethod('password'); setOtpSent(false); setError(''); setSuccessMsg('') }} 
               className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-colors ${demoMode ? 'bg-[#c9a961] text-[#0f2b46]' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
             >
               Demo Mode
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
-            {demoMode && (
-              <div className="bg-[#c9a961]/10 border border-[#c9a961]/30 rounded-lg px-3 py-2 text-xs text-[#78621e] font-medium text-center">
-                Demo Mode — Using mock data for presentation
+          {/* Login Method Toggle (Real Login only) */}
+          {!demoMode && (
+            <div className="flex items-center justify-center gap-1 mb-4 bg-gray-100 rounded-lg p-1">
+              <button 
+                onClick={() => { setLoginMethod('password'); setOtpSent(false); setError(''); setSuccessMsg('') }}
+                className={`flex-1 py-2 px-3 rounded-md text-xs font-semibold transition-colors ${loginMethod === 'password' ? 'bg-white text-[#0f2b46] shadow-sm' : 'text-gray-500 hover:text-[#0f2b46]'}`}
+              >
+                🔒 Password
+              </button>
+              <button 
+                onClick={() => { setLoginMethod('otp'); setError(''); setSuccessMsg('') }}
+                className={`flex-1 py-2 px-3 rounded-md text-xs font-semibold transition-colors ${loginMethod === 'otp' ? 'bg-white text-[#0f2b46] shadow-sm' : 'text-gray-500 hover:text-[#0f2b46]'}`}
+              >
+                ✉️ Email Link (OTP)
+              </button>
+            </div>
+          )}
+
+          {/* Password Login Form */}
+          {(loginMethod === 'password' || demoMode) && (
+            <form onSubmit={handlePasswordLogin} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
+              {demoMode && (
+                <div className="bg-[#c9a961]/10 border border-[#c9a961]/30 rounded-lg px-3 py-2 text-xs text-[#78621e] font-medium text-center">
+                  Demo Mode — Using mock data for presentation
+                </div>
+              )}
+              {error && <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg border border-red-200">{error}</div>}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your.email@example.com" required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all" />
               </div>
-            )}
-            {error && <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg border border-red-200">{error}</div>}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your.email@example.com" required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all" />
-            </div>
-            <button type="submit" disabled={loading} className="w-full py-3 bg-[#0f2b46] text-white font-bold rounded-xl hover:bg-[#1a365d] disabled:opacity-50 transition-colors">
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-            <p className="text-center text-sm text-gray-500">Don&apos;t have an account? <Link href="/signup" className="text-[#c9a961] font-semibold hover:text-[#0f2b46]">Join Now</Link></p>
-          </form>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all" />
+              </div>
+              <button type="submit" disabled={loading} className="w-full py-3 bg-[#0f2b46] text-white font-bold rounded-xl hover:bg-[#1a365d] disabled:opacity-50 transition-colors">
+                {loading ? 'Signing in...' : 'Sign In'}
+              </button>
+              {!demoMode && (
+                <button type="button" onClick={() => { setLoginMethod('otp'); setError('') }} className="w-full text-center text-xs text-[#c9a961] font-semibold hover:text-[#0f2b46] transition-colors">
+                  Forgot password? Sign in with email link instead →
+                </button>
+              )}
+              <p className="text-center text-sm text-gray-500">Don&apos;t have an account? <Link href="/signup" className="text-[#c9a961] font-semibold hover:text-[#0f2b46]">Join Now</Link></p>
+            </form>
+          )}
+
+          {/* OTP / Magic Link Form */}
+          {loginMethod === 'otp' && !demoMode && (
+            <form onSubmit={handleSendOTP} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
+              {error && <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg border border-red-200">{error}</div>}
+              {successMsg && (
+                <div className="bg-green-50 text-green-700 text-sm p-3 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">✅</span>
+                    <div>
+                      <p className="font-bold text-xs">{successMsg}</p>
+                      <p className="text-xs text-green-600 mt-0.5">Click the link in the email to sign in automatically. No password needed.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {!otpSent ? (
+                <>
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-[#c9a961]/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-2xl">✉️</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-[#0f2b46]">Sign in with Email Link</h3>
+                    <p className="text-xs text-gray-500 mt-1">We&apos;ll send a secure login link to your email. No password required — perfect for mobile.</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your.email@example.com" required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all" />
+                  </div>
+                  <button type="submit" disabled={loading} className="w-full py-3 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] disabled:opacity-50 transition-colors">
+                    {loading ? 'Sending...' : 'Send Login Link →'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-3xl">📬</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-[#0f2b46]">Check Your Email</h3>
+                    <p className="text-sm text-gray-500 mt-1">We sent a login link to <strong className="text-[#0f2b46]">{email}</strong></p>
+                    <p className="text-xs text-gray-400 mt-2">Click the link in the email to sign in. Check your spam folder if you don&apos;t see it.</p>
+                  </div>
+                  <button type="button" onClick={() => { setOtpSent(false); setSuccessMsg('') }} className="w-full py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm">
+                    Resend Link
+                  </button>
+                </>
+              )}
+
+              <button type="button" onClick={() => { setLoginMethod('password'); setOtpSent(false); setError(''); setSuccessMsg('') }} className="w-full text-center text-xs text-gray-400 hover:text-[#0f2b46] transition-colors">
+                ← Back to password login
+              </button>
+              <p className="text-center text-sm text-gray-500">Don&apos;t have an account? <Link href="/signup" className="text-[#c9a961] font-semibold hover:text-[#0f2b46]">Join Now</Link></p>
+            </form>
+          )}
 
           {/* Demo Quick Login */}
           {demoMode && (

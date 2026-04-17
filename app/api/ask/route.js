@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { matchLegislation, recommendPlan } from '@/lib/sa-legislation'
 import OpenAI from 'openai'
+import { checkHighRisk } from '@/app/api/flagged-matters/route'
 
 const openai = new OpenAI({
   apiKey: process.env.EMERGENT_LLM_KEY,
@@ -186,6 +187,7 @@ Always end with:
       categories,
       matchCount: matches.length,
       messageCount: messageCount + 1,
+      highRisk: checkHighRisk(query),
     })
   } catch (error) {
     console.error('Ask Infinity error:', error)
