@@ -100,14 +100,14 @@ const TESTIMONIALS = [
 ]
 
 const PEOPLE_IMAGES = {
-  hero: 'https://images.unsplash.com/photo-1622675363311-3e1904dc1885?w=1200&q=80',
+  hero: 'https://images.unsplash.com/photo-1739289671650-a5f3e0069d29?w=1200&q=80',
   family: 'https://images.pexels.com/photos/3875437/pexels-photo-3875437.jpeg?auto=compress&cs=tinysrgb&w=800',
-  workplace: 'https://images.pexels.com/photos/5466277/pexels-photo-5466277.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  teamwork: 'https://images.pexels.com/photos/5257005/pexels-photo-5257005.jpeg?auto=compress&cs=tinysrgb&w=800',
-  consultation: 'https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=1200&q=80',
-  professional: 'https://images.pexels.com/photos/5668768/pexels-photo-5668768.jpeg?auto=compress&cs=tinysrgb&w=800',
-  advisor: 'https://images.pexels.com/photos/7581115/pexels-photo-7581115.jpeg?auto=compress&cs=tinysrgb&w=600',
-  colleagues: 'https://images.pexels.com/photos/5946219/pexels-photo-5946219.jpeg?auto=compress&cs=tinysrgb&w=800',
+  workplace: 'https://images.unsplash.com/photo-1758691737543-09a1b2b715fa?w=1200&q=80',
+  teamwork: 'https://images.unsplash.com/photo-1758691737543-09a1b2b715fa?w=1200&q=80',
+  consultation: 'https://images.unsplash.com/photo-1739285452644-3a2c009112fe?w=1200&q=80',
+  professional: 'https://images.unsplash.com/photo-1622476512221-5fe08e42f898?w=800&q=80',
+  advisor: 'https://images.unsplash.com/photo-1775163024488-e88e4a71179f?w=800&q=80',
+  colleagues: 'https://images.unsplash.com/photo-1758691737543-09a1b2b715fa?w=800&q=80',
 }
 
 const CAROUSEL_SLIDES = [

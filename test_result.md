@@ -769,12 +769,44 @@ agent_communication:
       message: "INFINITY LEGAL PLATFORM LEAD CAPTURE & SOCIAL LISTENING FRONTEND TESTING COMPLETED SUCCESSFULLY: All critical frontend features tested and working correctly. ✅ HOMEPAGE (/): CIPC banner present, hero buttons show 'Get Free Legal Analysis →' and 'Get Started Free ⚖️' (NO 'waitlist' text), modal opens with 'Get Started Free' title, form has all required fields (Full Name, Email, Phone, Legal Need dropdown, POPIA checkbox), submit button says 'Register Now →', success shows 'You're All Set!'. ✅ PRICING (/pricing): CIPC banner says 'Register Now', plan cards show 'Get Started — {plan}' buttons for Civil R99, Labour R99, Extensive R139, clicking opens modal with legal need dropdown. ✅ SIGNUP (/signup): Title 'Join Infinity Legal' with 'Free Tier • No Payment Required' badge, form has all fields, button says 'Register Now — Free Access →', no payment fields visible, success shows 'You're All Set!'. ✅ PORTAL (/portal/leads-dashboard): Requires authentication (shows loading screen), properly secured. ✅ NO 'WAITLIST' LANGUAGE: Successfully removed from all public-facing UI, replaced with 'Get Started Free', 'Register Now' messaging. All lead capture forms include legal need dropdown with CCMA, Divorce, Eviction, Criminal options. Frontend implementation matches backend lead scoring system perfectly."
     - agent: "testing"
       message: "PHASE 1-4 API ENDPOINTS TESTING COMPLETED SUCCESSFULLY: All 4 new Phase 1-4 API endpoints tested and working perfectly (100% success rate). ✅ ADVISOR CHAT API: Complete chat functionality working - member messages trigger AI responses with SA law context and required disclaimers, advisor messages don't trigger AI, chat history retrieval, session listing, and validation all working correctly. ✅ FLAGGED MATTERS API: High-risk matter detection working perfectly - murder cases flagged as 'critical', high court cases as 'high', proper stats and listing functionality. ✅ MATTER ASSIGNMENT API: Auto-assignment logic working correctly with workload balancing, proper handling when no advisors available, validation, and workload reporting. ✅ AUDIT LOG API (POPIA): Complete POPIA compliance audit trail working - event logging, trail retrieval, action filtering, and proper data capture including IP/user-agent headers. All MongoDB integration, validation, error handling, and core functionality working perfectly. All Phase 1-4 APIs ready for production use."
+    - agent: "testing"
+      message: "ENHANCED AI & SCHEMA FEATURES TESTING COMPLETED SUCCESSFULLY: All 3 enhanced features tested and working perfectly (100% success rate). ✅ AI INTERACTION LOGGING: POST /api/ask correctly logs all interactions to MongoDB with risk assessment, auto-flags high-risk queries (murder=true, unfair dismissal=false), proper validation (400 for empty/long queries), and comprehensive AI responses with SA legislation citations. ✅ ENHANCED CASES SCHEMA: POST /api/cases with auth creates cases with all POPIA fields (province, ai_confidence_score, flagged_for_human_review, risk_keywords, consent_popia, data_processing_purpose, access_log), proper case number format (IL-2026-NNNN), and MongoDB integration. ✅ FLAGGED MATTERS VERIFICATION: GET /api/flagged-matters shows auto-flagged high-risk queries with proper stats (3 total, 3 pending) and murder query correctly flagged with matched keywords. All AI processing, risk detection, POPIA compliance, and auto-flagging functionality working perfectly. Enhanced features ready for production use."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 15
+  test_sequence: 16
   run_ui: false
+
+  - task: "AI Interaction Logging + High-Risk Flagging"
+    implemented: true
+    working: true
+    file: "app/api/ask/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Enhanced /api/ask to log all AI interactions to MongoDB ai_interactions collection with: userId, query, response, model, retrieved laws, risk level, flagged status. Auto-flags high-risk queries (murder, rape, constitutional) to flagged_matters collection."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE AI INTERACTION LOGGING TESTING COMPLETED SUCCESSFULLY: All 5 test scenarios passed (100% success rate). ✅ NORMAL LEGAL QUERIES: Unfair dismissal query correctly returns highRisk.isHighRisk = false with proper SA legislation citations and labour law categories. ✅ HIGH-RISK DETECTION: Murder query correctly flagged with highRisk.isHighRisk = true and matchedKeywords = ['murder']. ✅ CONSUMER PROTECTION: Faulty product query processed correctly with civil law response. ✅ VALIDATION: Empty query and long query (>1000 chars) both correctly return 400 error. ✅ AI INTERACTION LOGGING: All queries logged to MongoDB ai_interactions collection with proper risk assessment and keyword matching. ✅ AUTO-FLAGGING: High-risk queries automatically flagged to flagged_matters collection for human review. All AI processing, risk detection, MongoDB logging, and validation working perfectly."
+
+  - task: "Enhanced Cases Schema"
+    implemented: true
+    working: true
+    file: "app/api/cases/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added POPIA fields to case creation: province, ai_analysis_summary, ai_confidence_score, flagged_for_human_review, risk_keywords, incident_date, filing_deadline, consent_popia, data_processing_purpose, access_log."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE ENHANCED CASES SCHEMA TESTING COMPLETED SUCCESSFULLY: All POPIA compliance fields implemented and working correctly. ✅ CASE CREATION: POST /api/cases with auth successfully creates case with proper case number format (IL-2026-0006). ✅ POPIA FIELDS: All required fields present and correctly set - province (Gauteng), ai_confidence_score (0.85), flagged_for_human_review (false), risk_keywords (['unfair dismissal', 'CCMA']), consent_popia (true), data_processing_purpose ('legal_representation'), access_log ([]). ✅ AUTHENTICATION: Properly secured with Bearer token auth. ✅ MONGODB INTEGRATION: All enhanced schema fields stored correctly in MongoDB cases collection. Enhanced schema fully compliant with POPIA requirements and ready for production use."
 
   - task: "Advisor Chat API"
     implemented: true

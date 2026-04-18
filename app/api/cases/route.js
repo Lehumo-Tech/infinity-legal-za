@@ -52,6 +52,18 @@ export async function POST(request) {
       attorney_name: body.attorney_name || '',
       court_date: body.court_date || null,
       court_location: body.court_location || null,
+      // POPIA & Compliance Fields
+      province: body.province || null,
+      ai_analysis_summary: body.ai_analysis_summary || null,
+      ai_confidence_score: body.ai_confidence_score || null,
+      flagged_for_human_review: body.flagged_for_human_review || false,
+      risk_keywords: body.risk_keywords || [],
+      incident_date: body.incident_date || null,
+      filing_deadline: body.filing_deadline || null,
+      consent_popia: body.consent_popia || true,
+      data_processing_purpose: 'legal_representation',
+      access_log: [],
+      // Metadata
       createdBy: user.id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

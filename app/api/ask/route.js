@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { matchLegislation, recommendPlan } from '@/lib/sa-legislation'
 import OpenAI from 'openai'
 import { checkHighRisk } from '@/app/api/flagged-matters/route'
+import { getDb } from '@/lib/mongodb'
 
 const openai = new OpenAI({
   apiKey: process.env.EMERGENT_LLM_KEY,
@@ -182,12 +183,50 @@ Always end with:
       }
     }
 
+    // Log AI interaction to MongoDB (POPIA audit trail)
+    const riskCheck = checkHighRisk(query)
+    try {
+      const db = await getDb()
+      await db.collection('ai_interactions').insertOne({
+        id: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        userId: body.userId || 'anonymous',
+        matterId: body.matterId || null,
+        userQuery: query,
+        aiResponse: finalResponse.substring(0, 2000),
+        modelVersion: 'gpt-4o',
+        retrievedLawSegments: matches.map(m => ({ law: m.act, year: m.year, category: m.category, sections: m.sections.length })),
+        disclaimerShown: true,
+        flaggedForReview: riskCheck.isHighRisk,
+        riskLevel: riskCheck.isHighRisk ? 'high' : 'low',
+        riskKeywords: riskCheck.matchedKeywords,
+        tokensUsed: Math.ceil(finalResponse.length / 4),
+        createdAt: new Date().toISOString(),
+      })
+
+      // Auto-flag high-risk matters
+      if (riskCheck.isHighRisk) {
+        await db.collection('flagged_matters').insertOne({
+          id: `flag_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+          query,
+          userId: body.userId || 'anonymous',
+          matchedKeywords: riskCheck.matchedKeywords,
+          aiResponse: finalResponse.substring(0, 500),
+          status: 'pending_review',
+          severity: riskCheck.matchedKeywords.some(k => ['murder', 'rape', 'child abuse', 'terrorism'].includes(k)) ? 'critical' : 'high',
+          assignedAdvisor: null,
+          createdAt: new Date().toISOString(),
+        })
+      }
+    } catch (logErr) {
+      console.warn('Failed to log AI interaction:', logErr.message)
+    }
+
     return NextResponse.json({
       response: finalResponse,
       categories,
       matchCount: matches.length,
       messageCount: messageCount + 1,
-      highRisk: checkHighRisk(query),
+      highRisk: riskCheck,
     })
   } catch (error) {
     console.error('Ask Infinity error:', error)

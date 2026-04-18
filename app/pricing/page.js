@@ -97,7 +97,7 @@ export default function PricingPage() {
         {/* Hero Banner with Image */}
         <div className="relative bg-[#0f2b46] rounded-3xl overflow-hidden mb-12 shadow-xl">
           <div className="absolute inset-0">
-            <img src="https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=1200&q=80" alt="" className="w-full h-full object-cover opacity-15" />
+            <img src="https://images.unsplash.com/photo-1739285452644-3a2c009112fe?w=1200&q=80" alt="" className="w-full h-full object-cover opacity-15" />
           </div>
           <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center p-8 md:p-12">
             <div>
