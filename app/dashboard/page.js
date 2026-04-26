@@ -11,8 +11,13 @@ export default function DashboardPage() {
   const router = useRouter()
   const { user, profile, loading: authLoading, signOut } = useAuth()
   const [cases, setCases] = useState([])
+  const [selectedCase, setSelectedCase] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [newMessage, setNewMessage] = useState('')
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [summary, setSummary] = useState('')
+  const [summarizing, setSummarizing] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -21,21 +26,31 @@ export default function DashboardPage() {
     }
     if (user) {
       fetchDashboardData()
+
+      const channel = supabase
+        .channel(`client-cases:${user.id}`)
+        .on('postgres_changes', {
+          event: '*', schema: 'public', table: 'cases',
+          filter: `client_id=eq.${user.id}`
+        }, () => {
+          fetchDashboardData()
+        })
+        .subscribe()
+
+      return () => supabase.removeChannel(channel)
     }
   }, [authLoading, user])
 
   const fetchDashboardData = async () => {
     try {
-      // Get cases
       const { data: casesData } = await supabase
         .from('cases')
-        .select('*')
+        .select('*, attorney:attorneys(id, full_name, specializations)')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false })
 
       setCases(casesData || [])
 
-      // Get subscription
       const { data: subData } = await supabase
         .from('user_subscriptions')
         .select('*, pricing_plans(*)')
@@ -49,6 +64,87 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function loadMessages(caseId) {
+    const { data } = await supabase
+      .from('messages')
+      .select('*, sender:profiles(full_name, role)')
+      .eq('case_id', caseId)
+      .order('created_at', { ascending: true })
+    setMessages(data || [])
+  }
+
+  async function sendMessage() {
+    if (!newMessage.trim() || !selectedCase || !user) return
+
+    await supabase.from('messages').insert({
+      case_id: selectedCase.id,
+      sender_id: user.id,
+      content: newMessage,
+      created_at: new Date().toISOString()
+    })
+
+    setNewMessage('')
+    loadMessages(selectedCase.id)
+  }
+
+  async function summarizeSelectedCase() {
+    if (!selectedCase) return
+    setSummarizing(true)
+    setSummary('')
+
+    try {
+      const textToSummarize = selectedCase.intake_data
+        ? selectedCase.intake_data.join('\n\n')
+        : selectedCase.ai_analysis?.disclaimer
+          ? `${selectedCase.category}. ${selectedCase.subcategory}`
+          : ''
+
+      if (!textToSummarize || textToSummarize.length < 50) {
+        setSummary('Not enough text to summarize. Add more case details.')
+        setSummarizing(false)
+        return
+      }
+
+      const res = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: textToSummarize, maxLength: 150, minLength: 30 }),
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        setSummary(data.summary)
+      } else {
+        setSummary('Summary unavailable. ' + (data.error || ''))
+      }
+    } catch (err) {
+      setSummary('Could not generate summary. Please try again.')
+    } finally {
+      setSummarizing(false)
+    }
+  }
+
+  function getStatusColor(status) {
+    const colors = {
+      open: 'bg-yellow-100 text-yellow-800',
+      assigned: 'bg-blue-100 text-blue-800',
+      in_progress: 'bg-purple-100 text-purple-800',
+      resolved: 'bg-green-100 text-green-800',
+      closed: 'bg-gray-100 text-gray-800'
+    }
+    return colors[status] || colors.open
+  }
+
+  function getUrgencyBadge(urgency) {
+    const badges = {
+      critical: 'Critical',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low'
+    }
+    return badges[urgency] || urgency
   }
 
   const handleLogout = async () => {
@@ -165,50 +261,264 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* My Cases */}
-        <div className="bg-white rounded-lg border border-infinity-gold/20 p-6">
-          <h2 className="text-xl font-semibold text-infinity-navy mb-4">My Cases</h2>
-          
-          {cases.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-infinity-navy/70 mb-4">No cases yet</p>
-              <Link
-                href="/intake"
-                className="inline-block px-6 py-2 bg-infinity-navy text-infinity-cream rounded-lg hover:bg-infinity-navy/90"
+        {/* Cases & Detail */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Cases List */}
+          <div className="lg:col-span-1 space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="font-semibold text-lg text-infinity-navy">Cases ({cases.length})</h2>
+              <button
+                onClick={() => router.push('/intake')}
+                className="px-4 py-2 bg-infinity-navy text-infinity-cream rounded-lg hover:bg-infinity-navy/90 text-sm"
               >
-                Start Your First Case
-              </Link>
+                + New Case
+              </button>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {cases.map((caseItem) => (
-                <div
-                  key={caseItem.id}
-                  className="border border-infinity-gold/20 rounded-lg p-4 hover:bg-infinity-cream/50"
+
+            {cases.length === 0 ? (
+              <div className="bg-white border-2 border-dashed border-infinity-gold/20 rounded-xl p-8 text-center">
+                <p className="text-infinity-navy/70 mb-4">No cases yet</p>
+                <button
+                  onClick={() => router.push('/intake')}
+                  className="text-infinity-navy hover:underline"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-infinity-navy mb-1">{caseItem.title}</h3>
-                      <p className="text-sm text-infinity-navy/70 mb-2">{caseItem.case_number}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 bg-infinity-gold/10 text-infinity-navy text-xs rounded">
-                          {caseItem.case_type}
-                        </span>
-                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                          {caseItem.status}
-                        </span>
-                      </div>
-                    </div>
+                  Start your first legal intake
+                </button>
+              </div>
+            ) : (
+              cases.map(c => (
+                <div
+                  key={c.id}
+                  onClick={() => { setSelectedCase(c); loadMessages(c.id); }}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    selectedCase?.id === c.id
+                      ? 'border-infinity-gold bg-amber-50'
+                      : 'border-infinity-gold/20 hover:border-infinity-gold/50'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(c.status)}`}>
+                      {c.status.replace('_', ' ')}
+                    </span>
                     <span className="text-xs text-infinity-navy/50">
-                      {new Date(caseItem.created_at).toLocaleDateString()}
+                      {getUrgencyBadge(c.urgency)}
                     </span>
                   </div>
+                  <h3 className="font-semibold text-infinity-navy">{c.category}</h3>
+                  <p className="text-sm text-infinity-navy/70 mt-1">{c.subcategory}</p>
+                  {c.attorney && (
+                    <p className="text-sm text-blue-600 mt-2">
+                      Attorney: {c.attorney.full_name}
+                    </p>
+                  )}
+                  <p className="text-xs text-infinity-navy/40 mt-2">
+                    {new Date(c.created_at).toLocaleDateString('en-ZA')}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
+
+          {/* Case Detail & Messages */}
+          <div className="lg:col-span-2">
+            {selectedCase ? (
+              <div className="space-y-6">
+                {/* Case Header */}
+                <div className="bg-white border border-infinity-gold/20 rounded-xl p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-xl font-bold text-infinity-navy">{selectedCase.category}</h2>
+                      <p className="text-infinity-navy/70">{selectedCase.subcategory}</p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedCase.status)}`}>
+                      {selectedCase.status.replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  {selectedCase.ai_analysis && (
+                    <div className="mt-4 p-4 bg-infinity-cream rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-semibold text-sm text-infinity-navy">AI Analysis</h3>
+                        <button
+                          onClick={summarizeSelectedCase}
+                          disabled={summarizing}
+                          className="text-xs px-3 py-1 bg-infinity-navy text-infinity-cream rounded-lg hover:bg-infinity-navy/90 disabled:opacity-50"
+                        >
+                          {summarizing ? 'Summarizing...' : 'Summarize'}
+                        </button>
+                      </div>
+                      <p className="text-sm text-infinity-navy/70">
+                        <strong>Estimated Cost:</strong> {selectedCase.ai_analysis.costEstimate?.range || 'TBD'}
+                      </p>
+                      <div className="mt-2">
+                        <strong className="text-sm text-infinity-navy">Next Steps:</strong>
+                        <ol className="mt-1 text-sm text-infinity-navy/70 list-decimal list-inside">
+                          {(selectedCase.ai_analysis.nextSteps || []).map((step, i) => (
+                            <li key={i}>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                      {summary && (
+                        <div className="mt-3 p-3 bg-white border border-infinity-gold/20 rounded-lg">
+                          <strong className="text-xs text-infinity-navy">Case Summary:</strong>
+                          <p className="text-sm text-infinity-navy/70 mt-1">{summary}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Messages */}
+                <div className="bg-white border border-infinity-gold/20 rounded-xl p-6">
+                  <h3 className="font-semibold text-lg mb-4 text-infinity-navy">Messages</h3>
+
+                  <div className="space-y-4 max-h-96 overflow-y-auto mb-4">
+                    {messages.length === 0 ? (
+                      <p className="text-infinity-navy/50 text-center py-8">No messages yet</p>
+                    ) : (
+                      messages.map(msg => (
+                        <div key={msg.id} className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[80%] p-3 rounded-xl ${
+                            msg.sender_id === user.id
+                              ? 'bg-infinity-navy text-white'
+                              : 'bg-infinity-cream text-infinity-navy'
+                          }`}>
+                            <p className="text-sm">{msg.content}</p>
+                            <p className={`text-xs mt-1 ${msg.sender_id === user.id ? 'text-blue-200' : 'text-infinity-navy/50'}`}>
+                              {msg.sender?.full_name} &middot; {new Date(msg.created_at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Message Input */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                      placeholder="Type your message..."
+                      className="flex-1 px-4 py-2 border border-infinity-gold/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-infinity-gold"
+                    />
+                    <button
+                      onClick={sendMessage}
+                      disabled={!newMessage.trim()}
+                      className="px-6 py-2 bg-infinity-navy text-infinity-cream rounded-lg hover:bg-infinity-navy/90 disabled:opacity-50"
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+
+                {/* Documents */}
+                <div className="bg-white border border-infinity-gold/20 rounded-xl p-6">
+                  <h3 className="font-semibold text-lg mb-4 text-infinity-navy">Documents</h3>
+                  <DocumentUploader caseId={selectedCase.id} userId={user.id} />
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white border-2 border-dashed border-infinity-gold/20 rounded-xl p-12 text-center">
+                <p className="text-infinity-navy/50 text-lg">Select a case to view details and messages</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function DocumentUploader({ caseId, userId }) {
+  const [uploading, setUploading] = useState(false)
+  const [documents, setDocuments] = useState([])
+
+  useEffect(() => {
+    loadDocuments()
+  }, [caseId])
+
+  async function loadDocuments() {
+    const { data } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('case_id', caseId)
+      .order('created_at', { ascending: false })
+    setDocuments(data || [])
+  }
+
+  async function handleUpload(e) {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const key = `cases/${caseId}/${Date.now()}-${file.name}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(key, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(key)
+
+      await supabase.from('documents').insert({
+        case_id: caseId,
+        uploaded_by: userId,
+        filename: file.name,
+        file_url: publicUrl,
+        file_size: file.size,
+        mime_type: file.type
+      })
+
+      loadDocuments()
+    } catch (err) {
+      alert('Upload failed: ' + err.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-4">
+        <label className="flex items-center gap-2 px-4 py-2 bg-infinity-cream text-infinity-navy rounded-lg cursor-pointer hover:bg-amber-100 w-fit border border-infinity-gold/20">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          {uploading ? 'Uploading...' : 'Upload Document'}
+          <input type="file" className="hidden" onChange={handleUpload} accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt" />
+        </label>
+        <p className="text-xs text-infinity-navy/50 mt-1">Max 10MB. PDF, Word, images accepted.</p>
+      </div>
+
+      {documents.length === 0 ? (
+        <p className="text-infinity-navy/50 text-sm">No documents uploaded yet</p>
+      ) : (
+        <div className="space-y-2">
+          {documents.map(doc => (
+            <a
+              key={doc.id}
+              href={doc.file_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 bg-infinity-cream rounded-lg hover:bg-amber-100 transition-colors"
+            >
+              <svg className="w-8 h-8 text-infinity-navy/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-infinity-navy truncate">{doc.filename}</p>
+                <p className="text-xs text-infinity-navy/50">{(doc.file_size / 1024).toFixed(1)} KB &middot; {new Date(doc.created_at).toLocaleDateString('en-ZA')}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

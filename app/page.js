@@ -100,14 +100,14 @@ const TESTIMONIALS = [
 ]
 
 const PEOPLE_IMAGES = {
-  hero: 'https://images.unsplash.com/photo-1739289671650-a5f3e0069d29?w=1200&q=80',
-  family: 'https://images.pexels.com/photos/3875437/pexels-photo-3875437.jpeg?auto=compress&cs=tinysrgb&w=800',
-  workplace: 'https://images.unsplash.com/photo-1758691737543-09a1b2b715fa?w=1200&q=80',
-  teamwork: 'https://images.unsplash.com/photo-1758691737543-09a1b2b715fa?w=1200&q=80',
-  consultation: 'https://images.unsplash.com/photo-1739285452644-3a2c009112fe?w=1200&q=80',
-  professional: 'https://images.unsplash.com/photo-1622476512221-5fe08e42f898?w=800&q=80',
-  advisor: 'https://images.unsplash.com/photo-1775163024488-e88e4a71179f?w=800&q=80',
-  colleagues: 'https://images.unsplash.com/photo-1758691737543-09a1b2b715fa?w=800&q=80',
+  hero: '/images/hero-legal-team.png',
+  family: '/images/client-getting-help.png',
+  workplace: '/images/hero-legal-team.png',
+  teamwork: '/images/hero-legal-team.png',
+  consultation: '/images/attorney-consultation.png',
+  professional: '/images/attorney-consultation.png',
+  advisor: '/images/attorney-consultation.png',
+  colleagues: '/images/hero-legal-team.png',
 }
 
 const CAROUSEL_SLIDES = [

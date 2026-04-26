@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { validateSAIdLocal } from '@/lib/sa-id-validation-client'
 
 export default function AttorneySignupPage() {
   const router = useRouter()
@@ -12,6 +13,7 @@ export default function AttorneySignupPage() {
     email: '',
     phone: '',
     lpcNumber: '',
+    saIdNumber: '',
     firmName: '',
     specializations: [],
     yearsExperience: '',
@@ -59,6 +61,13 @@ export default function AttorneySignupPage() {
       if (!/^\d{7}$/.test(formData.lpcNumber)) {
         setError('LPC number must be 7 digits')
         return
+      }
+      if (formData.saIdNumber) {
+        const idCheck = validateSAIdLocal(formData.saIdNumber)
+        if (!idCheck.valid) {
+          setError(`SA ID validation failed: ${idCheck.reason}`)
+          return
+        }
       }
     }
     if (step === 2) {
@@ -201,6 +210,23 @@ export default function AttorneySignupPage() {
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   We will verify your registration with the Legal Practice Council
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  South African ID Number
+                </label>
+                <input
+                  type="text"
+                  value={formData.saIdNumber}
+                  onChange={(e) => setFormData({ ...formData, saIdNumber: e.target.value })}
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="13-digit SA ID number"
+                  maxLength={13}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Used for identity verification (Luhn checksum validated instantly)
                 </p>
               </div>
 

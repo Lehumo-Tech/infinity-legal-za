@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/api-auth'
 import { getDb } from '@/lib/mongodb'
+import { notifyNewCase } from '@/lib/telegram-service'
 export const dynamic = 'force-dynamic'
 
 function genId() { return `case_${Date.now()}_${Math.random().toString(36).substr(2, 8)}` }
@@ -30,13 +31,13 @@ export async function POST(request) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const db = await getDb()
     const body = await request.json()
-    
+
     // Generate case number
     const year = new Date().getFullYear()
     const count = await db.collection('cases').countDocuments()
     const seq = String(count + 1).padStart(4, '0')
     const case_number = `IL-${year}-${seq}`
-    
+
     const newCase = {
       id: genId(),
       case_number,
@@ -68,9 +69,9 @@ export async function POST(request) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    
+
     await db.collection('cases').insertOne(newCase)
-    
+
     // Add timeline entry
     await db.collection('case_timeline').insertOne({
       id: `tl_${Date.now()}`,
@@ -83,7 +84,16 @@ export async function POST(request) {
       metadata: { case_number, case_type: newCase.case_type },
       createdAt: new Date().toISOString(),
     })
-    
+
+    // Send Telegram notification for new case
+    notifyNewCase(newCase, {
+      category: newCase.case_type,
+      urgency: newCase.urgency,
+      summary: newCase.ai_analysis_summary || newCase.description
+    }).catch(err => {
+      console.error('Telegram case notification failed:', err.message)
+    })
+
     return NextResponse.json({ case: newCase }, { status: 201 })
   } catch (error) {
     console.error('Cases POST error:', error)
@@ -100,13 +110,13 @@ export async function PUT(request) {
     const body = await request.json()
     const { id, ...updates } = body
     if (!id) return NextResponse.json({ error: 'Case ID required' }, { status: 400 })
-    
+
     updates.updatedAt = new Date().toISOString()
     const oldCase = await db.collection('cases').findOne({ id })
-    
+
     await db.collection('cases').updateOne({ id }, { $set: updates })
     const updatedCase = await db.collection('cases').findOne({ id })
-    
+
     // Timeline entry for status changes
     if (updates.status && oldCase && oldCase.status !== updates.status) {
       await db.collection('case_timeline').insertOne({
@@ -120,8 +130,20 @@ export async function PUT(request) {
         metadata: { oldStatus: oldCase.status, newStatus: updates.status },
         createdAt: new Date().toISOString(),
       })
+
+      // Send Telegram notification for urgent cases
+      if (updates.status === 'assigned' && oldCase.urgency === 'critical') {
+        const { notifyUrgentCase } = await import('@/lib/telegram-service')
+        notifyUrgentCase({
+          category: oldCase.case_type,
+          urgency: oldCase.urgency,
+          clientName: oldCase.client_name
+        }).catch(err => {
+          console.error('Urgent case Telegram notification failed:', err.message)
+        })
+      }
     }
-    
+
     return NextResponse.json({ case: updatedCase })
   } catch (error) {
     console.error('Cases PUT error:', error)

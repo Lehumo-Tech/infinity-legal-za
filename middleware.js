@@ -26,7 +26,7 @@ export function middleware(request) {
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' blob: data: https:;
     font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://integrations.emergentagent.com;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://integrations.emergentagent.com https://api.groq.com https://generativelanguage.googleapis.com;
     frame-src 'self' https://www.payfast.co.za https://sandbox.payfast.co.za;
     object-src 'none';
     base-uri 'self';
