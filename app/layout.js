@@ -49,7 +49,7 @@ export const metadata = {
     description: 'Get instant guidance from our AI legal assistant, then connect with qualified South African legal advisors.',
     images: ['/hero-consultation.png'],
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.co.za'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'),
 }
 
 export default function RootLayout({ children }) {
@@ -58,9 +58,9 @@ export default function RootLayout({ children }) {
     '@type': 'LegalService',
     name: 'Infinity Legal',
     description: 'AI-powered legal assistance platform for South Africa. Affordable, confidential legal help from qualified legal advisors.',
-    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.co.za',
-    logo: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.co.za'}/logo-icon-512.png`,
-    image: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.co.za'}/hero-consultation.png`,
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org',
+    logo: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/logo-icon-512.png`,
+    image: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/hero-consultation.png`,
     telephone: '+27-000-000-0000',
     email: 'info@infinitylegal.co.za',
     areaServed: {
