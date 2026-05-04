@@ -5,15 +5,9 @@ import dynamic from 'next/dynamic'
 import { AuthProvider } from '@/contexts/AuthContext'
 import ErrorBoundary from '@/components/ErrorBoundary'
 
-const CookieConsent = dynamic(() => import('../components/CookieConsent'), {
-  ssr: false
-})
-const AnalyticsTracker = dynamic(() => import('../components/AnalyticsTracker'), {
-  ssr: false
-})
-const AIChatWidget = dynamic(() => import('../components/AIChatWidget'), {
-  ssr: false
-})
+const CookieConsent = dynamic(() => import('../components/CookieConsent'))
+const AnalyticsTracker = dynamic(() => import('../components/AnalyticsTracker'))
+const AIChatWidget = dynamic(() => import('../components/AIChatWidget'))
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -68,7 +62,7 @@ export default function RootLayout({ children }) {
     logo: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/logo-icon-512.png`,
     image: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/hero-consultation.png`,
     telephone: '+27-000-000-0000',
-    email: 'info@infinitylegal.org',
+    email: 'info@infinitylegal.co.za',
     areaServed: {
       '@type': 'Country',
       name: 'South Africa',

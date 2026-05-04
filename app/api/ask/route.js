@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server'
 import { matchLegislation, recommendPlan } from '@/lib/sa-legislation'
 import OpenAI from 'openai'
-import { checkHighRisk } from '@/app/api/flagged-matters/route'
+import { checkHighRisk } from '@/lib/security'
 import { getDb } from '@/lib/mongodb'
 
-const openai = new OpenAI({
-  apiKey: process.env.EMERGENT_LLM_KEY,
-  baseURL: 'https://integrations.emergentagent.com/llm',
-})
+let openai = null
+function getOpenAIClient() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.EMERGENT_LLM_KEY || 'dummy-key',
+      baseURL: 'https://integrations.emergentagent.com/llm',
+    })
+  }
+  return openai
+}
 
 const DISCLAIMER = "⚠️ This is general legal information based on South African legislation — not legal advice. No attorney-client relationship is created. Outcomes depend on your specific circumstances. For personalised assistance, join Infinity Legal."
 
@@ -133,7 +139,7 @@ ${legislationContext}`
 
         messages.push({ role: 'user', content: query })
 
-        const completion = await openai.chat.completions.create({
+        const completion = await getOpenAIClient().chat.completions.create({
           model: 'gpt-4o',
           messages,
           max_tokens: 800,
@@ -151,7 +157,7 @@ ${legislationContext}`
         const rec = recommendPlan(['civil'])
         const showCTA = messageCount >= 2
         
-        const completion = await openai.chat.completions.create({
+        const completion = await getOpenAIClient().chat.completions.create({
           model: 'gpt-4o',
           messages: [
             { role: 'system', content: `You are "Ask Infinity", a legal information assistant for Infinity Legal (South Africa).

@@ -7,10 +7,16 @@ import { checkRateLimit } from '@/lib/security'
 export const dynamic = 'force-dynamic'
 
 // Initialize the OpenAI-compatible client pointing to Emergent's proxy
-const client = new OpenAI({
-  apiKey: process.env.EMERGENT_LLM_KEY,
-  baseURL: 'https://integrations.emergentagent.com/llm',
-})
+let client = null
+function getOpenAIClient() {
+  if (!client) {
+    client = new OpenAI({
+      apiKey: process.env.EMERGENT_LLM_KEY || 'dummy-key',
+      baseURL: 'https://integrations.emergentagent.com/llm',
+    })
+  }
+  return client
+}
 
 async function getUserFromRequest(request) {
   const authHeader = request.headers.get('authorization')
@@ -105,7 +111,7 @@ export async function POST(request) {
     userMessage += `Please provide your analysis in the required JSON format.`
 
     // Call Gemini via Emergent proxy
-    const completion = await client.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: 'gemini/gemini-2.5-flash',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },

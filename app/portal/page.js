@@ -234,7 +234,7 @@ export default function PortalDashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="shrink-0">📞</span>
-                <span>+27 12 940 1080</span>
+                <span>+27 68 127 6038</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="shrink-0">✉️</span>

@@ -3,10 +3,16 @@ import { getDb } from '@/lib/mongodb'
 import OpenAI from 'openai'
 export const dynamic = 'force-dynamic'
 
-const openai = new OpenAI({
-  apiKey: process.env.EMERGENT_LLM_KEY,
-  baseURL: 'https://integrations.emergentagent.com/llm',
-})
+let openai = null
+function getOpenAIClient() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.EMERGENT_LLM_KEY || 'dummy-key',
+      baseURL: 'https://integrations.emergentagent.com/llm',
+    })
+  }
+  return openai
+}
 
 const AI_DISCLAIMER = '\n\n⚠️ This is AI-generated legal information — not legal advice. A human legal advisor will review your matter. For formal representation, consult an LPC-registered attorney.'
 
@@ -51,7 +57,7 @@ export async function POST(request) {
           messages.push({ role: h.sender === 'member' ? 'user' : 'assistant', content: h.message })
         }
 
-        const completion = await openai.chat.completions.create({
+        const completion = await getOpenAIClient().chat.completions.create({
           model: 'gpt-4o',
           messages,
           max_tokens: 400,

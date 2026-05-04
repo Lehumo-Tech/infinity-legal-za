@@ -17,7 +17,7 @@ export default function ContactPage() {
             <div className="p-5 bg-infinity-cream/50 dark:bg-gray-700/50 rounded-xl">
               <div className="text-2xl mb-2">📧</div>
               <h3 className="font-semibold text-infinity-navy dark:text-white mb-1">Email</h3>
-              <a href="mailto:info@infinitylegal.org" className="text-sm text-infinity-gold hover:underline">info@infinitylegal.org</a>
+              <a href="mailto:info@infinitylegal.co.za" className="text-sm text-infinity-gold hover:underline">info@infinitylegal.co.za</a>
             </div>
             <div className="p-5 bg-infinity-cream/50 dark:bg-gray-700/50 rounded-xl">
               <div className="text-2xl mb-2">💬</div>

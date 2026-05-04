@@ -2,7 +2,38 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { motion, useInView, useAnimation } from 'framer-motion'
 import { PLANS, PLAN_DISCLAIMER, CORE_BENEFITS } from '@/lib/demo-data'
+
+function FadeIn({ children, delay = 0, y = 30, className = '' }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.6, delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function SlideIn({ children, direction = 'left', delay = 0, className = '' }) {
+  const x = direction === 'left' ? -50 : direction === 'right' ? 50 : 0
+  const y = direction === 'up' ? 50 : direction === 'down' ? -50 : 0
+  return (
+    <motion.div
+      initial={{ opacity: 0, x, y }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.7, delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
 
 // ═══ GET STARTED MODAL COMPONENT ═══
 function GetStartedModal({ isOpen, onClose, selectedPlan }) {
@@ -434,52 +465,58 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ TRUST — PEOPLE SECTION ═══ */}
+       {/* ═══ TRUST — PEOPLE SECTION ═══ */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             {/* Left - Image Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl overflow-hidden shadow-lg">
-                <img src={PEOPLE_IMAGES.workplace} alt="Legal team discussion" className="w-full h-52 object-cover hover:scale-105 transition-transform duration-500" />
+            <SlideIn direction="left">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl overflow-hidden shadow-lg">
+                  <img src={PEOPLE_IMAGES.workplace} alt="Legal team discussion" className="w-full h-52 object-cover hover:scale-105 transition-transform duration-500" />
+                </div>
+                <div className="rounded-2xl overflow-hidden shadow-lg mt-6">
+                  <img src={PEOPLE_IMAGES.consultation} alt="Professional legal consultation" className="w-full h-52 object-cover hover:scale-105 transition-transform duration-500" />
+                </div>
+                <div className="rounded-2xl overflow-hidden shadow-lg -mt-3">
+                  <img src={PEOPLE_IMAGES.teamwork} alt="Team collaborating on legal matters" className="w-full h-44 object-cover hover:scale-105 transition-transform duration-500" />
+                </div>
+                <div className="rounded-2xl overflow-hidden shadow-lg mt-3">
+                  <img src={PEOPLE_IMAGES.advisor} alt="Legal advisor reviewing documents" className="w-full h-44 object-cover hover:scale-105 transition-transform duration-500" />
+                </div>
               </div>
-              <div className="rounded-2xl overflow-hidden shadow-lg mt-6">
-                <img src={PEOPLE_IMAGES.consultation} alt="Professional legal consultation" className="w-full h-52 object-cover hover:scale-105 transition-transform duration-500" />
-              </div>
-              <div className="rounded-2xl overflow-hidden shadow-lg -mt-3">
-                <img src={PEOPLE_IMAGES.teamwork} alt="Team collaborating on legal matters" className="w-full h-44 object-cover hover:scale-105 transition-transform duration-500" />
-              </div>
-              <div className="rounded-2xl overflow-hidden shadow-lg mt-3">
-                <img src={PEOPLE_IMAGES.advisor} alt="Legal advisor reviewing documents" className="w-full h-44 object-cover hover:scale-105 transition-transform duration-500" />
-              </div>
-            </div>
+            </SlideIn>
             {/* Right - Copy */}
-            <div>
-              <div className="inline-flex items-center gap-2 bg-[#0f2b46]/5 text-[#0f2b46] text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-wider">
-                Why Infinity Legal
+            <SlideIn direction="right" delay={0.2}>
+              <div>
+                <div className="inline-flex items-center gap-2 bg-[#0f2b46]/5 text-[#0f2b46] text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-wider">
+                  Why Infinity Legal
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  Real People. Real Protection. <span className="text-[#c9a961]">Real Results.</span>
+                </h2>
+                <p className="text-gray-600 mb-6 text-lg leading-relaxed">
+                  Infinity Legal was built for ordinary South Africans who deserve extraordinary legal protection. Our network of experienced legal advisors provides expert guidance, document preparation, and AI-powered advisory services.
+                </p>
+                <div className="space-y-4">
+                  {[
+                    { icon: '⚖️', title: 'Unlimited Legal Consultations', desc: 'Speak to qualified legal advisors as often as you need — no caps, no limits.' },
+                    { icon: '👨‍👩‍👧‍👦', title: 'Family Plan Built In', desc: 'Your spouse and children under 21 are included at no extra cost.' },
+                    { icon: '📞', title: '24/7 Legal Contact Centre', desc: 'Speak to a legal advisor any time — emergencies don\'t keep office hours.' },
+                  ].map((item, i) => (
+                    <FadeIn key={i} delay={i * 0.15}>
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-[#0f2b46]/5 flex items-center justify-center text-xl flex-shrink-0">{item.icon}</div>
+                        <div>
+                          <h3 className="font-bold text-[#0f2b46] mb-0.5">{item.title}</h3>
+                          <p className="text-sm text-gray-500">{item.desc}</p>
+                        </div>
+                      </div>
+                    </FadeIn>
+                  ))}
+                </div>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Real People. Real Protection. <span className="text-[#c9a961]">Real Results.</span>
-              </h2>
-              <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-                Infinity Legal was built for ordinary South Africans who deserve extraordinary legal protection. Our network of experienced legal advisors provides expert guidance, document preparation, and AI-powered advisory services.
-              </p>
-              <div className="space-y-4">
-                {[
-                  { icon: '⚖️', title: 'Unlimited Legal Consultations', desc: 'Speak to qualified legal advisors as often as you need — no caps, no limits.' },
-                  { icon: '👨‍👩‍👧‍👦', title: 'Family Plan Built In', desc: 'Your spouse and children under 21 are included at no extra cost.' },
-                  { icon: '📞', title: '24/7 Legal Contact Centre', desc: 'Speak to a legal advisor any time — emergencies don\'t keep office hours.' },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-[#0f2b46]/5 flex items-center justify-center text-xl flex-shrink-0">{item.icon}</div>
-                    <div>
-                      <h3 className="font-bold text-[#0f2b46] mb-0.5">{item.title}</h3>
-                      <p className="text-sm text-gray-500">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            </SlideIn>
           </div>
         </div>
       </section>
@@ -520,169 +557,185 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ HOW IT WORKS ═══ */}
+       {/* ═══ HOW IT WORKS ═══ */}
       <section id="how-it-works" className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center mb-14">
+          <FadeIn className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>How It Works</h2>
             <p className="text-gray-500 text-lg">Three simple steps to legal protection</p>
-          </div>
+          </FadeIn>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { step: '1', icon: '🛡️', title: 'Choose Your Plan', desc: 'Select Civil, Labour, or Extensive protection — unlimited legal support from R99/month.' },
               { step: '2', icon: '📋', title: 'Submit Your Matter', desc: 'Describe your legal matter through our AI-powered intake. We analyse and match you to a specialist.' },
               { step: '3', icon: '✅', title: 'Get Expert Guidance', desc: 'Your legal specialist handles everything — advice, documents, negotiations, and resolution.' },
             ].map((s, i) => (
-              <div key={i} className="text-center group">
-                <div className="w-20 h-20 rounded-2xl bg-[#0f2b46] text-white flex items-center justify-center text-3xl mx-auto mb-4 group-hover:bg-[#c9a961] group-hover:text-[#0f2b46] transition-colors shadow-lg">
-                  {s.icon}
+              <FadeIn key={i} delay={i * 0.2}>
+                <div className="text-center group">
+                  <div className="w-20 h-20 rounded-2xl bg-[#0f2b46] text-white flex items-center justify-center text-3xl mx-auto mb-4 group-hover:bg-[#c9a961] group-hover:text-[#0f2b46] transition-colors shadow-lg">
+                    {s.icon}
+                  </div>
+                  <div className="text-xs font-bold text-[#c9a961] uppercase tracking-widest mb-2">Step {s.step}</div>
+                  <h3 className="text-xl font-bold text-[#0f2b46] mb-2">{s.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
                 </div>
-                <div className="text-xs font-bold text-[#c9a961] uppercase tracking-widest mb-2">Step {s.step}</div>
-                <h3 className="text-xl font-bold text-[#0f2b46] mb-2">{s.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
-              </div>
+              </FadeIn>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ PLAN OPTIONS PREVIEW ═══ */}
+       {/* ═══ PLAN OPTIONS PREVIEW ═══ */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-4">
+        <FadeIn className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[#0f2b46] mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Protection Plans</h2>
             <p className="text-gray-500 text-lg">Unlimited legal support on all plans</p>
           </div>
 
           {/* Core Benefits Banner */}
-          <div className="bg-[#0f2b46] rounded-2xl p-6 mb-8 text-white">
-            <h3 className="text-sm font-bold text-[#c9a961] uppercase tracking-wider mb-3">Core Benefits — All Plans</h3>
-            <div className="grid md:grid-cols-2 gap-2">
-              {CORE_BENEFITS.map((b, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm text-white/80">
-                  <span className="text-[#c9a961]">✓</span>{b}
-                </div>
-              ))}
+          <FadeIn delay={0.1}>
+            <div className="bg-[#0f2b46] rounded-2xl p-6 mb-8 text-white">
+              <h3 className="text-sm font-bold text-[#c9a961] uppercase tracking-wider mb-3">Core Benefits — All Plans</h3>
+              <div className="grid md:grid-cols-2 gap-2">
+                {CORE_BENEFITS.map((b, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-white/80">
+                    <span className="text-[#c9a961]">✓</span>{b}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </FadeIn>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {PLANS.map((plan) => (
-              <div key={plan.id} className={`relative bg-white rounded-2xl border-2 p-6 transition-all hover:shadow-xl ${plan.popular ? 'border-[#c9a961] shadow-lg scale-[1.02]' : 'border-gray-200'}`}>
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a961] text-[#0f2b46] text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">Most Popular</div>
-                )}
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">{plan.emoji}</span>
-                  <h3 className="text-lg font-bold text-[#0f2b46]">{plan.name}</h3>
-                </div>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-bold text-[#0f2b46]">R{plan.price}</span>
-                  <span className="text-gray-400 text-sm">/month</span>
-                </div>
-                <p className="text-xs text-[#c9a961] font-bold mb-4">Unlimited legal support</p>
-                <ul className="space-y-2 mb-4">
-                  {(plan.features || plan.coverage?.included || []).slice(0, 5).map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                      <span className="text-green-500 mt-0.5 font-bold">✓</span>{f}
-                    </li>
-                  ))}
-                </ul>
-                {plan.additionalBenefits && (
-                  <div className="mb-4 pt-3 border-t border-gray-100">
-                    <p className="text-[10px] text-[#c9a961] font-bold uppercase mb-1">Additional Benefits:</p>
-                    {plan.additionalBenefits.slice(0, 2).map((b, i) => (
-                      <p key={i} className="text-xs text-gray-500 flex items-center gap-1"><span className="text-[#c9a961]">★</span> {b}</p>
-                    ))}
+            {PLANS.map((plan, idx) => (
+              <FadeIn key={plan.id} delay={idx * 0.15}>
+                <div className={`relative bg-white rounded-2xl border-2 p-6 transition-all hover:shadow-xl ${plan.popular ? 'border-[#c9a961] shadow-lg scale-[1.02]' : 'border-gray-200'}`}>
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#c9a961] text-[#0f2b46] text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">Most Popular</div>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">{plan.emoji}</span>
+                    <h3 className="text-lg font-bold text-[#0f2b46]">{plan.name}</h3>
                   </div>
-                )}
-                <button onClick={() => openRegister(plan.name)} className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
-                  Get Started — {plan.name}
-                </button>
-              </div>
+                  <div className="flex items-baseline gap-1 mb-1">
+                    <span className="text-4xl font-bold text-[#0f2b46]">R{plan.price}</span>
+                    <span className="text-gray-400 text-sm">/month</span>
+                  </div>
+                  <p className="text-xs text-[#c9a961] font-bold mb-4">Unlimited legal support</p>
+                  <ul className="space-y-2 mb-4">
+                    {(plan.features || plan.coverage?.included || []).slice(0, 5).map((f, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5 font-bold">✓</span>{f}
+                      </li>
+                    ))}
+                  </ul>
+                  {plan.additionalBenefits && (
+                    <div className="mb-4 pt-3 border-t border-gray-100">
+                      <p className="text-[10px] text-[#c9a961] font-bold uppercase mb-1">Additional Benefits:</p>
+                      {plan.additionalBenefits.slice(0, 2).map((b, i) => (
+                        <p key={i} className="text-xs text-gray-500 flex items-center gap-1"><span className="text-[#c9a961]">★</span> {b}</p>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={() => openRegister(plan.name)} className={`block w-full text-center py-3 rounded-xl font-bold text-sm transition-colors ${plan.popular ? 'bg-[#c9a961] text-[#0f2b46] hover:bg-[#d4af37]' : 'bg-[#0f2b46] text-white hover:bg-[#1a365d]'}`}>
+                    Get Started — {plan.name}
+                  </button>
+                </div>
+              </FadeIn>
             ))}
           </div>
           {/* Plan info */}
-          <div className="max-w-5xl mx-auto mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h4 className="font-semibold text-[#0f2b46] mb-2">Important Information</h4>
-            <ul className="text-sm text-gray-700 space-y-1">
-              <li>✓ All plans include unlimited consultations and access to legal specialists</li>
-              <li>✓ Plan extends to main member, spouse/life partner, and children under 21</li>
-              <li>✓ 30-day waiting period for pre-existing matters; immediate for new matters</li>
-              <li>✓ 31-day review period — cancel within 31 days for full refund</li>
-              <li>✓ Premium waiver for up to 12 months in case of retrenchment or disability</li>
-            </ul>
-          </div>
+          <FadeIn delay={0.5}>
+            <div className="max-w-5xl mx-auto mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h4 className="font-semibold text-[#0f2b46] mb-2">Important Information</h4>
+              <ul className="text-sm text-gray-700 space-y-1">
+                <li>✓ All plans include unlimited consultations and access to legal specialists</li>
+                <li>✓ Plan extends to main member, spouse/life partner, and children under 21</li>
+                <li>✓ 30-day waiting period for pre-existing matters; immediate for new matters</li>
+                <li>✓ 31-day review period — cancel within 31 days for full refund</li>
+                <li>✓ Premium waiver for up to 12 months in case of retrenchment or disability</li>
+              </ul>
+            </div>
+          </FadeIn>
           <div className="text-center mt-6">
             <Link href="/pricing" className="text-[#c9a961] font-semibold hover:text-[#0f2b46] transition-colors">
               See full comparison →
             </Link>
           </div>
-        </div>
+        </FadeIn>
       </section>
 
-      {/* ═══ TESTIMONIALS ═══ */}
+       {/* ═══ TESTIMONIALS ═══ */}
       <section id="testimonials" className="py-20 bg-[#0f2b46] relative overflow-hidden">
         {/* Background image overlay */}
         <div className="absolute inset-0">
           <img src={PEOPLE_IMAGES.colleagues} alt="" className="w-full h-full object-cover opacity-[0.07]" />
         </div>
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>What Our Members Say</h2>
-          <p className="text-white/50 mb-10">Real stories from real South Africans</p>
-          <div className="relative min-h-[200px]">
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 md:p-10 border border-white/10">
-              {/* Avatar */}
-              <div className="w-16 h-16 rounded-full bg-[#c9a961]/20 border-2 border-[#c9a961] flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-[#c9a961]">{TESTIMONIALS[currentTestimonial].avatar}</span>
+          <FadeIn>
+            <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>What Our Members Say</h2>
+            <p className="text-white/50 mb-10">Real stories from real South Africans</p>
+          </FadeIn>
+          <FadeIn delay={0.2}>
+            <div className="relative min-h-[200px]">
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 md:p-10 border border-white/10">
+                {/* Avatar */}
+                <div className="w-16 h-16 rounded-full bg-[#c9a961]/20 border-2 border-[#c9a961] flex items-center justify-center mx-auto mb-4">
+                  <span className="text-xl font-bold text-[#c9a961]">{TESTIMONIALS[currentTestimonial].avatar}</span>
+                </div>
+                <div className="flex justify-center gap-1 mb-4">
+                  {Array.from({ length: TESTIMONIALS[currentTestimonial].rating }).map((_, i) => (
+                    <span key={i} className="text-[#c9a961] text-xl">★</span>
+                  ))}
+                </div>
+                <p className="text-white text-lg md:text-xl leading-relaxed mb-6 italic">
+                  &quot;{TESTIMONIALS[currentTestimonial].text}&quot;
+                </p>
+                <div>
+                  <p className="text-white font-bold">{TESTIMONIALS[currentTestimonial].name}</p>
+                  <p className="text-[#c9a961] text-sm">{TESTIMONIALS[currentTestimonial].role}</p>
+                </div>
               </div>
-              <div className="flex justify-center gap-1 mb-4">
-                {Array.from({ length: TESTIMONIALS[currentTestimonial].rating }).map((_, i) => (
-                  <span key={i} className="text-[#c9a961] text-xl">★</span>
+              <div className="flex justify-center gap-2 mt-6">
+                {TESTIMONIALS.map((_, i) => (
+                  <button key={i} onClick={() => setCurrentTestimonial(i)} className={`w-2 h-2 rounded-full transition-all ${i === currentTestimonial ? 'bg-[#c9a961] w-6' : 'bg-white/30'}`} />
                 ))}
               </div>
-              <p className="text-white text-lg md:text-xl leading-relaxed mb-6 italic">
-                &quot;{TESTIMONIALS[currentTestimonial].text}&quot;
-              </p>
-              <div>
-                <p className="text-white font-bold">{TESTIMONIALS[currentTestimonial].name}</p>
-                <p className="text-[#c9a961] text-sm">{TESTIMONIALS[currentTestimonial].role}</p>
-              </div>
             </div>
-            <div className="flex justify-center gap-2 mt-6">
-              {TESTIMONIALS.map((_, i) => (
-                <button key={i} onClick={() => setCurrentTestimonial(i)} className={`w-2 h-2 rounded-full transition-all ${i === currentTestimonial ? 'bg-[#c9a961] w-6' : 'bg-white/30'}`} />
-              ))}
-            </div>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* ═══ CTA ═══ */}
       <section className="py-16 bg-white">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="relative bg-gradient-to-r from-[#0f2b46] to-[#1a4a7a] rounded-3xl overflow-hidden shadow-2xl">
-            {/* Background image */}
-            <div className="absolute inset-0">
-              <img src={PEOPLE_IMAGES.teamwork} alt="" className="w-full h-full object-cover opacity-10" />
-            </div>
-            <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center p-8 md:p-12">
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Ready to Get Protected?</h2>
-                <p className="text-white/70 mb-6 text-lg">Join thousands of South Africans who trust Infinity Legal with their legal matters.</p>
-                <div className="flex flex-wrap gap-3">
-                  <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors text-lg shadow-md">Get Free Legal Analysis</Link>
-                  <button onClick={() => openRegister()} className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">Get Started Free ⚖️</button>
-                </div>
+        <FadeIn>
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="relative bg-gradient-to-r from-[#0f2b46] to-[#1a4a7a] rounded-3xl overflow-hidden shadow-2xl">
+              {/* Background image */}
+              <div className="absolute inset-0">
+                <img src={PEOPLE_IMAGES.teamwork} alt="" className="w-full h-full object-cover opacity-10" />
               </div>
-              <div className="hidden md:block">
-                <div className="rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
-                  <img src={PEOPLE_IMAGES.family} alt="Family protected by Infinity Legal" className="w-full h-64 object-cover" />
+              <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center p-8 md:p-12">
+                <div>
+                  <h2 className="text-3xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Ready to Get Protected?</h2>
+                  <p className="text-white/70 mb-6 text-lg">Join thousands of South Africans who trust Infinity Legal with their legal matters.</p>
+                  <div className="flex flex-wrap gap-3">
+                    <Link href="/intake" className="px-8 py-3.5 bg-[#c9a961] text-[#0f2b46] font-bold rounded-xl hover:bg-[#d4af37] transition-colors text-lg shadow-md">Get Free Legal Analysis</Link>
+                    <button onClick={() => openRegister()} className="px-8 py-3.5 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition-colors text-lg">Get Started Free ⚖️</button>
+                  </div>
                 </div>
+                <SlideIn direction="right" delay={0.3}>
+                  <div className="hidden md:block">
+                    <div className="rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
+                      <img src={PEOPLE_IMAGES.family} alt="Family protected by Infinity Legal" className="w-full h-64 object-cover" />
+                    </div>
+                  </div>
+                </SlideIn>
               </div>
             </div>
           </div>
-        </div>
+        </FadeIn>
       </section>
 
       {/* ═══ FOOTER ═══ */}
@@ -715,8 +768,8 @@ export default function HomePage() {
           <div>
             <h4 className="font-bold text-sm mb-3 text-[#c9a961]">Contact</h4>
             <ul className="space-y-2 text-sm text-white/60">
-              <li>info@infinitylegal.org</li>
-              <li>+27 10 XXX XXXX</li>
+              <li>info@infinitylegal.co.za</li>
+              <li>+27 68 127 6038</li>
               <li>Sandton, Johannesburg</li>
             </ul>
           </div>

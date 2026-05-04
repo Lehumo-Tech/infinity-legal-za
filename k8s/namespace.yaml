@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infinity-legal
+  labels:
+    name: infinity-legal
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: infinity-legal-secrets
+  namespace: infinity-legal
+type: Opaque
+stringData:
+  supabase-url: "https://your-project.supabase.co"
+  supabase-anon-key: "your-anon-key"
+  supabase-service-key: "your-service-role-key"
+  openai-api-key: "your-openai-key"
+  payfast-merchant-id: "your-payfast-id"
+  payfast-merchant-key: "your-payfast-key"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infinity-legal-config
+  namespace: infinity-legal
+data:
+  NEXT_PUBLIC_APP_URL: "https://infinity-legal.co.za"
+  NEXT_PUBLIC_SITE_NAME: "Infinity Legal ZA"
+  NEXT_PUBLIC_POPIA_CONTACT: "info@infinity-legal.co.za"

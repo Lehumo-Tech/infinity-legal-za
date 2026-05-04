@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 const HIGH_RISK_KEYWORDS = ['murder', 'rape', 'sexual assault', 'high court', 'constitutional', 'supreme court', 'terrorism', 'treason', 'kidnapping', 'armed robbery', 'gender-based violence', 'gbv', 'child abuse']
 
-export function checkHighRisk(query) {
+function checkHighRisk(query) {
   const lower = query.toLowerCase()
   const matched = HIGH_RISK_KEYWORDS.filter(kw => lower.includes(kw))
   return { isHighRisk: matched.length > 0, matchedKeywords: matched }
