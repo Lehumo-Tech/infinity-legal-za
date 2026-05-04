@@ -1,0 +1,20 @@
+# https://infinitylegal.co.za/robots.txt
+User-agent: *
+Allow: /
+
+# Disallow private pages
+Disallow: /portal/
+Disallow: /login
+Disallow: /signup
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+
+# Allow search engines to crawl public content
+Allow: /
+
+# Sitemap
+Sitemap: https://infinitylegal.co.za/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
