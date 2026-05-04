@@ -62,7 +62,7 @@ export default function RootLayout({ children }) {
     logo: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/logo-icon-512.png`,
     image: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://infinitylegal.org'}/hero-consultation.png`,
     telephone: '+27-000-000-0000',
-    email: 'info@infinitylegal.co.za',
+    email: 'info@infinitylegal.org',
     areaServed: {
       '@type': 'Country',
       name: 'South Africa',
