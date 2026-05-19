@@ -1,13 +1,13 @@
 /**
- * POST /api/auth/signup - Register new user via PocketBase
+ * POST /api/auth/signup - Register new user via Prisma/SQLite
  */
 
 import { NextRequest } from 'next/server';
-import { createUser } from '@/lib/pb-client';
-import { generateToken, validatePasswordStrength, getPasswordExpiryDate } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { generateToken, hashPassword, validatePasswordStrength, getPasswordExpiryDate } from '@/lib/auth';
 import { signupRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
-import { createAuditLogPB, logConsentPB } from '@/lib/audit-pb';
+import { createAuditLog, logConsent } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,35 +36,48 @@ export async function POST(request: NextRequest) {
       return apiError('POPIA consent is required to create an account', 400, 'CONSENT_REQUIRED');
     }
 
-    const passwordExpiry = getPasswordExpiryDate();
-
-    // Create user in PocketBase
-    const res = await createUser({
-      email: email.toLowerCase(),
-      password,
-      passwordConfirm: password,
-      full_name: sanitizeString(full_name),
-      phone: phone ? sanitizeString(phone) : '',
-      role: role || 'client',
-      department: '',
-      is_active: true,
-      email_verified: false,
-      password_expires_at: passwordExpiry.toISOString().split('.')[0] + 'Z',
-      last_password_change: new Date().toISOString().split('.')[0] + 'Z',
+    // Check if email already exists
+    const existingUser = await db.user.findUnique({
+      where: { email: email.toLowerCase() },
     });
 
-    if (res.status !== 200 && res.status !== 201) {
-      const errData = res.data as any;
-      if (errData?.data?.email?.code === 'validation_not_unique') {
-        return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
-      }
-      return apiError('Failed to create account: ' + (errData?.message || 'Unknown error'), 400, 'CREATE_FAILED');
+    if (existingUser) {
+      return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
     }
 
-    const user = res.data as any;
+    const passwordExpiry = getPasswordExpiryDate();
+    const hashedPassword = hashPassword(password);
+
+    // Create user
+    const user = await db.user.create({
+      data: {
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        full_name: sanitizeString(full_name),
+        phone: phone ? sanitizeString(phone) : null,
+        role: role || 'client',
+        is_active: true,
+        email_verified: false,
+        password_expires_at: passwordExpiry,
+        last_password_change: new Date(),
+      },
+    });
+
+    // Create profile
+    await db.profile.create({
+      data: {
+        user_id: user.id,
+        email: user.email,
+        full_name: user.full_name || '',
+        phone: user.phone,
+        role: user.role,
+        department: user.department,
+        is_active: true,
+      },
+    });
 
     // Log consent
-    await logConsentPB({
+    await logConsent({
       user_id: user.id,
       consent_type: 'data_processing',
       purpose: 'Account creation and service provision',
@@ -72,7 +85,7 @@ export async function POST(request: NextRequest) {
       ip_address: request.headers.get('x-forwarded-for') || undefined,
     });
 
-    await logConsentPB({
+    await logConsent({
       user_id: user.id,
       consent_type: 'popia_general',
       purpose: 'POPIA compliance - data processing consent',
@@ -80,7 +93,7 @@ export async function POST(request: NextRequest) {
       ip_address: request.headers.get('x-forwarded-for') || undefined,
     });
 
-    await createAuditLogPB({
+    await createAuditLog({
       user_id: user.id,
       action: 'USER_SIGNUP',
       resource_type: 'user',
@@ -91,21 +104,21 @@ export async function POST(request: NextRequest) {
     const token = generateToken({
       userId: user.id,
       email: user.email,
-      role: user.role || 'client',
+      role: user.role,
       department: user.department || undefined,
     });
 
-    return apiResponse({ 
-      token, 
+    return apiResponse({
+      token,
       user: {
         id: user.id,
         email: user.email,
-        full_name: user.full_name || '',
-        role: user.role || 'client',
-        department: user.department || null,
-        is_active: true,
-        email_verified: false,
-      }
+        full_name: user.full_name,
+        role: user.role,
+        department: user.department,
+        is_active: user.is_active,
+        email_verified: user.email_verified,
+      },
     }, 201);
   } catch (error) {
     console.error('Signup error:', error);

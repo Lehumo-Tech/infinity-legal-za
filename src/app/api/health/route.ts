@@ -2,27 +2,24 @@
  * GET /api/health - Health check endpoint
  */
 
-import { healthCheck } from '@/lib/pb-client';
+import { db } from '@/lib/db';
 import { apiResponse, apiError } from '@/lib/middleware';
 
 export async function GET() {
   try {
-    const pbHealthy = await healthCheck();
-    
-    if (!pbHealthy) {
-      return apiError('Database connection unhealthy', 503, 'DB_UNHEALTHY');
-    }
+    // Test database connection by counting users
+    await db.user.count();
 
     return apiResponse({
       status: 'healthy',
-      database: 'pocketbase',
+      database: 'sqlite',
       timestamp: new Date().toISOString(),
       services: {
-        pocketbase: 'connected',
+        database: 'connected',
         nextjs: 'running',
       },
     });
   } catch (error) {
-    return apiError('Health check failed', 503, 'HEALTH_CHECK_FAILED');
+    return apiError('Database connection unhealthy', 503, 'DB_UNHEALTHY');
   }
 }

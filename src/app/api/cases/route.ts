@@ -1,13 +1,13 @@
 /**
- * GET/POST /api/cases - List/Create cases with pagination via PocketBase
+ * GET/POST /api/cases - List/Create cases with pagination via Prisma/SQLite
  */
 
 import { NextRequest } from 'next/server';
-import { listRecords, createRecord, countRecords, groupByField } from '@/lib/pb-client';
+import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { checkHighRisk } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
-import { createAuditLogPB } from '@/lib/audit-pb';
+import { createAuditLog } from '@/lib/audit';
 
 // GET - List cases with pagination and filters
 export async function GET(request: NextRequest) {
@@ -15,38 +15,51 @@ export async function GET(request: NextRequest) {
     const auth = requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
-    const { page, perPage } = getPaginationParams(request);
+    const { page, perPage, skip, take } = getPaginationParams(request);
     const url = new URL(request.url);
-    
+
     const status = url.searchParams.get('status');
     const case_type = url.searchParams.get('case_type');
     const urgency = url.searchParams.get('urgency');
     const search = url.searchParams.get('search');
 
-    // Build filter string for PocketBase
-    const filters: string[] = [];
-    if (status) filters.push(`status='${status}'`);
-    if (case_type) filters.push(`case_type='${case_type}'`);
-    if (urgency) filters.push(`urgency='${urgency}'`);
-    if (search) filters.push(`(title~'${search}' || matter_number~'${search}' || description~'${search}')`);
+    // Build where clause
+    const where: any = {};
+    if (status) where.status = status;
+    if (case_type) where.case_type = case_type;
+    if (urgency) where.urgency = urgency;
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { matter_number: { contains: search } },
+        { description: { contains: search } },
+      ];
+    }
 
     // Non-admin users can only see their own cases
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      filters.push(`(client_id='${auth.user.userId}' || lead_attorney_id='${auth.user.userId}' || support_paralegal_id='${auth.user.userId}')`);
+      where.OR = [
+        { client_id: auth.user.userId },
+        { lead_attorney_id: auth.user.userId },
+        { support_paralegal_id: auth.user.userId },
+      ];
     }
 
-    const filterStr = filters.length > 0 ? filters.join(' && ') : '';
-    
-    const res = await listRecords('cases', {
-      page,
-      perPage,
-      filter: filterStr,
-      sort: '-created',
-      expand: 'client_id,lead_attorney_id',
-    });
+    const [cases, total] = await Promise.all([
+      db.case.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { created_at: 'desc' },
+        include: {
+          client: { select: { id: true, full_name: true, email: true } },
+          lead_attorney: { select: { id: true, full_name: true } },
+        },
+      }),
+      db.case.count({ where }),
+    ]);
 
-    const pbData = res.data as any;
-    const cases = (pbData?.items || []).map((c: any) => ({
+    const formattedCases = cases.map(c => ({
       id: c.id,
       matter_number: c.matter_number,
       title: c.title,
@@ -62,15 +75,15 @@ export async function GET(request: NextRequest) {
       is_high_risk: c.is_high_risk,
       next_action: c.next_action,
       next_action_date: c.next_action_date,
-      created_at: c.created,
-      updated_at: c.updated,
-      client: c.expand?.client_id ? { id: c.expand.client_id.id, full_name: c.expand.client_id.full_name, email: c.expand.client_id.email } : null,
-      lead_attorney: c.expand?.lead_attorney_id ? { id: c.expand.lead_attorney_id.id, full_name: c.expand.lead_attorney_id.full_name } : null,
+      created_at: c.created_at,
+      updated_at: c.updated_at,
+      client: c.client,
+      lead_attorney: c.lead_attorney,
     }));
 
     return apiResponse({
-      data: cases,
-      pagination: createPaginationResult(pbData?.totalItems || 0, page, perPage),
+      data: formattedCases,
+      pagination: createPaginationResult(total, page, perPage),
     });
   } catch (error) {
     console.error('Cases list error:', error);
@@ -99,34 +112,36 @@ export async function POST(request: NextRequest) {
     const highRiskCheck = checkHighRisk(`${title} ${description || ''}`);
 
     // Generate matter number
-    const caseCount = await countRecords('cases');
+    const caseCount = await db.case.count();
     const currentYear = new Date().getFullYear();
     const matter_number = `IL-${currentYear}-${String(caseCount + 1).padStart(4, '0')}`;
 
-    const res = await createRecord('cases', {
-      matter_number,
-      title,
-      description: description || '',
-      case_type,
-      urgency,
-      status: 'intake',
-      client_id,
-      lead_attorney_id: auth.user.userId,
-      estimated_value: estimated_value || 0,
-      is_high_risk: highRiskCheck.isHighRisk,
+    const newCase = await db.case.create({
+      data: {
+        matter_number,
+        title,
+        description: description || null,
+        case_type,
+        urgency,
+        status: 'intake',
+        client_id,
+        lead_attorney_id: auth.user.userId,
+        estimated_value: estimated_value || null,
+        is_high_risk: highRiskCheck.isHighRisk,
+      },
     });
-
-    const newCase = res.data as any;
 
     // Create timeline entry
-    await createRecord('case_timeline', {
-      case_id: newCase.id,
-      user_id: auth.user.userId,
-      action: 'CASE_CREATED',
-      description: 'Case created and assigned',
+    await db.caseTimeline.create({
+      data: {
+        case_id: newCase.id,
+        user_id: auth.user.userId,
+        action: 'CASE_CREATED',
+        description: 'Case created and assigned',
+      },
     });
 
-    await createAuditLogPB({
+    await createAuditLog({
       user_id: auth.user.userId,
       action: 'CREATE_CASE',
       resource_type: 'case',

@@ -1,12 +1,13 @@
 /**
- * POST /api/auth/login - Authenticate user via PocketBase
+ * POST /api/auth/login - Authenticate user via Prisma/SQLite
  */
 
 import { NextRequest } from 'next/server';
-import { authenticateUser, getUserById } from '@/lib/pb-client';
-import { generateToken, isPasswordExpired } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { generateToken, verifyPassword, isPasswordExpired } from '@/lib/auth';
 import { authRateLimiter } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
+import { createAuditLog } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,54 +23,66 @@ export async function POST(request: NextRequest) {
       return apiError('Email and password are required', 400, 'MISSING_CREDENTIALS');
     }
 
-    // Authenticate via PocketBase
-    const authRes = await authenticateUser(email, password);
-    
-    if (authRes.status !== 200 || !(authRes.data as any)?.record) {
+    // Find user by email
+    const user = await db.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
       return apiError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
 
-    const pbUser = (authRes.data as any).record;
-    
-    if (pbUser.is_active === false) {
+    // Verify password
+    const passwordValid = verifyPassword(password, user.password);
+    if (!passwordValid) {
+      return apiError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
+    }
+
+    if (!user.is_active) {
       return apiError('Account has been deactivated', 403, 'ACCOUNT_DEACTIVATED');
     }
 
     // Check password expiration
-    const passwordExpired = isPasswordExpired(
-      pbUser.last_password_change ? new Date(pbUser.last_password_change) : null
-    );
-    
+    const passwordExpired = isPasswordExpired(user.last_password_change);
+
     if (passwordExpired) {
       return apiResponse({
         requiresPasswordChange: true,
         message: 'Your password has expired. Please change it to continue.',
-        userId: pbUser.id,
-        email: pbUser.email,
+        userId: user.id,
+        email: user.email,
       });
     }
 
-    // Generate our custom JWT token with role info
+    // Generate JWT token with role info
     const token = generateToken({
-      userId: pbUser.id,
-      email: pbUser.email,
-      role: pbUser.role || 'client',
-      department: pbUser.department || undefined,
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      department: user.department || undefined,
     });
 
-    const { password: _, tokenKey: __, ...userWithoutSensitive } = pbUser;
-    
-    return apiResponse({ 
-      token, 
+    // Audit log
+    await createAuditLog({
+      user_id: user.id,
+      action: 'USER_LOGIN',
+      resource_type: 'user',
+      resource_id: user.id,
+      ip_address: request.headers.get('x-forwarded-for') || undefined,
+      user_agent: request.headers.get('user-agent') || undefined,
+    });
+
+    return apiResponse({
+      token,
       user: {
-        id: pbUser.id,
-        email: pbUser.email,
-        full_name: pbUser.full_name || pbUser.name || '',
-        role: pbUser.role || 'client',
-        department: pbUser.department || null,
-        is_active: pbUser.is_active !== false,
-        email_verified: pbUser.email_verified || false,
-      }
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        department: user.department,
+        is_active: user.is_active,
+        email_verified: user.email_verified,
+      },
     });
   } catch (error) {
     console.error('Login error:', error);

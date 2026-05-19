@@ -1,43 +1,16 @@
 /**
- * POST /api/backup - Create PocketBase backup
+ * POST /api/backup - Create database backup
  * GET /api/backup - List backup records
  */
 
 import { NextRequest } from 'next/server';
-import { listRecords, createRecord, updateRecord } from '@/lib/pb-client';
+import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
-import { getAdminToken } from '@/lib/pb-client';
-import http from 'http';
-
-const PB_HOST = '0.0.0.0';
-const PB_PORT = 8090;
-
-function pbBackupRequest(token: string): Promise<{ status: number; data: Buffer }> {
-  return new Promise((resolve, reject) => {
-    const options: http.RequestOptions = {
-      hostname: PB_HOST,
-      port: PB_PORT,
-      path: '/api/backups',
-      method: 'POST',
-      headers: {
-        Authorization: token,
-      },
-      // @ts-expect-error
-      family: 4,
-    };
-    
-    const req = http.request(options, (res) => {
-      const chunks: Buffer[] = [];
-      res.on('data', (chunk: Buffer) => chunks.push(chunk));
-      res.on('end', () => {
-        resolve({ status: res.statusCode || 500, data: Buffer.concat(chunks) });
-      });
-    });
-    req.on('error', reject);
-    req.end();
-  });
-}
+import { apiResponse, apiError, requireAuth, createPaginationResult, getPaginationParams } from '@/lib/middleware';
+import { createAuditLog } from '@/lib/audit';
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,35 +24,60 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const backupType = body.type || 'manual';
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `infinity-legal-backup-${timestamp}`;
+    const filename = `infinity-legal-backup-${timestamp}.db`;
 
     // Create backup record
-    const record = await createRecord('backup_records', {
-      filename,
-      backup_type: backupType,
-      status: 'in_progress',
+    const record = await db.backupRecord.create({
+      data: {
+        filename,
+        backup_type: backupType,
+        status: 'in_progress',
+      },
     });
 
     try {
-      // Trigger PocketBase backup
-      const adminToken = await getAdminToken();
-      const backupRes = await pbBackupRequest(adminToken);
-      
-      await updateRecord('backup_records', (record.data as any).id, {
-        status: 'completed',
-        size_bytes: backupRes.data.length,
+      // Copy the SQLite database file
+      const dbPath = path.join(process.cwd(), 'db', 'custom.db');
+      const backupDir = path.join(process.cwd(), 'backups');
+
+      if (!fs.existsSync(backupDir)) {
+        fs.mkdirSync(backupDir, { recursive: true });
+      }
+
+      const backupPath = path.join(backupDir, filename);
+      fs.copyFileSync(dbPath, backupPath);
+
+      const stats = fs.statSync(backupPath);
+
+      await db.backupRecord.update({
+        where: { id: record.id },
+        data: {
+          status: 'completed',
+          size_bytes: stats.size,
+          completed_at: new Date(),
+        },
+      });
+
+      await createAuditLog({
+        user_id: auth.user.userId,
+        action: 'CREATE_BACKUP',
+        resource_type: 'backup',
+        resource_id: record.id,
       });
 
       return apiResponse({
         filename,
-        size_bytes: backupRes.data.length,
+        size_bytes: stats.size,
         backup_type: backupType,
         created_at: new Date().toISOString(),
       }, 201);
     } catch (backupError: any) {
-      await updateRecord('backup_records', (record.data as any).id, {
-        status: 'failed',
-        error: backupError.message,
+      await db.backupRecord.update({
+        where: { id: record.id },
+        data: {
+          status: 'failed',
+          error: backupError.message,
+        },
       });
       throw backupError;
     }
@@ -98,14 +96,21 @@ export async function GET(request: NextRequest) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    const res = await listRecords('backup_records', {
-      page: 1,
-      perPage: 20,
-      sort: '-created',
-    });
+    const { page, perPage, skip, take } = getPaginationParams(request);
 
-    const pbData = res.data as any;
-    return apiResponse(pbData?.items || []);
+    const [backups, total] = await Promise.all([
+      db.backupRecord.findMany({
+        skip,
+        take,
+        orderBy: { created_at: 'desc' },
+      }),
+      db.backupRecord.count(),
+    ]);
+
+    return apiResponse({
+      data: backups,
+      pagination: createPaginationResult(total, page, perPage),
+    });
   } catch (error) {
     console.error('Backup list error:', error);
     return apiError('Failed to list backups', 500, 'BACKUP_LIST_ERROR');

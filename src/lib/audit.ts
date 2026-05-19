@@ -1,9 +1,9 @@
 /**
  * Infinity Legal ZA - Audit & Analytics Library
- * Uses PocketBase instead of Prisma
+ * Uses Prisma + SQLite for reliable data persistence
  */
 
-import { createRecord, listRecords, getFullList, getRecordsGroupedBy, countRecords, sumField } from '@/lib/pb-client';
+import { db } from '@/lib/db';
 
 export async function createAuditLog(params: {
   user_id?: string;
@@ -15,14 +15,16 @@ export async function createAuditLog(params: {
   user_agent?: string;
 }) {
   try {
-    return await createRecord('audit_logs', {
-      user_id: params.user_id || null,
-      action: params.action,
-      resource_type: params.resource_type,
-      resource_id: params.resource_id || null,
-      details: params.details ? JSON.stringify({ message: params.details }) : null,
-      ip_address: params.ip_address || null,
-      user_agent: params.user_agent || null,
+    return await db.auditLog.create({
+      data: {
+        user_id: params.user_id || null,
+        action: params.action,
+        resource_type: params.resource_type,
+        resource_id: params.resource_id || null,
+        details: params.details || null,
+        ip_address: params.ip_address || null,
+        user_agent: params.user_agent || null,
+      },
     });
   } catch (error) {
     console.error('Failed to create audit log:', error);
@@ -40,13 +42,16 @@ export async function trackApiEvent(params: {
   user_agent?: string;
 }) {
   try {
-    return await createRecord('api_analytics', {
-      endpoint: params.endpoint,
-      method: params.method,
-      status_code: params.status_code,
-      response_time_ms: params.response_time_ms || null,
-      user_id: params.user_id || null,
-      ip_address: params.ip_address || null,
+    return await db.apiAnalytic.create({
+      data: {
+        endpoint: params.endpoint,
+        method: params.method,
+        status_code: params.status_code,
+        response_time_ms: params.response_time_ms || null,
+        user_id: params.user_id || null,
+        ip_address: params.ip_address || null,
+        user_agent: params.user_agent || null,
+      },
     });
   } catch (error) {
     console.error('Failed to track API event:', error);
@@ -63,12 +68,15 @@ export async function logError(params: {
   metadata?: string;
 }) {
   try {
-    return await createRecord('error_logs', {
-      error_type: params.error_type,
-      message: params.message,
-      stack_trace: params.stack_trace || null,
-      url: params.url || null,
-      resolved: false,
+    return await db.errorLog.create({
+      data: {
+        error_type: params.error_type as any,
+        message: params.message,
+        stack_trace: params.stack_trace || null,
+        url: params.url || null,
+        user_id: params.user_id || null,
+        metadata: params.metadata || null,
+      },
     });
   } catch (error) {
     console.error('Failed to log error:', error);
@@ -85,13 +93,15 @@ export async function logConsent(params: {
   user_agent?: string;
 }) {
   try {
-    return await createRecord('consent_logs', {
-      user_id: params.user_id || null,
-      consent_type: params.consent_type,
-      purpose: params.purpose,
-      granted: params.granted,
-      ip_address: params.ip_address || null,
-      user_agent: params.user_agent || null,
+    return await db.consentLog.create({
+      data: {
+        user_id: params.user_id || null,
+        consent_type: params.consent_type as any,
+        purpose: params.purpose,
+        granted: params.granted,
+        ip_address: params.ip_address || null,
+        user_agent: params.user_agent || null,
+      },
     });
   } catch (error) {
     console.error('Failed to log consent:', error);
@@ -109,25 +119,30 @@ export async function getDashboardStats() {
     totalDocuments,
     pendingTasks,
     totalClients,
-    totalRevenue,
-    casesByType,
-    casesByStatus,
-    leadsBySource,
+    casesByTypeRaw,
+    casesByStatusRaw,
+    leadsBySourceRaw,
     recentActivity,
   ] = await Promise.all([
-    countRecords('cases'),
-    countRecords('cases', `status='active'`),
-    countRecords('leads'),
-    countRecords('leads', `status='new'`),
-    countRecords('documents'),
-    countRecords('tasks', `status='pending'`),
-    countRecords('users', `role='client'`),
-    sumField('cases', 'estimated_value'),
-    getRecordsGroupedBy('cases', 'case_type'),
-    getRecordsGroupedBy('cases', 'status'),
-    getRecordsGroupedBy('leads', 'source'),
-    listRecords('audit_logs', { perPage: 10, sort: '-created' }),
+    db.case.count(),
+    db.case.count({ where: { status: 'active' } }),
+    db.lead.count(),
+    db.lead.count({ where: { status: 'new' } }),
+    db.document.count(),
+    db.task.count({ where: { status: 'pending' } }),
+    db.user.count({ where: { role: 'client' } }),
+    db.case.groupBy({ by: ['case_type'], _count: { case_type: true } }),
+    db.case.groupBy({ by: ['status'], _count: { status: true } }),
+    db.lead.groupBy({ by: ['source'], _count: { source: true } }),
+    db.auditLog.findMany({ take: 10, orderBy: { created_at: 'desc' } }),
   ]);
+
+  // Calculate total revenue from case estimated values
+  const revenueResult = await db.case.aggregate({ _sum: { estimated_value: true } });
+  const totalRevenue = revenueResult._sum.estimated_value || 0;
+
+  const mapGrouped = (data: any[], key: string) =>
+    data.map((item: any) => ({ [key]: item[key], count: item._count[key] }));
 
   return {
     totalCases,
@@ -138,34 +153,41 @@ export async function getDashboardStats() {
     pendingTasks,
     totalClients,
     totalRevenue,
-    casesByType: Object.entries(casesByType).map(([type, count]) => ({ type, count })),
-    casesByStatus: Object.entries(casesByStatus).map(([status, count]) => ({ status, count })),
-    leadsBySource: Object.entries(leadsBySource).map(([source, count]) => ({ source, count })),
-    recentActivity: recentActivity.items,
+    casesByType: mapGrouped(casesByTypeRaw, 'case_type'),
+    casesByStatus: mapGrouped(casesByStatusRaw, 'status'),
+    leadsBySource: mapGrouped(leadsBySourceRaw, 'source'),
+    recentActivity,
   };
 }
 
 // Backup tracking
 export async function createBackupRecord(filename: string, backupType: string = 'scheduled') {
-  return createRecord('backup_records', {
-    filename,
-    backup_type: backupType,
-    status: 'in_progress',
+  return db.backupRecord.create({
+    data: {
+      filename,
+      backup_type: backupType,
+      status: 'in_progress',
+    },
   });
 }
 
 export async function completeBackupRecord(id: string, sizeBytes: number) {
-  const { updateRecord } = await import('@/lib/pb-client');
-  return updateRecord('backup_records', id, {
-    status: 'completed',
-    size_bytes: sizeBytes,
+  return db.backupRecord.update({
+    where: { id },
+    data: {
+      status: 'completed',
+      size_bytes: sizeBytes,
+      completed_at: new Date(),
+    },
   });
 }
 
 export async function failBackupRecord(id: string, error: string) {
-  const { updateRecord } = await import('@/lib/pb-client');
-  return updateRecord('backup_records', id, {
-    status: 'failed',
-    error,
+  return db.backupRecord.update({
+    where: { id },
+    data: {
+      status: 'failed',
+      error,
+    },
   });
 }

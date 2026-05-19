@@ -123,7 +123,7 @@ export default function RootLayout({
       <head>
         <meta name="theme-color" content="#0f172a" />
         <meta name="x-app-version" content="2.0.0" />
-        <meta name="x-database" content="pocketbase" />
+        <meta name="x-database" content="sqlite" />
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/logo-icon-512.png" />
         <link rel="canonical" href="https://infinitylegal.co.za" />
