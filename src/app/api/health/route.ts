@@ -2,49 +2,27 @@
  * GET /api/health - Health check endpoint
  */
 
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { healthCheck } from '@/lib/pb-client';
+import { apiResponse, apiError } from '@/lib/middleware';
 
 export async function GET() {
-  const startTime = Date.now();
-  let dbStatus = 'healthy';
-  let dbResponseTime = 0;
-
   try {
-    const dbStart = Date.now();
-    await db.$queryRaw`SELECT 1`;
-    dbResponseTime = Date.now() - dbStart;
-  } catch {
-    dbStatus = 'unhealthy';
+    const pbHealthy = await healthCheck();
+    
+    if (!pbHealthy) {
+      return apiError('Database connection unhealthy', 503, 'DB_UNHEALTHY');
+    }
+
+    return apiResponse({
+      status: 'healthy',
+      database: 'pocketbase',
+      timestamp: new Date().toISOString(),
+      services: {
+        pocketbase: 'connected',
+        nextjs: 'running',
+      },
+    });
+  } catch (error) {
+    return apiError('Health check failed', 503, 'HEALTH_CHECK_FAILED');
   }
-
-  const responseTime = Date.now() - startTime;
-  const isHealthy = dbStatus === 'healthy';
-
-  return NextResponse.json({
-    status: isHealthy ? 'healthy' : 'degraded',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    uptime: process.uptime(),
-    services: {
-      database: {
-        status: dbStatus,
-        responseTime: `${dbResponseTime}ms`,
-      },
-      api: {
-        status: 'healthy',
-        responseTime: `${responseTime}ms`,
-      },
-    },
-    checks: {
-      database_connection: isHealthy,
-      rate_limiting: true,
-      encryption: true,
-      audit_logging: true,
-      input_validation: true,
-      password_expiration: true,
-      rbac: true,
-      pagination: true,
-    },
-  }, { status: isHealthy ? 200 : 503 });
 }

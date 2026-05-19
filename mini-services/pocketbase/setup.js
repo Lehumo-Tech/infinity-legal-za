@@ -3,7 +3,7 @@
  * Uses PocketBase v0.25.x API format
  */
 
-const PB_URL = "http://0.0.0.0:8090";
+const PB_URL = "http://127.0.0.1:8090";
 const ADMIN_EMAIL = "admin@infinitylegal.co.za";
 const ADMIN_PASSWORD = "InfinityAdmin2026!";
 

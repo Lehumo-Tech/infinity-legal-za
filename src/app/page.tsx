@@ -977,7 +977,7 @@ function SecurityView() {
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { label: 'Database', value: 'SQLite + Prisma', icon: Database },
+                { label: 'Database', value: 'PocketBase (SQLite)', icon: Database },
                 { label: 'Framework', value: 'Next.js 16', icon: Server },
                 { label: 'Auth', value: 'JWT + RBAC', icon: KeyRound },
                 { label: 'Encryption', value: 'AES-256-GCM', icon: Lock },

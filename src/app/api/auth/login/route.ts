@@ -1,12 +1,11 @@
 /**
- * POST /api/auth/login
+ * POST /api/auth/login - Authenticate user via PocketBase
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
-import { verifyPassword, generateToken, isPasswordExpired } from '@/lib/auth';
-import { authRateLimiter, isValidEmail } from '@/lib/security';
-import { createAuditLog } from '@/lib/audit';
+import { authenticateUser, getUserById } from '@/lib/pb-client';
+import { generateToken, isPasswordExpired } from '@/lib/auth';
+import { authRateLimiter } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
 
 export async function POST(request: NextRequest) {
@@ -23,51 +22,55 @@ export async function POST(request: NextRequest) {
       return apiError('Email and password are required', 400, 'MISSING_CREDENTIALS');
     }
 
-    if (!isValidEmail(email)) {
-      return apiError('Invalid email format', 400, 'INVALID_EMAIL');
-    }
-
-    const user = await db.user.findUnique({ where: { email: email.toLowerCase() } });
-
-    if (!user || !verifyPassword(password, user.password)) {
-      await createAuditLog({
-        action: 'LOGIN_FAILED',
-        resource_type: 'auth',
-        ip_address: request.headers.get('x-forwarded-for') || undefined,
-      });
+    // Authenticate via PocketBase
+    const authRes = await authenticateUser(email, password);
+    
+    if (authRes.status !== 200 || !(authRes.data as any)?.record) {
       return apiError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
 
-    if (!user.is_active) {
+    const pbUser = (authRes.data as any).record;
+    
+    if (pbUser.is_active === false) {
       return apiError('Account has been deactivated', 403, 'ACCOUNT_DEACTIVATED');
     }
 
-    const passwordExpired = isPasswordExpired(user.last_password_change);
+    // Check password expiration
+    const passwordExpired = isPasswordExpired(
+      pbUser.last_password_change ? new Date(pbUser.last_password_change) : null
+    );
+    
     if (passwordExpired) {
       return apiResponse({
         requiresPasswordChange: true,
         message: 'Your password has expired. Please change it to continue.',
-        userId: user.id,
-        email: user.email,
+        userId: pbUser.id,
+        email: pbUser.email,
       });
     }
 
+    // Generate our custom JWT token with role info
     const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      department: user.department || undefined,
+      userId: pbUser.id,
+      email: pbUser.email,
+      role: pbUser.role || 'client',
+      department: pbUser.department || undefined,
     });
 
-    await createAuditLog({
-      user_id: user.id,
-      action: 'LOGIN_SUCCESS',
-      resource_type: 'auth',
-      ip_address: request.headers.get('x-forwarded-for') || undefined,
+    const { password: _, tokenKey: __, ...userWithoutSensitive } = pbUser;
+    
+    return apiResponse({ 
+      token, 
+      user: {
+        id: pbUser.id,
+        email: pbUser.email,
+        full_name: pbUser.full_name || pbUser.name || '',
+        role: pbUser.role || 'client',
+        department: pbUser.department || null,
+        is_active: pbUser.is_active !== false,
+        email_verified: pbUser.email_verified || false,
+      }
     });
-
-    const { password: _, ...userWithoutPassword } = user;
-    return apiResponse({ token, user: userWithoutPassword });
   } catch (error) {
     console.error('Login error:', error);
     return apiError('Login failed', 500, 'LOGIN_ERROR');

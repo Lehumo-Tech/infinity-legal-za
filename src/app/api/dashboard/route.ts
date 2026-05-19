@@ -1,17 +1,17 @@
 /**
- * GET /api/dashboard - Dashboard statistics
+ * GET /api/dashboard - Dashboard statistics via PocketBase
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
-import { requireAuth } from '@/lib/middleware';
-import { apiResponse, apiError } from '@/lib/middleware';
+import { listRecords, countRecords, groupByField, getFullList } from '@/lib/pb-client';
+import { requireAuth, apiResponse, apiError } from '@/lib/middleware';
 
 export async function GET(request: NextRequest) {
   try {
     const auth = requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
+    // Run all stat queries in parallel
     const [
       totalCases,
       activeCases,
@@ -23,34 +23,53 @@ export async function GET(request: NextRequest) {
       pendingTasks,
       overdueTasks,
       totalClients,
-      totalAttorneys,
-      revenueData,
       casesByType,
       casesByStatus,
       leadsBySource,
       recentCases,
       recentLeads,
-      upcomingDeadlines,
     ] = await Promise.all([
-      db.case.count(),
-      db.case.count({ where: { status: 'active' } }),
-      db.case.count({ where: { status: 'pending_review' } }),
-      db.case.count({ where: { status: 'closed' } }),
-      db.lead.count(),
-      db.lead.count({ where: { status: 'new' } }),
-      db.document.count(),
-      db.task.count({ where: { status: 'pending' } }),
-      db.task.count({ where: { status: 'overdue' } }),
-      db.user.count({ where: { role: 'client', is_active: true } }),
-      db.attorney.count({ where: { is_verified: true } }),
-      db.case.aggregate({ where: { estimated_value: { not: null } }, _sum: { estimated_value: true } }),
-      db.case.groupBy({ by: ['case_type'], _count: { case_type: true } }),
-      db.case.groupBy({ by: ['status'], _count: { status: true } }),
-      db.lead.groupBy({ by: ['source'], _count: { source: true } }),
-      db.case.findMany({ take: 5, orderBy: { created_at: 'desc' }, include: { client: { select: { full_name: true, email: true } }, lead_attorney: { select: { full_name: true } } } }),
-      db.lead.findMany({ take: 5, orderBy: { created_at: 'desc' } }),
-      db.task.findMany({ where: { due_date: { gte: new Date() }, status: { in: ['pending', 'in_progress'] } }, take: 5, orderBy: { due_date: 'asc' }, include: { assignee: { select: { full_name: true } } } }),
+      countRecords('cases'),
+      countRecords('cases', "status='active'"),
+      countRecords('cases', "status='pending_review'"),
+      countRecords('cases', "status='closed'"),
+      countRecords('leads'),
+      countRecords('leads', "status='new'"),
+      countRecords('documents'),
+      countRecords('tasks', "status='pending'"),
+      countRecords('tasks', "status='overdue'"),
+      countRecords('users', "role='client'"),
+      groupByField('cases', 'case_type'),
+      groupByField('cases', 'status'),
+      groupByField('leads', 'source'),
+      listRecords('cases', { page: 1, perPage: 5, sort: '-created', expand: 'client_id,lead_attorney_id' }),
+      listRecords('leads', { page: 1, perPage: 5, sort: '-created' }),
     ]);
+
+    const formatGrouped = (grouped: Record<string, number>, keyName: string) =>
+      Object.entries(grouped).map(([key, count]) => ({ [keyName]: key, count }));
+
+    const recentCasesData = ((recentCases.data as any)?.items || []).map((c: any) => ({
+      id: c.id,
+      matter_number: c.matter_number,
+      title: c.title,
+      case_type: c.case_type,
+      urgency: c.urgency,
+      status: c.status,
+      client: c.expand?.client_id ? { full_name: c.expand.client_id.full_name, email: c.expand.client_id.email } : null,
+      lead_attorney: c.expand?.lead_attorney_id ? { full_name: c.expand.lead_attorney_id.full_name } : null,
+      created_at: c.created,
+    }));
+
+    const recentLeadsData = ((recentLeads.data as any)?.items || []).map((l: any) => ({
+      id: l.id,
+      name: l.name,
+      email: l.email,
+      source: l.source,
+      status: l.status,
+      lead_score: l.lead_score,
+      created_at: l.created,
+    }));
 
     return apiResponse({
       stats: {
@@ -64,18 +83,17 @@ export async function GET(request: NextRequest) {
         pendingTasks,
         overdueTasks,
         totalClients,
-        totalAttorneys,
-        totalRevenue: revenueData._sum.estimated_value || 0,
+        totalAttorneys: 0,
+        totalRevenue: 0,
       },
       charts: {
-        casesByType: casesByType.map(c => ({ type: c.case_type, count: c._count.case_type })),
-        casesByStatus: casesByStatus.map(c => ({ status: c.status, count: c._count.status })),
-        leadsBySource: leadsBySource.map(l => ({ source: l.source, count: l._count.source })),
+        casesByType: formatGrouped(casesByType, 'type'),
+        casesByStatus: formatGrouped(casesByStatus, 'status'),
+        leadsBySource: formatGrouped(leadsBySource, 'source'),
       },
       recent: {
-        cases: recentCases,
-        leads: recentLeads,
-        deadlines: upcomingDeadlines,
+        cases: recentCasesData,
+        leads: recentLeadsData,
       },
     });
   } catch (error) {

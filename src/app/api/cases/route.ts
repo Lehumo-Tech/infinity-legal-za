@@ -1,13 +1,13 @@
 /**
- * GET/POST /api/cases - List/Create cases with pagination
+ * GET/POST /api/cases - List/Create cases with pagination via PocketBase
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { listRecords, createRecord, countRecords, groupByField } from '@/lib/pb-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { apiRateLimiter, checkHighRisk } from '@/lib/security';
-import { createAuditLog } from '@/lib/audit';
-import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult, checkRateLimit, withMiddleware } from '@/lib/middleware';
+import { checkHighRisk } from '@/lib/security';
+import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
+import { createAuditLogPB } from '@/lib/audit-pb';
 
 // GET - List cases with pagination and filters
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const auth = requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
-    const { page, perPage, skip, take } = getPaginationParams(request);
+    const { page, perPage } = getPaginationParams(request);
     const url = new URL(request.url);
     
     const status = url.searchParams.get('status');
@@ -23,46 +23,54 @@ export async function GET(request: NextRequest) {
     const urgency = url.searchParams.get('urgency');
     const search = url.searchParams.get('search');
 
-    const where: any = {};
-    if (status) where.status = status;
-    if (case_type) where.case_type = case_type;
-    if (urgency) where.urgency = urgency;
-    if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { matter_number: { contains: search } },
-        { description: { contains: search } },
-      ];
-    }
+    // Build filter string for PocketBase
+    const filters: string[] = [];
+    if (status) filters.push(`status='${status}'`);
+    if (case_type) filters.push(`case_type='${case_type}'`);
+    if (urgency) filters.push(`urgency='${urgency}'`);
+    if (search) filters.push(`(title~'${search}' || matter_number~'${search}' || description~'${search}')`);
 
     // Non-admin users can only see their own cases
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      where.OR = [
-        { client_id: auth.user.userId },
-        { lead_attorney_id: auth.user.userId },
-        { support_paralegal_id: auth.user.userId },
-      ];
+      filters.push(`(client_id='${auth.user.userId}' || lead_attorney_id='${auth.user.userId}' || support_paralegal_id='${auth.user.userId}')`);
     }
 
-    const [cases, total] = await Promise.all([
-      db.case.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { created_at: 'desc' },
-        include: {
-          client: { select: { id: true, full_name: true, email: true } },
-          lead_attorney: { select: { id: true, full_name: true } },
-          support_paralegal: { select: { id: true, full_name: true } },
-          _count: { select: { documents: true, tasks: true, messages: true } },
-        },
-      }),
-      db.case.count({ where }),
-    ]);
+    const filterStr = filters.length > 0 ? filters.join(' && ') : '';
+    
+    const res = await listRecords('cases', {
+      page,
+      perPage,
+      filter: filterStr,
+      sort: '-created',
+      expand: 'client_id,lead_attorney_id',
+    });
+
+    const pbData = res.data as any;
+    const cases = (pbData?.items || []).map((c: any) => ({
+      id: c.id,
+      matter_number: c.matter_number,
+      title: c.title,
+      description: c.description,
+      case_type: c.case_type,
+      urgency: c.urgency,
+      status: c.status,
+      client_id: c.client_id,
+      lead_attorney_id: c.lead_attorney_id,
+      support_paralegal_id: c.support_paralegal_id,
+      court_date: c.court_date,
+      estimated_value: c.estimated_value,
+      is_high_risk: c.is_high_risk,
+      next_action: c.next_action,
+      next_action_date: c.next_action_date,
+      created_at: c.created,
+      updated_at: c.updated,
+      client: c.expand?.client_id ? { id: c.expand.client_id.id, full_name: c.expand.client_id.full_name, email: c.expand.client_id.email } : null,
+      lead_attorney: c.expand?.lead_attorney_id ? { id: c.expand.lead_attorney_id.id, full_name: c.expand.lead_attorney_id.full_name } : null,
+    }));
 
     return apiResponse({
       data: cases,
-      pagination: createPaginationResult(total, page, perPage),
+      pagination: createPaginationResult(pbData?.totalItems || 0, page, perPage),
     });
   } catch (error) {
     console.error('Cases list error:', error);
@@ -91,40 +99,34 @@ export async function POST(request: NextRequest) {
     const highRiskCheck = checkHighRisk(`${title} ${description || ''}`);
 
     // Generate matter number
+    const caseCount = await countRecords('cases');
     const currentYear = new Date().getFullYear();
-    const caseCount = await db.case.count();
     const matter_number = `IL-${currentYear}-${String(caseCount + 1).padStart(4, '0')}`;
 
-    const newCase = await db.case.create({
-      data: {
-        matter_number,
-        title,
-        description: description || null,
-        case_type,
-        urgency,
-        status: 'intake',
-        client_id,
-        lead_attorney_id: auth.user.userId,
-        estimated_value: estimated_value || null,
-        is_high_risk: highRiskCheck.isHighRisk,
-      },
-      include: {
-        client: { select: { full_name: true, email: true } },
-        lead_attorney: { select: { full_name: true } },
-      },
+    const res = await createRecord('cases', {
+      matter_number,
+      title,
+      description: description || '',
+      case_type,
+      urgency,
+      status: 'intake',
+      client_id,
+      lead_attorney_id: auth.user.userId,
+      estimated_value: estimated_value || 0,
+      is_high_risk: highRiskCheck.isHighRisk,
     });
+
+    const newCase = res.data as any;
 
     // Create timeline entry
-    await db.caseTimeline.create({
-      data: {
-        case_id: newCase.id,
-        user_id: auth.user.userId,
-        action: 'CASE_CREATED',
-        description: 'Case created and assigned',
-      },
+    await createRecord('case_timeline', {
+      case_id: newCase.id,
+      user_id: auth.user.userId,
+      action: 'CASE_CREATED',
+      description: 'Case created and assigned',
     });
 
-    await createAuditLog({
+    await createAuditLogPB({
       user_id: auth.user.userId,
       action: 'CREATE_CASE',
       resource_type: 'case',
