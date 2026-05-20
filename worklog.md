@@ -57,3 +57,73 @@ Stage Summary:
 - Removed all PocketBase dependencies and files
 - App is now previewable with working login, dashboard, cases, leads, etc.
 - Demo credentials: md@infinitylegal.co.za / Password123!
+
+---
+Task ID: 4
+Agent: backend-api-builder
+Task: Build backend API routes for consultations, documents, tasks, staff, notifications
+
+Work Log:
+- Created /api/consultations route (GET + POST)
+  - GET: List with pagination, filter by attorney_id, client_id, status, date range; includes client, attorney, case info
+  - POST: Create with validation (required: client_id, attorney_id, scheduled_date, scheduled_time); validates attorney has legal role; validates client and case exist; creates audit log and attorney notification
+- Created /api/documents/upload route (POST)
+  - Handles file upload via NextRequest formData; saves to /home/z/my-project/uploads/documents/ with unique timestamped filenames; max 10MB; validates case exists and document_type enum; creates Document record with file_url, file_name, file_size; creates audit log
+- Created /api/documents route (GET)
+  - List with pagination; filter by case_id, document_type, workflow_status; includes preparer, approver, signer, supervisor, and case info
+- Created /api/tasks route (GET + POST)
+  - GET: List with pagination; filter by assigned_to, case_id, status, priority; includes assignee, creator, and case info
+  - POST: Create with validation (required: title, assigned_to, priority); validates assignee exists; validates case if provided; default status: pending; creates audit log and assignee notification
+- Created /api/staff route (GET)
+  - Flat list view with pagination; filter by department, role; includes supervisor relationship
+  - Hierarchy view (view=hierarchy) grouped by department with supervisor/supervisee relationships; head counts per department
+  - Excludes client and guest roles; defaults to active staff only
+- Created /api/notifications route (GET + PUT)
+  - GET: List current user's notifications with pagination; filter by is_read, type; includes unread_count
+  - PUT: Mark notification as read; validates ownership (user can only mark own notifications); creates audit log
+
+Stage Summary:
+- All 6 API endpoints created and functional
+- Document upload saves to /home/z/my-project/uploads/documents/ with unique filenames
+- All routes require authentication via requireAuth middleware
+- Consultation creation validates attorney has legal role and creates notifications
+- Task creation creates notifications for assignees
+- Staff directory supports both flat and hierarchy views
+- Notifications are user-scoped with ownership validation
+- Lint check: 0 errors on all new files
+- Dev server running successfully
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Complete app redesign with uploaded media, navy/gold theme, functional workbench, staff portals, org hierarchy
+
+Work Log:
+- Analyzed all 3 uploaded images using VLM to understand Infinity Legal brand (navy/gold scheme, legal protection, R139/PM pricing, legacy planning)
+- Copied uploaded images to /public/images/ (hero-legal.png, hero-pricing.png, hero-legacy.png)
+- Updated globals.css with navy (#0c1e3c) and gold (#c9a84c) color scheme throughout
+- Completely rewrote src/app/page.tsx with:
+  - Login screen: Split layout with hero image carousel (auto-rotating 3 slides from uploaded media) + login form
+  - Workbench view: Central hub with welcome banner, quick actions, stats grid, upcoming consultations, my tasks, case distribution
+  - Role-based navigation: Different nav items for MD/Partner, Legal, Paralegal, Sales, Finance, Client roles
+  - Consultations view: Full CRUD with "Log Consultation" dialog (client, attorney, date, time, duration, meeting type, notes)
+  - Documents view: Document upload dialog with file input, case linking, document type selection
+  - Tasks view: Create task dialog with assignee, priority, due date, case linking
+  - Staff Portal: Filterable directory grouped by department with role badges, supervisor info, active status
+  - Org Chart: 5-tier hierarchical view (Executive → Management → Legal Practice/Consulting → Support → Admin) with supervisor reporting
+  - Analytics: Revenue, case status distribution, task overview for management
+  - Pricing: 4-tier pricing cards (Free, Starter R499, Family R999, Premium R2499) matching SA market
+- Fixed lint errors (setState-in-effect warnings) using startTransition and async IIFE patterns
+- Verified app loads correctly with all images and theme
+- All 0 lint errors in src/ folder
+
+Stage Summary:
+- Full app redesign with navy/gold Infinity Legal branding
+- Uploaded images integrated as hero carousel on login screen
+- Functional workbench as central hub for all roles
+- Legal advisors can log consultations and upload documents
+- Paralegals have access to cases, documents, tasks, staff portal
+- Management has full access including analytics
+- Org chart shows 5-tier hierarchy with reporting lines
+- Staff portal with department grouping and filtering
+- All API routes working (consultations, documents, tasks, staff, notifications)
