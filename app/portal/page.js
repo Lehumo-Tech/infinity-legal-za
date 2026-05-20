@@ -25,26 +25,29 @@ export default function PortalDashboard() {
 
   const fetchDashboardData = async (t) => {
     try {
-      const headers = { Authorization: `Bearer ${t}` }
-      const [casesRes, tasksRes, notifsRes] = await Promise.allSettled([
-        fetch('/api/cases', { headers }),
-        fetch('/api/tasks', { headers }),
-        fetch('/api/notifications?limit=5', { headers }),
-      ])
+      // Fetch cases from Supabase directly
+      const { data: casesData } = await supabase
+        .from('cases')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-      let cases = [], tasks = [], notifs = []
-      if (casesRes.status === 'fulfilled' && casesRes.value.ok) {
-        const d = await casesRes.value.json()
-        cases = d.cases || []
-      }
-      if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
-        const d = await tasksRes.value.json()
-        tasks = d.tasks || []
-      }
-      if (notifsRes.status === 'fulfilled' && notifsRes.value.ok) {
-        const d = await notifsRes.value.json()
-        notifs = d.notifications || []
-      }
+      const cases = casesData || []
+
+      // Fetch tasks from Supabase directly
+      const { data: tasksData } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('due_date', { ascending: true })
+
+      const tasks = tasksData || []
+
+      // Fetch notifications (mocked or from separate table if exists)
+      const { data: notifsData } = await supabase
+        .from('profiles') // Placeholder for notifications fetch if no table
+        .select('last_active')
+        .limit(0)
+
+      const notifs = []
 
       const activeCases = cases.filter(c => ['active', 'intake', 'under_review'].includes(c.status)).length
       const pendingTasks = tasks.filter(t => t.status !== 'completed').length

@@ -131,14 +131,14 @@ const TESTIMONIALS = [
 ]
 
 const PEOPLE_IMAGES = {
-  hero: '/images/hero-legal-team.png',
-  family: '/images/client-getting-help.png',
-  workplace: '/images/hero-legal-team.png',
-  teamwork: '/images/hero-legal-team.png',
-  consultation: '/images/attorney-consultation.png',
-  professional: '/images/attorney-consultation.png',
-  advisor: '/images/attorney-consultation.png',
-  colleagues: '/images/hero-legal-team.png',
+  hero: '/app_media_1.png',
+  family: '/app_media_2.png',
+  workplace: '/app_media_3.png',
+  teamwork: '/app_media_4.png',
+  consultation: '/app_media_1.png',
+  professional: '/app_media_2.png',
+  advisor: '/app_media_3.png',
+  colleagues: '/app_media_4.png',
 }
 
 const CAROUSEL_SLIDES = [

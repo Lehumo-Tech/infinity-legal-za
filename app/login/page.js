@@ -104,7 +104,7 @@ export default function LoginPage() {
       <main className="flex-1 flex">
         {/* Left - Image Panel */}
         <div className="hidden lg:flex lg:w-1/2 relative bg-[#0f2b46]">
-          <img src="https://images.pexels.com/photos/5668768/pexels-photo-5668768.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Professional legal advisor" className="w-full h-full object-cover opacity-30" />
+          <img src="/app_media_1.png" alt="Professional legal advisor" className="w-full h-full object-cover opacity-30" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0f2b46] via-[#0f2b46]/50 to-transparent" />
           <div className="absolute bottom-12 left-8 right-8 text-white z-10">
             <h2 className="text-3xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Legal Excellence <span className="text-[#c9a961]">Without Limits</span></h2>
@@ -125,8 +125,8 @@ export default function LoginPage() {
             <p className="text-gray-500 text-sm">Sign in to your account</p>
           </div>
 
-          {/* Mode Toggle: Real / Demo */}
-          <div className="flex items-center justify-center gap-2 mb-4">
+          {/* Mode Toggle: Real / Demo (Hidden for Launch) */}
+          <div className="hidden items-center justify-center gap-2 mb-4">
             <button 
               onClick={() => { setDemoMode(false); setOtpSent(false); setError(''); setSuccessMsg('') }} 
               className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-colors ${!demoMode ? 'bg-[#0f2b46] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
@@ -244,8 +244,8 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* Demo Quick Login */}
-          {demoMode && (
+          {/* Demo Quick Login (Hidden for Launch) */}
+          {demoMode && false && (
             <div className="mt-6 bg-[#0f2b46] rounded-2xl p-5 text-white">
               <h3 className="text-sm font-bold text-[#c9a961] mb-3">Demo Quick Login</h3>
               <div className="space-y-2">

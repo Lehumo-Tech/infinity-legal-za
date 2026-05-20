@@ -18,6 +18,22 @@ export function middleware(request) {
   }
 
   // =============================================
+  // ROUTE PROTECTION
+  // =============================================
+  // Simple session check for protected routes
+  // For a robust implementation, you'd verify the Supabase cookie here
+  const protectedRoutes = ['/portal', '/dashboard', '/admin']
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+  const sessionCookie = request.cookies.get('sb-access-token') || request.cookies.get('supabase-auth-token')
+
+  if (isProtectedRoute && !sessionCookie) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirected', 'true')
+    return NextResponse.redirect(url)
+  }
+
+  // =============================================
   // CONTENT SECURITY POLICY
   // =============================================
   const cspHeader = `

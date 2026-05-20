@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function SignupPage() {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', legalNeed: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', legalNeed: '' })
   const [popia, setPopia] = useState(false)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -17,21 +17,24 @@ export default function SignupPage() {
     if (!popia) return
     setLoading(true)
     try {
-      const res = await fetch('/api/waitlist', {
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: form.email,
+          password: form.password,
+          fullName: form.name,
           phone: form.phone,
-          name: form.name,
-          legal_need: form.legalNeed,
-          plan: 'general',
-          source: 'signup',
+          role: 'client'
         }),
       })
       const data = await res.json()
-      setMessage(data.message || 'Registration successful! We\'ll be in touch shortly.')
-      setSubmitted(true)
+      if (data.success) {
+        setMessage('Registration successful! You can now log in to your dashboard.')
+        setSubmitted(true)
+      } else {
+        setMessage(data.error || 'Registration failed. Please try again.')
+      }
     } catch {
       setMessage('Something went wrong. Please try again.')
     } finally {
@@ -90,6 +93,18 @@ export default function SignupPage() {
                     onChange={e => setForm({...form, name: e.target.value})}
                     placeholder="e.g. John Doe"
                     required
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Password *</label>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={e => setForm({...form, password: e.target.value})}
+                    placeholder="Create a secure password"
+                    required
+                    minLength={6}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#c9a961]/50 focus:border-[#c9a961] transition-all"
                   />
                 </div>

@@ -27,7 +27,7 @@ export default function DashboardPage() {
     if (user) {
       fetchDashboardData()
 
-      const channel = supabase
+      const caseChannel = supabase
         .channel(`client-cases:${user.id}`)
         .on('postgres_changes', {
           event: '*', schema: 'public', table: 'cases',
@@ -37,9 +37,24 @@ export default function DashboardPage() {
         })
         .subscribe()
 
-      return () => supabase.removeChannel(channel)
+      // Real-time messages
+      const msgChannel = supabase
+        .channel(`client-messages:${user.id}`)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'messages'
+        }, (payload) => {
+          if (selectedCase && payload.new.case_id === selectedCase.id) {
+            loadMessages(selectedCase.id)
+          }
+        })
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(caseChannel)
+        supabase.removeChannel(msgChannel)
+      }
     }
-  }, [authLoading, user])
+  }, [authLoading, user, selectedCase])
 
   const fetchDashboardData = async () => {
     try {
@@ -81,7 +96,7 @@ export default function DashboardPage() {
     await supabase.from('messages').insert({
       case_id: selectedCase.id,
       sender_id: user.id,
-      content: newMessage,
+      content_encrypted: newMessage, // Matches schema content_encrypted
       created_at: new Date().toISOString()
     })
 
@@ -383,7 +398,7 @@ export default function DashboardPage() {
                               ? 'bg-infinity-navy text-white'
                               : 'bg-infinity-cream text-infinity-navy'
                           }`}>
-                            <p className="text-sm">{msg.content}</p>
+                            <p className="text-sm">{msg.content_encrypted}</p>
                             <p className={`text-xs mt-1 ${msg.sender_id === user.id ? 'text-blue-200' : 'text-infinity-navy/50'}`}>
                               {msg.sender?.full_name} &middot; {new Date(msg.created_at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
                             </p>
@@ -469,10 +484,10 @@ function DocumentUploader({ caseId, userId }) {
       await supabase.from('documents').insert({
         case_id: caseId,
         uploaded_by: userId,
-        filename: file.name,
-        file_url: publicUrl,
-        file_size: file.size,
-        mime_type: file.type
+        file_name: file.name,
+        file_path: key,
+        file_type: file.type,
+        file_size_bytes: file.size
       })
 
       loadDocuments()
@@ -503,17 +518,27 @@ function DocumentUploader({ caseId, userId }) {
           {documents.map(doc => (
             <a
               key={doc.id}
-              href={doc.file_url}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`#`}
+              onClick={(e) => {
+                e.preventDefault();
+                supabase.storage.from('documents').download(doc.file_path).then(({data}) => {
+                  if (data) {
+                    const url = window.URL.createObjectURL(data);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = doc.file_name;
+                    a.click();
+                  }
+                });
+              }}
               className="flex items-center gap-3 p-3 bg-infinity-cream rounded-lg hover:bg-amber-100 transition-colors"
             >
               <svg className="w-8 h-8 text-infinity-navy/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-infinity-navy truncate">{doc.filename}</p>
-                <p className="text-xs text-infinity-navy/50">{(doc.file_size / 1024).toFixed(1)} KB &middot; {new Date(doc.created_at).toLocaleDateString('en-ZA')}</p>
+                <p className="text-sm font-medium text-infinity-navy truncate">{doc.file_name}</p>
+                <p className="text-xs text-infinity-navy/50">{(doc.file_size_bytes / 1024).toFixed(1)} KB &middot; {new Date(doc.created_at).toLocaleDateString('en-ZA')}</p>
               </div>
             </a>
           ))}
