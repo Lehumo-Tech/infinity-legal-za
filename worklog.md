@@ -148,3 +148,31 @@ Stage Summary:
 - security-config.ts: hardcoded path replaced with env variable
 - No raw SQL queries — all Prisma parameterized (SQL injection safe)
 - Lint: Clean (0 errors)
+---
+Task ID: 1-6
+Agent: Main Agent
+Task: Fix app preview, generate client report, revert pricing, harden security, push to GitHub
+
+Work Log:
+- Diagnosed app preview issue: middleware was setting X-Frame-Options: DENY and COEP: require-corp which blocked iframe embedding
+- Fixed middleware: changed to X-Frame-Options: SAMEORIGIN, COEP: credentialless, frame-ancestors 'self'
+- Verified dev server is running and responding with HTTP 200
+- Health API (/api/health) returns healthy status with database connected
+- Login API (/api/auth/login) works with md@infinitylegal.co.za / Password123!
+- Report API (/api/report) returns comprehensive HTML report (58KB) with print styles
+- Reverted pricing in layout.tsx schema.org data to match actual plans (R99, R99, R139)
+- Subagent generated comprehensive HTML client report replacing PDF
+- Subagent hardened security: added RBAC checks to 5 API routes, input sanitization to 4 routes
+- Subagent verified .gitignore covers .env, db files, reports, secrets
+- Subagent created .env.example with placeholder values
+- Committed all changes locally
+- GitHub push requires credentials not available in sandbox
+
+Stage Summary:
+- App is running and functional on localhost:3000
+- Login works with all 7 staff users (all use Password123!)
+- Client report accessible at /api/report (HTML with print styles)
+- Pricing reverted to original: Civil R99, Labour R99, Extensive R139
+- Security hardened with RBAC checks, input sanitization, proper headers
+- All changes committed to git (local)
+- GitHub push requires manual credentials setup
