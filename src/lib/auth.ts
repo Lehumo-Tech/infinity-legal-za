@@ -61,7 +61,8 @@ export function validatePasswordStrength(password: string): { valid: boolean; er
 // JWT TOKEN MANAGEMENT
 // ============================================
 
-const JWT_SECRET = process.env.JWT_SECRET || 'infinity-legal-za-jwt-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET!;
+if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
 const JWT_EXPIRY = '24h';
 const JWT_REFRESH_EXPIRY_DAYS = 7;
 

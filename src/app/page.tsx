@@ -360,7 +360,6 @@ export default function Home() {
         } catch { /* ignore */ }
       })();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, token]);
 
   // Role-based navigation
@@ -575,8 +574,8 @@ export default function Home() {
 // LOGIN SCREEN
 // ============================================
 function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: string) => void; loading: boolean; error: string }) {
-  const [email, setEmail] = useState('md@infinitylegal.co.za');
-  const [password, setPassword] = useState('Password123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [heroSlide, setHeroSlide] = useState(0);
 
   const heroSlides = [
@@ -648,12 +647,7 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
             <div className="text-xs text-slate-500 space-y-1 mt-4 pt-4 border-t">
-              <p className="font-semibold text-slate-600">Demo Credentials:</p>
-              <p>Managing Director: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">md@infinitylegal.co.za</code></p>
-              <p>Associate: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">associate@infinitylegal.co.za</code></p>
-              <p>Paralegal: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">paralegal@infinitylegal.co.za</code></p>
-              <p>Legal Officer: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">legalofficer@infinitylegal.co.za</code></p>
-              <p>Password: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">Password123!</code></p>
+              <p>Contact your system administrator for login credentials.</p>
             </div>
           </div>
 
@@ -1877,55 +1871,59 @@ function PricingView() {
     {
       name: 'Free',
       price: 'R0',
-      period: '/month',
+      period: 'forever',
       description: 'For individuals getting started',
-      features: ['1 case', '5 documents', 'Basic search', 'Email support'],
+      features: ['1 Active Case', 'Basic Document Upload', 'Email Support', 'POPIA Compliant'],
       color: 'border-slate-200',
       buttonColor: 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+      badge: null,
     },
     {
       name: 'Starter',
       price: 'R499',
       period: '/month',
       description: 'For small practices',
-      features: ['10 cases', '50 documents', 'Lead management', 'Priority support', 'Consultation logging'],
+      features: ['5 Active Cases', '50 Documents', 'AI Case Analysis', 'Priority Email Support', 'Consultation Booking'],
       color: 'border-slate-200',
       buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]',
+      badge: null,
     },
     {
       name: 'Family',
       price: 'R999',
       period: '/month',
       description: 'For growing firms',
-      features: ['Unlimited cases', '250 documents', 'AI analysis', 'Full workbench', 'Staff portal', 'Document workflow'],
+      features: ['15 Active Cases', '200 Documents', 'AI Case Analysis', 'Priority Support', 'Consultation Booking', 'Family Law Specialist', 'Document Workflow'],
       color: 'border-[#c9a84c]',
       buttonColor: 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#a88832]',
       popular: true,
+      badge: 'Popular',
     },
     {
       name: 'Premium',
       price: 'R2,499',
       period: '/month',
       description: 'For established firms',
-      features: ['Everything in Family', 'Analytics dashboard', 'Custom RBAC', 'API access', 'Dedicated support', 'White-label option'],
+      features: ['Unlimited Cases', 'Unlimited Documents', 'Advanced AI Analysis', '24/7 Priority Support', 'Dedicated Attorney', 'Full Document Workflow', 'Lead Pipeline', 'Custom Reporting'],
       color: 'border-slate-200',
       buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]',
+      badge: 'Best Value',
     },
   ];
 
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-[#0c1e3c]">Professional Edge</h2>
-        <p className="text-slate-500 mt-1">Affordable monthly plans designed for the reality of South Africans</p>
+        <h2 className="text-2xl font-bold text-[#0c1e3c]">Pricing Plans</h2>
+        <p className="text-slate-500 mt-1">All prices in South African Rand (ZAR). POPIA compliant by default.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {plans.map(plan => (
-          <Card key={plan.name} className={`relative ${plan.color} ${plan.popular ? 'ring-2 ring-[#c9a84c]' : ''}`}>
-            {plan.popular && (
+          <Card key={plan.name} className={`relative ${plan.color} ${plan.popular ? 'ring-2 ring-[#c9a84c]' : ''} border-2`}>
+            {plan.badge && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-[#c9a84c] text-[#0c1e3c] text-[10px]">Most Popular</Badge>
+                <Badge className="bg-emerald-600 text-[10px]">{plan.badge}</Badge>
               </div>
             )}
             <CardContent className="p-6">

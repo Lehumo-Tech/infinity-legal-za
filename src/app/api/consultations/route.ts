@@ -120,6 +120,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate meeting_type enum
+    const validMeetingTypes = ['in_person', 'video_call', 'phone_call'];
+    if (meeting_type && !validMeetingTypes.includes(meeting_type)) {
+      return apiError(
+        `Invalid meeting_type. Must be one of: ${validMeetingTypes.join(', ')}`,
+        400,
+        'INVALID_MEETING_TYPE'
+      );
+    }
+
+    // Validate status enum
+    const validStatuses = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'];
+    if (status && !validStatuses.includes(status)) {
+      return apiError(
+        `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+        400,
+        'INVALID_STATUS'
+      );
+    }
+
     // Validate that the attorney exists and has a legal role
     const attorney = await db.user.findUnique({
       where: { id: attorney_id },

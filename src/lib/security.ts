@@ -117,7 +117,8 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
 // ENCRYPTION (AES-256-GCM)
 // ============================================
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'infinity-legal-za-encryption-key-32b';
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY!;
+if (!ENCRYPTION_KEY) throw new Error('ENCRYPTION_KEY environment variable is required');
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 const TAG_LENGTH = 16;

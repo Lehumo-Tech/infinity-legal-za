@@ -22,7 +22,6 @@ node_modules
 
 # misc
 .DS_Store
-*.pem
 
 # debug
 npm-debug.log*
@@ -30,12 +29,48 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Database files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+db/
+
+# Upload directories
+upload/
+uploads/
+
+# PocketBase data
+pb_data/
+
+# Environment & secrets
+.env
+.env.local
+.env.production
+.env.staging
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+
+# Sensitive directories
+.zscripts/
+agent-ctx/
+mini-services/pocketbase/
+mini-services/pocketbase-service/
+
+# Logs
+*.log
+dev.log
+dev.out.log
+server.log
+
+# Reports (may contain credentials)
+reports/
 
 # vercel
 .vercel
-
 
 # typescript
 *.tsbuildinfo
@@ -43,12 +78,8 @@ next-env.d.ts
 local-*
 .claude
 .z-ai-config
-*.log
-dev.log
-dev.out.log
 test
 prompt
 
-server.log
 # Skills directory
 /skills/
