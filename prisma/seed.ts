@@ -169,16 +169,15 @@ async function main() {
   // =============================================
   console.log('\n💰 Creating pricing plans...');
   const plans = [
-    { name: 'Free', slug: 'free', price_monthly: 0, price_annual: 0, currency: 'ZAR', features: JSON.stringify(['1 Active Case', 'Basic Document Upload', 'Email Support', 'POPIA Compliant']), max_cases: 1, max_documents: 5, is_active: true, sort_order: 1 },
-    { name: 'Starter', slug: 'starter', price_monthly: 499, price_annual: 4990, currency: 'ZAR', features: JSON.stringify(['5 Active Cases', '50 Documents', 'AI Case Analysis', 'Priority Email Support', 'Consultation Booking']), max_cases: 5, max_documents: 50, is_active: true, sort_order: 2 },
-    { name: 'Family', slug: 'family', price_monthly: 999, price_annual: 9990, currency: 'ZAR', features: JSON.stringify(['15 Active Cases', '200 Documents', 'AI Case Analysis', 'Priority Support', 'Consultation Booking', 'Family Law Specialist', 'Document Workflow']), max_cases: 15, max_documents: 200, is_active: true, sort_order: 3 },
-    { name: 'Premium', slug: 'premium', price_monthly: 2499, price_annual: 24990, currency: 'ZAR', features: JSON.stringify(['Unlimited Cases', 'Unlimited Documents', 'Advanced AI Analysis', '24/7 Priority Support', 'Dedicated Attorney', 'Full Document Workflow', 'Lead Pipeline', 'Custom Reporting']), max_cases: -1, max_documents: -1, is_active: true, sort_order: 4 },
+    { name: 'Civil Legal Plan', slug: 'civil-legal', price_monthly: 99, price_annual: 990, currency: 'ZAR', features: JSON.stringify(['Contract disputes', 'Consumer rights complaints', 'Property & conveyancing advisory', 'Debt collection assistance', 'Defamation claims', 'Personal income tax advice']), max_cases: -1, max_documents: -1, is_active: true, sort_order: 1 },
+    { name: 'Labour Legal Plan', slug: 'labour-legal', price_monthly: 99, price_annual: 990, currency: 'ZAR', features: JSON.stringify(['Unfair dismissal disputes', 'CCMA representation & arbitration', 'Workplace discrimination claims', 'Employment contract reviews', 'Disciplinary hearing assistance', 'Personal income tax advice']), max_cases: -1, max_documents: -1, is_active: true, sort_order: 2 },
+    { name: 'Extensive Plan', slug: 'extensive', price_monthly: 139, price_annual: 1390, currency: 'ZAR', features: JSON.stringify(['All Civil + Labour matters', 'Criminal matters & bail applications', 'Traffic offence defence', 'Domestic violence protection orders', 'Tax advice + submission services', 'Personal income tax advice AND submission services', 'Antenuptial contract drafting, lodgement, execution']), max_cases: -1, max_documents: -1, is_active: true, sort_order: 3 },
   ];
 
   for (const plan of plans) {
     await db.pricingPlan.create({ data: plan });
   }
-  console.log('  ✅ Created 4 pricing plans');
+  console.log('  ✅ Created 3 pricing plans');
 
   // =============================================
   // 6. Create Notifications
@@ -271,7 +270,7 @@ async function main() {
   console.log(`  Users: ${createdUsers.length}`);
   console.log(`  Cases: ${caseTitles.length}`);
   console.log(`  Leads: ${leadNames.length}`);
-  console.log(`  Plans: 4`);
+  console.log(`  Plans: 3`);
   console.log(`\n🔑 Demo Login Credentials:`);
   console.log(`  Managing Director: md@infinitylegal.co.za / Password123!`);
   console.log(`  Associate: associate@infinitylegal.co.za / Password123!`);

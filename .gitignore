@@ -48,11 +48,15 @@ pb_data/
 .env.local
 .env.production
 .env.staging
+.env.*.local
 *.pem
 *.key
 *.cert
 *.p12
 *.pfx
+*.secret
+credentials.json
+service-account.json
 
 # Sensitive directories
 .zscripts/
@@ -68,6 +72,13 @@ server.log
 
 # Reports (may contain credentials)
 reports/
+
+# Security & audit
+security-audit/
+backups/
+*.bak
+*.backup
+*.sql.gz
 
 # vercel
 .vercel

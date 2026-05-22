@@ -580,7 +580,7 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
 
   const heroSlides = [
     { image: '/images/hero-legal.png', headline: 'Your rights, reinforced.', sub: 'Navigate consumer disputes with unlimited expert consultations and AI-powered oversight.' },
-    { image: '/images/hero-pricing.png', headline: 'Professional Edge at R139/PM', sub: 'Affordable monthly plans designed for the reality of South Africans.' },
+    { image: '/images/hero-pricing.png', headline: 'Legal Plans from R99/month', sub: 'Affordable monthly plans designed for the reality of South Africans.' },
     { image: '/images/hero-legacy.png', headline: 'Your Legacy, Fully Secured', sub: 'Get a plan today and build a protected future.' },
   ];
 
@@ -1869,42 +1869,32 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
 function PricingView() {
   const plans = [
     {
-      name: 'Free',
-      price: 'R0',
-      period: 'forever',
-      description: 'For individuals getting started',
-      features: ['1 Active Case', 'Basic Document Upload', 'Email Support', 'POPIA Compliant'],
-      color: 'border-slate-200',
-      buttonColor: 'bg-slate-100 text-slate-700 hover:bg-slate-200',
-      badge: null,
-    },
-    {
-      name: 'Starter',
-      price: 'R499',
+      name: 'Civil Legal Plan',
+      price: 'R99',
       period: '/month',
-      description: 'For small practices',
-      features: ['5 Active Cases', '50 Documents', 'AI Case Analysis', 'Priority Email Support', 'Consultation Booking'],
+      description: 'Unlimited legal support',
+      features: ['Contract disputes', 'Consumer rights complaints', 'Property & conveyancing advisory', 'Debt collection assistance', 'Defamation claims', '★ Personal income tax advice'],
       color: 'border-slate-200',
       buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]',
       badge: null,
     },
     {
-      name: 'Family',
-      price: 'R999',
+      name: 'Labour Legal Plan',
+      price: 'R99',
       period: '/month',
-      description: 'For growing firms',
-      features: ['15 Active Cases', '200 Documents', 'AI Case Analysis', 'Priority Support', 'Consultation Booking', 'Family Law Specialist', 'Document Workflow'],
+      description: 'Unlimited legal support',
+      features: ['Unfair dismissal disputes', 'CCMA representation & arbitration', 'Workplace discrimination claims', 'Employment contract reviews', 'Disciplinary hearing assistance', '★ Personal income tax advice'],
       color: 'border-[#c9a84c]',
       buttonColor: 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#a88832]',
       popular: true,
       badge: 'Popular',
     },
     {
-      name: 'Premium',
-      price: 'R2,499',
+      name: 'Extensive Plan',
+      price: 'R139',
       period: '/month',
-      description: 'For established firms',
-      features: ['Unlimited Cases', 'Unlimited Documents', 'Advanced AI Analysis', '24/7 Priority Support', 'Dedicated Attorney', 'Full Document Workflow', 'Lead Pipeline', 'Custom Reporting'],
+      description: 'Unlimited legal support — all inclusive',
+      features: ['All Civil + Labour matters', 'Criminal matters & bail applications', 'Traffic offence defence', 'Domestic violence protection orders', 'Tax advice + submission services', '★ Personal income tax advice AND submission services', '★ Antenuptial contract drafting, lodgement, execution'],
       color: 'border-slate-200',
       buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]',
       badge: 'Best Value',
@@ -1918,7 +1908,7 @@ function PricingView() {
         <p className="text-slate-500 mt-1">All prices in South African Rand (ZAR). POPIA compliant by default.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans.map(plan => (
           <Card key={plan.name} className={`relative ${plan.color} ${plan.popular ? 'ring-2 ring-[#c9a84c]' : ''} border-2`}>
             {plan.badge && (
@@ -1943,7 +1933,7 @@ function PricingView() {
                 ))}
               </ul>
               <Button className={`w-full mt-4 ${plan.buttonColor}`} size="sm">
-                {plan.name === 'Free' ? 'Get Started' : 'Subscribe'}
+                {plan.name === 'Free' ? 'Get Started' : `Get Started — ${plan.name}`}
               </Button>
             </CardContent>
           </Card>
