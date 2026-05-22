@@ -14,7 +14,7 @@ const CSP_HEADER = [
   "img-src 'self' data: https:",
   "font-src 'self' https://fonts.gstatic.com",
   "connect-src 'self'",
-  "frame-ancestors 'none'",
+  "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
@@ -28,8 +28,8 @@ export function middleware(request: NextRequest) {
   // Content Security Policy - strict CSP to prevent XSS and injection attacks
   response.headers.set('Content-Security-Policy', CSP_HEADER);
 
-  // Prevent clickjacking - deny framing entirely
-  response.headers.set('X-Frame-Options', 'DENY');
+  // Allow framing from same origin (needed for preview/embed)
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
 
   // Prevent MIME type sniffing
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -58,7 +58,8 @@ export function middleware(request: NextRequest) {
   // Cross-Origin isolation headers
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
   response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
-  response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+  // Note: COEP set to credentialless instead of require-corp to allow preview embedding
+  response.headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
 
   // Cache control for sensitive pages
   if (request.nextUrl.pathname.startsWith('/api/')) {

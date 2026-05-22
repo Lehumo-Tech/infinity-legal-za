@@ -5,6 +5,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
+import { isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
@@ -96,16 +97,27 @@ export async function POST(request: NextRequest) {
       return apiError('Name, email, and source are required', 400, 'MISSING_FIELDS');
     }
 
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return apiError('Invalid email format', 400, 'INVALID_EMAIL');
+    }
+
+    // Validate source enum
+    const validSources = ['website', 'referral', 'walk_in', 'social_media', 'advertisement', 'cold_call', 'other'];
+    if (!validSources.includes(source)) {
+      return apiError(`Invalid source. Must be one of: ${validSources.join(', ')}`, 400, 'INVALID_SOURCE');
+    }
+
     const slaDeadline = new Date(Date.now() + 7 * 86400000);
 
     const lead = await db.lead.create({
       data: {
-        name,
-        email,
-        phone: phone || null,
+        name: sanitizeString(name),
+        email: email.toLowerCase(),
+        phone: phone ? sanitizeString(phone) : null,
         source,
         case_type: case_type || null,
-        description: description || null,
+        description: description ? sanitizeString(description) : null,
         status: 'new',
         first_contact_date: new Date(),
         sla_deadline: slaDeadline,

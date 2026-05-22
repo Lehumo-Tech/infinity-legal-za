@@ -4,6 +4,8 @@
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
+import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
+import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
@@ -12,6 +14,10 @@ export async function GET(request: NextRequest) {
   try {
     const auth = requireAuth(request);
     if (!auth.authenticated) return auth.error!;
+
+    if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_TASKS)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
 
     const { page, perPage, skip, take } = getPaginationParams(request);
     const url = new URL(request.url);
@@ -117,6 +123,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.CREATE_TASK)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     // Validate assignee exists
     const assignee = await db.user.findUnique({
       where: { id: assigned_to },
@@ -138,8 +148,8 @@ export async function POST(request: NextRequest) {
 
     const task = await db.task.create({
       data: {
-        title,
-        description: description || null,
+        title: sanitizeString(title),
+        description: description ? sanitizeString(description) : null,
         assigned_to,
         created_by: auth.user.userId,
         case_id: case_id || null,

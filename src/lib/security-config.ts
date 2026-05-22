@@ -153,8 +153,8 @@ export const FILE_UPLOAD_CONFIG = {
   ],
   // Maximum files per upload request
   maxFilesPerRequest: 5,
-  // Upload directory (server-side)
-  uploadDir: '/home/z/my-project/uploads/documents',
+  // Upload directory (server-side, relative to project root)
+  uploadDir: process.env.UPLOAD_DIR || './uploads/documents',
 } as const;
 
 // ============================================

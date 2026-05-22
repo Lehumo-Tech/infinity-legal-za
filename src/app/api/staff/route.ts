@@ -4,6 +4,7 @@
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
+import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 
 // GET - List staff members with organizational hierarchy
@@ -11,6 +12,10 @@ export async function GET(request: NextRequest) {
   try {
     const auth = requireAuth(request);
     if (!auth.authenticated) return auth.error!;
+
+    if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_USERS)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
 
     const { page, perPage, skip, take } = getPaginationParams(request);
     const url = new URL(request.url);

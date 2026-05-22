@@ -5,7 +5,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { checkHighRisk } from '@/lib/security';
+import { checkHighRisk, isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
@@ -108,8 +108,28 @@ export async function POST(request: NextRequest) {
       return apiError('Title, case type, urgency, and client are required', 400, 'MISSING_FIELDS');
     }
 
+    // Validate enum fields
+    const validCaseTypes = ['family_law', 'criminal_defence', 'civil_litigation', 'conveyancing', 'estate_planning', 'corporate_commercial', 'debt_collection', 'immigration', 'labour_law', 'personal_injury', 'other'];
+    if (!validCaseTypes.includes(case_type)) {
+      return apiError(`Invalid case_type. Must be one of: ${validCaseTypes.join(', ')}`, 400, 'INVALID_CASE_TYPE');
+    }
+    const validUrgencies = ['low', 'medium', 'high', 'critical'];
+    if (!validUrgencies.includes(urgency)) {
+      return apiError(`Invalid urgency. Must be one of: ${validUrgencies.join(', ')}`, 400, 'INVALID_URGENCY');
+    }
+
+    // Validate client exists
+    const clientExists = await db.user.findUnique({ where: { id: client_id } });
+    if (!clientExists) {
+      return apiError('Client not found', 404, 'CLIENT_NOT_FOUND');
+    }
+
     // High-risk detection
     const highRiskCheck = checkHighRisk(`${title} ${description || ''}`);
+
+    // Sanitize string inputs
+    const sanitizedTitle = sanitizeString(title);
+    const sanitizedDescription = description ? sanitizeString(description) : null;
 
     // Generate matter number
     const caseCount = await db.case.count();
@@ -119,8 +139,8 @@ export async function POST(request: NextRequest) {
     const newCase = await db.case.create({
       data: {
         matter_number,
-        title,
-        description: description || null,
+        title: sanitizedTitle,
+        description: sanitizedDescription,
         case_type,
         urgency,
         status: 'intake',

@@ -4,6 +4,8 @@
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
+import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
+import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
@@ -185,7 +187,7 @@ export async function POST(request: NextRequest) {
         case_id: case_id || null,
         duration_minutes: duration_minutes || 60,
         meeting_type: meeting_type || 'in_person',
-        notes: notes || null,
+        notes: notes ? sanitizeString(notes) : null,
         status: status || 'scheduled',
       },
       include: {

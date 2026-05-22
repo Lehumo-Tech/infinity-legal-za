@@ -79,7 +79,7 @@ export default function RootLayout({
       name: 'South Africa',
     },
     serviceType: ['Legal Consultation', 'Case Management', 'Document Management', 'AI Legal Analysis', 'Lead Management'],
-    priceRange: 'R0 - R2499/month',
+    priceRange: 'R99 - R139/month',
     address: {
       '@type': 'PostalAddress',
       addressCountry: 'ZA',
@@ -92,26 +92,20 @@ export default function RootLayout({
       itemListElement: [
         {
           '@type': 'Offer',
-          itemOffered: { '@type': 'Service', name: 'Free Plan' },
-          price: '0',
+          itemOffered: { '@type': 'Service', name: 'Civil Legal Plan' },
+          price: '99',
           priceCurrency: 'ZAR',
         },
         {
           '@type': 'Offer',
-          itemOffered: { '@type': 'Service', name: 'Starter Plan' },
-          price: '499',
+          itemOffered: { '@type': 'Service', name: 'Labour Legal Plan' },
+          price: '99',
           priceCurrency: 'ZAR',
         },
         {
           '@type': 'Offer',
-          itemOffered: { '@type': 'Service', name: 'Family Plan' },
-          price: '999',
-          priceCurrency: 'ZAR',
-        },
-        {
-          '@type': 'Offer',
-          itemOffered: { '@type': 'Service', name: 'Premium Plan' },
-          price: '2499',
+          itemOffered: { '@type': 'Service', name: 'Extensive Plan' },
+          price: '139',
           priceCurrency: 'ZAR',
         },
       ],

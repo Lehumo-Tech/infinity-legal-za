@@ -35,6 +35,7 @@ yarn-error.log*
 *.db-wal
 *.db-shm
 db/
+prisma/db/
 
 # Upload directories
 upload/
@@ -70,6 +71,10 @@ dev.log
 dev.out.log
 server.log
 
+# Temp
+tmp/
+/tmp/
+
 # Reports (may contain credentials)
 reports/
 
@@ -79,6 +84,9 @@ backups/
 *.bak
 *.backup
 *.sql.gz
+
+# Download directory (may contain generated reports)
+download/
 
 # vercel
 .vercel
