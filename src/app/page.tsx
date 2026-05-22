@@ -646,8 +646,17 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
               {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-            <div className="text-xs text-slate-500 space-y-1 mt-4 pt-4 border-t">
+            <div className="text-xs text-slate-500 space-y-2 mt-4 pt-4 border-t">
               <p>Contact your system administrator for login credentials.</p>
+              <a
+                href="/api/report"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-[#a88832] hover:text-[#8a6e28] font-medium transition-colors"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                Download Client Report (PDF)
+              </a>
             </div>
           </div>
 
