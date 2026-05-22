@@ -215,3 +215,39 @@ Stage Summary:
 - .gitignore covers all sensitive files (databases, env files, certificates, logs, uploads)
 - .env.example provides safe template for deployment
 - Cryptographically secure random secrets generated for JWT and encryption
+---
+Task ID: 6
+Agent: Main Agent
+Task: Pricing revert, PDF report generation, security verification, GitHub push preparation
+
+Work Log:
+- Reverted PricingView in page.tsx to original feature sets and descriptions from git history
+  - Free: R0/forever, features: "1 Active Case, Basic Document Upload, Email Support, POPIA Compliant"
+  - Starter: R499/month, features: "5 Active Cases, 50 Documents, AI Case Analysis, Priority Email Support, Consultation Booking"
+  - Family: R999/month, features: "15 Active Cases, 200 Documents, AI Case Analysis, Priority Support, Consultation Booking, Family Law Specialist, Document Workflow"
+  - Premium: R2,499/month, features: "Unlimited Cases, Unlimited Documents, Advanced AI Analysis, 24/7 Priority Support, Dedicated Attorney, Full Document Workflow, Lead Pipeline, Custom Reporting"
+  - Restored "Popular" and "Best Value" badges on Family and Premium plans
+- Added enum validation to consultation API for meeting_type and status fields
+- Fixed lint warning (unused eslint-disable directive)
+- Generated comprehensive PDF client report at /home/z/my-project/reports/infinity-legal-intranet-report.pdf (70KB, multi-page)
+  - 10 sections: Executive Summary, Architecture, Portals, Security, Pricing, Credentials, API, Database, Changes, Deployment
+  - 10 professional data tables with navy/gold themed color palette
+  - Cover page with branding
+  - No secrets or real credentials in the PDF
+- Removed .env from git tracking (was previously committed with DATABASE_URL only)
+- Removed database files and PocketBase binaries from git tracking
+- Added GitHub remote: https://github.com/Lehumo-Tech/infinity-legal-za.git
+- Committed all changes (3 commits: security hardening, .env removal, database file removal)
+- Push to GitHub requires authentication credentials not available in sandbox
+- Verified all 9 API endpoints return 200 with valid auth token
+- Verified 7+ security headers are applied to all responses via middleware
+- Verified .env exists locally with secrets but is NOT tracked by git
+- Verified .env.example is the only env file in git (contains placeholder values only)
+
+Stage Summary:
+- Pricing reverted to original (no changes to pricing values or features)
+- PDF report generated for client
+- All secrets hidden from git (.env untracked, .env.example has placeholders only)
+- Security headers verified working on all responses
+- All API endpoints tested and functional
+- GitHub push prepared but requires user's authentication credentials
