@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
       recentCases,
       recentLeads,
       revenueResult,
+      totalAttorneys,
     ] = await Promise.all([
       db.case.count(),
       db.case.count({ where: { status: 'active' } }),
@@ -56,6 +57,7 @@ export async function GET(request: NextRequest) {
         orderBy: { created_at: 'desc' },
       }),
       db.case.aggregate({ _sum: { estimated_value: true } }),
+      db.attorney.count(),
     ]);
 
     const totalRevenue = revenueResult._sum.estimated_value || 0;
@@ -97,11 +99,11 @@ export async function GET(request: NextRequest) {
         pendingTasks,
         overdueTasks,
         totalClients,
-        totalAttorneys: 0,
+        totalAttorneys,
         totalRevenue,
       },
       charts: {
-        casesByType: formatGrouped(casesByTypeRaw, 'type'),
+        casesByType: formatGrouped(casesByTypeRaw, 'case_type'),
         casesByStatus: formatGrouped(casesByStatusRaw, 'status'),
         leadsBySource: formatGrouped(leadsBySourceRaw, 'source'),
       },
