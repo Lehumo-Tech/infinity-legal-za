@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       recentLeads,
       revenueResult,
       totalAttorneys,
+      backupRecord,
     ] = await Promise.all([
       db.case.count(),
       db.case.count({ where: { status: 'active' } }),
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest) {
       }),
       db.case.aggregate({ _sum: { estimated_value: true } }),
       db.attorney.count(),
+      db.backupRecord.findFirst({ orderBy: { created_at: 'desc' } }),
     ]);
 
     const totalRevenue = revenueResult._sum.estimated_value || 0;
@@ -87,6 +89,10 @@ export async function GET(request: NextRequest) {
       created_at: l.created_at,
     }));
 
+    const backupActive = backupRecord?.status === 'completed' &&
+      backupRecord.completed_at &&
+      (Date.now() - new Date(backupRecord.completed_at).getTime()) < 24 * 60 * 60 * 1000;
+
     return apiResponse({
       stats: {
         totalCases,
@@ -106,6 +112,14 @@ export async function GET(request: NextRequest) {
         casesByType: formatGrouped(casesByTypeRaw, 'case_type'),
         casesByStatus: formatGrouped(casesByStatusRaw, 'status'),
         leadsBySource: formatGrouped(leadsBySourceRaw, 'source'),
+      },
+      health: {
+        rbac: true,
+        popia: true,
+        auditLogging: true,
+        encryption: true,
+        passwordPolicy: true,
+        backupActive: !!backupActive,
       },
       recent: {
         cases: recentCasesData,

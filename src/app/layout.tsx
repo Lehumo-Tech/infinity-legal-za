@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     locale: "en_ZA",
     images: [
       {
-        url: "/logo.svg",
+        url: "/infinity_logo.png",
         width: 512,
         height: 512,
         alt: "Infinity Legal ZA Logo",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Infinity Legal ZA",
     description: "AI-Powered Legal Practice Management for South Africa",
-    images: ["/logo.svg"],
+    images: ["/infinity_logo.png"],
   },
   alternates: { canonical: "https://infinitylegal.co.za" },
   verification: {
@@ -71,8 +71,8 @@ export default function RootLayout({
     name: 'Infinity Legal ZA',
     description: 'AI-powered legal practice management platform for South Africa. POPIA compliant, RBAC secured.',
     url: 'https://infinitylegal.co.za',
-    logo: 'https://infinitylegal.co.za/logo.svg',
-    image: 'https://infinitylegal.co.za/logo.svg',
+    logo: 'https://infinitylegal.co.za/infinity_logo.png',
+    image: 'https://infinitylegal.co.za/infinity_logo.png',
     telephone: '+27-10-000-0000',
     email: 'info@infinitylegal.co.za',
     areaServed: {
@@ -119,8 +119,8 @@ export default function RootLayout({
         <meta name="theme-color" content="#0f172a" />
         <meta name="x-app-version" content="2.0.0" />
         <meta name="x-database" content="sqlite" />
-        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/logo.svg" />
+        <link rel="icon" href="/infinity_logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/infinity_logo.png" />
         <link rel="canonical" href="https://infinitylegal.co.za" />
         <script
           type="application/ld+json"

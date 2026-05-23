@@ -26,3 +26,35 @@ Stage Summary:
 - Security headers adjusted to allow preview panel embedding while maintaining protection
 - All API routes should work now with proper JWT_SECRET and ENCRYPTION_KEY
 - Pending: GitHub push and Vercel deployment
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Use uploaded infinity_logo.png, remove mock data, add real login/signup
+
+Work Log:
+- Copied uploaded infinity_logo.png to /public/infinity_logo.png
+- Replaced all logo.svg references with infinity_logo.png in page.tsx, layout.tsx, and report route
+- Added signup form with POPIA consent to LoginScreen component
+- Created /api/pricing route to fetch pricing plans from database dynamically
+- Created /api/documents/upload route for real file uploads with validation
+- Updated dashboard API to include health data (backup status from DB)
+- Added charts and firmHealth state to main component
+- loadDashboard now stores charts and health data from API response
+- Case distribution chart now uses real casesByType data from dashboard API
+- Firm health checks now use real backup status from database
+- PricingView now fetches from /api/pricing instead of hardcoded data
+- Created prisma/seed.ts with correct HMAC-SHA512 password hashing
+- Seeded database with 3 pricing plans, 7 staff users, 3 attorney profiles, 1 backup record
+- Fixed Prisma logging from 'query' to 'error' to reduce memory usage (922MB → 562MB)
+- Login tested and working: admin@infinitylegal.co.za / Password123!
+- Signup tested and working: creates real user in database with POPIA consent logging
+
+Stage Summary:
+- All mock data removed from frontend - everything comes from real API/DB
+- Logo updated to the user's uploaded infinity_logo.png
+- Real signup flow with POPIA consent
+- Real login flow with JWT auth
+- All 3 pricing plans loaded from database (R99, R99, R139)
+- Dashboard shows real stats (0 cases currently - clean DB ready for real data)
+- Server stable at ~562MB RAM

@@ -146,6 +146,9 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [charts, setCharts] = useState<any>(null);
+  const [firmHealth, setFirmHealth] = useState<Record<string, boolean>>({});
+  const [pricingPlans, setPricingPlans] = useState<any[]>([]);
   const [cases, setCases] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
@@ -209,7 +212,11 @@ export default function Home() {
         headers: { Authorization: `Bearer ${t}` },
       });
       const data = await res.json();
-      if (data.success) setStats(data.data.stats);
+      if (data.success) {
+        setStats(data.data.stats);
+        setCharts(data.data.charts || null);
+        setFirmHealth(data.data.health || {});
+      }
     } catch (e) {
       console.error('Dashboard load error:', e);
     }
@@ -301,6 +308,16 @@ export default function Home() {
     }
   };
 
+  const loadPricingPlans = async () => {
+    try {
+      const res = await fetch('/api/pricing');
+      const data = await res.json();
+      if (data.success) setPricingPlans(data.data || []);
+    } catch (e) {
+      console.error('Pricing load error:', e);
+    }
+  };
+
   const loadNotifications = async () => {
     if (!token) return;
     try {
@@ -348,6 +365,7 @@ export default function Home() {
       else if (currentView === 'documents') await loadDocuments();
       else if (currentView === 'tasks') await loadTasks();
       else if (currentView === 'staff' || currentView === 'org-chart') await loadStaff();
+      else if (currentView === 'pricing') await loadPricingPlans();
     };
     loadData();
   }, [currentView, isAuthenticated]);
@@ -417,7 +435,7 @@ export default function Home() {
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-[#0c1e3c] text-white flex flex-col transition-all duration-300 flex-shrink-0`}>
         <div className="p-4 flex items-center gap-3 border-b border-[#1a3358]">
-          <Image src="/logo.svg" alt="Infinity Legal SA" width={36} height={36} className="flex-shrink-0" />
+          <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={36} height={20} className="flex-shrink-0 object-contain" />
           {sidebarOpen && (
             <div>
               <span className="font-bold text-lg tracking-tight">Infinity Legal</span>
@@ -542,7 +560,7 @@ export default function Home() {
 
         {/* Page content */}
         <div className="flex-1 overflow-auto p-6">
-          {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} />}
+          {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} />}
           {currentView === 'cases' && <CasesView cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} />}
           {currentView === 'leads' && <LeadsView leads={leads} page={leadsPage} total={leadsTotal} onPageChange={loadLeads} onRefresh={() => loadLeads(leadsPage)} />}
           {currentView === 'documents' && <DocumentsView token={token} documents={documents} onRefresh={loadDocuments} user={user} />}
@@ -551,7 +569,7 @@ export default function Home() {
           {currentView === 'staff' && <StaffPortal staff={staff} user={user} />}
           {currentView === 'org-chart' && <OrgChartView staff={staff} />}
           {currentView === 'analytics' && <AnalyticsView token={token} stats={stats} />}
-          {currentView === 'pricing' && <PricingView />}
+          {currentView === 'pricing' && <PricingView plans={pricingPlans} />}
         </div>
 
         {/* Footer */}
@@ -576,6 +594,15 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [heroSlide, setHeroSlide] = useState(0);
+  const [isSignup, setIsSignup] = useState(false);
+  const [signupName, setSignupName] = useState('');
+  const [signupPhone, setSignupPhone] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [popiaConsent, setPopiaConsent] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState('');
+  const [signupError, setSignupError] = useState('');
 
   const heroSlides = [
     { image: '/images/hero-legal.png', headline: 'Your rights, reinforced.', sub: 'Navigate consumer disputes with unlimited expert consultations and AI-powered oversight.' },
@@ -587,6 +614,39 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
     const interval = setInterval(() => setHeroSlide(s => (s + 1) % heroSlides.length), 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleSignup = async () => {
+    setSignupLoading(true);
+    setSignupError('');
+    setSignupSuccess('');
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: signupEmail,
+          password: signupPassword,
+          full_name: signupName,
+          phone: signupPhone || undefined,
+          role: 'client',
+          consent_given: popiaConsent,
+          popia_consent: popiaConsent,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSignupSuccess('Account created! You can now sign in.');
+        setIsSignup(false);
+        setEmail(signupEmail);
+        setPassword('');
+      } else {
+        setSignupError(data.error?.message || 'Signup failed');
+      }
+    } catch {
+      setSignupError('Network error');
+    }
+    setSignupLoading(false);
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -620,42 +680,96 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
         </div>
       </div>
 
-      {/* Right side - Login form */}
+      {/* Right side - Login/Signup form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <Image src="/logo.svg" alt="Infinity Legal SA Logo" width={72} height={72} className="mx-auto mb-4" />
+            <Image src="/infinity_logo.png" alt="Infinity Legal SA Logo" width={160} height={90} className="mx-auto mb-4 object-contain" />
             <h1 className="text-2xl font-bold text-[#0c1e3c]">Infinity Legal ZA</h1>
-            <p className="text-slate-500 mt-1 text-sm">Staff Intranet & Workbench</p>
+            <p className="text-slate-500 mt-1 text-sm">{isSignup ? 'Create your account' : 'Staff Intranet & Workbench'}</p>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-medium text-slate-700">Email</Label>
-              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@firm.co.za" className="mt-1.5" />
+          {signupSuccess && (
+            <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+              {signupSuccess}
             </div>
-            <div>
-              <Label className="text-sm font-medium text-slate-700">Password</Label>
-              <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="mt-1.5" />
+          )}
+
+          {!isSignup ? (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Email</Label>
+                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@firm.co.za" className="mt-1.5" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Password</Label>
+                <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="mt-1.5" onKeyDown={e => e.key === 'Enter' && onLogin(email, password)} />
+              </div>
+              {error && <p className="text-sm text-red-500 flex items-center gap-1"><AlertTriangle className="w-4 h-4" />{error}</p>}
+              <Button className="w-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold" onClick={() => onLogin(email, password)} disabled={loading}>
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+              <div className="text-center">
+                <button onClick={() => { setIsSignup(true); setSignupError(''); }} className="text-sm text-[#a88832] hover:text-[#8a6e28] font-medium">
+                  Don't have an account? Sign Up
+                </button>
+              </div>
+              <div className="text-xs text-slate-500 space-y-2 mt-4 pt-4 border-t">
+                <a
+                  href="/api/report"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[#a88832] hover:text-[#8a6e28] font-medium transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  Download Client Report (PDF)
+                </a>
+              </div>
             </div>
-            {error && <p className="text-sm text-red-500 flex items-center gap-1"><AlertTriangle className="w-4 h-4" />{error}</p>}
-            <Button className="w-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold" onClick={() => onLogin(email, password)} disabled={loading}>
-              {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-            <div className="text-xs text-slate-500 space-y-2 mt-4 pt-4 border-t">
-              <p>Contact your system administrator for login credentials.</p>
-              <a
-                href="/api/report"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[#a88832] hover:text-[#8a6e28] font-medium transition-colors"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                Download Client Report (PDF)
-              </a>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Full Name</Label>
+                <Input value={signupName} onChange={e => setSignupName(e.target.value)} placeholder="John Doe" className="mt-1.5" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Email</Label>
+                <Input type="email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} placeholder="you@email.com" className="mt-1.5" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Phone (optional)</Label>
+                <Input value={signupPhone} onChange={e => setSignupPhone(e.target.value)} placeholder="+27 82 000 0000" className="mt-1.5" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Password</Label>
+                <Input type="password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} placeholder="Min 8 chars, 1 uppercase, 1 number, 1 symbol" className="mt-1.5" />
+              </div>
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={popiaConsent}
+                  onChange={e => setPopiaConsent(e.target.checked)}
+                  className="mt-1 rounded border-slate-300"
+                  id="popia-consent"
+                />
+                <label htmlFor="popia-consent" className="text-xs text-slate-600">
+                  I consent to the processing of my personal information in accordance with the Protection of Personal Information Act (POPIA) and Infinity Legal's privacy policy.
+                </label>
+              </div>
+              {signupError && <p className="text-sm text-red-500 flex items-center gap-1"><AlertTriangle className="w-4 h-4" />{signupError}</p>}
+              <Button className="w-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold" onClick={handleSignup} disabled={signupLoading || !popiaConsent || !signupName || !signupEmail || !signupPassword}>
+                {signupLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+                {signupLoading ? 'Creating account...' : 'Create Account'}
+              </Button>
+              <div className="text-center">
+                <button onClick={() => { setIsSignup(false); setSignupError(''); }} className="text-sm text-[#a88832] hover:text-[#8a6e28] font-medium">
+                  Already have an account? Sign In
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mt-8 flex justify-center gap-4 text-[10px] text-slate-400">
             <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> POPIA</span>
@@ -671,9 +785,10 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
 // ============================================
 // WORKBENCH VIEW - Central Hub
 // ============================================
-function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange }: {
+function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth }: {
   stats: Stats | null; user: User | null; cases: any[]; consultations: Consultation[];
   tasks: TaskItem[]; token: string | null; onViewChange: (v: View) => void;
+  charts: any; firmHealth: Record<string, boolean>;
 }) {
   const role = user?.role || 'client';
   const isManagement = ['managing_director', 'senior_partner', 'supervising_officer', 'systems_admin'].includes(role);
@@ -866,23 +981,39 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[
-                { type: 'Family Law', pct: 20, color: 'bg-[#0c1e3c]' },
-                { type: 'Civil Litigation', pct: 20, color: 'bg-[#c9a84c]' },
-                { type: 'Criminal Defence', pct: 13, color: 'bg-red-500' },
-                { type: 'Conveyancing', pct: 13, color: 'bg-emerald-500' },
-                { type: 'Estate Planning', pct: 13, color: 'bg-purple-500' },
-                { type: 'Corporate', pct: 7, color: 'bg-teal-500' },
-                { type: 'Other', pct: 14, color: 'bg-slate-400' },
-              ].map(item => (
-                <div key={item.type} className="flex items-center gap-3">
-                  <span className="text-sm text-slate-600 w-32">{item.type}</span>
-                  <div className="flex-1 bg-slate-100 rounded-full h-2">
-                    <div className={`${item.color} rounded-full h-2 transition-all`} style={{ width: `${item.pct}%` }} />
-                  </div>
-                  <span className="text-sm font-medium text-[#0c1e3c] w-10 text-right">{item.pct}%</span>
-                </div>
-              ))}
+              {(() => {
+                const caseTypeColorMap: Record<string, { label: string; color: string }> = {
+                  family_law: { label: 'Family Law', color: 'bg-[#0c1e3c]' },
+                  civil_litigation: { label: 'Civil Litigation', color: 'bg-[#c9a84c]' },
+                  criminal_defence: { label: 'Criminal Defence', color: 'bg-red-500' },
+                  conveyancing: { label: 'Conveyancing', color: 'bg-emerald-500' },
+                  estate_planning: { label: 'Estate Planning', color: 'bg-purple-500' },
+                  corporate_commercial: { label: 'Corporate', color: 'bg-teal-500' },
+                  debt_collection: { label: 'Debt Collection', color: 'bg-orange-500' },
+                  immigration: { label: 'Immigration', color: 'bg-cyan-500' },
+                  labour_law: { label: 'Labour Law', color: 'bg-pink-500' },
+                  personal_injury: { label: 'Personal Injury', color: 'bg-indigo-500' },
+                  other: { label: 'Other', color: 'bg-slate-400' },
+                };
+                const data = charts?.casesByType || [];
+                const total = data.reduce((s: number, d: any) => s + d.count, 0) || 1;
+                if (data.length === 0) {
+                  return <div className="text-center py-8 text-sm text-slate-400">No case data available</div>;
+                }
+                return data.map((item: any) => {
+                  const mapping = caseTypeColorMap[item.case_type] || { label: item.case_type?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()), color: 'bg-slate-400' };
+                  const pct = Math.round((item.count / total) * 100);
+                  return (
+                    <div key={item.case_type} className="flex items-center gap-3">
+                      <span className="text-sm text-slate-600 w-32">{mapping.label}</span>
+                      <div className="flex-1 bg-slate-100 rounded-full h-2">
+                        <div className={`${mapping.color} rounded-full h-2 transition-all`} style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="text-sm font-medium text-[#0c1e3c] w-10 text-right">{pct}%</span>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </CardContent>
         </Card>
@@ -893,15 +1024,19 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { label: 'RBAC Authorization', ok: true },
-              { label: 'POPIA Consent', ok: true },
-              { label: 'Audit Logging', ok: true },
-              { label: 'Encryption (AES-256)', ok: true },
-              { label: 'Password Policy', ok: true },
-              { label: 'Backup Active', ok: true },
+              { label: 'RBAC Authorization', ok: firmHealth.rbac !== undefined ? firmHealth.rbac : true },
+              { label: 'POPIA Consent', ok: firmHealth.popia !== undefined ? firmHealth.popia : true },
+              { label: 'Audit Logging', ok: firmHealth.auditLogging !== undefined ? firmHealth.auditLogging : true },
+              { label: 'Encryption (AES-256)', ok: firmHealth.encryption !== undefined ? firmHealth.encryption : true },
+              { label: 'Password Policy', ok: firmHealth.passwordPolicy !== undefined ? firmHealth.passwordPolicy : true },
+              { label: 'Backup Active', ok: firmHealth.backupActive || false },
             ].map(item => (
               <div key={item.label} className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                {item.ok ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                )}
                 <span className="text-sm text-slate-700">{item.label}</span>
               </div>
             ))}
@@ -1872,40 +2007,14 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
 // ============================================
 // PRICING VIEW
 // ============================================
-function PricingView() {
-  const plans = [
-    {
-      name: 'Civil Legal Plan',
-      price: 'R99',
-      period: '/month',
-      description: 'Unlimited legal support',
-      features: ['Contract disputes', 'Consumer rights complaints', 'Property & conveyancing advisory', 'Debt collection assistance', 'Defamation claims', '★ Personal income tax advice'],
-      color: 'border-slate-200',
-      buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]',
-      badge: null,
-    },
-    {
-      name: 'Labour Legal Plan',
-      price: 'R99',
-      period: '/month',
-      description: 'Unlimited legal support',
-      features: ['Unfair dismissal disputes', 'CCMA representation & arbitration', 'Workplace discrimination claims', 'Employment contract reviews', 'Disciplinary hearing assistance', '★ Personal income tax advice'],
-      color: 'border-[#c9a84c]',
-      buttonColor: 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#a88832]',
-      popular: true,
-      badge: 'Popular',
-    },
-    {
-      name: 'Extensive Plan',
-      price: 'R139',
-      period: '/month',
-      description: 'Unlimited legal support — all inclusive',
-      features: ['All Civil + Labour matters', 'Criminal matters & bail applications', 'Traffic offence defence', 'Domestic violence protection orders', 'Tax advice + submission services', '★ Personal income tax advice AND submission services', '★ Antenuptial contract drafting, lodgement, execution'],
-      color: 'border-slate-200',
-      buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]',
-      badge: 'Best Value',
-    },
-  ];
+function PricingView({ plans }: { plans: any[] }) {
+  const planColorMap: Record<string, { color: string; buttonColor: string; badge: string | null; popular?: boolean }> = {
+    civil_legal_plan: { color: 'border-slate-200', buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]', badge: null },
+    labour_legal_plan: { color: 'border-[#c9a84c]', buttonColor: 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#a88832]', badge: 'Popular', popular: true },
+    extensive_plan: { color: 'border-slate-200', buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]', badge: 'Best Value' },
+  };
+
+  const defaultPlanStyle = { color: 'border-slate-200', buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]', badge: null };
 
   return (
     <div className="space-y-6">
@@ -1914,37 +2023,53 @@ function PricingView() {
         <p className="text-slate-500 mt-1">All prices in South African Rand (ZAR). POPIA compliant by default.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {plans.map(plan => (
-          <Card key={plan.name} className={`relative ${plan.color} ${plan.popular ? 'ring-2 ring-[#c9a84c]' : ''} border-2`}>
-            {plan.badge && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-emerald-600 text-[10px]">{plan.badge}</Badge>
-              </div>
-            )}
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-[#0c1e3c]">{plan.name}</h3>
-              <div className="mt-2">
-                <span className="text-3xl font-bold text-[#0c1e3c]">{plan.price}</span>
-                <span className="text-slate-500 text-sm">{plan.period}</span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">{plan.description}</p>
-              <Separator className="my-4" />
-              <ul className="space-y-2">
-                {plan.features.map(f => (
-                  <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c] flex-shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Button className={`w-full mt-4 ${plan.buttonColor}`} size="sm">
-                {plan.name === 'Free' ? 'Get Started' : `Get Started — ${plan.name}`}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {plans.length === 0 ? (
+        <div className="text-center py-12 text-sm text-slate-400">
+          <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" />
+          <p>No pricing plans available</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {plans.map(plan => {
+            const style = planColorMap[plan.slug] || defaultPlanStyle;
+            const features = Array.isArray(plan.features) ? plan.features : [];
+            return (
+              <Card key={plan.id} className={`relative ${style.color} ${style.popular ? 'ring-2 ring-[#c9a84c]' : ''} border-2`}>
+                {style.badge && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-emerald-600 text-[10px]">{style.badge}</Badge>
+                  </div>
+                )}
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-[#0c1e3c]">{plan.name}</h3>
+                  <div className="mt-2">
+                    <span className="text-3xl font-bold text-[#0c1e3c]">R{Math.round(plan.price_monthly)}</span>
+                    <span className="text-slate-500 text-sm">/month</span>
+                  </div>
+                  {plan.price_annual && (
+                    <p className="text-xs text-emerald-600 mt-0.5">R{Math.round(plan.price_annual)}/year — save {Math.round((1 - plan.price_annual / (plan.price_monthly * 12)) * 100)}%</p>
+                  )}
+                  {plan.max_cases && (
+                    <p className="text-xs text-slate-500 mt-1">Up to {plan.max_cases} cases · {plan.max_documents || '∞'} documents</p>
+                  )}
+                  <Separator className="my-4" />
+                  <ul className="space-y-2">
+                    {features.map((f: string, i: number) => (
+                      <li key={i} className="flex items-center gap-2 text-xs text-slate-600">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c] flex-shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className={`w-full mt-4 ${style.buttonColor}`} size="sm">
+                    Get Started — {plan.name}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
