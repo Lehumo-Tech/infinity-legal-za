@@ -1,29 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 30 30" style="enable-background:new 0 0 30 30;" xml:space="preserve">
+	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
 <defs>
   <style type="text/css">
-    .st194{fill:#2D2D2D;stroke:#FFFFFF;stroke-width:0.6317;stroke-miterlimit:10;}
-    .st23{fill:#FFFFFF;}
-
-    .z-breathe {
-      animation: breathe 2.5s ease-in-out infinite;
-    }
-
-    @keyframes breathe {
-      0%, 100% { opacity: 0.7; }
-      50% { opacity: 1; }
-    }
+    .navy { fill: #0c1e3c; }
+    .gold { fill: #c9a84c; }
+    .gold-light { fill: #ddc06e; }
+    .white { fill: #ffffff; }
   </style>
+  <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" style="stop-color:#ddc06e;stop-opacity:1" />
+    <stop offset="50%" style="stop-color:#c9a84c;stop-opacity:1" />
+    <stop offset="100%" style="stop-color:#a88832;stop-opacity:1" />
+  </linearGradient>
+  <linearGradient id="navyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" style="stop-color:#1a3358;stop-opacity:1" />
+    <stop offset="100%" style="stop-color:#0c1e3c;stop-opacity:1" />
+  </linearGradient>
 </defs>
 
-<g>
-  <path class="st194" d="M24.51,28.51H5.49c-2.21,0-4-1.79-4-4V5.49c0-2.21,1.79-4,4-4h19.03c2.21,0,4,1.79,4,4v19.03
-    C28.51,26.72,26.72,28.51,24.51,28.51z"/>
-  <g class="z-breathe">
-    <path class="st23" d="M15.47,7.1l-1.3,1.85c-0.2,0.29-0.54,0.47-0.9,0.47h-7.1V7.09C6.16,7.1,15.47,7.1,15.47,7.1z"/>
-    <polygon class="st23" points="24.3,7.1 13.14,22.91 5.7,22.91 16.86,7.1"/>
-    <path class="st23" d="M14.53,22.91l1.31-1.86c0.2-0.29,0.54-0.47,0.9-0.47h7.09v2.33H14.53z"/>
-  </g>
-</g>
+<!-- Background rounded rectangle -->
+<rect x="16" y="16" rx="48" ry="48" width="480" height="480" class="navy" fill="url(#navyGrad)"/>
+
+<!-- Outer gold ring -->
+<circle cx="256" cy="230" r="160" fill="none" stroke="url(#goldGrad)" stroke-width="6" opacity="0.3"/>
+
+<!-- Infinity symbol formed by scales of justice -->
+<!-- Left scale pan -->
+<ellipse cx="168" cy="280" rx="72" ry="28" fill="none" stroke="url(#goldGrad)" stroke-width="8"/>
+<!-- Right scale pan -->
+<ellipse cx="344" cy="280" rx="72" ry="28" fill="none" stroke="url(#goldGrad)" stroke-width="8"/>
+
+<!-- Infinity crossover center -->
+<path d="M220,230 Q256,190 292,230 Q256,270 220,230 Z" fill="url(#goldGrad)" opacity="0.9"/>
+<path d="M220,230 Q256,270 292,230 Q256,190 220,230 Z" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.5"/>
+
+<!-- Center pillar / scale beam -->
+<line x1="256" y1="120" x2="256" y2="340" stroke="url(#goldGrad)" stroke-width="6" opacity="0.4"/>
+
+<!-- Scale beam (horizontal) -->
+<line x1="96" y1="230" x2="416" y2="230" stroke="url(#goldGrad)" stroke-width="7"/>
+
+<!-- Scale top ornament -->
+<circle cx="256" cy="120" r="14" fill="url(#goldGrad)"/>
+<circle cx="256" cy="120" r="8" fill="#0c1e3c"/>
+
+<!-- Left chain lines -->
+<line x1="96" y1="230" x2="96" y2="255" stroke="url(#goldGrad)" stroke-width="3"/>
+<line x1="168" y1="230" x2="168" y2="255" stroke="url(#goldGrad)" stroke-width="3"/>
+<line x1="240" y1="230" x2="168" y2="255" stroke="url(#goldGrad)" stroke-width="3" opacity="0"/>
+
+<!-- Right chain lines -->
+<line x1="416" y1="230" x2="416" y2="255" stroke="url(#goldGrad)" stroke-width="3"/>
+<line x1="344" y1="230" x2="344" y2="255" stroke="url(#goldGrad)" stroke-width="3"/>
+
+<!-- Left pan chains -->
+<line x1="120" y1="230" x2="96" y2="255" stroke="url(#goldGrad)" stroke-width="2.5"/>
+<line x1="120" y1="230" x2="168" y2="255" stroke="url(#goldGrad)" stroke-width="2.5"/>
+<line x1="216" y1="230" x2="168" y2="255" stroke="url(#goldGrad)" stroke-width="2.5"/>
+<line x1="216" y1="230" x2="240" y2="255" stroke="url(#goldGrad)" stroke-width="2.5" opacity="0"/>
+
+<!-- Right pan chains -->
+<line x1="296" y1="230" x2="344" y2="255" stroke="url(#goldGrad)" stroke-width="2.5"/>
+<line x1="296" y1="230" x2="272" y2="255" stroke="url(#goldGrad)" stroke-width="2.5" opacity="0"/>
+<line x1="392" y1="230" x2="344" y2="255" stroke="url(#goldGrad)" stroke-width="2.5"/>
+<line x1="392" y1="230" x2="416" y2="255" stroke="url(#goldGrad)" stroke-width="2.5"/>
+
+<!-- Left infinity loop -->
+<path d="M168,230 C168,190 220,170 256,200 C220,170 168,190 168,230 C168,270 120,290 96,260 C120,290 168,270 168,230 Z" 
+      fill="none" stroke="url(#goldGrad)" stroke-width="5" opacity="0.6"/>
+
+<!-- Right infinity loop -->
+<path d="M344,230 C344,190 292,170 256,200 C292,170 344,190 344,230 C344,270 392,290 416,260 C392,290 344,270 344,230 Z" 
+      fill="none" stroke="url(#goldGrad)" stroke-width="5" opacity="0.6"/>
+
+<!-- INFINITY LEGAL text -->
+<text x="256" y="420" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="bold" letter-spacing="8" class="gold" fill="url(#goldGrad)">INFINITY</text>
+<text x="256" y="462" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="normal" letter-spacing="14" class="gold" fill="url(#goldGrad)" opacity="0.8">LEGAL</text>
+
+<!-- Decorative line under text -->
+<line x1="156" y1="475" x2="356" y2="475" stroke="url(#goldGrad)" stroke-width="2" opacity="0.4"/>
 </svg>

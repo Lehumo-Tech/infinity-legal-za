@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import {
-  Scale, Users, FolderKanban, Target, FileText, Shield, TrendingUp,
+  Users, FolderKanban, Target, FileText, Shield, TrendingUp,
   Bell, Search, ChevronRight, Activity, Clock, AlertTriangle, CheckCircle2,
   LogOut, Settings, BarChart3, DollarSign, UserPlus, FileCheck, Calendar,
   ArrowUpRight, ArrowDownRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
@@ -416,9 +417,7 @@ export default function Home() {
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-[#0c1e3c] text-white flex flex-col transition-all duration-300 flex-shrink-0`}>
         <div className="p-4 flex items-center gap-3 border-b border-[#1a3358]">
-          <div className="w-9 h-9 bg-[#c9a84c] rounded-lg flex items-center justify-center flex-shrink-0">
-            <Scale className="w-5 h-5 text-[#0c1e3c]" />
-          </div>
+          <Image src="/logo.svg" alt="Infinity Legal SA" width={36} height={36} className="flex-shrink-0" />
           {sidebarOpen && (
             <div>
               <span className="font-bold text-lg tracking-tight">Infinity Legal</span>
@@ -625,9 +624,7 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-[#c9a84c] rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Scale className="w-8 h-8 text-[#0c1e3c]" />
-            </div>
+            <Image src="/logo.svg" alt="Infinity Legal SA Logo" width={72} height={72} className="mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-[#0c1e3c]">Infinity Legal ZA</h1>
             <p className="text-slate-500 mt-1 text-sm">Staff Intranet & Workbench</p>
           </div>

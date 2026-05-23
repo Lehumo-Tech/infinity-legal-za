@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const securityHeaders = [
-  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-XSS-Protection", value: "1; mode=block" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -19,7 +19,7 @@ const securityHeaders = [
       "img-src 'self' data: https:",
       "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self'",
-      "frame-ancestors 'none'",
+      "frame-ancestors 'self' https: http:",
       "base-uri 'self'",
       "form-action 'self'",
       "object-src 'none'",
@@ -39,7 +39,7 @@ const securityHeaders = [
   },
   {
     key: "Cross-Origin-Embedder-Policy",
-    value: "require-corp",
+    value: "credentialless",
   },
   {
     key: "X-Session-Timeout",

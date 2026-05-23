@@ -14,7 +14,7 @@ const CSP_HEADER = [
   "img-src 'self' data: https:",
   "font-src 'self' https://fonts.gstatic.com",
   "connect-src 'self'",
-  "frame-ancestors 'self'",
+  "frame-ancestors 'self' https: http:",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",

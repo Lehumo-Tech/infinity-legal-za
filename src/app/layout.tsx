@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://infinitylegal.co.za'),
   title: {
     default: "Infinity Legal ZA | AI-Powered Legal Practice Management",
     template: "%s | Infinity Legal ZA",
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
     locale: "en_ZA",
     images: [
       {
-        url: "/logo-icon-512.png",
+        url: "/logo.svg",
         width: 512,
         height: 512,
         alt: "Infinity Legal ZA Logo",
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Infinity Legal ZA",
     description: "AI-Powered Legal Practice Management for South Africa",
-    images: ["/logo-icon-512.png"],
+    images: ["/logo.svg"],
   },
   alternates: { canonical: "https://infinitylegal.co.za" },
   verification: {
@@ -70,8 +71,8 @@ export default function RootLayout({
     name: 'Infinity Legal ZA',
     description: 'AI-powered legal practice management platform for South Africa. POPIA compliant, RBAC secured.',
     url: 'https://infinitylegal.co.za',
-    logo: 'https://infinitylegal.co.za/logo-icon-512.png',
-    image: 'https://infinitylegal.co.za/logo-icon-512.png',
+    logo: 'https://infinitylegal.co.za/logo.svg',
+    image: 'https://infinitylegal.co.za/logo.svg',
     telephone: '+27-10-000-0000',
     email: 'info@infinitylegal.co.za',
     areaServed: {
@@ -119,7 +120,7 @@ export default function RootLayout({
         <meta name="x-app-version" content="2.0.0" />
         <meta name="x-database" content="sqlite" />
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/logo-icon-512.png" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
         <link rel="canonical" href="https://infinitylegal.co.za" />
         <script
           type="application/ld+json"
