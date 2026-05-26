@@ -5,14 +5,15 @@ import Image from 'next/image';
 import {
   Users, FolderKanban, Target, FileText, Shield, TrendingUp,
   Bell, Search, ChevronRight, Activity, Clock, AlertTriangle, CheckCircle2,
-  LogOut, Settings, BarChart3, DollarSign, UserPlus, FileCheck, Calendar,
-  ArrowUpRight, ArrowDownRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
-  Hash, Mail, Phone, Building, Star, Zap, Globe, Server, Database,
-  KeyRound, Timer, ShieldCheck, FileWarning, HardDrive, Upload, Plus,
-  BookOpen, UserCheck, Briefcase, Crown, UserCog, MessageSquare, LayoutDashboard,
-  ClipboardList, Gavel, Landmark, FileBadge, PhoneCall, Video, MapPin,
-  Clock3, FileUp, Download, Trash2, Edit3, Save, XCircle, Filter,
-  ChevronDown, MoreVertical, Send, AlertCircle, Info, Award, TreePine
+  LogOut, DollarSign, UserPlus, FileCheck,
+  ArrowUpRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
+  Mail, Phone, Building, Star, Zap,
+  KeyRound, ShieldCheck, Upload, Plus,
+  BookOpen, Briefcase, Crown, MessageSquare, LayoutDashboard,
+  Gavel, Landmark, PhoneCall, Video, MapPin,
+  Clock3, FileUp,
+  Send, AlertCircle, TreePine,
+  Home as HomeIcon, ArrowLeft, Scale, Heart, Handshake, Sparkles
 } from 'lucide-react';
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
@@ -35,6 +36,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 // ============================================
 // TYPES
@@ -144,6 +147,8 @@ export default function Home() {
   const [token, setToken] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('workbench');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showLanding, setShowLanding] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [charts, setCharts] = useState<any>(null);
@@ -184,6 +189,8 @@ export default function Home() {
         setToken(data.data.token);
         setUser(data.data.user);
         setIsAuthenticated(true);
+        setShowLogin(false);
+        setShowLanding(false);
         localStorage.setItem('il_token', data.data.token);
         localStorage.setItem('il_user', JSON.stringify(data.data.user));
         loadDashboard(data.data.token);
@@ -346,6 +353,7 @@ export default function Home() {
           setToken(savedToken);
           setUser(parsedUser);
           setIsAuthenticated(true);
+          setShowLanding(false);
         });
       } catch {
         localStorage.removeItem('il_token');
@@ -424,7 +432,34 @@ export default function Home() {
   };
 
   if (!isAuthenticated) {
-    return <LoginScreen onLogin={login} loading={loading} error={loginError} />;
+    if (showLogin) {
+      return (
+        <div className="min-h-screen bg-white">
+          <div className="fixed top-4 left-4 z-50">
+            <Button
+              variant="ghost"
+              onClick={() => setShowLogin(false)}
+              className="text-[#0c1e3c] hover:bg-[#0c1e3c]/5 gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Homepage
+            </Button>
+          </div>
+          <LoginScreen onLogin={login} loading={loading} error={loginError} />
+        </div>
+      );
+    }
+    return <LandingPage onLoginClick={() => setShowLogin(true)} />;
+  }
+
+  if (showLanding) {
+    return (
+      <LandingPage
+        isAuthenticated={true}
+        onBackToDashboard={() => setShowLanding(false)}
+        userName={user?.full_name?.split(' ')[0]}
+      />
+    );
   }
 
   const navItems = getNavItems();
@@ -434,7 +469,7 @@ export default function Home() {
     <div className="min-h-screen flex bg-slate-50">
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-[#0c1e3c] text-white flex flex-col transition-all duration-300 flex-shrink-0`}>
-        <div className="p-4 flex items-center gap-3 border-b border-[#1a3358]">
+        <div className="p-4 flex items-center gap-3 border-b border-[#1a3358] cursor-pointer hover:bg-[#132d52]/50 transition-colors rounded-t-lg" onClick={() => setShowLanding(true)} title="Visit Homepage">
           <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={36} height={20} className="flex-shrink-0 object-contain" />
           {sidebarOpen && (
             <div>
@@ -446,17 +481,26 @@ export default function Home() {
 
         <ScrollArea className="flex-1">
           <nav className="p-2 space-y-0.5">
+            {/* Homepage Link */}
+            <button
+              onClick={() => setShowLanding(true)}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors text-[#c9a84c] hover:bg-[#132d52] hover:text-[#c9a84c] border border-[#c9a84c]/20 mb-2"
+            >
+              <HomeIcon className="w-4 h-4 flex-shrink-0" />
+              {sidebarOpen && <span>Visit Homepage</span>}
+            </button>
             {navGroups.map(group => (
               <div key={group}>
                 {sidebarOpen && group !== navGroups[0] && (
                   <div className="px-3 pt-4 pb-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#5a7199]">{group}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7a94b8]">{group}</span>
                   </div>
                 )}
                 {navItems.filter(i => i.group === group).map(item => (
                   <button
                     key={item.id}
                     onClick={() => setCurrentView(item.id)}
+                    aria-label={item.label}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                       currentView === item.id
                         ? 'bg-[#c9a84c] text-[#0c1e3c] font-semibold'
@@ -475,7 +519,8 @@ export default function Home() {
         <div className="p-3 border-t border-[#1a3358]">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[#5a7199] hover:bg-[#132d52] hover:text-white text-sm"
+            aria-label="Toggle sidebar"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[#7a94b8] hover:bg-[#132d52] hover:text-white text-sm"
           >
             <Menu className="w-4 h-4" />
             {sidebarOpen && <span>Collapse</span>}
@@ -488,6 +533,11 @@ export default function Home() {
         {/* Top bar */}
         <header className="h-14 bg-white border-b flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => setShowLanding(true)} className="text-[#0c1e3c] hover:bg-[#0c1e3c]/5 gap-1.5 h-8" title="Visit Homepage">
+              <HomeIcon className="w-4 h-4" />
+              <span className="hidden sm:inline text-xs">Homepage</span>
+            </Button>
+            <Separator orientation="vertical" className="h-5" />
             <h1 className="text-base font-semibold text-[#0c1e3c] capitalize">{currentView.replace('-', ' ')}</h1>
             <Badge variant="outline" className="text-[10px] border-[#c9a84c] text-[#a88832]">
               <ShieldCheck className="w-3 h-3 mr-1" />
@@ -499,6 +549,7 @@ export default function Home() {
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <Input
                 placeholder="Search..."
+                aria-label="Search cases and documents"
                 className="pl-9 w-56 h-8 text-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -509,6 +560,8 @@ export default function Home() {
               <button
                 className="relative p-2 hover:bg-slate-100 rounded-lg"
                 onClick={() => setShowNotifications(!showNotifications)}
+                aria-label="Notifications"
+                aria-expanded={showNotifications}
               >
                 <Bell className="w-4 h-4 text-slate-600" />
                 {notifications.filter(n => !n.is_read).length > 0 && (
@@ -574,7 +627,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="bg-[#0c1e3c] py-3 px-6 flex-shrink-0">
-          <div className="flex items-center justify-between text-[10px] text-[#5a7199]">
+          <div className="flex items-center justify-between text-[10px] text-[#7a94b8]">
             <span>&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</span>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> POPIA Compliant</span>
@@ -583,6 +636,9 @@ export default function Home() {
           </div>
         </footer>
       </main>
+
+      {/* Floating Ask Infinity */}
+      <AskInfinityBubble />
     </div>
   );
 }
@@ -700,7 +756,7 @@ function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: stri
             <div className="space-y-4">
               <div>
                 <Label className="text-sm font-medium text-slate-700">Email</Label>
-                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@firm.co.za" className="mt-1.5" />
+                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@infinitylegal.org" className="mt-1.5" />
               </div>
               <div>
                 <Label className="text-sm font-medium text-slate-700">Password</Label>
@@ -854,7 +910,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
       </div>
 
       {/* Stats grid */}
-      {stats && (
+      {stats ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {[
             { label: 'Cases', value: stats.totalCases, icon: FolderKanban, color: 'text-blue-600 bg-blue-50' },
@@ -873,6 +929,18 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
                 </div>
                 <div className="text-lg font-bold text-[#0c1e3c] mt-2">{card.value}</div>
                 <div className="text-[10px] text-slate-500">{card.label}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-3 text-center space-y-2">
+                <Skeleton className="w-8 h-8 rounded-lg mx-auto" />
+                <Skeleton className="h-5 w-12 mx-auto" />
+                <Skeleton className="h-3 w-10 mx-auto" />
               </CardContent>
             </Card>
           ))}
@@ -1466,7 +1534,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                   </div>
                   <div>
                     <Label>Client Email</Label>
-                    <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@example.co.za" className="mt-1" />
+                    <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@infinitylegal.org" className="mt-1" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -2061,7 +2129,7 @@ function PricingView({ plans }: { plans: any[] }) {
                       </li>
                     ))}
                   </ul>
-                  <Button className={`w-full mt-4 ${style.buttonColor}`} size="sm">
+                  <Button className={`w-full mt-4 ${style.buttonColor}`} size="sm" onClick={() => toast.success(`${plan.name} selected! Redirecting to signup...`)}>
                     Get Started — {plan.name}
                   </Button>
                 </CardContent>
@@ -2070,6 +2138,777 @@ function PricingView({ plans }: { plans: any[] }) {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================
+// ASK INFINITY - Floating Chat Bubble
+// ============================================
+function AskInfinityBubble() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
+    { role: 'assistant', content: 'Sawubona! 👋 I\'m Ask Infinity — your AI legal assistant for South African law. How can I help you today?' },
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const sessionIdRef = useRef(Math.random().toString(36).substring(2, 15));
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isOpen]);
+
+  const sendMessage = async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) return;
+
+    setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: trimmed, sessionId: sessionIdRef.current }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.data || data.response }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'I apologise, I encountered an error. Please try again.' }]);
+      }
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'I\'m having trouble connecting. Please try again.' }]);
+    }
+    setIsLoading(false);
+    inputRef.current?.focus();
+  };
+
+  return (
+    <>
+      {/* Floating bubble */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] shadow-lg hover:shadow-xl transition-all flex items-center justify-center group"
+        aria-label="Ask Infinity - AI Legal Assistant"
+      >
+        {isOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <div className="relative">
+            <MessageSquare className="w-6 h-6" />
+            <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-[#0c1e3c] animate-pulse" />
+          </div>
+        )}
+      </button>
+
+      {/* Chat popup */}
+      {isOpen && (
+        <div className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-[#132d52] rounded-2xl border border-[#1a3358] shadow-2xl flex flex-col overflow-hidden" style={{ height: '500px' }}>
+          {/* Header */}
+          <div className="p-3 border-b border-[#1a3358] flex items-center justify-between bg-[#0c1e3c] flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-[#c9a84c] flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-[#0c1e3c]" />
+              </div>
+              <div>
+                <span className="text-white font-semibold text-sm">Ask Infinity</span>
+                <p className="text-[9px] text-[#8fa4c4]">AI Legal Assistant • SA Law</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-[#7a94b8] hover:text-white p-1 hover:bg-[#132d52] rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] rounded-xl px-3 py-2 ${
+                  msg.role === 'user'
+                    ? 'bg-[#c9a84c]/15 border border-[#c9a84c]/25 text-[#e0c97a]'
+                    : 'bg-[#0c1e3c] border border-[#1a3358] text-[#8fa4c4]'
+                }`}>
+                  {msg.role === 'assistant' && (
+                    <div className="flex items-center gap-1 mb-1">
+                      <Sparkles className="w-2.5 h-2.5 text-[#c9a84c]" />
+                      <span className="text-[9px] font-medium text-[#c9a84c]">Ask Infinity</span>
+                    </div>
+                  )}
+                  <p className="text-xs leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-[#0c1e3c] border border-[#1a3358] rounded-xl px-3 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-2.5 h-2.5 text-[#c9a84c] animate-pulse" />
+                    <span className="text-xs text-[#7a94b8]">Thinking...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="p-2.5 border-t border-[#1a3358] bg-[#0c1e3c] flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                placeholder="Ask me anything about SA law..."
+                aria-label="Type your legal question for Ask Infinity"
+                className="flex-1 bg-[#132d52] border border-[#1a3358] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5a7199] focus:outline-none focus:border-[#c9a84c] transition-colors"
+                disabled={isLoading}
+              />
+              <Button
+                size="sm"
+                onClick={sendMessage}
+                disabled={isLoading || !input.trim()}
+                className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] disabled:opacity-50 h-8 w-8 p-0"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ============================================
+// ASK INFINITY - AI Chat Widget
+// ============================================
+function AskInfinityChat() {
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
+    { role: 'assistant', content: 'Sawubona! 👋 I\'m Ask Infinity — your AI legal assistant for South African law. Tell me about your legal matter and I\'ll help you understand your rights and next steps. You can ask me about labour disputes, consumer rights, family law, criminal matters, and more.' },
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const sessionIdRef = useRef(Math.random().toString(36).substring(2, 15));
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) return;
+
+    const userMessage = { role: 'user' as const, content: trimmed };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: trimmed, sessionId: sessionIdRef.current }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.data || data.response }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'I apologise, I encountered an error. Please try again.' }]);
+      }
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'I\'m having trouble connecting. Please check your internet connection and try again.' }]);
+    }
+    setIsLoading(false);
+    inputRef.current?.focus();
+  };
+
+  const clearChat = async () => {
+    try {
+      await fetch(`/api/ai/chat?sessionId=${sessionIdRef.current}`, { method: 'DELETE' });
+    } catch { /* ignore */ }
+    sessionIdRef.current = Math.random().toString(36).substring(2, 15);
+    setMessages([
+      { role: 'assistant', content: 'Chat cleared! How can I help you with your legal matter today?' },
+    ]);
+  };
+
+  const suggestedQuestions = [
+    'I was fired without a hearing — what are my rights?',
+    'How do I file for divorce in South Africa?',
+    'My landlord won\'t fix the house — what can I do?',
+    'What happens at a CCMA hearing?',
+  ];
+
+  return (
+    <div className="bg-[#132d52] rounded-2xl border border-[#1a3358] overflow-hidden flex flex-col" style={{ minHeight: '520px' }}>
+      {/* Chat Header */}
+      <div className="p-4 border-b border-[#1a3358] flex items-center justify-between bg-[#0c1e3c]">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-[#c9a84c] flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-[#0c1e3c]" />
+          </div>
+          <div>
+            <span className="text-white font-semibold text-sm">Ask Infinity</span>
+            <p className="text-[10px] text-[#8fa4c4]">AI Legal Assistant • SA Law</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={clearChat}
+            className="text-[#7a94b8] hover:text-white p-1.5 hover:bg-[#132d52] rounded-lg transition-colors"
+            title="Clear chat"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[340px] custom-scrollbar">
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] rounded-xl px-4 py-3 ${
+              msg.role === 'user'
+                ? 'bg-[#c9a84c]/15 border border-[#c9a84c]/25 text-[#e0c97a]'
+                : 'bg-[#0c1e3c] border border-[#1a3358] text-[#8fa4c4]'
+            }`}>
+              {msg.role === 'assistant' && (
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Sparkles className="w-3 h-3 text-[#c9a84c]" />
+                  <span className="text-[10px] font-medium text-[#c9a84c]">Ask Infinity</span>
+                </div>
+              )}
+              <div className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</div>
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-[#0c1e3c] border border-[#1a3358] rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-3 h-3 text-[#c9a84c] animate-pulse" />
+                <span className="text-sm text-[#7a94b8]">Thinking...</span>
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* Suggested Questions */}
+      {messages.length <= 1 && (
+        <div className="px-4 pb-2">
+          <p className="text-[10px] text-[#7a94b8] uppercase tracking-wider mb-2">Try asking:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {suggestedQuestions.map((q, i) => (
+              <button
+                key={i}
+                onClick={() => { setInput(q); }}
+                className="text-xs px-3 py-1.5 rounded-full border border-[#1a3358] text-[#8fa4c4] hover:bg-[#0c1e3c] hover:border-[#c9a84c]/30 hover:text-[#c9a84c] transition-colors"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Input Area */}
+      <div className="p-3 border-t border-[#1a3358] bg-[#0c1e3c]">
+        <div className="flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+            placeholder="Type your legal question..."
+            aria-label="Type your legal question for Ask Infinity"
+            className="flex-1 bg-[#132d52] border border-[#1a3358] rounded-lg px-4 py-2.5 text-sm text-white placeholder-[#5a7199] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c]/30 transition-colors"
+            disabled={isLoading}
+          />
+          <Button
+            size="sm"
+            onClick={sendMessage}
+            disabled={isLoading || !input.trim()}
+            className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] disabled:opacity-50 h-10 w-10 p-0"
+          >
+            {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          </Button>
+        </div>
+        <p className="text-[9px] text-[#7a94b8] mt-1.5 text-center">
+          General legal information only — not legal advice. <ShieldCheck className="w-2.5 h-2.5 inline" /> POPIA Compliant
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// LANDING PAGE - Public Homepage
+// ============================================
+function LandingPage({ onLoginClick, isAuthenticated, onBackToDashboard, userName }: {
+  onLoginClick?: () => void;
+  isAuthenticated?: boolean;
+  onBackToDashboard?: () => void;
+  userName?: string;
+}) {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setContactSubmitting(true);
+    // Simulate submission
+    await new Promise(r => setTimeout(r, 1000));
+    setContactSubmitting(false);
+    setContactName('');
+    setContactEmail('');
+    setContactPhone('');
+    setContactMessage('');
+    toast.success('Message sent successfully! We\'ll get back to you shortly.');
+  };
+
+  const heroSlides = [
+    {
+      image: '/images/hero-legal.png',
+      headline: 'Your Rights, Reinforced.',
+      sub: 'Navigate consumer disputes with unlimited expert consultations and AI-powered legal oversight.',
+    },
+    {
+      image: '/images/hero-pricing.png',
+      headline: 'Legal Plans from R99/month',
+      sub: 'Affordable monthly plans designed for the reality of South Africans.',
+    },
+    {
+      image: '/images/hero-legacy.png',
+      headline: 'Your Legacy, Fully Secured',
+      sub: 'Get a plan today and build a protected future for you and your family.',
+    },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => setActiveSlide(s => (s + 1) % heroSlides.length), 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const practiceAreas = [
+    { icon: Scale, name: 'Civil Litigation', desc: 'Consumer disputes, debt review, and contractual matters.', color: 'bg-[#0c1e3c] text-[#c9a84c]' },
+    { icon: Briefcase, name: 'Labour Law', desc: 'Unfair dismissal, CCMA representation, and workplace disputes.', color: 'bg-emerald-50 text-emerald-700' },
+    { icon: Shield, name: 'Criminal Defence', desc: 'Bail applications, trial defence, and rights protection.', color: 'bg-red-50 text-red-700' },
+    { icon: Heart, name: 'Family Law', desc: 'Divorce, custody, maintenance, and domestic violence.', color: 'bg-pink-50 text-pink-700' },
+    { icon: Landmark, name: 'Commercial Law', desc: 'Company formation, contracts, and regulatory compliance.', color: 'bg-purple-50 text-purple-700' },
+    { icon: Handshake, name: 'Estate Planning', desc: 'Wills, trusts, deceased estates, and legacy protection.', color: 'bg-amber-50 text-amber-700' },
+  ];
+
+  const aiSteps = [
+    { step: 1, title: 'Describe Your Matter', desc: 'Tell our AI legal assistant about your situation in plain language.', icon: MessageSquare },
+    { step: 2, title: 'AI Analyses & Triages', desc: 'Our system categorises, prioritises, and matches you to the right attorney.', icon: Sparkles },
+    { step: 3, title: 'Attorney Consultation', desc: 'Get expert legal guidance tailored to your specific matter.', icon: BookOpen },
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Navigation Bar */}
+      <header className="sticky top-0 z-50 bg-[#0c1e3c]/95 backdrop-blur-sm border-b border-[#1a3358]">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={140} height={78} className="object-contain" />
+          </div>
+          <nav className="hidden md:flex items-center gap-8">
+            <a href="#practice" className="text-sm text-[#8fa4c4] hover:text-white transition-colors">Practice Areas</a>
+            <a href="#ai-intake" className="text-sm text-[#8fa4c4] hover:text-white transition-colors">Ask Infinity</a>
+            <a href="#pricing" className="text-sm text-[#8fa4c4] hover:text-white transition-colors">Pricing</a>
+            <a href="#contact" className="text-sm text-[#8fa4c4] hover:text-white transition-colors">Contact</a>
+          </nav>
+          <div className="flex items-center gap-3">
+            {isAuthenticated ? (
+              <>
+                <span className="hidden sm:inline text-sm text-[#c9a84c]">Welcome, {userName}</span>
+                <Button
+                  onClick={onBackToDashboard}
+                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold text-sm"
+                >
+                  <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                  Go to Dashboard
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={onLoginClick}
+                  className="border-[#c9a84c] text-[#c9a84c] hover:bg-[#c9a84c]/10 text-sm"
+                >
+                  Staff Login
+                </Button>
+                <Button
+                  onClick={onLoginClick}
+                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold text-sm"
+                >
+                  Get Started
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-[#0c1e3c]">
+        {heroSlides.map((slide, i) => (
+          <div
+            key={i}
+            className={`absolute inset-0 transition-opacity duration-1000 ${activeSlide === i ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${slide.image})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0c1e3c]/95 via-[#0c1e3c]/70 to-[#0c1e3c]/40" />
+          </div>
+        ))}
+        <div className="relative max-w-7xl mx-auto px-6 py-20 w-full">
+          <div className="max-w-2xl">
+            <Badge className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-semibold mb-6">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Ask Infinity — AI-Powered Legal Services
+            </Badge>
+            {heroSlides.map((slide, i) => (
+              <div
+                key={i}
+                className={`transition-all duration-700 ${activeSlide === i ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 absolute'}`}
+              >
+                {activeSlide === i && (
+                  <>
+                    <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                      {slide.headline}
+                    </h1>
+                    <p className="text-lg text-[#8fa4c4] mb-8 max-w-lg">{slide.sub}</p>
+                  </>
+                )}
+              </div>
+            ))}
+            <div className="flex flex-wrap gap-4">
+              {isAuthenticated ? (
+                <Button
+                  onClick={onBackToDashboard}
+                  size="lg"
+                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold text-base"
+                >
+                  <LayoutDashboard className="w-5 h-5 mr-2" />
+                  Go to Dashboard
+                </Button>
+              ) : (
+                <Button
+                  onClick={onLoginClick}
+                  size="lg"
+                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold text-base"
+                >
+                  Ask Infinity — Free AI Legal Intake
+                  <ArrowUpRight className="w-5 h-5 ml-2" />
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-[#8fa4c4]/40 text-[#8fa4c4] hover:bg-[#8fa4c4]/10 hover:text-white hover:border-[#8fa4c4]/60 text-base transition-colors"
+                onClick={() => document.getElementById('practice')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Explore Practice Areas
+              </Button>
+            </div>
+            {/* Slide indicators */}
+            <div className="flex gap-2 mt-10">
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveSlide(i)}
+                  className={`h-1 rounded-full transition-all ${activeSlide === i ? 'w-10 bg-[#c9a84c]' : 'w-6 bg-white/30 hover:bg-white/50'}`}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Bar */}
+      <section className="bg-[#f8f6f1] py-5 border-b border-[#e8e2d5]">
+        <div className="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-center gap-8 text-sm text-[#0c1e3c]/70">
+          <span className="flex items-center gap-2 font-medium"><Shield className="w-4 h-4 text-[#c9a84c]" /> POPIA Compliant</span>
+          <span className="flex items-center gap-2 font-medium"><Lock className="w-4 h-4 text-[#c9a84c]" /> 256-bit Encryption</span>
+          <span className="flex items-center gap-2 font-medium"><Gavel className="w-4 h-4 text-[#c9a84c]" /> LSSA Regulated</span>
+          <span className="flex items-center gap-2 font-medium"><Star className="w-4 h-4 text-[#c9a84c]" /> 500+ Clients Served</span>
+          <span className="flex items-center gap-2 font-medium"><Zap className="w-4 h-4 text-[#c9a84c]" /> AI-Powered Intake</span>
+        </div>
+      </section>
+
+      {/* Practice Areas */}
+      <section id="practice" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <Badge variant="outline" className="border-[#c9a84c] text-[#a88832] mb-4">Our Expertise</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0c1e3c] mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+              Practice Areas
+            </h2>
+            <p className="text-slate-500 max-w-xl mx-auto">
+              Comprehensive legal services tailored for South Africans — from civil disputes to estate planning.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {practiceAreas.map(area => (
+              <Card key={area.name} className="group hover:shadow-lg transition-all duration-300 border-slate-100 hover:border-[#c9a84c]/30">
+                <CardContent className="p-6">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${area.color} mb-4 group-hover:scale-110 transition-transform`}>
+                    <area.icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-[#0c1e3c] mb-2">{area.name}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">{area.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Ask Infinity Section */}
+      <section id="ai-intake" className="py-20 bg-[#0c1e3c]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            <div>
+              <Badge className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-semibold mb-6">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Ask Infinity — Free AI Legal Intake
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+                Your Legal Journey Starts Here
+              </h2>
+              <p className="text-[#8fa4c4] mb-8 leading-relaxed">
+                Describe your legal matter to Ask Infinity — free, confidential, and instant. We&apos;ll analyse your situation, triage the urgency, and match you with the right attorney.
+              </p>
+              <div className="space-y-6">
+                {aiSteps.map(step => (
+                  <div key={step.step} className="flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#c9a84c] text-[#0c1e3c] flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      {step.step}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-1">{step.title}</h4>
+                      <p className="text-sm text-[#8fa4c4]">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8 p-4 bg-[#132d52] rounded-xl border border-[#1a3358]">
+                <p className="text-xs text-[#7a94b8] leading-relaxed">
+                  <ShieldCheck className="w-3 h-3 inline mr-1 text-[#c9a84c]" />
+                  <strong className="text-[#8fa4c4]">Disclaimer:</strong> Ask Infinity provides general legal information for South African law. It is NOT legal advice. For case-specific guidance, please book a consultation with one of our attorneys.
+                </p>
+              </div>
+            </div>
+            <div className="relative">
+              <AskInfinityChat />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Preview */}
+      <section id="pricing" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <Badge variant="outline" className="border-[#c9a84c] text-[#a88832] mb-4">Affordable Justice</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0c1e3c] mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+              Plans from R99/month
+            </h2>
+            <p className="text-slate-500 max-w-xl mx-auto">
+              Access to justice shouldn&apos;t be a luxury. Our monthly plans are designed for the reality of South Africans.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {[
+              { name: 'Civil Litigation', price: 'R99', period: '/month', features: ['Unlimited consultations', 'Document review', 'CCMA & tribunal prep', 'AI legal intake'], highlight: false },
+              { name: 'Labour Law', price: 'R99', period: '/month', features: ['Unlimited consultations', 'CCMA representation', 'Contract review', 'AI legal intake'], highlight: true },
+              { name: 'Extensive Cover', price: 'R139', period: '/month', features: ['All practice areas', 'Priority consultations', 'Full document suite', 'AI legal intake + triage'], highlight: false },
+            ].map(plan => (
+              <Card key={plan.name} className={`relative ${plan.highlight ? 'border-[#c9a84c] shadow-lg scale-105' : 'border-slate-100'}`}>
+                {plan.highlight && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-semibold">Most Popular</Badge>
+                  </div>
+                )}
+                <CardContent className="p-6 text-center">
+                  <h3 className="font-bold text-[#0c1e3c] text-lg mb-1">{plan.name}</h3>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold text-[#0c1e3c]">{plan.price}</span>
+                    <span className="text-sm text-slate-500">{plan.period}</span>
+                  </div>
+                  <ul className="space-y-2 text-sm text-left mb-6">
+                    {plan.features.map(f => (
+                      <li key={f} className="flex items-center gap-2 text-slate-600">
+                        <CheckCircle2 className="w-4 h-4 text-[#c9a84c] flex-shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className={`w-full font-semibold ${plan.highlight ? 'bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c]' : 'bg-[#0c1e3c] hover:bg-[#0c1e3c]/90 text-white'}`}
+                    onClick={isAuthenticated ? onBackToDashboard : onLoginClick}
+                  >
+                    Get Started
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact / CTA Section */}
+      <section id="contact" className="py-20 bg-[#f8f6f1]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+              <Badge variant="outline" className="border-[#c9a84c] text-[#a88832] mb-4">Get In Touch</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#0c1e3c] mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+                Ready to Protect Your Rights?
+              </h2>
+              <p className="text-slate-500 mb-8 leading-relaxed">
+                Whether you&apos;re facing a legal challenge or planning ahead, our team is here for you. Start with a free AI intake or contact us directly.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#0c1e3c] flex items-center justify-center">
+                    <Phone className="w-5 h-5 text-[#c9a84c]" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Call Us</p>
+                    <p className="font-medium text-[#0c1e3c]">+27 (0) 11 000 0000</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#0c1e3c] flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-[#c9a84c]" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Email Us</p>
+                    <p className="font-medium text-[#0c1e3c]">info@infinitylegal.org</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#0c1e3c] flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-[#c9a84c]" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Visit Us</p>
+                    <p className="font-medium text-[#0c1e3c]">Sandton, Johannesburg, Gauteng</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Card className="border-slate-200">
+              <CardContent className="p-6">
+                <h3 className="font-bold text-[#0c1e3c] mb-4">Send Us a Message</h3>
+                <form onSubmit={handleContactSubmit} className="space-y-3">
+                  <div>
+                    <Label htmlFor="contact-name" className="text-sm font-medium text-slate-700">Full Name</Label>
+                    <Input id="contact-name" placeholder="John Doe" value={contactName} onChange={e => setContactName(e.target.value)} className="border-slate-200 mt-1" required />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact-email" className="text-sm font-medium text-slate-700">Email Address</Label>
+                    <Input id="contact-email" placeholder="you@email.com" type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="border-slate-200 mt-1" required />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact-phone" className="text-sm font-medium text-slate-700">Phone Number</Label>
+                    <Input id="contact-phone" placeholder="+27 82 000 0000" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="border-slate-200 mt-1" />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact-message" className="text-sm font-medium text-slate-700">How can we help?</Label>
+                    <Textarea id="contact-message" placeholder="Tell us about your legal matter..." rows={4} value={contactMessage} onChange={e => setContactMessage(e.target.value)} className="border-slate-200 mt-1" required />
+                  </div>
+                  <Button type="submit" disabled={contactSubmitting} className="w-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold">
+                    {contactSubmitting ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 ml-2" />}
+                    {contactSubmitting ? 'Sending...' : 'Send Message'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-[#0c1e3c] py-12 mt-auto">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={120} height={67} className="object-contain mb-4" />
+              <p className="text-sm text-[#8fa4c4] leading-relaxed">
+                AI-powered legal services for South Africans. Affordable, accessible, and expert.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-3">Practice Areas</h4>
+              <ul className="space-y-2 text-sm text-[#8fa4c4]">
+                <li>Civil Litigation</li>
+                <li>Labour Law</li>
+                <li>Criminal Defence</li>
+                <li>Family Law</li>
+                <li>Commercial Law</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-3">Company</h4>
+              <ul className="space-y-2 text-sm text-[#8fa4c4]">
+                <li>About Us</li>
+                <li>Our Team</li>
+                <li>Careers</li>
+                <li>Privacy Policy</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-3">Contact</h4>
+              <ul className="space-y-2 text-sm text-[#8fa4c4]">
+                <li className="flex items-center gap-2"><Phone className="w-3 h-3" /> +27 11 000 0000</li>
+                <li className="flex items-center gap-2"><Mail className="w-3 h-3" /> info@infinitylegal.org</li>
+                <li className="flex items-center gap-2"><MapPin className="w-3 h-3" /> Sandton, JHB</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-[#1a3358] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-[#7a94b8]">&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</p>
+            <div className="flex items-center gap-4 text-xs text-[#7a94b8]">
+              <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> POPIA Compliant</span>
+              <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> 256-bit Encryption</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Floating Ask Infinity Button */}
+      <AskInfinityBubble />
     </div>
   );
 }

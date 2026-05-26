@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/portal/', '/admin/', '/attorney/'],
       },
     ],
-    sitemap: 'https://infinitylegal.co.za/sitemap.xml',
+    sitemap: 'https://infinitylegal.org/sitemap.xml',
   }
 }

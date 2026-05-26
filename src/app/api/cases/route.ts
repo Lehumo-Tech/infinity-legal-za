@@ -24,26 +24,32 @@ export async function GET(request: NextRequest) {
     const search = url.searchParams.get('search');
 
     // Build where clause
-    const where: any = {};
-    if (status) where.status = status;
-    if (case_type) where.case_type = case_type;
-    if (urgency) where.urgency = urgency;
+    const conditions: any[] = [];
+    if (status) conditions.push({ status });
+    if (case_type) conditions.push({ case_type });
+    if (urgency) conditions.push({ urgency });
     if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { matter_number: { contains: search } },
-        { description: { contains: search } },
-      ];
+      conditions.push({
+        OR: [
+          { title: { contains: search } },
+          { matter_number: { contains: search } },
+          { description: { contains: search } },
+        ],
+      });
     }
 
     // Non-admin users can only see their own cases
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      where.OR = [
-        { client_id: auth.user.userId },
-        { lead_attorney_id: auth.user.userId },
-        { support_paralegal_id: auth.user.userId },
-      ];
+      conditions.push({
+        OR: [
+          { client_id: auth.user.userId },
+          { lead_attorney_id: auth.user.userId },
+          { support_paralegal_id: auth.user.userId },
+        ],
+      });
     }
+
+    const where = conditions.length > 0 ? { AND: conditions } : {};
 
     const [cases, total] = await Promise.all([
       db.case.findMany({

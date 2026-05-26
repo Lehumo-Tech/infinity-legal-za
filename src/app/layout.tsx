@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://infinitylegal.co.za'),
+  metadataBase: new URL('https://infinitylegal.org'),
   title: {
     default: "Infinity Legal ZA | AI-Powered Legal Practice Management",
     template: "%s | Infinity Legal ZA",
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Infinity Legal ZA | AI-Powered Legal Practice Management",
     description: "South Africa's premier AI-powered legal practice management platform. POPIA compliant, RBAC secured.",
-    url: "https://infinitylegal.co.za",
+    url: "https://infinitylegal.org",
     siteName: "Infinity Legal ZA",
     type: "website",
     locale: "en_ZA",
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
     description: "AI-Powered Legal Practice Management for South Africa",
     images: ["/infinity_logo.png"],
   },
-  alternates: { canonical: "https://infinitylegal.co.za" },
+  alternates: { canonical: "https://infinitylegal.org" },
   verification: {
     google: "google-site-verification-code",
   },
@@ -70,11 +71,11 @@ export default function RootLayout({
     '@type': 'LegalService',
     name: 'Infinity Legal ZA',
     description: 'AI-powered legal practice management platform for South Africa. POPIA compliant, RBAC secured.',
-    url: 'https://infinitylegal.co.za',
-    logo: 'https://infinitylegal.co.za/infinity_logo.png',
-    image: 'https://infinitylegal.co.za/infinity_logo.png',
+    url: 'https://infinitylegal.org',
+    logo: 'https://infinitylegal.org/infinity_logo.png',
+    image: 'https://infinitylegal.org/infinity_logo.png',
     telephone: '+27-10-000-0000',
-    email: 'info@infinitylegal.co.za',
+    email: 'info@infinitylegal.org',
     areaServed: {
       '@type': 'Country',
       name: 'South Africa',
@@ -116,12 +117,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#0f172a" />
+        <meta name="theme-color" content="#0c1e3c" />
         <meta name="x-app-version" content="2.0.0" />
         <meta name="x-database" content="sqlite" />
         <link rel="icon" href="/infinity_logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/infinity_logo.png" />
-        <link rel="canonical" href="https://infinitylegal.co.za" />
+        <link rel="canonical" href="https://infinitylegal.org" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -132,6 +133,7 @@ export default function RootLayout({
       >
         {children}
         <Toaster />
+        <SonnerToaster richColors position="top-right" />
       </body>
     </html>
   );

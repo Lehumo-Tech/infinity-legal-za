@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, full_name, phone, role = 'client', consent_given, popia_consent } = body;
+    const { email, password, full_name, phone, consent_given, popia_consent } = body;
+
+    // SECURITY: Signup is always 'client' role — ignore any user-supplied role
+    const role = 'client';
 
     if (!email || !password || !full_name) {
       return apiError('Email, password, and full name are required', 400, 'MISSING_FIELDS');
@@ -55,7 +58,7 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         full_name: sanitizeString(full_name),
         phone: phone ? sanitizeString(phone) : null,
-        role: role || 'client',
+        role: role,
         is_active: true,
         email_verified: false,
         password_expires_at: passwordExpiry,
