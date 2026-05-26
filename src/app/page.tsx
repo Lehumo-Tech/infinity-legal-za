@@ -38,6 +38,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { LandingPage } from '@/components/LandingPage';
+import { LoginScreen } from '@/components/LoginScreen';
 
 // ============================================
 // TYPES
@@ -403,25 +405,26 @@ export default function Home() {
       { id: 'workbench', label: 'Workbench', icon: LayoutDashboard, group: 'Main' },
     ];
 
-    if (!isClient) {
-      items.push({ id: 'cases', label: 'Cases', icon: FolderKanban, group: 'Practice' });
-      items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'Practice' });
-    }
+    // Cases — all roles can see (clients see their own cases, staff see all/assigned)
+    items.push({ id: 'cases', label: 'Cases', icon: FolderKanban, group: 'Practice' });
+    items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'Practice' });
 
+    // Leads — only staff who manage leads
     if (isManagement || isSales || isLegal) {
       items.push({ id: 'leads', label: 'Leads', icon: Target, group: 'Practice' });
     }
 
-    if (!isClient) {
-      items.push({ id: 'documents', label: 'Documents', icon: FileText, group: 'Practice' });
-      items.push({ id: 'tasks', label: 'Tasks', icon: CheckCircle2, group: 'Practice' });
-    }
+    // Documents & Tasks — all roles (clients see own, staff see all/assigned)
+    items.push({ id: 'documents', label: 'Documents', icon: FileText, group: 'Practice' });
+    items.push({ id: 'tasks', label: 'Tasks', icon: CheckCircle2, group: 'Practice' });
 
+    // Staff & Org — internal only, not for clients
     if (isManagement || isLegal || isParalegal || isFinance) {
       items.push({ id: 'staff', label: 'Staff Portal', icon: Users, group: 'Firm' });
       items.push({ id: 'org-chart', label: 'Org Structure', icon: TreePine, group: 'Firm' });
     }
 
+    // Analytics — management only
     if (isManagement) {
       items.push({ id: 'analytics', label: 'Analytics', icon: TrendingUp, group: 'Firm' });
     }
@@ -434,19 +437,12 @@ export default function Home() {
   if (!isAuthenticated) {
     if (showLogin) {
       return (
-        <div className="min-h-screen bg-white">
-          <div className="fixed top-4 left-4 z-50">
-            <Button
-              variant="ghost"
-              onClick={() => setShowLogin(false)}
-              className="text-[#0c1e3c] hover:bg-[#0c1e3c]/5 gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Homepage
-            </Button>
-          </div>
-          <LoginScreen onLogin={login} loading={loading} error={loginError} />
-        </div>
+        <LoginScreen
+          onLogin={login}
+          loading={loading}
+          error={loginError}
+          onBackToHome={() => setShowLogin(false)}
+        />
       );
     }
     return <LandingPage onLoginClick={() => setShowLogin(true)} />;
@@ -572,15 +568,34 @@ export default function Home() {
                 <div className="absolute right-0 top-10 w-80 bg-white border shadow-xl rounded-xl z-50 max-h-96 overflow-y-auto">
                   <div className="p-3 border-b flex items-center justify-between">
                     <span className="font-semibold text-sm text-[#0c1e3c]">Notifications</span>
-                    <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setShowNotifications(false)}>
-                      <X className="w-3 h-3" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      {notifications.some(n => !n.is_read) && (
+                        <Button variant="ghost" size="sm" className="h-6 text-xs text-[#a88832]" onClick={async () => {
+                          try {
+                            await fetch('/api/notifications', { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } });
+                            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+                          } catch { /* ignore */ }
+                        }}>
+                          Mark all read
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setShowNotifications(false)}>
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                   {notifications.length === 0 ? (
                     <div className="p-6 text-center text-sm text-slate-400">No notifications</div>
                   ) : (
                     notifications.slice(0, 10).map(n => (
-                      <div key={n.id} className={`p-3 border-b hover:bg-slate-50 ${!n.is_read ? 'bg-[#c9a84c]/5' : ''}`}>
+                      <div key={n.id} className={`p-3 border-b hover:bg-slate-50 cursor-pointer ${!n.is_read ? 'bg-[#c9a84c]/5' : ''}`} onClick={async () => {
+                        if (!n.is_read) {
+                          try {
+                            await fetch('/api/notifications', { method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ notification_id: n.id }) });
+                            setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, is_read: true } : item));
+                          } catch { /* ignore */ }
+                        }
+                      }}>
                         <div className="flex items-start gap-2">
                           {!n.is_read && <div className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full mt-1.5 flex-shrink-0" />}
                           <div className="flex-1 min-w-0">
@@ -644,201 +659,6 @@ export default function Home() {
 }
 
 // ============================================
-// LOGIN SCREEN
-// ============================================
-function LoginScreen({ onLogin, loading, error }: { onLogin: (e: string, p: string) => void; loading: boolean; error: string }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [heroSlide, setHeroSlide] = useState(0);
-  const [isSignup, setIsSignup] = useState(false);
-  const [signupName, setSignupName] = useState('');
-  const [signupPhone, setSignupPhone] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
-  const [popiaConsent, setPopiaConsent] = useState(false);
-  const [signupLoading, setSignupLoading] = useState(false);
-  const [signupSuccess, setSignupSuccess] = useState('');
-  const [signupError, setSignupError] = useState('');
-
-  const heroSlides = [
-    { image: '/images/hero-legal.png', headline: 'Your rights, reinforced.', sub: 'Navigate consumer disputes with unlimited expert consultations and AI-powered oversight.' },
-    { image: '/images/hero-pricing.png', headline: 'Legal Plans from R99/month', sub: 'Affordable monthly plans designed for the reality of South Africans.' },
-    { image: '/images/hero-legacy.png', headline: 'Your Legacy, Fully Secured', sub: 'Get a plan today and build a protected future.' },
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => setHeroSlide(s => (s + 1) % heroSlides.length), 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleSignup = async () => {
-    setSignupLoading(true);
-    setSignupError('');
-    setSignupSuccess('');
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: signupEmail,
-          password: signupPassword,
-          full_name: signupName,
-          phone: signupPhone || undefined,
-          role: 'client',
-          consent_given: popiaConsent,
-          popia_consent: popiaConsent,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSignupSuccess('Account created! You can now sign in.');
-        setIsSignup(false);
-        setEmail(signupEmail);
-        setPassword('');
-      } else {
-        setSignupError(data.error?.message || 'Signup failed');
-      }
-    } catch {
-      setSignupError('Network error');
-    }
-    setSignupLoading(false);
-  };
-
-  return (
-    <div className="min-h-screen flex">
-      {/* Left side - Hero carousel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {heroSlides.map((slide, i) => (
-          <div
-            key={i}
-            className={`absolute inset-0 transition-opacity duration-1000 ${heroSlide === i ? 'opacity-100' : 'opacity-0'}`}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${slide.image})` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0c1e3c]/90 via-[#0c1e3c]/40 to-transparent" />
-            <div className="absolute bottom-16 left-10 right-10 text-white">
-              <h2 className="text-4xl font-bold mb-3 tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>{slide.headline}</h2>
-              <p className="text-white/80 text-lg">{slide.sub}</p>
-            </div>
-          </div>
-        ))}
-        {/* Slide indicators */}
-        <div className="absolute bottom-6 left-10 flex gap-2 z-10">
-          {heroSlides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setHeroSlide(i)}
-              className={`w-8 h-1 rounded-full transition-all ${heroSlide === i ? 'bg-[#c9a84c]' : 'bg-white/30'}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Right side - Login/Signup form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <Image src="/infinity_logo.png" alt="Infinity Legal SA Logo" width={160} height={90} className="mx-auto mb-4 object-contain" />
-            <h1 className="text-2xl font-bold text-[#0c1e3c]">Infinity Legal ZA</h1>
-            <p className="text-slate-500 mt-1 text-sm">{isSignup ? 'Create your account' : 'Staff Intranet & Workbench'}</p>
-          </div>
-
-          {signupSuccess && (
-            <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-              {signupSuccess}
-            </div>
-          )}
-
-          {!isSignup ? (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Email</Label>
-                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@infinitylegal.org" className="mt-1.5" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Password</Label>
-                <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="mt-1.5" onKeyDown={e => e.key === 'Enter' && onLogin(email, password)} />
-              </div>
-              {error && <p className="text-sm text-red-500 flex items-center gap-1"><AlertTriangle className="w-4 h-4" />{error}</p>}
-              <Button className="w-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold" onClick={() => onLogin(email, password)} disabled={loading}>
-                {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
-                {loading ? 'Signing in...' : 'Sign In'}
-              </Button>
-              <div className="text-center">
-                <button onClick={() => { setIsSignup(true); setSignupError(''); }} className="text-sm text-[#a88832] hover:text-[#8a6e28] font-medium">
-                  Don't have an account? Sign Up
-                </button>
-              </div>
-              <div className="text-xs text-slate-500 space-y-2 mt-4 pt-4 border-t">
-                <a
-                  href="/api/report"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[#a88832] hover:text-[#8a6e28] font-medium transition-colors"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  Download Client Report (PDF)
-                </a>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Full Name</Label>
-                <Input value={signupName} onChange={e => setSignupName(e.target.value)} placeholder="John Doe" className="mt-1.5" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Email</Label>
-                <Input type="email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} placeholder="you@email.com" className="mt-1.5" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Phone (optional)</Label>
-                <Input value={signupPhone} onChange={e => setSignupPhone(e.target.value)} placeholder="+27 82 000 0000" className="mt-1.5" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Password</Label>
-                <Input type="password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} placeholder="Min 8 chars, 1 uppercase, 1 number, 1 symbol" className="mt-1.5" />
-              </div>
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  checked={popiaConsent}
-                  onChange={e => setPopiaConsent(e.target.checked)}
-                  className="mt-1 rounded border-slate-300"
-                  id="popia-consent"
-                />
-                <label htmlFor="popia-consent" className="text-xs text-slate-600">
-                  I consent to the processing of my personal information in accordance with the Protection of Personal Information Act (POPIA) and Infinity Legal's privacy policy.
-                </label>
-              </div>
-              {signupError && <p className="text-sm text-red-500 flex items-center gap-1"><AlertTriangle className="w-4 h-4" />{signupError}</p>}
-              <Button className="w-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold" onClick={handleSignup} disabled={signupLoading || !popiaConsent || !signupName || !signupEmail || !signupPassword}>
-                {signupLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
-                {signupLoading ? 'Creating account...' : 'Create Account'}
-              </Button>
-              <div className="text-center">
-                <button onClick={() => { setIsSignup(false); setSignupError(''); }} className="text-sm text-[#a88832] hover:text-[#8a6e28] font-medium">
-                  Already have an account? Sign In
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="mt-8 flex justify-center gap-4 text-[10px] text-slate-400">
-            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> POPIA</span>
-            <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> AES-256</span>
-            <span className="flex items-center gap-1"><KeyRound className="w-3 h-3" /> 90-Day Expiry</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================
 // WORKBENCH VIEW - Central Hub
 // ============================================
 function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth }: {
@@ -847,6 +667,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
   charts: any; firmHealth: Record<string, boolean>;
 }) {
   const role = user?.role || 'client';
+  const isClient = role === 'client';
   const isManagement = ['managing_director', 'senior_partner', 'supervising_officer', 'systems_admin'].includes(role);
   const isLegal = ['associate', 'legal_officer', 'candidate_attorney', 'senior_consultant', 'consultant'].includes(role);
   const isParalegal = role === 'paralegal';
@@ -858,7 +679,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
     ...(isLegal || isParalegal || isManagement ? [{ label: 'Upload Document', icon: FileUp, color: 'bg-emerald-50 text-emerald-700', view: 'documents' as View }] : []),
     ...(isManagement || isLegal ? [{ label: 'New Case', icon: FolderKanban, color: 'bg-blue-50 text-blue-700', view: 'cases' as View }] : []),
     { label: 'My Tasks', icon: CheckCircle2, color: 'bg-amber-50 text-amber-700', view: 'tasks' as View },
-    { label: 'View Staff', icon: Users, color: 'bg-purple-50 text-purple-700', view: 'staff' as View },
+    ...(!isClient ? [{ label: 'View Staff', icon: Users, color: 'bg-purple-50 text-purple-700', view: 'staff' as View }] : []),
     ...(isManagement ? [{ label: 'View Analytics', icon: TrendingUp, color: 'bg-teal-50 text-teal-700', view: 'analytics' as View }] : []),
   ];
 
@@ -883,7 +704,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
               <>
                 <MiniStat label="Active Cases" value={stats.activeCases} />
                 <MiniStat label="Pending Tasks" value={stats.pendingTasks} />
-                <MiniStat label="Revenue" value={`R${(stats.totalRevenue / 1000000).toFixed(1)}M`} />
+                {!isClient && <MiniStat label="Revenue" value={`R${(stats.totalRevenue / 1000000).toFixed(1)}M`} />}
               </>
             )}
           </div>
@@ -911,15 +732,19 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
 
       {/* Stats grid */}
       {stats ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Cases', value: stats.totalCases, icon: FolderKanban, color: 'text-blue-600 bg-blue-50' },
             { label: 'Active', value: stats.activeCases, icon: Activity, color: 'text-emerald-600 bg-emerald-50' },
-            { label: 'Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-600 bg-purple-50' },
-            { label: 'Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10' },
+            ...(!isClient ? [
+              { label: 'Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-600 bg-purple-50' },
+              { label: 'Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10' },
+            ] : []),
             { label: 'Tasks', value: stats.pendingTasks, icon: Clock, color: 'text-orange-600 bg-orange-50' },
             { label: 'Overdue', value: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600 bg-red-50' },
-            { label: 'Clients', value: stats.totalClients, icon: Users, color: 'text-teal-600 bg-teal-50' },
+            ...(!isClient ? [
+              { label: 'Clients', value: stats.totalClients, icon: Users, color: 'text-teal-600 bg-teal-50' },
+            ] : []),
             { label: 'Docs', value: stats.totalDocuments, icon: FileText, color: 'text-slate-600 bg-slate-100' },
           ].map(card => (
             <Card key={card.label} className="hover:shadow-md transition-shadow">
@@ -1086,7 +911,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
           </CardContent>
         </Card>
 
-        <Card>
+        {!isClient && <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold text-[#0c1e3c]">Firm Health</CardTitle>
           </CardHeader>
@@ -1109,7 +934,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
               </div>
             ))}
           </CardContent>
-        </Card>
+        </Card>}
       </div>
     </div>
   );
@@ -2461,454 +2286,3 @@ function AskInfinityChat() {
   );
 }
 
-// ============================================
-// LANDING PAGE - Public Homepage
-// ============================================
-function LandingPage({ onLoginClick, isAuthenticated, onBackToDashboard, userName }: {
-  onLoginClick?: () => void;
-  isAuthenticated?: boolean;
-  onBackToDashboard?: () => void;
-  userName?: string;
-}) {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactMessage, setContactMessage] = useState('');
-  const [contactSubmitting, setContactSubmitting] = useState(false);
-
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setContactSubmitting(true);
-    // Simulate submission
-    await new Promise(r => setTimeout(r, 1000));
-    setContactSubmitting(false);
-    setContactName('');
-    setContactEmail('');
-    setContactPhone('');
-    setContactMessage('');
-    toast.success('Message sent successfully! We\'ll get back to you shortly.');
-  };
-
-  const heroSlides = [
-    {
-      image: '/images/hero-legal.png',
-      headline: 'Your Rights, Reinforced.',
-      sub: 'Navigate consumer disputes with unlimited expert consultations and AI-powered legal oversight.',
-    },
-    {
-      image: '/images/hero-pricing.png',
-      headline: 'Legal Plans from R99/month',
-      sub: 'Affordable monthly plans designed for the reality of South Africans.',
-    },
-    {
-      image: '/images/hero-legacy.png',
-      headline: 'Your Legacy, Fully Secured',
-      sub: 'Get a plan today and build a protected future for you and your family.',
-    },
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => setActiveSlide(s => (s + 1) % heroSlides.length), 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const practiceAreas = [
-    { icon: Scale, name: 'Civil Litigation', desc: 'Consumer disputes, debt review, and contractual matters.', color: 'bg-[#0c1e3c] text-[#c9a84c]' },
-    { icon: Briefcase, name: 'Labour Law', desc: 'Unfair dismissal, CCMA representation, and workplace disputes.', color: 'bg-emerald-50 text-emerald-700' },
-    { icon: Shield, name: 'Criminal Defence', desc: 'Bail applications, trial defence, and rights protection.', color: 'bg-red-50 text-red-700' },
-    { icon: Heart, name: 'Family Law', desc: 'Divorce, custody, maintenance, and domestic violence.', color: 'bg-pink-50 text-pink-700' },
-    { icon: Landmark, name: 'Commercial Law', desc: 'Company formation, contracts, and regulatory compliance.', color: 'bg-purple-50 text-purple-700' },
-    { icon: Handshake, name: 'Estate Planning', desc: 'Wills, trusts, deceased estates, and legacy protection.', color: 'bg-amber-50 text-amber-700' },
-  ];
-
-  const aiSteps = [
-    { step: 1, title: 'Describe Your Matter', desc: 'Tell our AI legal assistant about your situation in plain language.', icon: MessageSquare },
-    { step: 2, title: 'AI Analyses & Triages', desc: 'Our system categorises, prioritises, and matches you to the right attorney.', icon: Sparkles },
-    { step: 3, title: 'Attorney Consultation', desc: 'Get expert legal guidance tailored to your specific matter.', icon: BookOpen },
-  ];
-
-  return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-[#0c1e3c]/95 backdrop-blur-sm border-b border-[#1a3358]">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={140} height={78} className="object-contain" />
-          </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="#practice" className="text-sm text-[#8fa4c4] hover:text-white transition-colors">Practice Areas</a>
-            <a href="#ai-intake" className="text-sm text-[#8fa4c4] hover:text-white transition-colors">Ask Infinity</a>
-            <a href="#pricing" className="text-sm text-[#8fa4c4] hover:text-white transition-colors">Pricing</a>
-            <a href="#contact" className="text-sm text-[#8fa4c4] hover:text-white transition-colors">Contact</a>
-          </nav>
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <span className="hidden sm:inline text-sm text-[#c9a84c]">Welcome, {userName}</span>
-                <Button
-                  onClick={onBackToDashboard}
-                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold text-sm"
-                >
-                  <LayoutDashboard className="w-4 h-4 mr-1.5" />
-                  Go to Dashboard
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={onLoginClick}
-                  className="border-[#c9a84c] text-[#c9a84c] hover:bg-[#c9a84c]/10 text-sm"
-                >
-                  Staff Login
-                </Button>
-                <Button
-                  onClick={onLoginClick}
-                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold text-sm"
-                >
-                  Get Started
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-[#0c1e3c]">
-        {heroSlides.map((slide, i) => (
-          <div
-            key={i}
-            className={`absolute inset-0 transition-opacity duration-1000 ${activeSlide === i ? 'opacity-100' : 'opacity-0'}`}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${slide.image})` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0c1e3c]/95 via-[#0c1e3c]/70 to-[#0c1e3c]/40" />
-          </div>
-        ))}
-        <div className="relative max-w-7xl mx-auto px-6 py-20 w-full">
-          <div className="max-w-2xl">
-            <Badge className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-semibold mb-6">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Ask Infinity — AI-Powered Legal Services
-            </Badge>
-            {heroSlides.map((slide, i) => (
-              <div
-                key={i}
-                className={`transition-all duration-700 ${activeSlide === i ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 absolute'}`}
-              >
-                {activeSlide === i && (
-                  <>
-                    <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
-                      {slide.headline}
-                    </h1>
-                    <p className="text-lg text-[#8fa4c4] mb-8 max-w-lg">{slide.sub}</p>
-                  </>
-                )}
-              </div>
-            ))}
-            <div className="flex flex-wrap gap-4">
-              {isAuthenticated ? (
-                <Button
-                  onClick={onBackToDashboard}
-                  size="lg"
-                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold text-base"
-                >
-                  <LayoutDashboard className="w-5 h-5 mr-2" />
-                  Go to Dashboard
-                </Button>
-              ) : (
-                <Button
-                  onClick={onLoginClick}
-                  size="lg"
-                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold text-base"
-                >
-                  Ask Infinity — Free AI Legal Intake
-                  <ArrowUpRight className="w-5 h-5 ml-2" />
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-[#8fa4c4]/40 text-[#8fa4c4] hover:bg-[#8fa4c4]/10 hover:text-white hover:border-[#8fa4c4]/60 text-base transition-colors"
-                onClick={() => document.getElementById('practice')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Explore Practice Areas
-              </Button>
-            </div>
-            {/* Slide indicators */}
-            <div className="flex gap-2 mt-10">
-              {heroSlides.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveSlide(i)}
-                  className={`h-1 rounded-full transition-all ${activeSlide === i ? 'w-10 bg-[#c9a84c]' : 'w-6 bg-white/30 hover:bg-white/50'}`}
-                  aria-label={`Slide ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Bar */}
-      <section className="bg-[#f8f6f1] py-5 border-b border-[#e8e2d5]">
-        <div className="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-center gap-8 text-sm text-[#0c1e3c]/70">
-          <span className="flex items-center gap-2 font-medium"><Shield className="w-4 h-4 text-[#c9a84c]" /> POPIA Compliant</span>
-          <span className="flex items-center gap-2 font-medium"><Lock className="w-4 h-4 text-[#c9a84c]" /> 256-bit Encryption</span>
-          <span className="flex items-center gap-2 font-medium"><Gavel className="w-4 h-4 text-[#c9a84c]" /> LSSA Regulated</span>
-          <span className="flex items-center gap-2 font-medium"><Star className="w-4 h-4 text-[#c9a84c]" /> 500+ Clients Served</span>
-          <span className="flex items-center gap-2 font-medium"><Zap className="w-4 h-4 text-[#c9a84c]" /> AI-Powered Intake</span>
-        </div>
-      </section>
-
-      {/* Practice Areas */}
-      <section id="practice" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <Badge variant="outline" className="border-[#c9a84c] text-[#a88832] mb-4">Our Expertise</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#0c1e3c] mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-              Practice Areas
-            </h2>
-            <p className="text-slate-500 max-w-xl mx-auto">
-              Comprehensive legal services tailored for South Africans — from civil disputes to estate planning.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {practiceAreas.map(area => (
-              <Card key={area.name} className="group hover:shadow-lg transition-all duration-300 border-slate-100 hover:border-[#c9a84c]/30">
-                <CardContent className="p-6">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${area.color} mb-4 group-hover:scale-110 transition-transform`}>
-                    <area.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-[#0c1e3c] mb-2">{area.name}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{area.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Ask Infinity Section */}
-      <section id="ai-intake" className="py-20 bg-[#0c1e3c]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <div>
-              <Badge className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-semibold mb-6">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Ask Infinity — Free AI Legal Intake
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-                Your Legal Journey Starts Here
-              </h2>
-              <p className="text-[#8fa4c4] mb-8 leading-relaxed">
-                Describe your legal matter to Ask Infinity — free, confidential, and instant. We&apos;ll analyse your situation, triage the urgency, and match you with the right attorney.
-              </p>
-              <div className="space-y-6">
-                {aiSteps.map(step => (
-                  <div key={step.step} className="flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-[#c9a84c] text-[#0c1e3c] flex items-center justify-center font-bold text-sm flex-shrink-0">
-                      {step.step}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-1">{step.title}</h4>
-                      <p className="text-sm text-[#8fa4c4]">{step.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-8 p-4 bg-[#132d52] rounded-xl border border-[#1a3358]">
-                <p className="text-xs text-[#7a94b8] leading-relaxed">
-                  <ShieldCheck className="w-3 h-3 inline mr-1 text-[#c9a84c]" />
-                  <strong className="text-[#8fa4c4]">Disclaimer:</strong> Ask Infinity provides general legal information for South African law. It is NOT legal advice. For case-specific guidance, please book a consultation with one of our attorneys.
-                </p>
-              </div>
-            </div>
-            <div className="relative">
-              <AskInfinityChat />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Preview */}
-      <section id="pricing" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <Badge variant="outline" className="border-[#c9a84c] text-[#a88832] mb-4">Affordable Justice</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#0c1e3c] mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-              Plans from R99/month
-            </h2>
-            <p className="text-slate-500 max-w-xl mx-auto">
-              Access to justice shouldn&apos;t be a luxury. Our monthly plans are designed for the reality of South Africans.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {[
-              { name: 'Civil Litigation', price: 'R99', period: '/month', features: ['Unlimited consultations', 'Document review', 'CCMA & tribunal prep', 'AI legal intake'], highlight: false },
-              { name: 'Labour Law', price: 'R99', period: '/month', features: ['Unlimited consultations', 'CCMA representation', 'Contract review', 'AI legal intake'], highlight: true },
-              { name: 'Extensive Cover', price: 'R139', period: '/month', features: ['All practice areas', 'Priority consultations', 'Full document suite', 'AI legal intake + triage'], highlight: false },
-            ].map(plan => (
-              <Card key={plan.name} className={`relative ${plan.highlight ? 'border-[#c9a84c] shadow-lg scale-105' : 'border-slate-100'}`}>
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-semibold">Most Popular</Badge>
-                  </div>
-                )}
-                <CardContent className="p-6 text-center">
-                  <h3 className="font-bold text-[#0c1e3c] text-lg mb-1">{plan.name}</h3>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold text-[#0c1e3c]">{plan.price}</span>
-                    <span className="text-sm text-slate-500">{plan.period}</span>
-                  </div>
-                  <ul className="space-y-2 text-sm text-left mb-6">
-                    {plan.features.map(f => (
-                      <li key={f} className="flex items-center gap-2 text-slate-600">
-                        <CheckCircle2 className="w-4 h-4 text-[#c9a84c] flex-shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={`w-full font-semibold ${plan.highlight ? 'bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c]' : 'bg-[#0c1e3c] hover:bg-[#0c1e3c]/90 text-white'}`}
-                    onClick={isAuthenticated ? onBackToDashboard : onLoginClick}
-                  >
-                    Get Started
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact / CTA Section */}
-      <section id="contact" className="py-20 bg-[#f8f6f1]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
-              <Badge variant="outline" className="border-[#c9a84c] text-[#a88832] mb-4">Get In Touch</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0c1e3c] mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-                Ready to Protect Your Rights?
-              </h2>
-              <p className="text-slate-500 mb-8 leading-relaxed">
-                Whether you&apos;re facing a legal challenge or planning ahead, our team is here for you. Start with a free AI intake or contact us directly.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#0c1e3c] flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-[#c9a84c]" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Call Us</p>
-                    <p className="font-medium text-[#0c1e3c]">+27 (0) 11 000 0000</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#0c1e3c] flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-[#c9a84c]" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Email Us</p>
-                    <p className="font-medium text-[#0c1e3c]">info@infinitylegal.org</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#0c1e3c] flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-[#c9a84c]" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Visit Us</p>
-                    <p className="font-medium text-[#0c1e3c]">Sandton, Johannesburg, Gauteng</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <Card className="border-slate-200">
-              <CardContent className="p-6">
-                <h3 className="font-bold text-[#0c1e3c] mb-4">Send Us a Message</h3>
-                <form onSubmit={handleContactSubmit} className="space-y-3">
-                  <div>
-                    <Label htmlFor="contact-name" className="text-sm font-medium text-slate-700">Full Name</Label>
-                    <Input id="contact-name" placeholder="John Doe" value={contactName} onChange={e => setContactName(e.target.value)} className="border-slate-200 mt-1" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="contact-email" className="text-sm font-medium text-slate-700">Email Address</Label>
-                    <Input id="contact-email" placeholder="you@email.com" type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="border-slate-200 mt-1" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="contact-phone" className="text-sm font-medium text-slate-700">Phone Number</Label>
-                    <Input id="contact-phone" placeholder="+27 82 000 0000" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="border-slate-200 mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="contact-message" className="text-sm font-medium text-slate-700">How can we help?</Label>
-                    <Textarea id="contact-message" placeholder="Tell us about your legal matter..." rows={4} value={contactMessage} onChange={e => setContactMessage(e.target.value)} className="border-slate-200 mt-1" required />
-                  </div>
-                  <Button type="submit" disabled={contactSubmitting} className="w-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] font-semibold">
-                    {contactSubmitting ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 ml-2" />}
-                    {contactSubmitting ? 'Sending...' : 'Send Message'}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-[#0c1e3c] py-12 mt-auto">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={120} height={67} className="object-contain mb-4" />
-              <p className="text-sm text-[#8fa4c4] leading-relaxed">
-                AI-powered legal services for South Africans. Affordable, accessible, and expert.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white text-sm mb-3">Practice Areas</h4>
-              <ul className="space-y-2 text-sm text-[#8fa4c4]">
-                <li>Civil Litigation</li>
-                <li>Labour Law</li>
-                <li>Criminal Defence</li>
-                <li>Family Law</li>
-                <li>Commercial Law</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white text-sm mb-3">Company</h4>
-              <ul className="space-y-2 text-sm text-[#8fa4c4]">
-                <li>About Us</li>
-                <li>Our Team</li>
-                <li>Careers</li>
-                <li>Privacy Policy</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white text-sm mb-3">Contact</h4>
-              <ul className="space-y-2 text-sm text-[#8fa4c4]">
-                <li className="flex items-center gap-2"><Phone className="w-3 h-3" /> +27 11 000 0000</li>
-                <li className="flex items-center gap-2"><Mail className="w-3 h-3" /> info@infinitylegal.org</li>
-                <li className="flex items-center gap-2"><MapPin className="w-3 h-3" /> Sandton, JHB</li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-[#1a3358] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-[#7a94b8]">&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</p>
-            <div className="flex items-center gap-4 text-xs text-[#7a94b8]">
-              <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> POPIA Compliant</span>
-              <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> 256-bit Encryption</span>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* Floating Ask Infinity Button */}
-      <AskInfinityBubble />
-    </div>
-  );
-}

@@ -58,6 +58,30 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// PATCH - Mark all notifications as read for current user
+export async function PATCH(request: NextRequest) {
+  try {
+    const auth = requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
+    const result = await db.notification.updateMany({
+      where: { user_id: auth.user.userId, is_read: false },
+      data: { is_read: true },
+    });
+
+    await createAuditLog({
+      user_id: auth.user.userId,
+      action: 'MARK_ALL_NOTIFICATIONS_READ',
+      resource_type: 'notification',
+    });
+
+    return apiResponse({ updated_count: result.count });
+  } catch (error) {
+    console.error('Mark all read error:', error);
+    return apiError('Failed to mark notifications as read', 500, 'NOTIFICATION_UPDATE_ERROR');
+  }
+}
+
 // PUT - Mark notification as read
 export async function PUT(request: NextRequest) {
   try {

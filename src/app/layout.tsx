@@ -119,7 +119,7 @@ export default function RootLayout({
       <head>
         <meta name="theme-color" content="#0c1e3c" />
         <meta name="x-app-version" content="2.0.0" />
-        <meta name="x-database" content="sqlite" />
+        <meta name="x-database" content="postgresql" />
         <link rel="icon" href="/infinity_logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/infinity_logo.png" />
         <link rel="canonical" href="https://infinitylegal.org" />

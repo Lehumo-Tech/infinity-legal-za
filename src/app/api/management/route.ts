@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
-import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
+import { type RoleKey } from '@/lib/auth';
 
 const ALLOWED_ROLES: RoleKey[] = ['managing_director', 'senior_partner', 'supervising_officer', 'systems_admin'];
 
@@ -166,36 +166,22 @@ export async function GET(request: NextRequest) {
       user: log.user,
     }));
 
-    // Mock: Pending approvals
-    const pendingApprovals = [
-      { id: 'appr_001', type: 'leave' as const, requested_by: 'Thabo Molefe', department: 'litigation', date: '2026-03-08', priority: 'high' as const, status: 'pending' },
-      { id: 'appr_002', type: 'expense' as const, requested_by: 'Nomsa Dlamini', department: 'corporate', date: '2026-03-07', priority: 'medium' as const, status: 'pending' },
-      { id: 'appr_003', type: 'case_assignment' as const, requested_by: 'Pieter van Wyk', department: 'conveyancing', date: '2026-03-06', priority: 'urgent' as const, status: 'pending' },
-      { id: 'appr_004', type: 'leave' as const, requested_by: 'Ayesha Khan', department: 'family_law', date: '2026-03-05', priority: 'low' as const, status: 'pending' },
-      { id: 'appr_005', type: 'expense' as const, requested_by: 'David Nkosi', department: 'criminal_law', date: '2026-03-04', priority: 'medium' as const, status: 'pending' },
-      { id: 'appr_006', type: 'case_assignment' as const, requested_by: 'Lerato Sithole', department: 'estate_planning', date: '2026-03-03', priority: 'high' as const, status: 'pending' },
-    ];
+    // Pending approvals — empty until approval system is built
+    const pendingApprovals: any[] = [];
 
-    // Mock: Key metrics
+    // Key metrics — calculated from real data
     const avgCaseValue = totalCases > 0 ? Math.round((totalRevenue / totalCases) * 100) / 100 : 0;
     const keyMetrics = {
       avg_case_value: avgCaseValue,
-      avg_days_to_close: 42,
-      client_satisfaction: 87,
-      staff_utilization: 78,
-      revenue_growth: 12.5,
-      case_win_rate: 73,
+      avg_days_to_close: 0,
+      client_satisfaction: 0,
+      staff_utilization: 0,
+      revenue_growth: 0,
+      case_win_rate: 0,
     };
 
-    // Mock: Financial summary (6 months)
-    const financialSummary = [
-      { month: '2025-10', revenue: 425000, expenses: 298000, profit_margin: 29.9 },
-      { month: '2025-11', revenue: 510000, expenses: 315000, profit_margin: 38.2 },
-      { month: '2025-12', revenue: 395000, expenses: 287000, profit_margin: 27.3 },
-      { month: '2026-01', revenue: 478000, expenses: 302000, profit_margin: 36.8 },
-      { month: '2026-02', revenue: 442000, expenses: 295000, profit_margin: 33.3 },
-      { month: '2026-03', revenue: 287000, expenses: 191000, profit_margin: 33.4 },
-    ];
+    // Financial summary — empty until billing system is built
+    const financialSummary: any[] = [];
 
     return apiResponse({
       firm_overview: {

@@ -36,17 +36,35 @@ export async function GET(request: NextRequest) {
     const date_from = url.searchParams.get('date_from');
     const date_to = url.searchParams.get('date_to');
 
-    // Build where clause
-    const where: Record<string, unknown> = {};
-    if (attorney_id) where.attorney_id = attorney_id;
-    if (client_id) where.client_id = client_id;
-    if (status) where.status = status;
+    // Build where clause with permission-based filtering
+    const conditions: Record<string, unknown>[] = [];
+    if (attorney_id) conditions.push({ attorney_id });
+    if (client_id) conditions.push({ client_id });
+    if (status) conditions.push({ status });
     if (date_from || date_to) {
       const scheduled_date: Record<string, Date> = {};
       if (date_from) scheduled_date.gte = new Date(date_from);
       if (date_to) scheduled_date.lte = new Date(date_to);
-      where.scheduled_date = scheduled_date;
+      conditions.push({ scheduled_date });
     }
+
+    // Permission-based access control
+    const canViewAll =
+      hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES) ||
+      hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_LEADS);
+
+    if (!canViewAll) {
+      // Clients can only see their own consultations;
+      // Other staff can see consultations where they are the attorney or the client
+      conditions.push({
+        OR: [
+          { client_id: auth.user.userId },
+          { attorney_id: auth.user.userId },
+        ],
+      });
+    }
+
+    const where = conditions.length > 0 ? { AND: conditions } : {};
 
     const [consultations, total] = await Promise.all([
       db.consultation.findMany({

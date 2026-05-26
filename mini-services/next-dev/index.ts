@@ -15,7 +15,14 @@ function startNext() {
     cwd: resolve(__dirname, '../..'),
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: false,
-    env: { ...process.env },
+    env: {
+      ...process.env,
+      // Override DATABASE_URL if it points to SQLite (sandbox default)
+      // Use POSTGRES_URL from .env for Neon PostgreSQL connection
+      DATABASE_URL: process.env.POSTGRES_URL && process.env.DATABASE_URL?.startsWith('file:')
+        ? process.env.POSTGRES_URL
+        : process.env.DATABASE_URL,
+    },
   });
 
   nextProcess.stdout?.on('data', (data: Buffer) => {

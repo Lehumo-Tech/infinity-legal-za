@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
-import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
+import { type RoleKey } from '@/lib/auth';
 
 const ALLOWED_ROLES: RoleKey[] = [
   'receptionist',
@@ -123,15 +123,8 @@ export async function GET(request: NextRequest) {
       ? Math.round((convertedLeads / totalLeads) * 100 * 10) / 10
       : 0;
 
-    // Mock: Monthly targets (6 months)
-    const monthlyTargets = [
-      { month: '2025-10', target: 280000, actual: 265000, deals_closed: 8 },
-      { month: '2025-11', target: 310000, actual: 342000, deals_closed: 11 },
-      { month: '2025-12', target: 290000, actual: 278000, deals_closed: 9 },
-      { month: '2026-01', target: 320000, actual: 305000, deals_closed: 10 },
-      { month: '2026-02', target: 350000, actual: 298000, deals_closed: 7 },
-      { month: '2026-03', target: 340000, actual: 187000, deals_closed: 5 },
-    ];
+    // Monthly targets — empty until target system is built
+    const monthlyTargets: any[] = [];
 
     return apiResponse({
       pipeline_summary: pipelineSummary,

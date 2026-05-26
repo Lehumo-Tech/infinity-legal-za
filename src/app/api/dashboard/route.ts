@@ -1,5 +1,5 @@
 /**
- * GET /api/dashboard - Dashboard statistics via Prisma/SQLite
+ * GET /api/dashboard - Dashboard statistics via Prisma/PostgreSQL
  */
 
 import { NextRequest } from 'next/server';

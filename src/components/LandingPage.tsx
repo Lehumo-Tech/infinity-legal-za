@@ -7,15 +7,19 @@ import {
   Lock, KeyRound, ArrowRight, Star, Menu, X, Send, Bot, Sparkles,
   Scale, MessageSquare, Zap, Globe, Smartphone, Newspaper, Tv,
   Users, Briefcase, Bell, ArrowUpRight, Play, ChevronDown,
-  AlertTriangle, RefreshCw,
+  AlertTriangle, RefreshCw, LayoutDashboard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface LandingPageProps {
-  onSignIn: () => void;
-  onSignUp: (prefillEmail?: string, prefilledName?: string) => void;
+  onSignIn?: () => void;
+  onSignUp?: (prefillEmail?: string, prefilledName?: string) => void;
+  onLoginClick?: () => void;
+  isAuthenticated?: boolean;
+  onBackToDashboard?: () => void;
+  userName?: string;
 }
 
 const caseTypes = [
@@ -36,9 +40,35 @@ interface ChatMessage {
   content: string;
 }
 
-export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
+export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated, onBackToDashboard, userName }: LandingPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [pricingPlans, setPricingPlans] = useState<Array<{ name: string; price_monthly: number; features: string[]; slug: string }>>([]);
+
+  // Fetch pricing from API, fallback to hardcoded
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const res = await fetch('/api/pricing');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          const plans = data.data.map((plan: Record<string, unknown>) => ({
+            name: plan.name as string,
+            price_monthly: plan.price_monthly as number,
+            features: Array.isArray(plan.features) ? plan.features as string[] : [],
+            slug: plan.slug as string,
+          }));
+          setPricingPlans(plans);
+        }
+      } catch {
+        // Silently fall back to hardcoded plans
+      }
+    };
+    fetchPricing();
+  }, []);
+
+  // Resolve action handlers: prefer onLoginClick, fall back to onSignIn/onSignUp
+  const handleSignIn = onLoginClick || onSignIn || (() => {});
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -47,7 +77,11 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
   }, []);
 
   const handleSignUpWithEmail = (prefillEmail?: string, prefilledName?: string) => {
-    onSignUp();
+    if (onLoginClick) {
+      onLoginClick();
+    } else if (onSignUp) {
+      onSignUp();
+    }
     if (prefillEmail) {
       sessionStorage.setItem('il_intake_email', prefillEmail);
       if (prefilledName) sessionStorage.setItem('il_intake_name', prefilledName);
@@ -88,8 +122,20 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
               ))}
             </div>
             <div className="hidden lg:flex items-center gap-3">
-              <Button variant="ghost" onClick={onSignIn} className="text-[#8fa4c4] hover:text-white hover:bg-transparent text-[13px] font-medium">Sign In</Button>
-              <Button onClick={() => handleSignUpWithEmail()} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg px-5 text-[13px] font-semibold shadow-lg shadow-[#c9a84c]/20 transition-all hover:shadow-[#c9a84c]/30">Get Started</Button>
+              {isAuthenticated ? (
+                <>
+                  <span className="text-[#c9a84c] text-[13px] font-medium">Welcome, {userName}</span>
+                  <Button onClick={onBackToDashboard} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg px-5 text-[13px] font-semibold shadow-lg shadow-[#c9a84c]/20 transition-all hover:shadow-[#c9a84c]/30 gap-2">
+                    <LayoutDashboard className="w-4 h-4" />
+                    Back to Dashboard
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" onClick={handleSignIn} className="text-[#8fa4c4] hover:text-white hover:bg-transparent text-[13px] font-medium">Sign In</Button>
+                  <Button onClick={() => handleSignUpWithEmail()} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg px-5 text-[13px] font-semibold shadow-lg shadow-[#c9a84c]/20 transition-all hover:shadow-[#c9a84c]/30">Get Started</Button>
+                </>
+              )}
             </div>
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 text-white" aria-label="Toggle menu" aria-expanded={mobileMenuOpen}>
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -104,8 +150,17 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
               </button>
             ))}
             <div className="flex gap-3 pt-3">
-              <Button variant="outline" onClick={() => { setMobileMenuOpen(false); onSignIn(); }} className="flex-1 border-[#c9a84c]/40 text-[#c9a84c] rounded-lg text-sm">Sign In</Button>
-              <Button onClick={() => { setMobileMenuOpen(false); onSignUp(); }} className="flex-1 bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg text-sm font-semibold">Get Started</Button>
+              {isAuthenticated ? (
+                <Button onClick={() => { setMobileMenuOpen(false); onBackToDashboard?.(); }} className="flex-1 bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg text-sm font-semibold gap-2">
+                  <LayoutDashboard className="w-4 h-4" />
+                  Back to Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }} className="flex-1 border-[#c9a84c]/40 text-[#c9a84c] rounded-lg text-sm">Sign In</Button>
+                  <Button onClick={() => { setMobileMenuOpen(false); handleSignUpWithEmail(); }} className="flex-1 bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg text-sm font-semibold">Get Started</Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -150,11 +205,21 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
                 <span className="text-white font-medium">R99/month</span>.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-3">
-                <Button onClick={() => handleSmoothScroll('ai-intake')} size="lg" className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-12 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 group">
-                  Free AI Intake <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
-                </Button>
+                {isAuthenticated ? (
+                  <Button onClick={onBackToDashboard} size="lg" className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-12 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 gap-2">
+                    <LayoutDashboard className="w-4 h-4" />
+                    Back to Dashboard
+                  </Button>
+                ) : (
+                  <Button onClick={() => handleSignUpWithEmail()} size="lg" className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-12 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 group">
+                    Free AI Intake <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
+                  </Button>
+                )}
                 <Button onClick={() => handleSmoothScroll('ask-ai')} variant="outline" size="lg" className="border-[#2a3f5f] text-[#8fa4c4] hover:bg-[#132d52] hover:text-white rounded-xl px-7 h-12 text-sm font-medium">
                   <Bot className="w-4 h-4 mr-2 text-[#c9a84c]" /> Ask AI
+                </Button>
+                <Button onClick={() => handleSmoothScroll('pricing')} size="lg" className="bg-[#1a3358] text-[#c9a84c] hover:bg-[#0c1e3c] rounded-xl px-7 h-12 text-sm font-medium border border-[#c9a84c]/20 transition-colors">
+                  Explore Practice Areas
                 </Button>
               </div>
               <div className="mt-12 flex flex-wrap gap-x-8 gap-y-3">
@@ -176,7 +241,7 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
                     <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-                    <span className="ml-3 text-[10px] text-[#7a8fb0] font-mono">portal.infinitylegal.co.za</span>
+                    <span className="ml-3 text-[10px] text-[#7a8fb0] font-mono">portal.infinitylegal.org</span>
                   </div>
                   <div className="space-y-2.5">
                     {[
@@ -337,7 +402,7 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
                 Free legal awareness campaign powered by AI. Get clarity on your constitutional rights, labour protections, and consumer rights — no sign-up required.
               </p>
               <div className="mt-6">
-                <Button onClick={onSignUp} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg font-semibold group/btn">
+                <Button onClick={handleSignUpWithEmail} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg font-semibold group/btn">
                   Learn More <ArrowUpRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                 </Button>
               </div>
@@ -459,7 +524,7 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
 
           {/* CTA */}
           <div className="mt-10 flex justify-center gap-3">
-            <Button onClick={onSignUp} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-11 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20">Start Free</Button>
+            <Button onClick={handleSignUpWithEmail} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-11 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20">Start Free</Button>
             <Button variant="outline" className="border-[#2a3f5f] text-[#8fa4c4] hover:bg-[#132d52] hover:text-white rounded-xl px-7 h-11 text-sm">
               <Play className="w-4 h-4 mr-2" />View Demo
             </Button>
@@ -538,32 +603,42 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
             <p className="mt-4 text-slate-500 text-base">All plans include POPIA compliance and AI-powered case analysis.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-4xl mx-auto">
-            {[
-              {
-                name: 'Civil Legal Plan',
-                price: 'R99',
-                period: '/month',
-                popular: false,
-                description: 'For civil disputes and general legal matters.',
-                features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'],
-              },
-              {
-                name: 'Labour Legal Plan',
-                price: 'R99',
-                period: '/month',
-                popular: false,
-                description: 'For workplace and employment matters.',
-                features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'],
-              },
-              {
-                name: 'Extensive Plan',
-                price: 'R139',
-                period: '/month',
-                popular: true,
-                description: 'Complete legal coverage across all practice areas.',
-                features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'],
-              },
-            ].map((plan) => (
+            {(pricingPlans.length > 0
+              ? pricingPlans.map((plan, i) => ({
+                  name: plan.name,
+                  price: `R${plan.price_monthly}`,
+                  period: '/month',
+                  popular: plan.slug === 'extensive' || i === pricingPlans.length - 1,
+                  description: plan.slug === 'civil' ? 'For civil disputes and general legal matters.' : plan.slug === 'labour' ? 'For workplace and employment matters.' : 'Complete legal coverage across all practice areas.',
+                  features: plan.features,
+                }))
+              : [
+                  {
+                    name: 'Civil Legal Plan',
+                    price: 'R99',
+                    period: '/month',
+                    popular: false,
+                    description: 'For civil disputes and general legal matters.',
+                    features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'],
+                  },
+                  {
+                    name: 'Labour Legal Plan',
+                    price: 'R99',
+                    period: '/month',
+                    popular: false,
+                    description: 'For workplace and employment matters.',
+                    features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'],
+                  },
+                  {
+                    name: 'Extensive Plan',
+                    price: 'R139',
+                    period: '/month',
+                    popular: true,
+                    description: 'Complete legal coverage across all practice areas.',
+                    features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'],
+                  },
+                ]
+            ).map((plan) => (
               <div key={plan.name} className={`relative flex flex-col rounded-2xl transition-all duration-300 ${plan.popular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -589,7 +664,7 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
                       </li>
                     ))}
                   </ul>
-                  <Button onClick={onSignUp} className={`w-full rounded-xl py-4 text-sm font-semibold transition-all ${plan.popular ? 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] shadow-lg shadow-[#c9a84c]/20' : 'bg-[#0c1e3c] text-white hover:bg-[#1a3358]'}`}>
+                  <Button onClick={handleSignUpWithEmail} className={`w-full rounded-xl py-4 text-sm font-semibold transition-all ${plan.popular ? 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] shadow-lg shadow-[#c9a84c]/20' : 'bg-[#0c1e3c] text-white hover:bg-[#1a3358]'}`}>
                     Choose Plan
                   </Button>
                 </div>

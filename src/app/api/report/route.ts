@@ -475,7 +475,7 @@ export async function GET(request: NextRequest) {
         <tbody>
           <tr><td>Framework</td><td>Next.js 16 (App Router)</td><td>Server-side rendering, API routes, middleware</td></tr>
           <tr><td>Language</td><td>TypeScript 5</td><td>Type-safe development across the entire stack</td></tr>
-          <tr><td>Database</td><td>SQLite via Prisma ORM</td><td>Relational data with type-safe queries and migrations</td></tr>
+          <tr><td>Database</td><td>PostgreSQL via Prisma ORM</td><td>Relational data with type-safe queries and migrations</td></tr>
           <tr><td>Styling</td><td>Tailwind CSS 4 + shadcn/ui</td><td>Utility-first CSS with pre-built accessible components</td></tr>
           <tr><td>Authentication</td><td>Custom JWT (HS256)</td><td>Stateless authentication with 24-hour token expiry</td></tr>
           <tr><td>Encryption</td><td>AES-256-GCM</td><td>At-rest encryption for sensitive data fields</td></tr>
@@ -485,10 +485,10 @@ export async function GET(request: NextRequest) {
       </table>
 
       <div class="callout callout-info">
-        <strong>Architecture Decision: SQLite</strong>
-        SQLite was chosen for its zero-configuration setup, embedded nature, and excellent
-        performance for typical law-firm workloads (dozens of concurrent users). Prisma ORM
-        provides a migration path to PostgreSQL if scale requirements change.
+        <strong>Architecture Decision: PostgreSQL</strong>
+        PostgreSQL was chosen for its robust feature set, excellent concurrency support, and
+        compatibility with Vercel's serverless platform. Managed via Vercel Postgres (Neon)
+        with automatic backups and point-in-time recovery.
       </div>
     </div>
 
@@ -954,7 +954,7 @@ export async function GET(request: NextRequest) {
         <h2 class="section-title">Database Schema</h2>
       </div>
       <p>
-        The database is implemented in SQLite via Prisma ORM with 22 models, 17 enums, and comprehensive
+        The database is implemented in PostgreSQL via Prisma ORM with 22 models, 18 enums, and comprehensive
         indexing for query performance. All models use CUID identifiers and automatic timestamps.
       </p>
 
@@ -1222,7 +1222,7 @@ export async function GET(request: NextRequest) {
           <tr><td>Source Repository</td><td>GitHub &mdash; Infinity Legal ZA</td></tr>
           <tr><td>Deployment Platform</td><td>Vercel (Edge Network + Serverless Functions)</td></tr>
           <tr><td>Runtime</td><td>Node.js (Vercel Serverless)</td></tr>
-          <tr><td>Database Hosting</td><td>Embedded SQLite (local file-based, backed up via /api/backup)</td></tr>
+          <tr><td>Database Hosting</td><td>Vercel Postgres (Neon) — managed PostgreSQL with auto-backups</td></tr>
           <tr><td>CDN</td><td>Vercel Edge Network (global)</td></tr>
           <tr><td>SSL/TLS</td><td>Automatic HTTPS with HSTS preload</td></tr>
           <tr><td>CI/CD</td><td>Automatic deployment on push to main branch</td></tr>
@@ -1233,9 +1233,9 @@ export async function GET(request: NextRequest) {
 
       <div class="callout callout-success">
         <strong>Scalability Path</strong>
-        The current SQLite database supports typical law-firm workloads of dozens of concurrent users.
-        If scale requirements grow, Prisma ORM provides a seamless migration path to PostgreSQL
-        by changing the DATABASE_URL and running <code>prisma migrate</code>.
+        The PostgreSQL database supports concurrent connections and scales automatically
+        with Vercel's serverless architecture. Managed backups are provided by the database
+        provider (Neon) with point-in-time recovery.
       </div>
     </div>
 

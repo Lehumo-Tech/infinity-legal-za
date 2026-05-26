@@ -1,5 +1,5 @@
 /**
- * POST /api/auth/login - Authenticate user via Prisma/SQLite
+ * POST /api/auth/login - Authenticate user via Prisma/PostgreSQL
  */
 
 import { NextRequest } from 'next/server';

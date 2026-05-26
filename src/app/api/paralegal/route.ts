@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
-import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
+import { type RoleKey } from '@/lib/auth';
 
 const ALLOWED_ROLES: RoleKey[] = ['paralegal', 'candidate_attorney'];
 

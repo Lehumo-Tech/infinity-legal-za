@@ -12,7 +12,7 @@ export async function GET() {
 
     return apiResponse({
       status: 'healthy',
-      database: 'sqlite',
+      database: 'postgresql',
       timestamp: new Date().toISOString(),
       services: {
         database: 'connected',
