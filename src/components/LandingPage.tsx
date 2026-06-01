@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import {
   FolderKanban, FileText, BookOpen, CheckCircle2, Shield,
-  Lock, KeyRound, ArrowRight, Star, Menu, X, Send, Bot, Sparkles,
+  Lock, KeyRound, ArrowRight, Menu, X, Send, Bot, Sparkles,
   Scale, MessageSquare, Zap, Globe, Smartphone, Newspaper, Tv,
   Users, Briefcase, Bell, ArrowUpRight, Play, ChevronDown,
   AlertTriangle, RefreshCw, LayoutDashboard,
@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PaymentWall } from '@/components/PaymentWall';
 
 interface LandingPageProps {
   onSignIn?: () => void;
@@ -43,29 +44,7 @@ interface ChatMessage {
 export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated, onBackToDashboard, userName }: LandingPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [pricingPlans, setPricingPlans] = useState<Array<{ name: string; price_monthly: number; features: string[]; slug: string }>>([]);
 
-  // Fetch pricing from API, fallback to hardcoded
-  useEffect(() => {
-    const fetchPricing = async () => {
-      try {
-        const res = await fetch('/api/pricing');
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-          const plans = data.data.map((plan: Record<string, unknown>) => ({
-            name: plan.name as string,
-            price_monthly: plan.price_monthly as number,
-            features: Array.isArray(plan.features) ? plan.features as string[] : [],
-            slug: plan.slug as string,
-          }));
-          setPricingPlans(plans);
-        }
-      } catch {
-        // Silently fall back to hardcoded plans
-      }
-    };
-    fetchPricing();
-  }, []);
 
   // Resolve action handlers: prefer onLoginClick, fall back to onSignIn/onSignUp
   const handleSignIn = onLoginClick || onSignIn || (() => {});
@@ -595,82 +574,17 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
       {/* ===== PRICING ===== */}
       <section id="pricing" aria-labelledby="pricing-heading" className="py-20 sm:py-28 bg-[#f7f8fa]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Pricing</span>
             <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight mt-3">
               Simple, transparent pricing.
             </h2>
             <p className="mt-4 text-slate-500 text-base">All plans include POPIA compliance and AI-powered case analysis.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-4xl mx-auto">
-            {(pricingPlans.length > 0
-              ? pricingPlans.map((plan, i) => ({
-                  name: plan.name,
-                  price: `R${plan.price_monthly}`,
-                  period: '/month',
-                  popular: plan.slug === 'extensive' || i === pricingPlans.length - 1,
-                  description: plan.slug === 'civil' ? 'For civil disputes and general legal matters.' : plan.slug === 'labour' ? 'For workplace and employment matters.' : 'Complete legal coverage across all practice areas.',
-                  features: plan.features,
-                }))
-              : [
-                  {
-                    name: 'Civil Legal Plan',
-                    price: 'R99',
-                    period: '/month',
-                    popular: false,
-                    description: 'For civil disputes and general legal matters.',
-                    features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'],
-                  },
-                  {
-                    name: 'Labour Legal Plan',
-                    price: 'R99',
-                    period: '/month',
-                    popular: false,
-                    description: 'For workplace and employment matters.',
-                    features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'],
-                  },
-                  {
-                    name: 'Extensive Plan',
-                    price: 'R139',
-                    period: '/month',
-                    popular: true,
-                    description: 'Complete legal coverage across all practice areas.',
-                    features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'],
-                  },
-                ]
-            ).map((plan) => (
-              <div key={plan.name} className={`relative flex flex-col rounded-2xl transition-all duration-300 ${plan.popular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">
-                      <Star className="w-3 h-3" />Most Popular
-                    </span>
-                  </div>
-                )}
-                <div className="p-6 lg:p-8">
-                  <div className="mb-6">
-                    <h3 className={`text-base font-semibold ${plan.popular ? 'text-[#c9a84c]' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
-                    <p className={`text-[12px] mt-1 ${plan.popular ? 'text-[#8fa4c4]' : 'text-slate-500'}`}>{plan.description}</p>
-                    <div className="mt-4 flex items-baseline gap-1">
-                      <span className={`text-4xl font-bold tracking-tight ${plan.popular ? 'text-white' : 'text-[#0c1e3c]'}`}>{plan.price}</span>
-                      <span className={`text-sm ${plan.popular ? 'text-[#5a7199]' : 'text-slate-400'}`}>{plan.period}</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5">
-                        <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#c9a84c]" />
-                        <span className={`text-[13px] ${plan.popular ? 'text-[#c4d3e8]' : 'text-slate-600'}`}>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button onClick={handleSignUpWithEmail} className={`w-full rounded-xl py-4 text-sm font-semibold transition-all ${plan.popular ? 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] shadow-lg shadow-[#c9a84c]/20' : 'bg-[#0c1e3c] text-white hover:bg-[#1a3358]'}`}>
-                    Choose Plan
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <PaymentWall
+            isAuthenticated={isAuthenticated}
+            onLoginClick={handleSignIn}
+          />
         </div>
       </section>
 

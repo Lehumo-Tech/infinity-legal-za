@@ -14,51 +14,97 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://infinitylegal.org'),
+  metadataBase: new URL(APP_URL),
   title: {
-    default: "Infinity Legal ZA | AI-Powered Legal Practice Management",
+    default: "Infinity Legal | South Africa's Premier Legal Services Platform",
     template: "%s | Infinity Legal ZA",
   },
-  description: "South Africa's premier AI-powered legal practice management platform. POPIA compliant, RBAC secured, and optimized for law firms of all sizes. Manage cases, leads, documents, and consultations with intelligent automation.",
+  description:
+    "Infinity Legal is South Africa's leading legal services platform. POPIA-compliant case management, conveyancing, labour law, CCMA representation, civil litigation, and AI-powered legal practice management for law firms across South Africa.",
   keywords: [
-    "legal practice management", "South Africa", "law firm software", "case management",
-    "POPIA compliant", "AI legal", "attorney software", "legal tech", "Infinity Legal",
-    "document management", "lead management", "legal consultation", "ZAR pricing",
-    "family law South Africa", "criminal defence", "civil litigation", "conveyancing",
-    "estate planning", "corporate commercial", "labour law",
+    "legal services south africa",
+    "law firm management",
+    "attorney",
+    "conveyancing",
+    "labour law",
+    "CCMA",
+    "civil litigation",
+    "POPIA",
+    "POPIA compliant",
+    "legal practice management",
+    "South Africa",
+    "law firm software",
+    "case management",
+    "AI legal",
+    "Infinity Legal",
+    "document management",
+    "lead management",
+    "legal consultation",
+    "ZAR pricing",
+    "family law South Africa",
+    "criminal defence",
+    "estate planning",
+    "corporate commercial",
+    "candidate attorney",
+    "legal tech",
   ],
-  authors: [{ name: "Infinity Legal (Pty) Ltd" }],
-  creator: "Infinity Legal",
+  authors: [{ name: "Infinity Legal (Pty) Ltd", url: APP_URL }],
+  creator: "Infinity Legal (Pty) Ltd",
   publisher: "Infinity Legal (Pty) Ltd",
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
-    title: "Infinity Legal ZA | AI-Powered Legal Practice Management",
-    description: "South Africa's premier AI-powered legal practice management platform. POPIA compliant, RBAC secured.",
-    url: "https://infinitylegal.org",
+    title: "Infinity Legal | South Africa's Premier Legal Services Platform",
+    description:
+      "South Africa's leading legal services platform. POPIA-compliant case management, conveyancing, labour law, CCMA representation, civil litigation, and AI-powered practice management.",
+    url: APP_URL,
     siteName: "Infinity Legal ZA",
     type: "website",
     locale: "en_ZA",
     images: [
       {
         url: "/infinity_logo.png",
-        width: 512,
-        height: 512,
-        alt: "Infinity Legal ZA Logo",
+        width: 1200,
+        height: 630,
+        alt: "Infinity Legal – South Africa's Premier Legal Services Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Infinity Legal ZA",
-    description: "AI-Powered Legal Practice Management for South Africa",
+    title: "Infinity Legal | South Africa's Premier Legal Services Platform",
+    description:
+      "POPIA-compliant case management, conveyancing, labour law, CCMA, civil litigation & AI-powered legal practice management for South Africa.",
     images: ["/infinity_logo.png"],
+    creator: "@InfinityLegalZA",
   },
-  alternates: { canonical: "https://infinitylegal.org" },
+  alternates: {
+    canonical: APP_URL,
+  },
   verification: {
     google: "google-site-verification-code",
   },
   category: "legal technology",
+  icons: {
+    icon: [
+      { url: "/infinity_logo.png", type: "image/png", sizes: "32x32" },
+      { url: "/logo.svg", type: "image/svg+xml" },
+    ],
+    apple: "/infinity_logo.png",
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -69,24 +115,68 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LegalService',
-    name: 'Infinity Legal ZA',
-    description: 'AI-powered legal practice management platform for South Africa. POPIA compliant, RBAC secured.',
-    url: 'https://infinitylegal.org',
-    logo: 'https://infinitylegal.org/infinity_logo.png',
-    image: 'https://infinitylegal.org/infinity_logo.png',
+    '@id': `${APP_URL}/#legal-service`,
+    name: 'Infinity Legal',
+    alternateName: 'Infinity Legal ZA',
+    description:
+      "South Africa's premier legal services platform offering POPIA-compliant case management, conveyancing, labour law, CCMA representation, civil litigation, estate planning, and AI-powered legal practice management for law firms across South Africa.",
+    url: APP_URL,
+    logo: `${APP_URL}/infinity_logo.png`,
+    image: `${APP_URL}/infinity_logo.png`,
     telephone: '+27-10-000-0000',
     email: 'info@infinitylegal.org',
-    areaServed: {
-      '@type': 'Country',
-      name: 'South Africa',
-    },
-    serviceType: ['Legal Consultation', 'Case Management', 'Document Management', 'AI Legal Analysis', 'Lead Management'],
+    areaServed: [
+      {
+        '@type': 'Country',
+        name: 'South Africa',
+      },
+      {
+        '@type': 'AdministrativeArea',
+        name: 'Gauteng',
+      },
+      {
+        '@type': 'AdministrativeArea',
+        name: 'Western Cape',
+      },
+      {
+        '@type': 'AdministrativeArea',
+        name: 'KwaZulu-Natal',
+      },
+    ],
+    serviceType: [
+      'Legal Consultation',
+      'Case Management',
+      'Document Management',
+      'AI Legal Analysis',
+      'Lead Management',
+      'Conveyancing',
+      'Labour Law',
+      'CCMA Representation',
+      'Civil Litigation',
+      'Family Law',
+      'Criminal Defence',
+      'Estate Planning',
+      'Corporate Commercial Law',
+    ],
     priceRange: 'R99 - R139/month',
+    currenciesAccepted: 'ZAR',
+    paymentAccepted: 'Credit Card, EFT',
     address: {
       '@type': 'PostalAddress',
+      '@id': `${APP_URL}/#address`,
+      streetAddress: 'Sandton City Office Tower, Rivonia Road',
+      addressLocality: 'Sandton, Johannesburg',
+      addressRegion: 'Gauteng',
+      postalCode: '2196',
       addressCountry: 'ZA',
-      addressLocality: 'Johannesburg',
     },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: -26.1076,
+      longitude: 28.0567,
+    },
+    foundingDate: '2024',
+    legalName: 'Infinity Legal (Pty) Ltd',
     sameAs: [],
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
@@ -94,35 +184,64 @@ export default function RootLayout({
       itemListElement: [
         {
           '@type': 'Offer',
-          itemOffered: { '@type': 'Service', name: 'Civil Legal Plan' },
+          '@id': `${APP_URL}/#plan-civil`,
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Civil Legal Plan',
+            description: 'Civil litigation, family law, and personal injury case management',
+          },
           price: '99',
           priceCurrency: 'ZAR',
+          availability: 'https://schema.org/InStock',
         },
         {
           '@type': 'Offer',
-          itemOffered: { '@type': 'Service', name: 'Labour Legal Plan' },
+          '@id': `${APP_URL}/#plan-labour`,
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Labour Legal Plan',
+            description: 'Labour law, CCMA representation, and employment dispute resolution',
+          },
           price: '99',
           priceCurrency: 'ZAR',
+          availability: 'https://schema.org/InStock',
         },
         {
           '@type': 'Offer',
-          itemOffered: { '@type': 'Service', name: 'Extensive Plan' },
+          '@id': `${APP_URL}/#plan-extensive`,
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Extensive Plan',
+            description: 'Full-service legal practice management across all practice areas',
+          },
           price: '139',
           priceCurrency: 'ZAR',
+          availability: 'https://schema.org/InStock',
         },
       ],
     },
+    knowsAbout: [
+      'South African Law',
+      'POPIA Compliance',
+      'Conveyancing',
+      'Labour Law',
+      'CCMA Procedures',
+      'Civil Litigation',
+      'Family Law',
+      'Criminal Defence',
+      'Estate Planning',
+      'Corporate Commercial Law',
+    ],
   };
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en-ZA" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#0c1e3c" />
-        <meta name="x-app-version" content="2.0.0" />
-        <meta name="x-database" content="postgresql" />
-        <link rel="icon" href="/infinity_logo.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/infinity_logo.png" />
-        <link rel="canonical" href="https://infinitylegal.org" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="geo.region" content="ZA" />
+        <meta name="geo.placename" content="Johannesburg" />
+        <link rel="canonical" href={APP_URL} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

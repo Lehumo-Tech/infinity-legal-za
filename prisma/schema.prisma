@@ -255,6 +255,7 @@ model User {
   consultations_as_client     Consultation[] @relation("ConsultationClient")
   consultations_as_attorney   Consultation[] @relation("ConsultationAttorney")
   subscriptions    UserSubscription[]
+  payment_records  PaymentRecord[]
   attorney_profile Attorney?
   documents_prepared Document[] @relation("DocumentPreparer")
   documents_approved Document[] @relation("DocumentApprover")
@@ -584,8 +585,9 @@ model UserSubscription {
   created_at          DateTime           @default(now())
   updated_at          DateTime           @updatedAt
 
-  user User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  plan PricingPlan  @relation(fields: [plan_id], references: [id])
+  user           User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  plan           PricingPlan     @relation(fields: [plan_id], references: [id])
+  payment_records PaymentRecord[]
 
   @@index([user_id])
   @@index([status])
@@ -711,6 +713,31 @@ model BackupRecord {
   @@index([status])
   @@index([backup_type])
   @@index([started_at])
+}
+
+model PaymentRecord {
+  id              String   @id @default(cuid())
+  user_id         String
+  subscription_id String?
+  m_payment_id    String   @unique
+  pf_payment_id   String?
+  amount_gross    Float
+  amount_fee      Float?
+  amount_net      Float?
+  payment_status  String   @default("pending")
+  item_name       String
+  billing_cycle   String   // monthly or annual
+  payfast_data    String?  // JSON string of full ITN data
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  user User? @relation(fields: [user_id], references: [id])
+  subscription UserSubscription? @relation(fields: [subscription_id], references: [id])
+
+  @@index([user_id])
+  @@index([m_payment_id])
+  @@index([payment_status])
+  @@index([created_at])
 }
 
 model LeadAssignment {

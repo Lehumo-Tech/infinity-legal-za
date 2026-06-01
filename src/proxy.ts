@@ -6,17 +6,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Content Security Policy
+// Content Security Policy (updated for PayFast integration)
 const CSP_HEADER = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.payfast.co.za https://sandbox.payfast.co.za",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: https:",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self'",
+  "connect-src 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
   "frame-ancestors 'self' https: http:",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
   "object-src 'none'",
   "media-src 'self'",
   "manifest-src 'self'",

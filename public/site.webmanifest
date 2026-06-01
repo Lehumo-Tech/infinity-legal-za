@@ -1,0 +1,21 @@
+{
+  "name": "Infinity Legal ZA",
+  "short_name": "Infinity Legal",
+  "description": "South Africa's premier legal services platform. POPIA-compliant case management, conveyancing, labour law, and AI-powered practice management.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c1e3c",
+  "theme_color": "#0c1e3c",
+  "icons": [
+    {
+      "src": "/infinity_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
