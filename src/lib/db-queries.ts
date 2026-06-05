@@ -57,7 +57,7 @@ export async function paginate<
   where: Record<string, unknown> = {},
   page: number = 1,
   perPage: number = 20,
-  orderBy: Record<string, unknown> = { created: 'desc' as const },
+  orderBy: Record<string, unknown> = { created_at: 'desc' as const },
   select?: Record<string, unknown>
 ): Promise<PaginatedResult<T>> {
   const startTime = performance.now()
@@ -113,7 +113,7 @@ export async function cursorPaginate<
   model: M,
   where: Record<string, unknown> = {},
   { cursor, limit }: CursorPaginationParams,
-  orderBy: Record<string, unknown> = { created: 'desc' as const },
+  orderBy: Record<string, unknown> = { created_at: 'desc' as const },
   select?: Record<string, unknown>
 ): Promise<CursorPaginatedResult<T>> {
   const startTime = performance.now()
@@ -240,7 +240,7 @@ export const CaseQueries = {
       where,
       page,
       perPage,
-      { created: 'desc' },
+      { created_at: 'desc' },
       {
         id: true,
         matter_number: true,
@@ -254,10 +254,10 @@ export const CaseQueries = {
         is_high_risk: true,
         next_action: true,
         next_action_date: true,
-        created: true,
-        updated: true,
+        created_at: true,
+        updated_at: true,
         client: { select: { id: true, full_name: true, email: true } },
-        leadAttorney: { select: { id: true, full_name: true } },
+        lead_attorney: { select: { id: true, full_name: true } },
       }
     )
   },
@@ -271,11 +271,11 @@ export const CaseQueries = {
       where: { id },
       include: {
         client: { select: { id: true, full_name: true, email: true, phone: true } },
-        leadAttorney: { select: { id: true, full_name: true, email: true } },
-        supportParalegal: { select: { id: true, full_name: true } },
-        documents: { select: { id: true, title: true, document_type: true, workflow_status: true, created: true } },
+        lead_attorney: { select: { id: true, full_name: true, email: true } },
+        support_paralegal: { select: { id: true, full_name: true } },
+        documents: { select: { id: true, title: true, document_type: true, workflow_status: true, created_at: true } },
         tasks: { select: { id: true, title: true, status: true, priority: true, due_date: true, assignee: { select: { full_name: true } } } },
-        timeline: { select: { id: true, event_type: true, description: true, created: true }, orderBy: { created: 'desc' } },
+        timeline: { select: { id: true, action: true, description: true, created_at: true }, orderBy: { created_at: 'desc' } },
         consultations: { select: { id: true, scheduled_date: true, status: true, meeting_type: true } },
       },
     })
@@ -314,11 +314,10 @@ export const LeadQueries = {
       where,
       page,
       perPage,
-      { created: 'desc' },
+      { created_at: 'desc' },
       {
         id: true,
-        first_name: true,
-        last_name: true,
+        name: true,
         email: true,
         phone: true,
         source: true,
@@ -326,7 +325,7 @@ export const LeadQueries = {
         case_type: true,
         estimated_value: true,
         sla_deadline: true,
-        created: true,
+        created_at: true,
         assigned_paralegal: { select: { id: true, full_name: true } },
       }
     )
@@ -337,8 +336,8 @@ export const LeadQueries = {
     const [total, newLeads, converted, overdue] = await Promise.all([
       db.lead.count(),
       db.lead.count({ where: { status: 'new' } }),
-      db.lead.count({ where: { status: 'converted' } }),
-      db.lead.count({ where: { sla_deadline: { lt: new Date() }, status: { notIn: ['converted', 'lost', 'unqualified'] } } }),
+      db.lead.count({ where: { status: 'retained' } }),
+      db.lead.count({ where: { sla_deadline: { lt: new Date() }, status: { notIn: ['retained', 'lost', 'disqualified'] } } }),
     ])
     logQueryTime('getLeadStats', performance.now() - startTime)
     return { total, newLeads, converted, overdue }
@@ -366,7 +365,7 @@ export const TaskQueries = {
         due_date: true,
         case: { select: { id: true, title: true, matter_number: true } },
         creator: { select: { id: true, full_name: true } },
-        created: true,
+        created_at: true,
       },
       orderBy: [{ priority: 'desc' }, { due_date: 'asc' }],
     })
@@ -411,11 +410,10 @@ export const DocumentQueries = {
         document_type: true,
         workflow_status: true,
         version: true,
-        is_confidential: true,
-        created: true,
-        creator: { select: { id: true, full_name: true } },
+        is_locked: true,
+        created_at: true,
       },
-      orderBy: { created: 'desc' },
+      orderBy: { created_at: 'desc' },
     })
     logQueryTime('getDocumentsByCase', performance.now() - startTime)
     return result
@@ -443,9 +441,9 @@ export const UserQueries = {
         avatar: true,
         email_verified: true,
         hire_date: true,
-        created: true,
-        profile: true,
-        attorney: true,
+        created_at: true,
+        profiles: true,
+        attorney_profile: true,
       },
     })
     logQueryTime('getUserById', performance.now() - startTime)
@@ -491,7 +489,7 @@ export const NotificationQueries = {
       { user_id: userId },
       page,
       perPage,
-      { created: 'desc' },
+      { created_at: 'desc' },
       {
         id: true,
         type: true,
@@ -499,7 +497,7 @@ export const NotificationQueries = {
         message: true,
         is_read: true,
         link: true,
-        created: true,
+        created_at: true,
       }
     )
   },
@@ -507,7 +505,7 @@ export const NotificationQueries = {
   async markAllRead(userId: string): Promise<void> {
     await db.notification.updateMany({
       where: { user_id: userId, is_read: false },
-      data: { is_read: true, read_at: new Date() },
+      data: { is_read: true },
     })
   },
 }

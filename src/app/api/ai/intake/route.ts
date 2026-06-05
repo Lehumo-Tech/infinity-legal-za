@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
       return authResult.error!;
     }
 
-    const user = authResult.user;
+    const user = authResult.user!;
     const isStaffMember = isStaff(user.role as any);
     const { page, perPage, skip, take } = getPaginationParams(request);
 

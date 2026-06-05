@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Allowed origin for CORS (from environment variable)
-const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.co.za';
+const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
 
 // Content Security Policy (updated for PayFast integration)
 const CSP_HEADER = [

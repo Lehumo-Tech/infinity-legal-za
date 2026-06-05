@@ -63,14 +63,18 @@ export function createPaginationResult(total: number, page: number, perPage: num
 // MIDDLEWARE: AUTHENTICATION
 // ============================================
 
-export function requireAuth(request: NextRequest) {
+type AuthSuccess = { authenticated: true; user: NonNullable<ReturnType<typeof getUserFromToken>>; error: null };
+type AuthFailure = { authenticated: false; user: null; error: ReturnType<typeof apiError> };
+type AuthResult = AuthSuccess | AuthFailure;
+
+export function requireAuth(request: NextRequest): AuthResult {
   const authHeader = request.headers.get('Authorization');
   const payload = getUserFromToken(authHeader);
-  
+
   if (!payload) {
     return { authenticated: false, user: null, error: apiError('Authentication required', 401, 'AUTH_REQUIRED') };
   }
-  
+
   return { authenticated: true, user: payload, error: null };
 }
 

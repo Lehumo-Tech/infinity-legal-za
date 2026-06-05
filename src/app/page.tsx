@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import HomePageClient from '@/components/HomePageClient';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.co.za';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
 
 export const metadata: Metadata = {
   title: "Infinity Legal | South Africa's Premier Legal Services Platform",

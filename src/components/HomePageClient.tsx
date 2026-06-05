@@ -1359,7 +1359,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                   </div>
                   <div>
                     <Label>Client Email</Label>
-                    <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@infinitylegal.co.za" className="mt-1" />
+                    <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@infinitylegal.org" className="mt-1" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

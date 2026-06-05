@@ -530,3 +530,86 @@ Stage Summary:
 - Project is production-ready and lint-clean
 - User needs to: (1) Push to GitHub with their credentials, (2) Deploy to Vercel with their token
 - DNS for infinitylegal.co.za needs to point A record to 76.76.21.21 (Vercel)
+
+---
+Task ID: 2
+Agent: Domain Update Agent
+Task: Update domain from infinitylegal.co.za to infinitylegal.org across entire codebase
+
+Work Log:
+- Searched entire codebase for all occurrences of "infinitylegal.co.za" using Grep
+- Found references in 14 source files + 2 config files = 16 files total
+- Updated .env: NEXT_PUBLIC_APP_URL=https://infinitylegal.org
+- Updated .env.example: NEXT_PUBLIC_APP_URL=https://infinitylegal.org
+- Updated start-dev.sh: export NEXT_PUBLIC_APP_URL="https://infinitylegal.org"
+- Updated run.sh: export NEXT_PUBLIC_APP_URL="https://infinitylegal.org"
+- Updated src/app/layout.tsx: APP_URL fallback + JSON-LD email (info@infinitylegal.org)
+- Updated src/app/page.tsx: APP_URL fallback
+- Updated src/app/sitemap.ts: APP_URL fallback
+- Updated src/app/robots.ts: APP_URL fallback
+- Updated src/proxy.ts: ALLOWED_ORIGIN fallback
+- Updated src/lib/payfast.ts: APP_URL fallback
+- Updated src/lib/llm-providers.ts: HTTP-Referer fallback
+- Updated src/components/PaymentCancel.tsx: support@infinitylegal.org (2 occurrences)
+- Updated src/components/HomePageClient.tsx: placeholder email@infinitylegal.org
+- Updated src/components/LandingPage.tsx: portal.infinitylegal.org
+- Updated public/robots.txt: Sitemap URL
+- Updated public/sitemap.xml: all 12 loc URLs
+- Verified NO database connection strings, git URLs, or package registry URLs were modified
+- Ran bun run lint - passes clean with zero errors
+- Verified zero remaining references to infinitylegal.co.za in source files (only worklog.md historical records remain)
+
+Stage Summary:
+- Domain fully updated from infinitylegal.co.za to infinitylegal.org across all 16 files
+- All URL fallbacks, email addresses, JSON-LD structured data, sitemap, robots.txt updated
+- No database/git/package URLs were modified
+- Lint passes clean
+- NEXT_PUBLIC_APP_URL in .env set to https://infinitylegal.org
+Task ID: 3
+Agent: Demo Data Audit Agent
+Task: Audit and remove all demo/mock/hardcoded data, fix errors
+
+Work Log:
+- Searched entire codebase for demo, mock, sample, placeholder, Lorem ipsum, John Doe, fake phone numbers
+- Found mock dashboard preview in LandingPage.tsx hero section: "3 Active Cases", "Atty. Nkosi messaged", "John Doe" user
+- Found fake phone number '+27-10-000-0000' in JSON-LD structured data in layout.tsx
+- Found non-functional "View Demo" button in LandingPage.tsx (no onClick handler)
+- Found fabricated news/media articles with future dates (May 2026, Apr 2026) and fictional content (CEO speeches, case studies)
+- Found examples/websocket/ demo code causing build failure (socket.io-client not installed)
+- Found mini-services/next-dev/index.ts using Bun.serve() causing build failure (not excluded from TS compilation)
+- Found skills/ directory causing build failure (image-edit.ts type error)
+- Found multiple TypeScript build errors: auth.user possibly null, wrong Prisma field names in db-queries.ts, wrong enum values, type cast errors
+- Fixed LandingPage.tsx: Replaced mock dashboard preview items with feature descriptions (Case Management, Secure Messaging, AI-Powered Analysis, Deadline Tracking)
+- Fixed LandingPage.tsx: Replaced "John Doe" / "JD" with "Your Portal" / "IL"
+- Fixed LandingPage.tsx: Changed "View Demo" button to "Try AI Intake" with functional onClick handler
+- Fixed LandingPage.tsx: Replaced fabricated news articles with feature/resource descriptions (removed fake dates, CEO quotes, case studies)
+- Fixed layout.tsx: Removed fake phone number '+27-10-000-0000' from JSON-LD structured data
+- Removed examples/ directory (demo websocket code)
+- Added mini-services and skills to tsconfig.json exclude array
+- Fixed requireAuth() return type with proper discriminated union (AuthSuccess | AuthFailure) to resolve null-check errors across all API routes
+- Fixed auth.user! assertion in intake route
+- Fixed type cast in reset-password route (as unknown as Record<string, unknown>)
+- Fixed LandingPage.tsx onClick type error (handleSignUpWithEmail wrapped in arrow functions)
+- Fixed db-queries.ts: Multiple Prisma field name corrections:
+  - created → created_at, updated → updated_at across all models
+  - leadAttorney → lead_attorney (Case relation)
+  - supportParalegal → support_paralegal (already fixed)
+  - event_type → action (CaseTimeline)
+  - first_name/last_name → name (Lead model)
+  - is_confidential → is_locked (Document model)
+  - creator → removed from Document select (no relation), kept for Task
+  - profile → profiles, attorney → attorney_profile (User model)
+  - read_at → removed from Notification updateMany (field doesn't exist)
+  - 'converted' → 'retained', 'unqualified' → 'disqualified' (LeadStatus enum)
+- Build passes cleanly with zero TypeScript errors
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- All demo/mock/hardcoded data removed from UI components
+- Fake contact info removed from JSON-LD structured data
+- Fabricated news articles replaced with feature descriptions
+- Non-functional "View Demo" button replaced with working "Try AI Intake" button
+- Demo example code (websocket) removed
+- 8 TypeScript build errors fixed (auth types, Prisma field names, enum values, type casts)
+- Build and lint both pass clean
+- Legitimate form placeholders (John Doe as input placeholder, +27 82 000 0000 as phone format) preserved

@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.co.za'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

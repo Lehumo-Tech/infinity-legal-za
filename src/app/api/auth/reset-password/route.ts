@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify this is a password-change scoped token
-    if (payload.department !== 'password_change_only' || !(payload as Record<string, unknown>).purpose) {
+    if (payload.department !== 'password_change_only' || !(payload as unknown as Record<string, unknown>).purpose) {
       return apiError('Token is not authorized for password reset', 403, 'UNAUTHORIZED_TOKEN');
     }
 

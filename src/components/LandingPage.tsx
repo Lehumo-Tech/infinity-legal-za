@@ -220,14 +220,14 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                     <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-                    <span className="ml-3 text-[10px] text-[#7a8fb0] font-mono">portal.infinitylegal.co.za</span>
+                    <span className="ml-3 text-[10px] text-[#7a8fb0] font-mono">portal.infinitylegal.org</span>
                   </div>
                   <div className="space-y-2.5">
                     {[
-                      { icon: FolderKanban, title: '3 Active Cases', sub: 'Last update: 2h ago', accent: true },
-                      { icon: MessageSquare, title: 'Atty. Nkosi messaged', sub: 'Court date confirmed for...', accent: false },
-                      { icon: Bot, title: 'AI analysis complete', sub: 'New insights on your matter', accent: false },
-                      { icon: Bell, title: 'Deadline: 48 hours', sub: 'Affidavit submission due', accent: false },
+                      { icon: FolderKanban, title: 'Case Management', sub: 'Track all your matters in one place', accent: true },
+                      { icon: MessageSquare, title: 'Secure Messaging', sub: 'Communicate with your attorney', accent: false },
+                      { icon: Bot, title: 'AI-Powered Analysis', sub: 'Instant legal insights on your matter', accent: false },
+                      { icon: Bell, title: 'Deadline Tracking', sub: 'Never miss a court date or filing', accent: false },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 bg-[#0a1628]/60 rounded-lg border border-[#1a3358]/40 hover:border-[#c9a84c]/20 transition-colors">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.accent ? 'bg-[#c9a84c]/15' : 'bg-[#132d52]'}`}>
@@ -243,8 +243,8 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                   </div>
                   <div className="mt-4 pt-3 border-t border-[#1a3358]/60 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-[#c9a84c]/20 flex items-center justify-center text-[8px] font-bold text-[#c9a84c]">JD</div>
-                      <span className="text-[10px] text-[#7a8fb0]">John Doe</span>
+                      <div className="w-6 h-6 rounded-full bg-[#c9a84c]/20 flex items-center justify-center text-[8px] font-bold text-[#c9a84c]">IL</div>
+                      <span className="text-[10px] text-[#7a8fb0]">Your Portal</span>
                     </div>
                     <div className="flex items-center gap-1 text-[9px] text-[#28c840]">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#28c840]" />Online
@@ -381,7 +381,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                 Free legal awareness campaign powered by AI. Get clarity on your constitutional rights, labour protections, and consumer rights — no sign-up required.
               </p>
               <div className="mt-6">
-                <Button onClick={handleSignUpWithEmail} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg font-semibold group/btn">
+                <Button onClick={() => handleSignUpWithEmail()} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg font-semibold group/btn">
                   Learn More <ArrowUpRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                 </Button>
               </div>
@@ -503,9 +503,9 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
 
           {/* CTA */}
           <div className="mt-10 flex justify-center gap-3">
-            <Button onClick={handleSignUpWithEmail} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-11 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20">Start Free</Button>
-            <Button variant="outline" className="border-[#2a3f5f] text-[#8fa4c4] hover:bg-[#132d52] hover:text-white rounded-xl px-7 h-11 text-sm">
-              <Play className="w-4 h-4 mr-2" />View Demo
+            <Button onClick={() => handleSignUpWithEmail()} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-11 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20">Start Free</Button>
+            <Button variant="outline" onClick={() => handleSmoothScroll('ask-ai')} className="border-[#2a3f5f] text-[#8fa4c4] hover:bg-[#132d52] hover:text-white rounded-xl px-7 h-11 text-sm">
+              <Play className="w-4 h-4 mr-2" />Try AI Intake
             </Button>
           </div>
         </div>
@@ -530,17 +530,16 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
               <div className="p-8 sm:p-10">
                 <div className="flex items-center gap-2 mb-5">
                   <Newspaper className="w-4 h-4 text-[#c9a84c]" />
-                  <span className="text-[10px] font-semibold text-[#a88832] uppercase tracking-wider">Press Release</span>
-                  <span className="text-[10px] text-slate-400 ml-2">May 2026</span>
+                  <span className="text-[10px] font-semibold text-[#a88832] uppercase tracking-wider">Feature</span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e3c] mb-3 leading-tight group-hover:text-[#a88832] transition-colors">
-                  Infinity Legal SA Launches AI-Powered Legal Intake for South Africans
+                  AI-Powered Legal Intake for South Africans
                 </h3>
                 <p className="text-slate-500 text-sm leading-relaxed max-w-lg">
-                  New free tool allows citizens to describe their legal matters and receive instant AI analysis before consulting with an attorney — no sign-up required.
+                  Describe your legal matter and receive instant AI analysis before consulting with an attorney — no sign-up required. Built with South African law in mind.
                 </p>
-                <Button variant="link" className="mt-6 p-0 text-[#a88832] hover:text-[#8a6e28] font-semibold text-sm group/link">
-                  Read Full Article <ArrowUpRight className="w-3.5 h-3.5 ml-1 group-hover/link:translate-x-0.5 transition-transform" />
+                <Button variant="link" onClick={() => handleSmoothScroll('ask-ai')} className="mt-6 p-0 text-[#a88832] hover:text-[#8a6e28] font-semibold text-sm group/link">
+                  Try It Now <ArrowUpRight className="w-3.5 h-3.5 ml-1 group-hover/link:translate-x-0.5 transition-transform" />
                 </Button>
               </div>
             </div>
@@ -548,10 +547,10 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
             {/* Article list */}
             <div className="space-y-0 divide-y divide-slate-100">
               {[
-                { icon: Tv, category: 'Media', title: 'CEO Speaks on Access to Justice at SA Legal Tech Summit', date: 'Apr 2026' },
-                { icon: BookOpen, category: 'Guide', title: 'Understanding Your Rights Under the Labour Relations Act', date: 'Mar 2026' },
-                { icon: Briefcase, category: 'Case Study', title: 'How R99/Month Helped a Gauteng Family Win Their Custody Battle', date: 'Feb 2026' },
-                { icon: Zap, category: 'Update', title: 'Infinity Legal Expands to 6 Specialised Legal Portals', date: 'Dec 2025' },
+                { icon: Tv, category: 'Feature', title: 'POPIA-Compliant Case Management Built for SA Law Firms' },
+                { icon: BookOpen, category: 'Resource', title: 'Understanding Your Rights Under the Labour Relations Act' },
+                { icon: Briefcase, category: 'Feature', title: 'Affordable Legal Plans Starting from R99/Month' },
+                { icon: Zap, category: 'Feature', title: 'Secure Document Management with Attorney Oversight' },
               ].map((article) => (
                 <div key={article.title} className="group flex items-start gap-4 py-4 first:pt-0 last:pb-0 hover:bg-[#f7f8fa] -mx-3 px-3 rounded-lg transition-colors cursor-pointer">
                   <div className="w-8 h-8 rounded-lg bg-[#0c1e3c]/[0.04] flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -560,7 +559,6 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-[9px] font-semibold text-[#a88832] uppercase tracking-wider">{article.category}</span>
-                      <span className="text-[9px] text-slate-400">{article.date}</span>
                     </div>
                     <h4 className="text-[13px] font-medium text-[#0c1e3c] leading-snug line-clamp-2 group-hover:text-[#a88832] transition-colors">{article.title}</h4>
                   </div>

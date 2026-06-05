@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.co.za';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -123,8 +123,7 @@ export default function RootLayout({
     url: APP_URL,
     logo: `${APP_URL}/infinity_logo.png`,
     image: `${APP_URL}/infinity_logo.png`,
-    telephone: '+27-10-000-0000',
-    email: 'info@infinitylegal.co.za',
+    email: 'info@infinitylegal.org',
     areaServed: [
       {
         '@type': 'Country',
