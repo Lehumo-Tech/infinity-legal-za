@@ -9,7 +9,7 @@ export ENCRYPTION_KEY="6e43ea6a7e7e581f7958d5216584e5e9072a01c76ff95c5bf76412f1e
 export NEXT_PUBLIC_APP_URL="https://infinitylegal.co.za"
 
 while true; do
-  node node_modules/.bin/next dev -p 3000
+  node node_modules/.bin/next dev -p 3000 --webpack
   echo "Next.js crashed at $(date), restarting in 3s..." >&2
   sleep 3
 done
