@@ -220,7 +220,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                     <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-                    <span className="ml-3 text-[10px] text-[#7a8fb0] font-mono">portal.infinitylegal.org</span>
+                    <span className="ml-3 text-[10px] text-[#7a8fb0] font-mono">portal.infinitylegal.co.za</span>
                   </div>
                   <div className="space-y-2.5">
                     {[

@@ -15,7 +15,7 @@ const PAYFAST_PRODUCTION_URL = 'https://www.payfast.co.za/eng/process';
 const PAYFAST_SANDBOX_VALIDATE_URL = 'https://sandbox.payfast.co.za/eng/query/validate';
 const PAYFAST_PRODUCTION_VALIDATE_URL = 'https://www.payfast.co.za/eng/query/validate';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.co.za';
 
 // ============================================
 // TYPES

@@ -355,7 +355,7 @@ const openrouterProvider: LLMProvider = {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org',
+          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.co.za',
           'X-Title': 'Infinity Legal ZA',
         },
         body: JSON.stringify(body),
