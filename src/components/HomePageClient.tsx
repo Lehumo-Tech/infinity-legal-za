@@ -1972,11 +1972,12 @@ function PricingView({ plans }: { plans: any[] }) {
 // ============================================
 function AskInfinityBubble() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
-    { role: 'assistant', content: 'Sawubona! 👋 I\'m Ask Infinity — your AI legal assistant for South African law. How can I help you today?' },
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; provider?: string }[]>([
+    { role: 'assistant', content: 'Sawubona! 👋 I\'m Ask Infinity — your AI legal assistant for South African law. How can I help you today?', provider: 'system' },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastProvider, setLastProvider] = useState<string>('');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sessionIdRef = useRef(Math.random().toString(36).substring(2, 15));
@@ -1994,22 +1995,48 @@ function AskInfinityBubble() {
     setIsLoading(true);
 
     try {
+      const token = localStorage.getItem('il_token');
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ message: trimmed, sessionId: sessionIdRef.current }),
       });
       const data = await res.json();
       if (data.success) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.data || data.response }]);
+        const provider = data.meta?.provider || 'unknown';
+        setLastProvider(provider);
+        setMessages(prev => [...prev, { role: 'assistant', content: data.data || data.response, provider }]);
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'I apologise, I encountered an error. Please try again.' }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: 'I apologise, I encountered an error. Please try again.', provider: 'error' }]);
       }
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'I\'m having trouble connecting. Please try again.' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'I\'m having trouble connecting. Please try again.', provider: 'error' }]);
     }
     setIsLoading(false);
     inputRef.current?.focus();
+  };
+
+  const clearChat = async () => {
+    try {
+      await fetch(`/api/ai/chat?sessionId=${sessionIdRef.current}`, { method: 'DELETE' });
+    } catch { /* ignore */ }
+    sessionIdRef.current = Math.random().toString(36).substring(2, 15);
+    setMessages([{ role: 'assistant', content: 'Chat cleared! How can I help you with your legal matter today?', provider: 'system' }]);
+    setLastProvider('');
+  };
+
+  const providerLabel: Record<string, string> = {
+    google: 'Gemini',
+    groq: 'Groq',
+    openrouter: 'OpenRouter',
+    cohere: 'Cohere',
+    cloudflare: 'Cloudflare',
+    zai: 'Z-AI',
+    system: '',
+    error: '',
   };
 
   return (
@@ -2032,7 +2059,7 @@ function AskInfinityBubble() {
 
       {/* Chat popup */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-[#132d52] rounded-2xl border border-[#1a3358] shadow-2xl flex flex-col overflow-hidden" style={{ height: '500px' }}>
+        <div className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] bg-[#132d52] rounded-2xl border border-[#1a3358] shadow-2xl flex flex-col overflow-hidden" style={{ height: '520px' }}>
           {/* Header */}
           <div className="p-3 border-b border-[#1a3358] flex items-center justify-between bg-[#0c1e3c] flex-shrink-0">
             <div className="flex items-center gap-2.5">
@@ -2041,15 +2068,32 @@ function AskInfinityBubble() {
               </div>
               <div>
                 <span className="text-white font-semibold text-sm">Ask Infinity</span>
-                <p className="text-[9px] text-[#8fa4c4]">AI Legal Assistant • SA Law</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[9px] text-[#8fa4c4]">AI Legal Assistant • SA Law</p>
+                  {lastProvider && providerLabel[lastProvider] && (
+                    <Badge className="text-[7px] bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/30 h-3.5 px-1 font-normal">
+                      {providerLabel[lastProvider]}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-[#7a94b8] hover:text-white p-1 hover:bg-[#132d52] rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={clearChat}
+                className="text-[#7a94b8] hover:text-[#c9a84c] p-1 hover:bg-[#132d52] rounded-lg transition-colors"
+                title="Clear chat"
+                aria-label="Clear chat history"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-[#7a94b8] hover:text-white p-1 hover:bg-[#132d52] rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -2065,6 +2109,11 @@ function AskInfinityBubble() {
                     <div className="flex items-center gap-1 mb-1">
                       <Sparkles className="w-2.5 h-2.5 text-[#c9a84c]" />
                       <span className="text-[9px] font-medium text-[#c9a84c]">Ask Infinity</span>
+                      {msg.provider && providerLabel[msg.provider] && msg.provider !== 'system' && (
+                        <Badge className="text-[7px] bg-[#1a3358] text-[#7a94b8] border-0 h-3 px-1 font-normal ml-1">
+                          {providerLabel[msg.provider]}
+                        </Badge>
+                      )}
                     </div>
                   )}
                   <p className="text-xs leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -2084,6 +2133,21 @@ function AskInfinityBubble() {
             <div ref={chatEndRef} />
           </div>
 
+          {/* POPIA + Free AI badges */}
+          <div className="px-3 py-1.5 bg-[#0a1628] flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <Badge className="text-[7px] bg-[#0c1e3c] text-[#7a94b8] border-[#1a3358] h-4 px-1.5">
+                <Shield className="w-2 h-2 mr-0.5" />
+                POPIA
+              </Badge>
+              <Badge className="text-[7px] bg-[#c9a84c]/10 text-[#c9a84c] border-[#c9a84c]/20 h-4 px-1.5">
+                <Zap className="w-2 h-2 mr-0.5" />
+                Powered by Free AI
+              </Badge>
+            </div>
+            <span className="text-[7px] text-[#5a7199]">Not legal advice</span>
+          </div>
+
           {/* Input */}
           <div className="p-2.5 border-t border-[#1a3358] bg-[#0c1e3c] flex-shrink-0">
             <div className="flex items-center gap-2">
@@ -2097,6 +2161,7 @@ function AskInfinityBubble() {
                 aria-label="Type your legal question for Ask Infinity"
                 className="flex-1 bg-[#132d52] border border-[#1a3358] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5a7199] focus:outline-none focus:border-[#c9a84c] transition-colors"
                 disabled={isLoading}
+                maxLength={2000}
               />
               <Button
                 size="sm"
