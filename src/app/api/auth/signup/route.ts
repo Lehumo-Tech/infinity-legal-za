@@ -8,10 +8,11 @@ import { generateToken, hashPassword, validatePasswordStrength, getPasswordExpir
 import { signupRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
 import { createAuditLog, logConsent } from '@/lib/audit';
+import { isDisposableEmail, validateEmailDeliverability } from '@/lib/email-validation';
 
 export async function POST(request: NextRequest) {
   try {
-    const rateResult = checkRateLimit(request, signupRateLimiter);
+    const rateResult = await checkRateLimit(request, signupRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many signup attempts. Please try again later.', 429, 'RATE_LIMITED');
     }
@@ -28,6 +29,32 @@ export async function POST(request: NextRequest) {
 
     if (!isValidEmail(email)) {
       return apiError('Invalid email format', 400, 'INVALID_EMAIL');
+    }
+
+    // External email validation: disposable + deliverability checks
+    // If APIs are down, validation passes (graceful degradation)
+    try {
+      const [disposableResult, deliverabilityResult] = await Promise.all([
+        isDisposableEmail(email),
+        validateEmailDeliverability(email),
+      ]);
+
+      // Reject disposable/temporary emails
+      if (!disposableResult.valid) {
+        return apiError(
+          disposableResult.reason || 'Disposable email addresses are not allowed. Please use a permanent email.',
+          400,
+          'DISPOSABLE_EMAIL'
+        );
+      }
+
+      // Warn about undeliverable emails but don't block (soft check)
+      if (!deliverabilityResult.valid && deliverabilityResult.checked) {
+        console.warn(`[Signup] Email deliverability warning for ${email}: ${deliverabilityResult.reason}`);
+      }
+    } catch (error) {
+      // Never block signup if external email validation APIs fail
+      console.warn('[Signup] Email validation API failed, continuing signup:', error);
     }
 
     const strengthCheck = validatePasswordStrength(password);

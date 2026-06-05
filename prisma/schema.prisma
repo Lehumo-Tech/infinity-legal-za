@@ -315,9 +315,9 @@ model Case {
   created_at         DateTime    @default(now())
   updated_at         DateTime    @updatedAt
 
-  client           User       @relation("ClientCases", fields: [client_id], references: [id])
-  lead_attorney    User?      @relation("AttorneyCases", fields: [lead_attorney_id], references: [id])
-  support_paralegal User?     @relation("ParalegalCases", fields: [support_paralegal_id], references: [id])
+  client           User       @relation("ClientCases", fields: [client_id], references: [id], onDelete: Cascade)
+  lead_attorney    User?      @relation("AttorneyCases", fields: [lead_attorney_id], references: [id], onDelete: SetNull)
+  support_paralegal User?     @relation("ParalegalCases", fields: [support_paralegal_id], references: [id], onDelete: SetNull)
   documents        Document[]
   tasks            Task[]
   messages         Message[]
@@ -354,8 +354,8 @@ model Lead {
   created_at          DateTime   @default(now())
   updated_at          DateTime   @updatedAt
 
-  assigned_paralegal User? @relation("LeadParalegal", fields: [assigned_paralegal_id], references: [id])
-  assigned_officer   User? @relation("LeadOfficer", fields: [assigned_officer_id], references: [id])
+  assigned_paralegal User? @relation("LeadParalegal", fields: [assigned_paralegal_id], references: [id], onDelete: SetNull)
+  assigned_officer   User? @relation("LeadOfficer", fields: [assigned_officer_id], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([source])
@@ -386,10 +386,10 @@ model Document {
   updated_at          DateTime       @updatedAt
 
   case               Case    @relation(fields: [case_id], references: [id], onDelete: Cascade)
-  prepared_by_user   User?   @relation("DocumentPreparer", fields: [prepared_by], references: [id])
-  approved_by_user   User?   @relation("DocumentApprover", fields: [approved_by], references: [id])
-  signed_by_user     User?   @relation("DocumentSigner", fields: [signed_by], references: [id])
-  supervisor_user    User?   @relation("DocumentSupervisor", fields: [supervising_officer], references: [id])
+  prepared_by_user   User?   @relation("DocumentPreparer", fields: [prepared_by], references: [id], onDelete: SetNull)
+  approved_by_user   User?   @relation("DocumentApprover", fields: [approved_by], references: [id], onDelete: SetNull)
+  signed_by_user     User?   @relation("DocumentSigner", fields: [signed_by], references: [id], onDelete: SetNull)
+  supervisor_user    User?   @relation("DocumentSupervisor", fields: [supervising_officer], references: [id], onDelete: SetNull)
 
   @@index([case_id])
   @@index([document_type])
@@ -440,8 +440,8 @@ model Task {
   updated_at     DateTime     @updatedAt
 
   case         Case? @relation(fields: [case_id], references: [id], onDelete: Cascade)
-  assignee     User @relation("TaskAssignee", fields: [assigned_to], references: [id])
-  creator      User @relation("TaskCreator", fields: [created_by], references: [id])
+  assignee     User @relation("TaskAssignee", fields: [assigned_to], references: [id], onDelete: Cascade)
+  creator      User @relation("TaskCreator", fields: [created_by], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([assigned_to])
@@ -463,8 +463,8 @@ model Message {
   updated_at   DateTime    @updatedAt
 
   case      Case  @relation(fields: [case_id], references: [id], onDelete: Cascade)
-  sender    User  @relation("MessageSender", fields: [sender_id], references: [id])
-  recipient User? @relation("MessageRecipient", fields: [recipient_id], references: [id])
+  sender    User  @relation("MessageSender", fields: [sender_id], references: [id], onDelete: Cascade)
+  recipient User? @relation("MessageRecipient", fields: [recipient_id], references: [id], onDelete: SetNull)
 
   @@index([case_id])
   @@index([sender_id])
@@ -484,7 +484,7 @@ model AuditLog {
   user_agent    String?
   created_at    DateTime @default(now())
 
-  user User? @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([action])
@@ -502,7 +502,7 @@ model ConsentLog {
   user_agent   String?
   created_at   DateTime    @default(now())
 
-  user User? @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([consent_type])
@@ -543,9 +543,9 @@ model Consultation {
   created_at       DateTime            @default(now())
   updated_at       DateTime            @updatedAt
 
-  client   User  @relation("ConsultationClient", fields: [client_id], references: [id])
-  attorney User  @relation("ConsultationAttorney", fields: [attorney_id], references: [id])
-  case     Case? @relation(fields: [case_id], references: [id])
+  client   User  @relation("ConsultationClient", fields: [client_id], references: [id], onDelete: Cascade)
+  attorney User  @relation("ConsultationAttorney", fields: [attorney_id], references: [id], onDelete: Cascade)
+  case     Case? @relation(fields: [case_id], references: [id], onDelete: SetNull)
 
   @@index([client_id])
   @@index([attorney_id])
@@ -586,7 +586,7 @@ model UserSubscription {
   updated_at          DateTime           @updatedAt
 
   user           User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  plan           PricingPlan     @relation(fields: [plan_id], references: [id])
+  plan           PricingPlan     @relation(fields: [plan_id], references: [id], onDelete: Restrict)
   payment_records PaymentRecord[]
 
   @@index([user_id])
@@ -619,7 +619,7 @@ model PrivilegedNote {
   updated_at DateTime                  @updatedAt
 
   case   Case @relation(fields: [case_id], references: [id], onDelete: Cascade)
-  author User @relation(fields: [author_id], references: [id])
+  author User @relation(fields: [author_id], references: [id], onDelete: Cascade)
 
   @@index([case_id])
   @@index([author_id])
@@ -637,7 +637,7 @@ model ApiAnalytic {
   user_agent        String?
   created_at        DateTime @default(now())
 
-  user User? @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([endpoint])
   @@index([status_code])
@@ -657,7 +657,7 @@ model ErrorLog {
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
 
-  user User? @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([error_type])
   @@index([resolved])
@@ -731,8 +731,8 @@ model PaymentRecord {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  user User? @relation(fields: [user_id], references: [id])
-  subscription UserSubscription? @relation(fields: [subscription_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  subscription UserSubscription? @relation(fields: [subscription_id], references: [id], onDelete: SetNull)
 
   @@index([user_id])
   @@index([m_payment_id])

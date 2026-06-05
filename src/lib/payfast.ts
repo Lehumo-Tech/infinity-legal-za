@@ -103,11 +103,33 @@ export function getPayFastValidateUrl(): string {
 }
 
 export function getMerchantId(): string {
-  return process.env.PAYFAST_MERCHANT_ID || '10000100';
+  const mode = getPayFastMode();
+  const merchantId = process.env.PAYFAST_MERCHANT_ID;
+
+  if (!merchantId) {
+    if (mode === 'live') {
+      throw new Error('PAYFAST_MERCHANT_ID is required in live mode. Set it in your environment variables.');
+    }
+    // Sandbox default — only used when PAYFAST_MODE=sandbox
+    return '10000100';
+  }
+
+  return merchantId;
 }
 
 export function getMerchantKey(): string {
-  return process.env.PAYFAST_MERCHANT_KEY || '46f0cd694581a';
+  const mode = getPayFastMode();
+  const merchantKey = process.env.PAYFAST_MERCHANT_KEY;
+
+  if (!merchantKey) {
+    if (mode === 'live') {
+      throw new Error('PAYFAST_MERCHANT_KEY is required in live mode. Set it in your environment variables.');
+    }
+    // Sandbox default — only used when PAYFAST_MODE=sandbox
+    return '46f0cd694581a';
+  }
+
+  return merchantKey;
 }
 
 export function getPassphrase(): string {

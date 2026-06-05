@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit, apiError } from '@/lib/middleware';
+import { checkRateLimit, requireAuth } from '@/lib/middleware';
+import { aiChatRateLimiter } from '@/lib/security';
 
 const SYSTEM_PROMPT = `You are "Ask Infinity" — the AI legal assistant for Infinity Legal SA, a South African legal services firm. You specialise in South African law and provide general legal guidance.
 
@@ -36,23 +37,6 @@ const conversations = new Map<string, { messages: { role: string; content: strin
 const MAX_CONVERSATIONS = 500;
 const CONVERSATION_TTL = 30 * 60 * 1000; // 30 minutes
 
-// Simple rate limiter for AI chat (per-IP)
-const aiChatLimiter = new Map<string, { count: number; resetAt: number }>();
-const AI_CHAT_RATE_LIMIT = 15; // 15 messages per minute per IP
-const AI_CHAT_RATE_WINDOW = 60 * 1000; // 1 minute
-
-function checkAiRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = aiChatLimiter.get(ip);
-  if (!entry || now > entry.resetAt) {
-    aiChatLimiter.set(ip, { count: 1, resetAt: now + AI_CHAT_RATE_WINDOW });
-    return true;
-  }
-  if (entry.count >= AI_CHAT_RATE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
-
 // Evict expired conversations periodically
 function evictExpired() {
   const now = Date.now();
@@ -61,21 +45,32 @@ function evictExpired() {
       conversations.delete(key);
     }
   }
-  // Also clean rate limiter
-  for (const [key, val] of aiChatLimiter) {
-    if (now > val.resetAt) aiChatLimiter.delete(key);
-  }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting by IP
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    if (!checkAiRateLimit(ip)) {
+    // Auth check — optional: allow unauthenticated but rate limit more strictly
+    const authResult = requireAuth(request);
+    const isAuthenticated = authResult.authenticated;
+
+    // Rate limiting — use DB-backed rate limiter
+    const rateResult = await checkRateLimit(request, aiChatRateLimiter);
+    if (!rateResult.allowed) {
       return NextResponse.json(
         { success: false, error: 'Rate limit exceeded. Please wait a moment before sending another message.' },
         { status: 429 }
       );
+    }
+
+    // If not authenticated, enforce stricter limits via a secondary check
+    if (!isAuthenticated) {
+      const strictRateResult = await checkRateLimit(request, aiChatRateLimiter);
+      if (!strictRateResult.allowed) {
+        return NextResponse.json(
+          { success: false, error: 'Please sign in for continued access to the AI assistant.' },
+          { status: 429 }
+        );
+      }
     }
 
     const body = await request.json();

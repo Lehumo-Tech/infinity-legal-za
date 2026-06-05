@@ -55,7 +55,6 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
           password: signupPassword,
           full_name: signupName,
           phone: signupPhone || undefined,
-          role: 'client',
           consent_given: popiaConsent,
           popia_consent: popiaConsent,
         }),

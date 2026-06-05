@@ -5,13 +5,13 @@
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
-import { sanitizeString, isValidEmail, apiRateLimiter } from '@/lib/security';
+import { sanitizeString, isValidEmail, contactRateLimiter } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
 import { createAuditLog, logConsent } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
-    const rateResult = checkRateLimit(request, apiRateLimiter);
+    const rateResult = await checkRateLimit(request, contactRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many requests. Please try again later.', 429, 'RATE_LIMITED');
     }

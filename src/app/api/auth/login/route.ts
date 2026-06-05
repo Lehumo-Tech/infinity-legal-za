@@ -3,15 +3,43 @@
  */
 
 import { NextRequest } from 'next/server';
+import { createHmac } from 'crypto';
 import { db } from '@/lib/db';
 import { generateToken, verifyPassword, isPasswordExpired } from '@/lib/auth';
 import { authRateLimiter } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
+import { isSouthAfricanIP, getClientIP } from '@/lib/geolocation';
+
+// Generate a temporary token scoped to only allow password changes (15 minute expiry)
+function generatePasswordChangeToken(userId: string, email: string): string {
+  const jwtSecret = process.env.JWT_SECRET!;
+  const now = Math.floor(Date.now() / 1000);
+
+  const payload = {
+    userId,
+    email,
+    role: 'client', // Minimal role - no real permissions
+    department: 'password_change_only', // Special scope indicator
+    purpose: 'password_reset',
+    iat: now,
+    exp: now + 900, // 15 minutes
+  };
+
+  function base64UrlEncode(data: string): string {
+    return Buffer.from(data).toString('base64url');
+  }
+
+  const header = base64UrlEncode(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const body = base64UrlEncode(JSON.stringify(payload));
+  const signature = createHmac('sha256', jwtSecret).update(`${header}.${body}`).digest('base64url');
+
+  return `${header}.${body}.${signature}`;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const rateResult = checkRateLimit(request, authRateLimiter);
+    const rateResult = await checkRateLimit(request, authRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many login attempts. Please try again later.', 429, 'RATE_LIMITED');
     }
@@ -46,11 +74,24 @@ export async function POST(request: NextRequest) {
     const passwordExpired = isPasswordExpired(user.last_password_change);
 
     if (passwordExpired) {
+      // Generate a temporary token scoped to only allow password changes
+      const temporaryToken = generatePasswordChangeToken(user.id, user.email);
+
+      // Audit log for password expiry
+      await createAuditLog({
+        user_id: user.id,
+        action: 'PASSWORD_EXPIRED_LOGIN_ATTEMPT',
+        resource_type: 'user',
+        resource_id: user.id,
+        ip_address: request.headers.get('x-forwarded-for') || undefined,
+        user_agent: request.headers.get('user-agent') || undefined,
+      });
+
+      // Return generic message WITHOUT userId to prevent info leak
       return apiResponse({
         requiresPasswordChange: true,
-        message: 'Your password has expired. Please change it to continue.',
-        userId: user.id,
-        email: user.email,
+        message: 'Password update required',
+        token: temporaryToken,
       });
     }
 
@@ -62,15 +103,40 @@ export async function POST(request: NextRequest) {
       department: user.department || undefined,
     });
 
+    const clientIP = request.headers.get('x-forwarded-for') || undefined;
+
     // Audit log
     await createAuditLog({
       user_id: user.id,
       action: 'USER_LOGIN',
       resource_type: 'user',
       resource_id: user.id,
-      ip_address: request.headers.get('x-forwarded-for') || undefined,
+      ip_address: clientIP,
       user_agent: request.headers.get('user-agent') || undefined,
     });
+
+    // IP Geolocation security check: log warning if login from outside South Africa
+    // This does NOT block login, only creates an audit trail for security review
+    try {
+      const ip = getClientIP(request);
+      const geoCheck = await isSouthAfricanIP(ip);
+
+      if (!geoCheck.isSouthAfrican) {
+        await createAuditLog({
+          user_id: user.id,
+          action: 'FOREIGN_LOGIN_DETECTED',
+          resource_type: 'user',
+          resource_id: user.id,
+          details: `Login from non-SA location: ${geoCheck.country} (${geoCheck.countryCode})${geoCheck.city ? `, City: ${geoCheck.city}` : ''}, IP: ${ip}`,
+          ip_address: clientIP,
+          user_agent: request.headers.get('user-agent') || undefined,
+        });
+        console.warn(`[Security] User ${user.email} logged in from ${geoCheck.country} (${geoCheck.countryCode}), IP: ${ip}`);
+      }
+    } catch (error) {
+      // Never block login if geolocation check fails
+      console.warn('[Login] Geolocation check failed:', error);
+    }
 
     return apiResponse({
       token,

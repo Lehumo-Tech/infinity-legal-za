@@ -1,10 +1,13 @@
 /**
- * Infinity Legal ZA - Security Middleware
- * Comprehensive security headers applied to ALL responses
+ * Infinity Legal ZA - Security Middleware (Next.js 16 Proxy)
+ * Comprehensive security headers + CORS applied to ALL responses
  */
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+
+// Allowed origin for CORS (from environment variable)
+const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
 
 // Content Security Policy (updated for PayFast integration)
 const CSP_HEADER = [
@@ -23,7 +26,33 @@ const CSP_HEADER = [
 ].join('; ');
 
 export function proxy(request: NextRequest) {
+  // Handle CORS preflight requests
+  if (request.method === 'OPTIONS') {
+    const response = new NextResponse(null, { status: 204 });
+
+    response.headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    response.headers.set('Access-Control-Max-Age', '86400');
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+
+    return response;
+  }
+
   const response = NextResponse.next();
+
+  // ============================================
+  // CORS HEADERS
+  // ============================================
+  response.headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  response.headers.set('Access-Control-Max-Age', '86400');
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+
+  // ============================================
+  // SECURITY HEADERS
+  // ============================================
 
   // Content Security Policy - strict CSP to prevent XSS and injection attacks
   response.headers.set('Content-Security-Policy', CSP_HEADER);

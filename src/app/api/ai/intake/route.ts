@@ -100,7 +100,7 @@ Be professional, empathetic, and concise. Respond in a structured format with cl
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const rateResult = checkRateLimit(request, authRateLimiter);
+    const rateResult = await checkRateLimit(request, authRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many requests. Please try again later.', 429, 'RATE_LIMITED');
     }

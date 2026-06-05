@@ -96,12 +96,12 @@ export function requireRoles(role: string, allowedRoles: RoleKey[]) {
 // MIDDLEWARE: RATE LIMITING
 // ============================================
 
-export function checkRateLimit(request: NextRequest, limiter = apiRateLimiter) {
+export async function checkRateLimit(request: NextRequest, limiter = apiRateLimiter) {
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   const endpoint = new URL(request.url).pathname;
   const key = `${ip}:${endpoint}`;
   
-  const result = limiter.check(key);
+  const result = await limiter.check(key);
   if (!result.allowed) {
     return {
       allowed: false,
@@ -200,7 +200,7 @@ export async function withMiddleware(
   try {
     // Rate limiting
     if (options.rateLimiter) {
-      const rateResult = checkRateLimit(request, options.rateLimiter);
+      const rateResult = await checkRateLimit(request, options.rateLimiter);
       if (!rateResult.allowed && rateResult.error) {
         return rateResult.error;
       }

@@ -50,10 +50,13 @@ if (process.env.DATABASE_URL?.startsWith('file:') && process.env.POSTGRES_URL) {
 
 const nextConfig: NextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
-  reactStrictMode: false,
+  reactStrictMode: true,
   poweredByHeader: false,
+  allowedDevOrigins: [
+    '.space-z.ai',
+  ],
   async headers() {
     return [
       {

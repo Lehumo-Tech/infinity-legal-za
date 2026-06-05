@@ -1,0 +1,13 @@
+# Infinity Legal ZA - Robots.txt
+# POPIA Compliant Legal Practice Management
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+# Sitemaps
+Sitemap: https://infinitylegal.org/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
