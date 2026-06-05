@@ -123,6 +123,7 @@ export default function RootLayout({
     url: APP_URL,
     logo: `${APP_URL}/infinity_logo.png`,
     image: `${APP_URL}/infinity_logo.png`,
+    telephone: '+27 68 127 6038',
     email: 'info@infinitylegal.org',
     areaServed: [
       {
@@ -163,20 +164,22 @@ export default function RootLayout({
     address: {
       '@type': 'PostalAddress',
       '@id': `${APP_URL}/#address`,
-      streetAddress: 'Sandton City Office Tower, Rivonia Road',
-      addressLocality: 'Sandton, Johannesburg',
+      streetAddress: '93 Grayston Drive',
+      addressLocality: 'Sandton',
       addressRegion: 'Gauteng',
       postalCode: '2196',
       addressCountry: 'ZA',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: -26.1076,
-      longitude: 28.0567,
+      latitude: -26.0991,
+      longitude: 28.0521,
     },
     foundingDate: '2024',
     legalName: 'Infinity Legal (Pty) Ltd',
-    sameAs: [],
+    sameAs: [
+      'https://wa.me/27681276038',
+    ],
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: 'Legal Practice Plans',

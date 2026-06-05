@@ -7,7 +7,7 @@ import {
   Lock, KeyRound, ArrowRight, Menu, X, Send, Bot, Sparkles,
   Scale, MessageSquare, Zap, Globe, Smartphone, Newspaper, Tv,
   Users, Briefcase, Bell, ArrowUpRight, Play, ChevronDown,
-  AlertTriangle, RefreshCw, LayoutDashboard,
+  AlertTriangle, RefreshCw, LayoutDashboard, Phone, Mail, MapPin,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -611,23 +611,58 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
       {/* ===== FOOTER ===== */}
       <footer className="bg-[#060e1a] mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex flex-col items-center sm:items-start gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Brand & Copyright */}
+            <div className="flex flex-col gap-3">
               <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={100} height={28} className="object-contain" />
               <p className="text-[#3a506f] text-[11px]">&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</p>
+              <p className="text-[#2a3f5f] text-[10px]">Designed and developed in South Africa</p>
             </div>
-            <div className="flex flex-col items-center sm:items-end gap-3">
-              <div className="flex items-center gap-6 text-[11px]">
-                {/* TODO: Replace # with actual routes when privacy/terms/popia pages are created */}
+            {/* Contact Details */}
+            <div className="flex flex-col gap-3">
+              <h4 className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-wider">Contact Us</h4>
+              <div className="flex flex-col gap-2 text-[12px]">
+                <a href="tel:+27681276038" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 flex-shrink-0" />
+                  068 127 6038
+                </a>
+                <a href="https://wa.me/27681276038" target="_blank" rel="noopener noreferrer" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-center gap-2">
+                  <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
+                  WhatsApp: 068 127 6038
+                </a>
+                <a href="mailto:info@infinitylegal.org" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                  info@infinitylegal.org
+                </a>
+                <span className="text-[#7a8fb0] flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                  93 Grayston Drive, Sandton
+                </span>
+              </div>
+            </div>
+            {/* Legal Links */}
+            <div className="flex flex-col gap-3">
+              <h4 className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-wider">Legal</h4>
+              <div className="flex flex-col gap-2 text-[12px]">
                 <a href="#" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors">Privacy Policy</a>
                 <a href="#" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors">Terms of Service</a>
                 <a href="#" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors">POPIA Compliance</a>
               </div>
-              <p className="text-[#2a3f5f] text-[10px]">Designed and developed in South Africa</p>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/27681276038"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] hover:bg-[#20bd5a] rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/30 transition-all hover:scale-110"
+        aria-label="Chat on WhatsApp"
+      >
+        <MessageSquare className="w-6 h-6 text-white" />
+      </a>
     </div>
   );
 }

@@ -69,10 +69,17 @@ export function PaymentCancel({ onRetry, onGoHome }: PaymentCancelProps) {
               If you experienced any issues or have questions about your subscription,
               please contact our support team at{' '}
               <a
-                href="mailto:support@infinitylegal.org"
+                href="mailto:info@infinitylegal.org"
                 className="text-[#a88832] hover:text-[#8a6e28] underline underline-offset-2 transition-colors"
               >
-                support@infinitylegal.org
+                info@infinitylegal.org
+              </a>
+              {' '}or call{' '}
+              <a
+                href="tel:+27681276038"
+                className="text-[#a88832] hover:text-[#8a6e28] underline underline-offset-2 transition-colors"
+              >
+                068 127 6038
               </a>
             </p>
           </div>
