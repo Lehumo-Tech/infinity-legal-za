@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 800 500" xml:space="preserve">
+  <title>Small Business Legal Shield - Campaign Illustration</title>
+  <desc>Campaign illustration for the SMME Legal Shield featuring a central shield with business icon, handshake, and contract elements</desc>
+
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0c1e3c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a3358;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gold2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ddc06e;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#c9a84c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a88832;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gold2v" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ddc06e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a88832;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shieldInner" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a3358;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#0c1e3c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#081428;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shieldGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ddc06e;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#c9a84c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a88832;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="shieldGlow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" style="stop-color:#c9a84c;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#0c1e3c;stop-opacity:0" />
+    </radialGradient>
+    <linearGradient id="buildingGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#c9a84c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a88832;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Hexagonal pattern -->
+    <pattern id="hexPat" x="0" y="0" width="56" height="98" patternUnits="userSpaceOnUse" patternTransform="rotate(15)">
+      <polygon points="28,0 56,16.3 56,49 28,65.3 0,49 0,16.3" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.1"/>
+      <polygon points="28,32.7 56,49 56,81.7 28,98 0,81.7 0,49" fill="none" stroke="#c9a84c" stroke-width="0.3" opacity="0.06"/>
+    </pattern>
+
+    <filter id="glow2" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.788  0 0 0 0 0.659  0 0 0 0 0.298  0 0 0 0.25 0" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadow2" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="5" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- ===== BACKGROUND ===== -->
+  <rect width="800" height="500" fill="url(#bg2)"/>
+  <rect width="800" height="500" fill="url(#hexPat)"/>
+  <rect width="800" height="500" fill="url(#shieldGlow)"/>
+
+  <!-- ===== GEOMETRIC BORDER ===== -->
+  <rect x="12" y="12" width="776" height="476" rx="6" fill="none" stroke="#c9a84c" stroke-width="0.8" opacity="0.2"/>
+  <rect x="16" y="16" width="768" height="468" rx="4" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.1"/>
+
+  <!-- ===== CENTRAL SHIELD ===== -->
+  <g transform="translate(400, 245)" filter="url(#glow2)">
+    <!-- Shield outer shape -->
+    <path d="M0,-145 L120,-100 L120,20 C120,80 60,130 0,160 C-60,130 -120,80 -120,20 L-120,-100 Z"
+          fill="url(#shieldInner)" stroke="url(#shieldGold)" stroke-width="5"/>
+
+    <!-- Shield inner border -->
+    <path d="M0,-125 L100,-85 L100,15 C100,65 50,110 0,140 C-50,110 -100,65 -100,15 L-100,-85 Z"
+          fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.3"/>
+
+    <!-- Inner glow circle -->
+    <circle cx="0" cy="-15" r="60" fill="none" stroke="#c9a84c" stroke-width="0.8" opacity="0.15"/>
+
+    <!-- Building icon inside shield -->
+    <g transform="translate(0, -20)">
+      <!-- Main building -->
+      <rect x="-30" y="-50" width="60" height="65" rx="2" fill="url(#buildingGrad)" opacity="0.9"/>
+      <!-- Building roof -->
+      <polygon points="-36,-50 0,-72 36,-50" fill="url(#buildingGrad)"/>
+      <!-- Windows row 1 -->
+      <rect x="-22" y="-42" width="12" height="10" rx="1" fill="#0c1e3c" opacity="0.7"/>
+      <rect x="-6" y="-42" width="12" height="10" rx="1" fill="#0c1e3c" opacity="0.7"/>
+      <rect x="10" y="-42" width="12" height="10" rx="1" fill="#0c1e3c" opacity="0.7"/>
+      <!-- Windows row 2 -->
+      <rect x="-22" y="-26" width="12" height="10" rx="1" fill="#0c1e3c" opacity="0.7"/>
+      <rect x="-6" y="-26" width="12" height="10" rx="1" fill="#0c1e3c" opacity="0.7"/>
+      <rect x="10" y="-26" width="12" height="10" rx="1" fill="#0c1e3c" opacity="0.7"/>
+      <!-- Door -->
+      <rect x="-8" y="-8" width="16" height="22" rx="2" fill="#0c1e3c" opacity="0.7"/>
+      <!-- Sign -->
+      <rect x="-18" y="-62" width="36" height="8" rx="1" fill="#0c1e3c" opacity="0.5"/>
+    </g>
+
+    <!-- Shield top ornament -->
+    <circle cx="0" cy="-145" r="8" fill="url(#shieldGold)"/>
+    <circle cx="0" cy="-145" r="4" fill="#0c1e3c"/>
+  </g>
+
+  <!-- ===== HANDSHAKE (left side) ===== -->
+  <g transform="translate(140, 300)" filter="url(#shadow2)">
+    <!-- Left hand -->
+    <path d="M-5,-5 C-5,-5 -20,-15 -30,-10 C-35,-7 -35,0 -30,5 L-10,20 C-5,25 5,25 10,20 L25,5 C28,2 28,-5 25,-8 C20,-12 10,-10 5,-5 Z"
+          fill="none" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+    <!-- Right hand -->
+    <path d="M5,-5 C5,-5 20,-15 30,-10 C35,-7 35,0 30,5 L10,20 C5,25 -5,25 -10,20 L-25,5 C-28,2 -28,-5 -25,-8 C-20,-12 -10,-10 -5,-5 Z"
+          fill="none" stroke="#ddc06e" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+    <!-- Handshake grip -->
+    <ellipse cx="0" cy="5" rx="12" ry="8" fill="#c9a84c" opacity="0.15"/>
+  </g>
+
+  <!-- ===== CONTRACT/DOCUMENT (right side) ===== -->
+  <g transform="translate(660, 290)" filter="url(#shadow2)">
+    <!-- Document -->
+    <rect x="-30" y="-40" width="60" height="78" rx="3" fill="#f5e6b8" opacity="0.9"/>
+    <rect x="-30" y="-40" width="60" height="78" rx="3" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.6"/>
+    <!-- Folded corner -->
+    <polygon points="15,-40 30,-40 30,-25" fill="#e5cc85"/>
+    <polygon points="15,-40 30,-25 15,-25" fill="#d4b870"/>
+    <!-- Text lines -->
+    <line x1="-20" y1="-25" x2="10" y2="-25" stroke="#a88832" stroke-width="1.2" opacity="0.4"/>
+    <line x1="-20" y1="-15" x2="18" y2="-15" stroke="#a88832" stroke-width="1.2" opacity="0.35"/>
+    <line x1="-20" y1="-5" x2="14" y2="-5" stroke="#a88832" stroke-width="1.2" opacity="0.4"/>
+    <line x1="-20" y1="5" x2="18" y2="5" stroke="#a88832" stroke-width="1.2" opacity="0.35"/>
+    <line x1="-20" y1="15" x2="8" y2="15" stroke="#a88832" stroke-width="1.2" opacity="0.3"/>
+    <!-- Signature line -->
+    <line x1="-15" y1="28" x2="18" y2="28" stroke="#a88832" stroke-width="1.5" opacity="0.5"/>
+    <!-- X mark -->
+    <line x1="-18" y1="25" x2="-12" y2="31" stroke="#c9a84c" stroke-width="1.5" opacity="0.7"/>
+    <line x1="-12" y1="25" x2="-18" y2="31" stroke="#c9a84c" stroke-width="1.5" opacity="0.7"/>
+  </g>
+
+  <!-- ===== STOREFRONT (top-left) ===== -->
+  <g transform="translate(130, 150)" opacity="0.6">
+    <!-- Awning -->
+    <path d="M-30,-10 L30,-10 L35,0 C35,5 30,10 25,5 C20,10 15,5 10,10 C5,5 0,10 -5,5 C-10,10 -15,5 -20,10 C-25,5 -30,10 -35,5 L-30,-10 Z"
+          fill="#c9a84c" opacity="0.5"/>
+    <!-- Storefront -->
+    <rect x="-28" y="-10" width="56" height="40" rx="1" fill="#1a3358" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+    <!-- Door -->
+    <rect x="-6" y="5" width="12" height="25" rx="1" fill="#c9a84c" opacity="0.3"/>
+    <!-- Window -->
+    <rect x="-24" y="0" width="14" height="14" rx="1" fill="#c9a84c" opacity="0.2"/>
+    <rect x="10" y="0" width="14" height="14" rx="1" fill="#c9a84c" opacity="0.2"/>
+  </g>
+
+  <!-- ===== "SMME SHIELD" TEXT ===== -->
+  <g transform="translate(400, 450)">
+    <!-- Decorative lines -->
+    <line x1="-250" y1="0" x2="-130" y2="0" stroke="#c9a84c" stroke-width="1" opacity="0.3"/>
+    <line x1="130" y1="0" x2="250" y2="0" stroke="#c9a84c" stroke-width="1" opacity="0.3"/>
+    <!-- Diamond accents -->
+    <polygon points="-128,0 -132,-4 -136,0 -132,4" fill="#c9a84c" opacity="0.4"/>
+    <polygon points="132,0 136,-4 140,0 136,4" fill="#c9a84c" opacity="0.4"/>
+
+    <!-- SMME -->
+    <text x="-40" y="8" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="bold" letter-spacing="6" fill="url(#gold2)" opacity="0.85">SMME</text>
+    <!-- SHIELD -->
+    <text x="65" y="8" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="normal" letter-spacing="8" fill="url(#gold2)" opacity="0.6">SHIELD</text>
+  </g>
+
+  <!-- ===== DECORATIVE HEXAGONS ===== -->
+  <g opacity="0.1">
+    <polygon points="680,80 700,68 720,80 720,104 700,116 680,104" fill="none" stroke="#c9a84c" stroke-width="1"/>
+    <polygon points="710,100 730,88 750,100 750,124 730,136 710,124" fill="none" stroke="#c9a84c" stroke-width="0.8"/>
+    <polygon points="60,380 80,368 100,380 100,404 80,416 60,404" fill="none" stroke="#c9a84c" stroke-width="1"/>
+    <polygon points="40,410 60,398 80,410 80,434 60,446 40,434" fill="none" stroke="#c9a84c" stroke-width="0.8"/>
+  </g>
+
+  <!-- ===== SMALL ACCENT DOTS ===== -->
+  <g opacity="0.15">
+    <circle cx="220" cy="420" r="2.5" fill="#c9a84c"/>
+    <circle cx="236" cy="420" r="2.5" fill="#c9a84c"/>
+    <circle cx="252" cy="420" r="2.5" fill="#c9a84c"/>
+    <circle cx="548" cy="420" r="2.5" fill="#c9a84c"/>
+    <circle cx="564" cy="420" r="2.5" fill="#c9a84c"/>
+    <circle cx="580" cy="420" r="2.5" fill="#c9a84c"/>
+  </g>
+</svg>
