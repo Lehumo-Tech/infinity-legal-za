@@ -15,7 +15,11 @@ import { createAuditLog } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.RUN_BACKUPS)) {
@@ -28,14 +32,21 @@ export async function POST(request: NextRequest) {
     const filename = `infinity-legal-backup-${timestamp}`;
 
     // Create backup record — actual backup is managed by the database provider
-    const record = await db.backupRecord.create({
-      data: {
+    const { data: record, error: insertError } = await db
+      .from('backup_records')
+      .insert({
         filename,
         backup_type: backupType,
         status: 'completed',
-        completed_at: new Date(),
-      },
-    });
+        completed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Backup record insert error:', insertError);
+      return apiError('Backup failed', 500, 'BACKUP_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,
@@ -60,27 +71,33 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.RUN_BACKUPS)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    const { page, perPage, skip, take } = getPaginationParams(request);
+    const { page, perPage, from, to } = getPaginationParams(request);
 
-    const [backups, total] = await Promise.all([
-      db.backupRecord.findMany({
-        skip,
-        take,
-        orderBy: { created_at: 'desc' },
-      }),
-      db.backupRecord.count(),
-    ]);
+    const { data: backups, count: total, error: queryError } = await db
+      .from('backup_records')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (queryError) {
+      console.error('Backup list error:', queryError);
+      return apiError('Failed to list backups', 500, 'BACKUP_LIST_ERROR');
+    }
 
     return apiResponse({
-      data: backups,
-      pagination: createPaginationResult(total, page, perPage),
+      data: backups || [],
+      pagination: createPaginationResult(total || 0, page, perPage),
     });
   } catch (error) {
     console.error('Backup list error:', error);

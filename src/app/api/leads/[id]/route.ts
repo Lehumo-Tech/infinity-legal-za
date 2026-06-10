@@ -1,5 +1,5 @@
 /**
- * GET/PUT/DELETE /api/leads/[id] - Get/Update/Delete a single lead
+ * GET/PUT/DELETE /api/leads/[id] - Get/Update/Delete a single lead via Supabase
  */
 
 import { NextRequest } from 'next/server';
@@ -20,7 +20,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_LEADS)) {
@@ -29,15 +33,13 @@ export async function GET(
 
     const { id } = await params;
 
-    const lead = await db.lead.findUnique({
-      where: { id },
-      include: {
-        assigned_paralegal: { select: { id: true, full_name: true, email: true, role: true } },
-        assigned_officer: { select: { id: true, full_name: true, email: true, role: true } },
-      },
-    });
+    const { data: lead, error: fetchError } = await db
+      .from('leads')
+      .select('*, assigned_paralegal:profiles!assigned_paralegal_id(id, full_name, email, role), assigned_officer:profiles!assigned_officer_id(id, full_name, email, role)')
+      .eq('id', id)
+      .single();
 
-    if (!lead) {
+    if (fetchError || !lead) {
       return apiError('Lead not found', 404, 'LEAD_NOT_FOUND');
     }
 
@@ -54,7 +56,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.EDIT_LEAD)) {
@@ -64,8 +70,13 @@ export async function PUT(
     const { id } = await params;
 
     // Verify lead exists
-    const existingLead = await db.lead.findUnique({ where: { id } });
-    if (!existingLead) {
+    const { data: existingLead, error: fetchError } = await db
+      .from('leads')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingLead) {
       return apiError('Lead not found', 404, 'LEAD_NOT_FOUND');
     }
 
@@ -124,21 +135,28 @@ export async function PUT(
     // If status changes to 'retained', set converted_case_id if provided
     if (status === 'retained' && converted_case_id) {
       // Verify the case exists
-      const caseExists = await db.case.findUnique({ where: { id: converted_case_id } });
+      const { data: caseExists } = await db
+        .from('cases')
+        .select('id')
+        .eq('id', converted_case_id)
+        .single();
       if (!caseExists) {
         return apiError('Converted case not found', 404, 'CASE_NOT_FOUND');
       }
       updateData.converted_case_id = converted_case_id;
     }
 
-    const updatedLead = await db.lead.update({
-      where: { id },
-      data: updateData,
-      include: {
-        assigned_paralegal: { select: { id: true, full_name: true } },
-        assigned_officer: { select: { id: true, full_name: true } },
-      },
-    });
+    const { data: updatedLead, error: updateError } = await db
+      .from('leads')
+      .update(updateData)
+      .eq('id', id)
+      .select('*, assigned_paralegal:profiles!assigned_paralegal_id(id, full_name), assigned_officer:profiles!assigned_officer_id(id, full_name)')
+      .single();
+
+    if (updateError || !updatedLead) {
+      console.error('Update lead error:', updateError);
+      return apiError('Failed to update lead', 500, 'UPDATE_LEAD_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,
@@ -161,7 +179,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.DELETE_LEAD)) {
@@ -171,12 +193,25 @@ export async function DELETE(
     const { id } = await params;
 
     // Verify lead exists
-    const existingLead = await db.lead.findUnique({ where: { id } });
-    if (!existingLead) {
+    const { data: existingLead, error: fetchError } = await db
+      .from('leads')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingLead) {
       return apiError('Lead not found', 404, 'LEAD_NOT_FOUND');
     }
 
-    await db.lead.delete({ where: { id } });
+    const { error: deleteError } = await db
+      .from('leads')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('Delete lead error:', deleteError);
+      return apiError('Failed to delete lead', 500, 'DELETE_LEAD_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,

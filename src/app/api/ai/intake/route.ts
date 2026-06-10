@@ -13,7 +13,7 @@ import { analyzeIntake } from '@/lib/llm-service';
 import { db } from '@/lib/db';
 import { apiResponse, apiError, checkRateLimit, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { authRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
-import { isStaff } from '@/lib/auth';
+import { isStaff, type RoleKey } from '@/lib/auth';
 import { randomBytes } from 'crypto';
 
 // ============================================
@@ -64,6 +64,10 @@ const CASE_TYPE_MAP: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
     // Rate limiting
     const rateResult = await checkRateLimit(request, authRateLimiter);
     if (!rateResult.allowed) {
@@ -129,8 +133,9 @@ export async function POST(request: NextRequest) {
     // ---- Save to Database ----
     const referenceId = generateReferenceId();
 
-    const submission = await db.intakeSubmission.create({
-      data: {
+    const { data: submission, error: insertError } = await db
+      .from('intake_submissions')
+      .insert({
         reference_id: referenceId,
         full_name: sanitizeString(name.trim()),
         email: email.toLowerCase().trim(),
@@ -142,8 +147,14 @@ export async function POST(request: NextRequest) {
         popia_consent: true,
         ai_analysis: aiAnalysis,
         status: 'submitted',
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Failed to save intake submission:', insertError);
+      return apiError('Failed to process your submission. Please try again later.', 500, 'INTAKE_ERROR');
+    }
 
     return apiResponse(
       {
@@ -170,48 +181,55 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Require authentication
-    const authResult = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    // Require authentication (async for Supabase)
+    const authResult = await requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
     }
 
     const user = authResult.user!;
-    const isStaffMember = isStaff(user.role as any);
-    const { page, perPage, skip, take } = getPaginationParams(request);
+    const isStaffMember = isStaff(user.role as RoleKey);
+    const { page, perPage, from, to } = getPaginationParams(request);
 
     // Build query - staff see all, clients see their own
     const url = new URL(request.url);
     const statusFilter = url.searchParams.get('status');
     const caseTypeFilter = url.searchParams.get('case_type');
 
-    const where: any = {};
+    // Build Supabase query
+    let query = db
+      .from('intake_submissions')
+      .select('*', { count: 'exact' });
 
     // Clients can only see their own submissions (matched by email)
     if (!isStaffMember) {
-      where.email = user.email;
+      query = query.eq('email', user.email);
     }
 
     if (statusFilter) {
-      where.status = statusFilter;
+      query = query.eq('status', statusFilter);
     }
 
     if (caseTypeFilter) {
-      where.case_type = caseTypeFilter;
+      query = query.eq('case_type', caseTypeFilter);
     }
 
-    const [submissions, total] = await Promise.all([
-      db.intakeSubmission.findMany({
-        where,
-        orderBy: { created_at: 'desc' },
-        skip,
-        take,
-      }),
-      db.intakeSubmission.count({ where }),
-    ]);
+    // Apply pagination and ordering
+    const { data: submissions, count: total, error: queryError } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (queryError) {
+      console.error('Intake list query error:', queryError);
+      return apiError('Failed to retrieve submissions', 500, 'INTAKE_LIST_ERROR');
+    }
 
     // For client view, omit sensitive fields
-    const sanitized = submissions.map((sub) => ({
+    const sanitized = (submissions || []).map((sub: any) => ({
       id: sub.id,
       reference_id: sub.reference_id,
       full_name: isStaffMember ? sub.full_name : undefined,
@@ -227,7 +245,7 @@ export async function GET(request: NextRequest) {
 
     return apiResponse({
       submissions: sanitized,
-      pagination: createPaginationResult(total, page, perPage),
+      pagination: createPaginationResult(total || 0, page, perPage),
     });
   } catch (error) {
     console.error('Intake list error:', error);

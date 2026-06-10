@@ -1,6 +1,6 @@
 /**
  * POST /api/contact - Handle contact form submissions
- * Saves to IntakeSubmission table and logs POPIA consent
+ * Saves to intake_submissions table and logs POPIA consent via Supabase
  */
 
 import { NextRequest } from 'next/server';
@@ -11,6 +11,10 @@ import { createAuditLog, logConsent } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
     const rateResult = await checkRateLimit(request, contactRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many requests. Please try again later.', 429, 'RATE_LIMITED');
@@ -34,8 +38,9 @@ export async function POST(request: NextRequest) {
     // Create an intake submission as a contact inquiry
     const referenceId = `IL-CONTACT-${Date.now().toString(36).toUpperCase()}`;
 
-    await db.intakeSubmission.create({
-      data: {
+    const { error: insertError } = await db
+      .from('intake_submissions')
+      .insert({
         reference_id: referenceId,
         full_name: sanitizeString(name),
         email: email.toLowerCase().trim(),
@@ -45,8 +50,12 @@ export async function POST(request: NextRequest) {
         consent_given: true,
         popia_consent: true,
         status: 'submitted',
-      },
-    });
+      });
+
+    if (insertError) {
+      console.error('Contact form insert error:', insertError);
+      return apiError('Failed to submit message', 500, 'CONTACT_ERROR');
+    }
 
     // Log POPIA consent for the contact form
     await logConsent({

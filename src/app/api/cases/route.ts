@@ -1,21 +1,25 @@
 /**
- * GET/POST /api/cases - List/Create cases with pagination via Prisma/SQLite
+ * GET/POST /api/cases - List/Create cases with pagination via Supabase
  */
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { checkHighRisk, isValidEmail, sanitizeString } from '@/lib/security';
+import { checkHighRisk, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
 // GET - List cases with pagination and filters
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
-    const { page, perPage, skip, take } = getPaginationParams(request);
+    const { page, perPage, from, to } = getPaginationParams(request);
     const url = new URL(request.url);
 
     const status = url.searchParams.get('status');
@@ -23,49 +27,39 @@ export async function GET(request: NextRequest) {
     const urgency = url.searchParams.get('urgency');
     const search = url.searchParams.get('search');
 
-    // Build where clause
-    const conditions: any[] = [];
-    if (status) conditions.push({ status });
-    if (case_type) conditions.push({ case_type });
-    if (urgency) conditions.push({ urgency });
+    // Build Supabase query
+    const selectFields = '*, client:profiles!client_id(id, full_name, email), lead_attorney:profiles!lead_attorney_id(id, full_name)';
+
+    let query = db.from('cases').select(selectFields, { count: 'exact' });
+
+    // Apply filters
+    if (status) query = query.eq('status', status);
+    if (case_type) query = query.eq('case_type', case_type);
+    if (urgency) query = query.eq('urgency', urgency);
+
+    // Search across multiple fields
     if (search) {
-      conditions.push({
-        OR: [
-          { title: { contains: search } },
-          { matter_number: { contains: search } },
-          { description: { contains: search } },
-        ],
-      });
+      query = query.or(`title.ilike.%${search}%,matter_number.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
     // Non-admin users can only see their own cases
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      conditions.push({
-        OR: [
-          { client_id: auth.user.userId },
-          { lead_attorney_id: auth.user.userId },
-          { support_paralegal_id: auth.user.userId },
-        ],
-      });
+      query = query.or(`client_id.eq.${auth.user.userId},lead_attorney_id.eq.${auth.user.userId},support_paralegal_id.eq.${auth.user.userId}`);
     }
 
-    const where = conditions.length > 0 ? { AND: conditions } : {};
+    // Apply pagination and ordering
+    const result = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
-    const [cases, total] = await Promise.all([
-      db.case.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { created_at: 'desc' },
-        include: {
-          client: { select: { id: true, full_name: true, email: true } },
-          lead_attorney: { select: { id: true, full_name: true } },
-        },
-      }),
-      db.case.count({ where }),
-    ]);
+    if (result.error) {
+      console.error('Cases query error:', result.error);
+      return apiError('Failed to load cases', 500, 'CASES_ERROR');
+    }
 
-    const formattedCases = cases.map(c => ({
+    const total = result.count || 0;
+
+    const formattedCases = (result.data || []).map((c: any) => ({
       id: c.id,
       matter_number: c.matter_number,
       title: c.title,
@@ -100,7 +94,11 @@ export async function GET(request: NextRequest) {
 // POST - Create new case
 export async function POST(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.CREATE_CASE)) {
@@ -125,7 +123,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate client exists
-    const clientExists = await db.user.findUnique({ where: { id: client_id } });
+    const { data: clientExists } = await db
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', client_id)
+      .single();
     if (!clientExists) {
       return apiError('Client not found', 404, 'CLIENT_NOT_FOUND');
     }
@@ -138,12 +140,15 @@ export async function POST(request: NextRequest) {
     const sanitizedDescription = description ? sanitizeString(description) : null;
 
     // Generate matter number
-    const caseCount = await db.case.count();
+    const { count: caseCount } = await db
+      .from('cases')
+      .select('*', { count: 'exact', head: true });
     const currentYear = new Date().getFullYear();
-    const matter_number = `IL-${currentYear}-${String(caseCount + 1).padStart(4, '0')}`;
+    const matter_number = `IL-${currentYear}-${String((caseCount || 0) + 1).padStart(4, '0')}`;
 
-    const newCase = await db.case.create({
-      data: {
+    const { data: newCase, error: insertError } = await db
+      .from('cases')
+      .insert({
         matter_number,
         title: sanitizedTitle,
         description: sanitizedDescription,
@@ -154,17 +159,21 @@ export async function POST(request: NextRequest) {
         lead_attorney_id: auth.user.userId,
         estimated_value: estimated_value || null,
         is_high_risk: highRiskCheck.isHighRisk,
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (insertError || !newCase) {
+      console.error('Create case insert error:', insertError);
+      return apiError('Failed to create case', 500, 'CREATE_CASE_ERROR');
+    }
 
     // Create timeline entry
-    await db.caseTimeline.create({
-      data: {
-        case_id: newCase.id,
-        user_id: auth.user.userId,
-        action: 'CASE_CREATED',
-        description: 'Case created and assigned',
-      },
+    await db.from('case_timeline').insert({
+      case_id: newCase.id,
+      user_id: auth.user.userId,
+      action: 'CASE_CREATED',
+      description: 'Case created and assigned',
     });
 
     await createAuditLog({

@@ -1,5 +1,5 @@
 /**
- * GET/PUT/DELETE /api/consultations/[id] - Get/Update/Cancel a single consultation
+ * GET/PUT/DELETE /api/consultations/[id] - Get/Update/Cancel a single consultation via Supabase
  */
 
 import { NextRequest } from 'next/server';
@@ -18,43 +18,22 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
-    const consultation = await db.consultation.findUnique({
-      where: { id },
-      include: {
-        client: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            phone: true,
-          },
-        },
-        attorney: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-            department: true,
-          },
-        },
-        case: {
-          select: {
-            id: true,
-            matter_number: true,
-            title: true,
-            status: true,
-          },
-        },
-      },
-    });
+    const { data: consultation, error } = await db
+      .from('consultations')
+      .select('*, client:profiles!consultations_client_id_fkey(user_id, full_name, email, phone), attorney:profiles!consultations_attorney_id_fkey(user_id, full_name, email, role, department), case:cases(id, matter_number, title, status)')
+      .eq('id', id)
+      .single();
 
-    if (!consultation) {
+    if (error || !consultation) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
@@ -71,14 +50,23 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
     // Verify consultation exists
-    const existingConsultation = await db.consultation.findUnique({ where: { id } });
-    if (!existingConsultation) {
+    const { data: existingConsultation, error: fetchError } = await db
+      .from('consultations')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingConsultation) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
@@ -106,46 +94,29 @@ export async function PUT(
     const updateData: Record<string, unknown> = {};
     if (status !== undefined) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes ? sanitizeString(notes) : null;
-    if (scheduled_date !== undefined) updateData.scheduled_date = new Date(scheduled_date);
+    if (scheduled_date !== undefined) updateData.scheduled_date = scheduled_date;
     if (scheduled_time !== undefined) updateData.scheduled_time = scheduled_time;
     if (duration_minutes !== undefined) updateData.duration_minutes = duration_minutes;
     if (meeting_type !== undefined) updateData.meeting_type = meeting_type;
 
-    const updatedConsultation = await db.consultation.update({
-      where: { id },
-      data: updateData,
-      include: {
-        client: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-          },
-        },
-        attorney: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-          },
-        },
-        case: {
-          select: {
-            id: true,
-            matter_number: true,
-            title: true,
-          },
-        },
-      },
-    });
+    const { data: updatedConsultation, error: updateError } = await db
+      .from('consultations')
+      .update(updateData)
+      .eq('id', id)
+      .select('*, client:profiles!consultations_client_id_fkey(user_id, full_name, email), attorney:profiles!consultations_attorney_id_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title)')
+      .single();
+
+    if (updateError || !updatedConsultation) {
+      console.error('Update consultation error:', updateError);
+      return apiError('Failed to update consultation', 500, 'UPDATE_CONSULTATION_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,
       action: 'UPDATE_CONSULTATION',
       resource_type: 'consultation',
       resource_id: id,
-      details: `Consultation updated`,
+      details: 'Consultation updated',
     });
 
     return apiResponse(updatedConsultation);
@@ -161,29 +132,45 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
     // Verify consultation exists
-    const existingConsultation = await db.consultation.findUnique({ where: { id } });
-    if (!existingConsultation) {
+    const { data: existingConsultation, error: fetchError } = await db
+      .from('consultations')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingConsultation) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
     // Cancel the consultation by setting status to 'cancelled'
-    const cancelledConsultation = await db.consultation.update({
-      where: { id },
-      data: { status: 'cancelled' },
-    });
+    const { data: cancelledConsultation, error: updateError } = await db
+      .from('consultations')
+      .update({ status: 'cancelled' })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Cancel consultation error:', updateError);
+      return apiError('Failed to cancel consultation', 500, 'CANCEL_CONSULTATION_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,
       action: 'CANCEL_CONSULTATION',
       resource_type: 'consultation',
       resource_id: id,
-      details: `Consultation cancelled`,
+      details: 'Consultation cancelled',
     });
 
     return apiResponse(cancelledConsultation);

@@ -12,6 +12,10 @@ const ALLOWED_ROLES: RoleKey[] = ['paralegal', 'candidate_attorney'];
 
 export async function GET(request: NextRequest) {
   try {
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
     const auth = requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 

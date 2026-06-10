@@ -1,126 +1,15 @@
 /**
- * Infinity Legal ZA - Authentication Library
- * Password hashing, JWT, RBAC, session management
+ * Infinity Legal ZA - Authentication Library (Supabase)
+ * 
+ * Uses Supabase Auth for authentication, with RBAC roles
+ * stored in the profiles table.
  */
 
-import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
-
-// ============================================
-// PASSWORD MANAGEMENT
-// ============================================
-
-const SALT_LENGTH = 32;
-const HASH_ITERATIONS = 100000;
-const HASH_KEY_LENGTH = 64;
-const PASSWORD_EXPIRY_DAYS = 90;
-
-export function hashPassword(password: string): string {
-  const salt = randomBytes(SALT_LENGTH).toString('hex');
-  const hash = createHmac('sha512', salt)
-    .update(password)
-    .digest('hex');
-  return `${salt}:${hash}`;
-}
-
-export function verifyPassword(password: string, storedHash: string): boolean {
-  const [salt, hash] = storedHash.split(':');
-  const computedHash = createHmac('sha512', salt)
-    .update(password)
-    .digest('hex');
-  try {
-    return timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(computedHash, 'hex'));
-  } catch {
-    return false;
-  }
-}
-
-export function isPasswordExpired(lastPasswordChange: Date | null): boolean {
-  if (!lastPasswordChange) return true;
-  const expiryDate = new Date(lastPasswordChange);
-  expiryDate.setDate(expiryDate.getDate() + PASSWORD_EXPIRY_DAYS);
-  return new Date() > expiryDate;
-}
-
-export function getPasswordExpiryDate(fromDate: Date = new Date()): Date {
-  const expiry = new Date(fromDate);
-  expiry.setDate(expiry.getDate() + PASSWORD_EXPIRY_DAYS);
-  return expiry;
-}
-
-export function validatePasswordStrength(password: string): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  if (password.length < 8) errors.push('Password must be at least 8 characters');
-  if (!/[A-Z]/.test(password)) errors.push('Must contain an uppercase letter');
-  if (!/[a-z]/.test(password)) errors.push('Must contain a lowercase letter');
-  if (!/[0-9]/.test(password)) errors.push('Must contain a number');
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push('Must contain a special character');
-  return { valid: errors.length === 0, errors };
-}
-
-// ============================================
-// JWT TOKEN MANAGEMENT
-// ============================================
-
-const JWT_SECRET = process.env.JWT_SECRET!;
-if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
-const JWT_EXPIRY = '24h';
-const JWT_REFRESH_EXPIRY_DAYS = 7;
-
-interface TokenPayload {
-  userId: string;
-  email: string;
-  role: string;
-  department?: string;
-  iat?: number;
-  exp?: number;
-}
-
-function base64UrlEncode(data: string): string {
-  return Buffer.from(data).toString('base64url');
-}
-
-function base64UrlDecode(data: string): string {
-  return Buffer.from(data, 'base64url').toString('utf-8');
-}
-
-export function generateToken(payload: Omit<TokenPayload, 'iat' | 'exp'>): string {
-  const now = Math.floor(Date.now() / 1000);
-  const fullPayload: TokenPayload = {
-    ...payload,
-    iat: now,
-    exp: now + 86400, // 24 hours
-  };
-
-  const header = base64UrlEncode(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const body = base64UrlEncode(JSON.stringify(fullPayload));
-  const signature = createHmac('sha256', JWT_SECRET).update(`${header}.${body}`).digest('base64url');
-
-  return `${header}.${body}.${signature}`;
-}
-
-export function verifyToken(token: string): TokenPayload | null {
-  try {
-    const [header, body, signature] = token.split('.');
-    const expectedSignature = createHmac('sha256', JWT_SECRET).update(`${header}.${body}`).digest('base64url');
-    
-    if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
-      return null;
-    }
-
-    const payload: TokenPayload = JSON.parse(base64UrlDecode(body));
-    
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return null;
-    }
-
-    return payload;
-  } catch {
-    return null;
-  }
-}
+import { db, isSupabaseConfigured } from '@/lib/db';
 
 // ============================================
 // RBAC - ROLE-BASED ACCESS CONTROL
+// (Preserved from original implementation)
 // ============================================
 
 export const ROLES = {
@@ -146,7 +35,6 @@ export type RoleKey = keyof typeof ROLES;
 
 // Permission definitions
 export const PERMISSIONS = {
-  // Case permissions
   VIEW_ALL_CASES: 'view_all_cases',
   VIEW_OWN_CASES: 'view_own_cases',
   CREATE_CASE: 'create_case',
@@ -155,39 +43,27 @@ export const PERMISSIONS = {
   ASSIGN_CASE: 'assign_case',
   CLOSE_CASE: 'close_case',
   ARCHIVE_CASE: 'archive_case',
-  
-  // Document permissions
   VIEW_DOCUMENTS: 'view_documents',
   UPLOAD_DOCUMENT: 'upload_document',
   APPROVE_DOCUMENT: 'approve_document',
   SIGN_DOCUMENT: 'sign_document',
   DELETE_DOCUMENT: 'delete_document',
-  
-  // Lead permissions
   VIEW_LEADS: 'view_leads',
   CREATE_LEAD: 'create_lead',
   EDIT_LEAD: 'edit_lead',
   CONVERT_LEAD: 'convert_lead',
   DELETE_LEAD: 'delete_lead',
-  
-  // Task permissions
   VIEW_TASKS: 'view_tasks',
   CREATE_TASK: 'create_task',
   EDIT_TASK: 'edit_task',
   DELETE_TASK: 'delete_task',
-  
-  // User management
   MANAGE_USERS: 'manage_users',
   VIEW_USERS: 'view_users',
   CREATE_USER: 'create_user',
   EDIT_USER: 'edit_user',
   DEACTIVATE_USER: 'deactivate_user',
-  
-  // Privileged notes
   VIEW_PRIVILEGED_NOTES: 'view_privileged_notes',
   CREATE_PRIVILEGED_NOTE: 'create_privileged_note',
-  
-  // Admin
   VIEW_AUDIT_LOGS: 'view_audit_logs',
   VIEW_ANALYTICS: 'view_analytics',
   MANAGE_SYSTEM: 'manage_system',
@@ -200,7 +76,7 @@ export type PermissionKey = typeof PERMISSIONS[keyof typeof PERMISSIONS];
 
 // Role-to-permission mapping
 const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[]> = {
-  managing_director: Object.values(PERMISSIONS) as PermissionKey[], // All permissions
+  managing_director: Object.values(PERMISSIONS) as PermissionKey[],
   senior_partner: [
     PERMISSIONS.VIEW_ALL_CASES, PERMISSIONS.VIEW_OWN_CASES, PERMISSIONS.CREATE_CASE,
     PERMISSIONS.EDIT_CASE, PERMISSIONS.ASSIGN_CASE, PERMISSIONS.CLOSE_CASE, PERMISSIONS.ARCHIVE_CASE,
@@ -304,7 +180,7 @@ export function canManageRole(actorRole: RoleKey, targetRole: RoleKey): boolean 
   return ROLES[actorRole]?.tier > ROLES[targetRole]?.tier;
 }
 
-// Role groups for quick checks
+// Role groups
 export const ROLE_GROUPS = {
   LEGAL_STAFF: ['associate', 'paralegal', 'candidate_attorney'] as RoleKey[],
   OFFICERS: ['legal_officer', 'supervising_officer'] as RoleKey[],
@@ -314,25 +190,80 @@ export const ROLE_GROUPS = {
   ALL_STAFF: ['managing_director', 'senior_partner', 'associate', 'paralegal', 'legal_officer', 'supervising_officer', 'senior_consultant', 'consultant', 'candidate_attorney', 'hr_manager', 'finance_manager', 'office_administrator', 'systems_admin', 'receptionist'] as RoleKey[],
 };
 
-export function isLegalStaff(role: RoleKey): boolean {
-  return ROLE_GROUPS.LEGAL_STAFF.includes(role);
+export function isLegalStaff(role: RoleKey): boolean { return ROLE_GROUPS.LEGAL_STAFF.includes(role); }
+export function isDirector(role: RoleKey): boolean { return ROLE_GROUPS.DIRECTORS.includes(role); }
+export function isAdmin(role: RoleKey): boolean { return ROLE_GROUPS.ADMIN_STAFF.includes(role); }
+export function isStaff(role: RoleKey): boolean { return ROLE_GROUPS.ALL_STAFF.includes(role); }
+
+// ============================================
+// SUPABASE AUTH - TOKEN VERIFICATION
+// ============================================
+
+export interface TokenPayload {
+  userId: string;
+  email: string;
+  role: string;
+  department?: string;
 }
 
-export function isDirector(role: RoleKey): boolean {
-  return ROLE_GROUPS.DIRECTORS.includes(role);
-}
-
-export function isAdmin(role: RoleKey): boolean {
-  return ROLE_GROUPS.ADMIN_STAFF.includes(role);
-}
-
-export function isStaff(role: RoleKey): boolean {
-  return ROLE_GROUPS.ALL_STAFF.includes(role);
-}
-
-// Session helper
-export function getUserFromToken(authHeader: string | null): TokenPayload | null {
+/**
+ * Verify a JWT token from the Authorization header using Supabase Auth.
+ * Returns the user payload with role from profiles table.
+ */
+export async function getUserFromToken(authHeader: string | null): Promise<TokenPayload | null> {
   if (!authHeader?.startsWith('Bearer ')) return null;
   const token = authHeader.substring(7);
-  return verifyToken(token);
+
+  // If Supabase is not configured, return null (no auth)
+  if (!isSupabaseConfigured() || !db) return null;
+
+  try {
+    // Verify the JWT with Supabase Auth
+    const { data: { user }, error } = await db.auth.getUser(token);
+    if (error || !user) return null;
+
+    // Get the user's profile for role information
+    const { data: profile } = await db
+      .from('profiles')
+      .select('role, department, is_active')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!profile || !profile.is_active) return null;
+
+    return {
+      userId: user.id,
+      email: user.email || '',
+      role: profile.role,
+      department: profile.department || undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Synchronous version for middleware compatibility.
+ * Uses Supabase Auth admin to verify JWT tokens.
+ */
+export function getUserFromTokenSync(authHeader: string | null): TokenPayload | null {
+  // For Supabase, we need async verification.
+  // The sync version will be used only in cases where we can't await.
+  // In practice, all API routes use the async version.
+  if (!authHeader?.startsWith('Bearer ')) return null;
+  return null; // Must use async getUserFromToken instead
+}
+
+// ============================================
+// PASSWORD VALIDATION (kept for signup validation)
+// ============================================
+
+export function validatePasswordStrength(password: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (password.length < 8) errors.push('Password must be at least 8 characters');
+  if (!/[A-Z]/.test(password)) errors.push('Must contain an uppercase letter');
+  if (!/[a-z]/.test(password)) errors.push('Must contain a lowercase letter');
+  if (!/[0-9]/.test(password)) errors.push('Must contain a number');
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push('Must contain a special character');
+  return { valid: errors.length === 0, errors };
 }

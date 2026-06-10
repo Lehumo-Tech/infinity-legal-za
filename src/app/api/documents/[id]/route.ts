@@ -1,5 +1,5 @@
 /**
- * GET/PUT/DELETE /api/documents/[id] - Get/Update/Delete a single document
+ * GET/PUT/DELETE /api/documents/[id] - Get/Update/Delete a single document via Supabase
  */
 
 import { NextRequest } from 'next/server';
@@ -18,7 +18,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_DOCUMENTS)) {
@@ -27,52 +31,13 @@ export async function GET(
 
     const { id } = await params;
 
-    const document = await db.document.findUnique({
-      where: { id },
-      include: {
-        case: {
-          select: {
-            id: true,
-            matter_number: true,
-            title: true,
-            status: true,
-          },
-        },
-        prepared_by_user: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-          },
-        },
-        approved_by_user: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-          },
-        },
-        signed_by_user: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-          },
-        },
-        supervisor_user: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-          },
-        },
-      },
-    });
+    const { data: document, error } = await db
+      .from('documents')
+      .select('*, case:cases(id, matter_number, title, status), prepared_by_user:profiles!documents_prepared_by_fkey(user_id, full_name, email, role), approved_by_user:profiles!documents_approved_by_fkey(user_id, full_name, email, role), signed_by_user:profiles!documents_signed_by_fkey(user_id, full_name, email), supervisor_user:profiles!documents_supervising_officer_fkey(user_id, full_name, email, role)')
+      .eq('id', id)
+      .single();
 
-    if (!document) {
+    if (error || !document) {
       return apiError('Document not found', 404, 'DOCUMENT_NOT_FOUND');
     }
 
@@ -89,14 +54,23 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
     // Verify document exists
-    const existingDoc = await db.document.findUnique({ where: { id } });
-    if (!existingDoc) {
+    const { data: existingDoc, error: fetchError } = await db
+      .from('documents')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingDoc) {
       return apiError('Document not found', 404, 'DOCUMENT_NOT_FOUND');
     }
 
@@ -134,11 +108,10 @@ export async function PUT(
       }
     }
 
-    // Build update data
-    const updateData: Record<string, unknown> = {};
-
-    // Increment version on each update
-    updateData.version = existingDoc.version + 1;
+    // Build update data — increment version on each update
+    const updateData: Record<string, unknown> = {
+      version: existingDoc.version + 1,
+    };
 
     if (title !== undefined) updateData.title = sanitizeString(title);
     if (workflow_status !== undefined) updateData.workflow_status = workflow_status;
@@ -157,40 +130,17 @@ export async function PUT(
       updateData.signed_by = auth.user.userId;
     }
 
-    const updatedDoc = await db.document.update({
-      where: { id },
-      data: updateData,
-      include: {
-        case: {
-          select: {
-            id: true,
-            matter_number: true,
-            title: true,
-          },
-        },
-        prepared_by_user: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-          },
-        },
-        approved_by_user: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-          },
-        },
-        signed_by_user: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-          },
-        },
-      },
-    });
+    const { data: updatedDoc, error: updateError } = await db
+      .from('documents')
+      .update(updateData)
+      .eq('id', id)
+      .select('*, case:cases(id, matter_number, title), prepared_by_user:profiles!documents_prepared_by_fkey(user_id, full_name, email), approved_by_user:profiles!documents_approved_by_fkey(user_id, full_name, email), signed_by_user:profiles!documents_signed_by_fkey(user_id, full_name, email)')
+      .single();
+
+    if (updateError || !updatedDoc) {
+      console.error('Update document error:', updateError);
+      return apiError('Failed to update document', 500, 'UPDATE_DOCUMENT_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,
@@ -213,7 +163,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.DELETE_DOCUMENT)) {
@@ -223,12 +177,25 @@ export async function DELETE(
     const { id } = await params;
 
     // Verify document exists
-    const existingDoc = await db.document.findUnique({ where: { id } });
-    if (!existingDoc) {
+    const { data: existingDoc, error: fetchError } = await db
+      .from('documents')
+      .select('id, title')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingDoc) {
       return apiError('Document not found', 404, 'DOCUMENT_NOT_FOUND');
     }
 
-    await db.document.delete({ where: { id } });
+    const { error: deleteError } = await db
+      .from('documents')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('Delete document error:', deleteError);
+      return apiError('Failed to delete document', 500, 'DELETE_DOCUMENT_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,

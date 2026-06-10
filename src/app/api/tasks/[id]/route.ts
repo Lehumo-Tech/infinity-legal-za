@@ -1,5 +1,5 @@
 /**
- * GET/PUT/DELETE /api/tasks/[id] - Get/Update/Delete a single task
+ * GET/PUT/DELETE /api/tasks/[id] - Get/Update/Delete a single task via Supabase
  */
 
 import { NextRequest } from 'next/server';
@@ -19,7 +19,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_TASKS)) {
@@ -28,38 +32,13 @@ export async function GET(
 
     const { id } = await params;
 
-    const task = await db.task.findUnique({
-      where: { id },
-      include: {
-        assignee: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-            department: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-          },
-        },
-        case: {
-          select: {
-            id: true,
-            matter_number: true,
-            title: true,
-            status: true,
-          },
-        },
-      },
-    });
+    const { data: task, error } = await db
+      .from('tasks')
+      .select('*, assignee:profiles!tasks_assigned_to_fkey(user_id, full_name, email, role, department), creator:profiles!tasks_created_by_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title, status)')
+      .eq('id', id)
+      .single();
 
-    if (!task) {
+    if (error || !task) {
       return apiError('Task not found', 404, 'TASK_NOT_FOUND');
     }
 
@@ -76,7 +55,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.EDIT_TASK)) {
@@ -86,8 +69,13 @@ export async function PUT(
     const { id } = await params;
 
     // Verify task exists
-    const existingTask = await db.task.findUnique({ where: { id } });
-    if (!existingTask) {
+    const { data: existingTask, error: fetchError } = await db
+      .from('tasks')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingTask) {
       return apiError('Task not found', 404, 'TASK_NOT_FOUND');
     }
 
@@ -117,56 +105,35 @@ export async function PUT(
     if (description !== undefined) updateData.description = description ? sanitizeString(description) : null;
     if (status !== undefined) updateData.status = status;
     if (priority !== undefined) updateData.priority = priority;
-    if (due_date !== undefined) updateData.due_date = due_date ? new Date(due_date) : null;
-    if (completed_date !== undefined) updateData.completed_date = completed_date ? new Date(completed_date) : null;
+    if (due_date !== undefined) updateData.due_date = due_date || null;
+    if (completed_date !== undefined) updateData.completed_date = completed_date || null;
 
     // If status changes to 'completed', set completed_date to now
     if (status === 'completed' && existingTask.status !== 'completed') {
-      updateData.completed_date = new Date();
+      updateData.completed_date = new Date().toISOString();
     }
 
-    const updatedTask = await db.task.update({
-      where: { id },
-      data: updateData,
-      include: {
-        assignee: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-            department: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-          },
-        },
-        case: {
-          select: {
-            id: true,
-            matter_number: true,
-            title: true,
-          },
-        },
-      },
-    });
+    const { data: updatedTask, error: updateError } = await db
+      .from('tasks')
+      .update(updateData)
+      .eq('id', id)
+      .select('*, assignee:profiles!tasks_assigned_to_fkey(user_id, full_name, email, role, department), creator:profiles!tasks_created_by_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title)')
+      .single();
+
+    if (updateError || !updatedTask) {
+      console.error('Update task error:', updateError);
+      return apiError('Failed to update task', 500, 'UPDATE_TASK_ERROR');
+    }
 
     // Create notification if status changes
     if (status && status !== existingTask.status) {
-      await db.notification.create({
-        data: {
-          user_id: existingTask.assigned_to,
-          type: 'task_assigned',
-          title: 'Task Status Updated',
-          message: `Task "${existingTask.title}" status changed from ${existingTask.status} to ${status}`,
-          link: `/tasks/${id}`,
-          related_id: id,
-        },
+      await db.from('notifications').insert({
+        user_id: existingTask.assigned_to,
+        type: 'task_assigned',
+        title: 'Task Status Updated',
+        message: `Task "${existingTask.title}" status changed from ${existingTask.status} to ${status}`,
+        link: `/tasks/${id}`,
+        related_id: id,
       });
     }
 
@@ -191,7 +158,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.DELETE_TASK)) {
@@ -201,12 +172,25 @@ export async function DELETE(
     const { id } = await params;
 
     // Verify task exists
-    const existingTask = await db.task.findUnique({ where: { id } });
-    if (!existingTask) {
+    const { data: existingTask, error: fetchError } = await db
+      .from('tasks')
+      .select('id, title')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingTask) {
       return apiError('Task not found', 404, 'TASK_NOT_FOUND');
     }
 
-    await db.task.delete({ where: { id } });
+    const { error: deleteError } = await db
+      .from('tasks')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('Delete task error:', deleteError);
+      return apiError('Failed to delete task', 500, 'DELETE_TASK_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,

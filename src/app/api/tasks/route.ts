@@ -1,5 +1,5 @@
 /**
- * GET/POST /api/tasks - List/Create tasks with pagination via Prisma/SQLite
+ * GET/POST /api/tasks - List/Create tasks with pagination via Supabase
  */
 
 import { NextRequest } from 'next/server';
@@ -12,14 +12,18 @@ import { createAuditLog } from '@/lib/audit';
 // GET - List tasks with pagination and filters
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_TASKS)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    const { page, perPage, skip, take } = getPaginationParams(request);
+    const { page, perPage, from, to } = getPaginationParams(request);
     const url = new URL(request.url);
 
     const assigned_to = url.searchParams.get('assigned_to');
@@ -28,59 +32,29 @@ export async function GET(request: NextRequest) {
     const priority = url.searchParams.get('priority');
     const search = url.searchParams.get('search');
 
-    // Build where clause
-    const where: Record<string, unknown> = {};
-    if (assigned_to) where.assigned_to = assigned_to;
-    if (case_id) where.case_id = case_id;
-    if (status) where.status = status;
-    if (priority) where.priority = priority;
-    if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { description: { contains: search } },
-      ];
+    // Build query
+    let query = db
+      .from('tasks')
+      .select('*, assignee:profiles!tasks_assigned_to_fkey(user_id, full_name, email, role, department), creator:profiles!tasks_created_by_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title, status)', { count: 'exact' });
+
+    if (assigned_to) query = query.eq('assigned_to', assigned_to);
+    if (case_id) query = query.eq('case_id', case_id);
+    if (status) query = query.eq('status', status);
+    if (priority) query = query.eq('priority', priority);
+    if (search) query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+
+    const { data: tasks, count, error } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      console.error('Tasks list query error:', error);
+      return apiError('Failed to load tasks', 500, 'TASKS_ERROR');
     }
 
-    const [tasks, total] = await Promise.all([
-      db.task.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { created_at: 'desc' },
-        include: {
-          assignee: {
-            select: {
-              id: true,
-              full_name: true,
-              email: true,
-              role: true,
-              department: true,
-            },
-          },
-          creator: {
-            select: {
-              id: true,
-              full_name: true,
-              email: true,
-              role: true,
-            },
-          },
-          case: {
-            select: {
-              id: true,
-              matter_number: true,
-              title: true,
-              status: true,
-            },
-          },
-        },
-      }),
-      db.task.count({ where }),
-    ]);
-
     return apiResponse({
-      data: tasks,
-      pagination: createPaginationResult(total, page, perPage),
+      data: tasks || [],
+      pagination: createPaginationResult(count || 0, page, perPage),
     });
   } catch (error) {
     console.error('Tasks list error:', error);
@@ -91,7 +65,11 @@ export async function GET(request: NextRequest) {
 // POST - Create a new task
 export async function POST(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const body = await request.json();
@@ -127,10 +105,12 @@ export async function POST(request: NextRequest) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    // Validate assignee exists
-    const assignee = await db.user.findUnique({
-      where: { id: assigned_to },
-    });
+    // Validate assignee exists (profiles table uses user_id for auth UUID)
+    const { data: assignee } = await db
+      .from('profiles')
+      .select('user_id, full_name, email, role, department')
+      .eq('user_id', assigned_to)
+      .single();
 
     if (!assignee) {
       return apiError('Assignee not found', 404, 'ASSIGNEE_NOT_FOUND');
@@ -138,16 +118,19 @@ export async function POST(request: NextRequest) {
 
     // Validate case exists if provided
     if (case_id) {
-      const caseRecord = await db.case.findUnique({
-        where: { id: case_id },
-      });
+      const { data: caseRecord } = await db
+        .from('cases')
+        .select('id')
+        .eq('id', case_id)
+        .single();
       if (!caseRecord) {
         return apiError('Case not found', 404, 'CASE_NOT_FOUND');
       }
     }
 
-    const task = await db.task.create({
-      data: {
+    const { data: task, error: insertError } = await db
+      .from('tasks')
+      .insert({
         title: sanitizeString(title),
         description: description ? sanitizeString(description) : null,
         assigned_to,
@@ -155,35 +138,15 @@ export async function POST(request: NextRequest) {
         case_id: case_id || null,
         priority,
         status: 'pending',
-        due_date: due_date ? new Date(due_date) : null,
-      },
-      include: {
-        assignee: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-            department: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true,
-            role: true,
-          },
-        },
-        case: {
-          select: {
-            id: true,
-            matter_number: true,
-            title: true,
-          },
-        },
-      },
-    });
+        due_date: due_date || null,
+      })
+      .select('*, assignee:profiles!tasks_assigned_to_fkey(user_id, full_name, email, role, department), creator:profiles!tasks_created_by_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title)')
+      .single();
+
+    if (insertError || !task) {
+      console.error('Create task insert error:', insertError);
+      return apiError('Failed to create task', 500, 'CREATE_TASK_ERROR');
+    }
 
     // Create audit log
     await createAuditLog({
@@ -195,15 +158,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Create notification for the assignee
-    await db.notification.create({
-      data: {
-        user_id: assigned_to,
-        type: 'task_assigned',
-        title: 'New Task Assigned',
-        message: `You have been assigned a new task: "${title}"`,
-        link: `/tasks/${task.id}`,
-        related_id: task.id,
-      },
+    await db.from('notifications').insert({
+      user_id: assigned_to,
+      type: 'task_assigned',
+      title: 'New Task Assigned',
+      message: `You have been assigned a new task: "${title}"`,
+      link: `/tasks/${task.id}`,
+      related_id: task.id,
     });
 
     return apiResponse(task, 201);

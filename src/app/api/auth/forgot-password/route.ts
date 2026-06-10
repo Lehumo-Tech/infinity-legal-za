@@ -1,22 +1,22 @@
 /**
- * POST /api/auth/forgot-password - Request a password reset token
- * Generates a temporary token and returns it (in production this would email the user)
+ * POST /api/auth/forgot-password - Send password reset email via Supabase
  */
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
-import { generateToken } from '@/lib/auth';
-import { apiResponse, apiError } from '@/lib/middleware';
+import { authRateLimiter } from '@/lib/security';
+import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
-import { signupRateLimiter } from '@/lib/security';
-import { checkRateLimit } from '@/lib/middleware';
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limit: 3 requests per hour per IP
-    const rateResult = await checkRateLimit(request, signupRateLimiter);
+    if (!db) {
+      return apiError('Service temporarily unavailable', 503, 'SERVICE_UNAVAILABLE');
+    }
+
+    const rateResult = await checkRateLimit(request, authRateLimiter);
     if (!rateResult.allowed) {
-      return apiError('Too many password reset requests. Please try again later.', 429, 'RATE_LIMITED');
+      return apiError('Too many attempts. Please try again later.', 429, 'RATE_LIMITED');
     }
 
     const body = await request.json();
@@ -26,55 +26,27 @@ export async function POST(request: NextRequest) {
       return apiError('Email is required', 400, 'MISSING_EMAIL');
     }
 
-    // Always return the same response to prevent email enumeration
-    const genericResponse = apiResponse({
-      message: 'If an account exists with this email, a password reset token has been generated.',
+    // Send password reset email via Supabase Auth
+    const { error } = await db.auth.resetPasswordForEmail(email.toLowerCase(), {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org'}/reset-password`,
     });
 
-    // Find user by email
-    const user = await db.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
-
-    if (!user) {
-      // Don't reveal that the user doesn't exist — return same response
-      return genericResponse;
+    // Always return success to prevent email enumeration
+    if (error) {
+      console.error('Password reset error:', error.message);
     }
 
-    if (!user.is_active) {
-      // Don't reveal that the account is deactivated
-      return genericResponse;
-    }
-
-    // Generate a temporary token scoped to password reset (15 minute expiry)
-    // In production, this token would be sent via email as a link
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: 'client',
-      department: 'password_change_only',
-    });
-
-    // Audit log
     await createAuditLog({
-      user_id: user.id,
       action: 'PASSWORD_RESET_REQUESTED',
       resource_type: 'user',
-      resource_id: user.id,
       ip_address: request.headers.get('x-forwarded-for') || undefined,
-      user_agent: request.headers.get('user-agent') || undefined,
     });
 
-    // In production, send email with reset link containing the token
-    // For now, return the token directly (sandbox/dev only)
     return apiResponse({
-      message: 'If an account exists with this email, a password reset token has been generated.',
-      // NOTE: In production, remove the token from the response.
-      // It should only be sent via email to the registered address.
-      token,
+      message: 'If an account with that email exists, a password reset link has been sent.',
     });
   } catch (error) {
     console.error('Forgot password error:', error);
-    return apiError('Password reset request failed', 500, 'FORGOT_PASSWORD_ERROR');
+    return apiError('Failed to process request', 500, 'RESET_ERROR');
   }
 }

@@ -1,7 +1,7 @@
 /**
  * Infinity Legal ZA - PayFast Success Return Handler
  * GET /api/payfast/success
- * 
+ *
  * Handles user returning from a successful PayFast payment.
  * The actual payment confirmation is handled by the ITN notify endpoint.
  * This just shows a success response to the user.

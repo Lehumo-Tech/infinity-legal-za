@@ -20,8 +20,12 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    // Authenticate user
-    const authResult = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    // Authenticate user (async for Supabase)
+    const authResult = await requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
     }
@@ -40,11 +44,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch the pricing plan
-    const plan = await db.pricingPlan.findUnique({
-      where: { id: planId },
-    });
+    const { data: plan, error: planError } = await db
+      .from('pricing_plans')
+      .select('*')
+      .eq('id', planId)
+      .single();
 
-    if (!plan) {
+    if (planError || !plan) {
       return apiError('Pricing plan not found', 404, 'PLAN_NOT_FOUND');
     }
 
@@ -62,23 +68,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already has an active subscription
-    const existingSub = await db.userSubscription.findFirst({
-      where: {
-        user_id: user.userId,
-        status: 'active',
-      },
-    });
+    const { data: existingSub } = await db
+      .from('user_subscriptions')
+      .select('id')
+      .eq('user_id', user.userId)
+      .eq('status', 'active')
+      .maybeSingle();
 
     if (existingSub) {
       return apiError('You already have an active subscription. Please cancel it first.', 409, 'SUBSCRIPTION_EXISTS');
     }
 
     // Fetch user details for PayFast
-    const dbUser = await db.user.findUnique({
-      where: { id: user.userId },
-    });
+    const { data: dbUser, error: userError } = await db
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.userId)
+      .single();
 
-    if (!dbUser) {
+    if (userError || !dbUser) {
       return apiError('User not found', 404, 'USER_NOT_FOUND');
     }
 
@@ -95,20 +103,28 @@ export async function POST(request: NextRequest) {
     const periodStart = new Date();
     const periodEnd = calculatePeriodEnd(periodStart, billingCycle);
 
-    const subscription = await db.userSubscription.create({
-      data: {
+    const { data: subscription, error: subError } = await db
+      .from('user_subscriptions')
+      .insert({
         user_id: user.userId,
         plan_id: planId,
         status: 'trialing', // Will be set to active on ITN confirmation
-        current_period_start: periodStart,
-        current_period_end: periodEnd,
+        current_period_start: periodStart.toISOString(),
+        current_period_end: periodEnd.toISOString(),
         cancel_at_period_end: false,
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (subError || !subscription) {
+      console.error('Failed to create subscription:', subError);
+      return apiError('Failed to create checkout session', 500, 'CHECKOUT_ERROR');
+    }
 
     // Create a pending payment record
-    await db.paymentRecord.create({
-      data: {
+    const { error: paymentError } = await db
+      .from('payment_records')
+      .insert({
         user_id: user.userId,
         subscription_id: subscription.id,
         m_payment_id: mPaymentId,
@@ -116,8 +132,12 @@ export async function POST(request: NextRequest) {
         payment_status: 'pending',
         item_name: `${plan.name} - ${billingCycle === 'annual' ? 'Annual' : 'Monthly'}`,
         billing_cycle: billingCycle,
-      },
-    });
+      });
+
+    if (paymentError) {
+      console.error('Failed to create payment record:', paymentError);
+      return apiError('Failed to create checkout session', 500, 'CHECKOUT_ERROR');
+    }
 
     // Build PayFast form data
     const isSubscription = billingCycle === 'monthly';

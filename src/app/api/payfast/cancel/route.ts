@@ -1,7 +1,7 @@
 /**
  * Infinity Legal ZA - PayFast Cancel Return Handler
  * GET /api/payfast/cancel
- * 
+ *
  * Handles user returning from a cancelled PayFast payment.
  */
 

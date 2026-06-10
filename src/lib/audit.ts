@@ -1,9 +1,15 @@
 /**
- * Infinity Legal ZA - Audit & Analytics Library
- * Uses Prisma + SQLite for reliable data persistence
+ * Infinity Legal ZA - Audit & Analytics Library (Supabase)
  */
 
-import { db } from '@/lib/db';
+import { db, isSupabaseConfigured } from '@/lib/db';
+
+function checkDb() {
+  if (!isSupabaseConfigured() || !db) {
+    return false;
+  }
+  return true;
+}
 
 export async function createAuditLog(params: {
   user_id?: string;
@@ -14,21 +20,20 @@ export async function createAuditLog(params: {
   ip_address?: string;
   user_agent?: string;
 }) {
+  if (!checkDb()) return;
   try {
-    return await db.auditLog.create({
-      data: {
-        user_id: params.user_id || null,
-        action: params.action,
-        resource_type: params.resource_type,
-        resource_id: params.resource_id || null,
-        details: params.details || null,
-        ip_address: params.ip_address || null,
-        user_agent: params.user_agent || null,
-      },
+    const { error } = await db.from('audit_logs').insert({
+      user_id: params.user_id || null,
+      action: params.action,
+      resource_type: params.resource_type,
+      resource_id: params.resource_id || null,
+      details: params.details || null,
+      ip_address: params.ip_address || null,
+      user_agent: params.user_agent || null,
     });
+    if (error) console.error('Failed to create audit log:', error.message);
   } catch (error) {
     console.error('Failed to create audit log:', error);
-    return null;
   }
 }
 
@@ -41,21 +46,19 @@ export async function trackApiEvent(params: {
   ip_address?: string;
   user_agent?: string;
 }) {
+  if (!checkDb()) return;
   try {
-    return await db.apiAnalytic.create({
-      data: {
-        endpoint: params.endpoint,
-        method: params.method,
-        status_code: params.status_code,
-        response_time_ms: params.response_time_ms || null,
-        user_id: params.user_id || null,
-        ip_address: params.ip_address || null,
-        user_agent: params.user_agent || null,
-      },
+    await db.from('api_analytics').insert({
+      endpoint: params.endpoint,
+      method: params.method,
+      status_code: params.status_code,
+      response_time_ms: params.response_time_ms || null,
+      user_id: params.user_id || null,
+      ip_address: params.ip_address || null,
+      user_agent: params.user_agent || null,
     });
   } catch (error) {
     console.error('Failed to track API event:', error);
-    return null;
   }
 }
 
@@ -67,20 +70,18 @@ export async function logError(params: {
   user_id?: string;
   metadata?: string;
 }) {
+  if (!checkDb()) return;
   try {
-    return await db.errorLog.create({
-      data: {
-        error_type: params.error_type as any,
-        message: params.message,
-        stack_trace: params.stack_trace || null,
-        url: params.url || null,
-        user_id: params.user_id || null,
-        metadata: params.metadata || null,
-      },
+    await db.from('error_logs').insert({
+      error_type: params.error_type as any,
+      message: params.message,
+      stack_trace: params.stack_trace || null,
+      url: params.url || null,
+      user_id: params.user_id || null,
+      metadata: params.metadata || null,
     });
   } catch (error) {
     console.error('Failed to log error:', error);
-    return null;
   }
 }
 
@@ -92,102 +93,95 @@ export async function logConsent(params: {
   ip_address?: string;
   user_agent?: string;
 }) {
+  if (!checkDb()) return;
   try {
-    return await db.consentLog.create({
-      data: {
-        user_id: params.user_id || null,
-        consent_type: params.consent_type as any,
-        purpose: params.purpose,
-        granted: params.granted,
-        ip_address: params.ip_address || null,
-        user_agent: params.user_agent || null,
-      },
+    await db.from('consent_logs').insert({
+      user_id: params.user_id || null,
+      consent_type: params.consent_type as any,
+      purpose: params.purpose,
+      granted: params.granted,
+      ip_address: params.ip_address || null,
+      user_agent: params.user_agent || null,
     });
   } catch (error) {
     console.error('Failed to log consent:', error);
-    return null;
   }
 }
 
 // Dashboard analytics helpers
 export async function getDashboardStats() {
+  if (!checkDb()) {
+    return {
+      totalCases: 0, activeCases: 0, totalLeads: 0, newLeads: 0,
+      totalDocuments: 0, pendingTasks: 0, totalClients: 0, totalRevenue: 0,
+      casesByType: [], casesByStatus: [], leadsBySource: [], recentActivity: [],
+    };
+  }
   const [
-    totalCases,
-    activeCases,
-    totalLeads,
-    newLeads,
-    totalDocuments,
-    pendingTasks,
-    totalClients,
-    casesByTypeRaw,
-    casesByStatusRaw,
-    leadsBySourceRaw,
-    recentActivity,
+    { count: totalCases },
+    { count: activeCases },
+    { count: totalLeads },
+    { count: newLeads },
+    { count: totalDocuments },
+    { count: pendingTasks },
+    { count: totalClients },
   ] = await Promise.all([
-    db.case.count(),
-    db.case.count({ where: { status: 'active' } }),
-    db.lead.count(),
-    db.lead.count({ where: { status: 'new' } }),
-    db.document.count(),
-    db.task.count({ where: { status: 'pending' } }),
-    db.user.count({ where: { role: 'client' } }),
-    db.case.groupBy({ by: ['case_type'], _count: { case_type: true } }),
-    db.case.groupBy({ by: ['status'], _count: { status: true } }),
-    db.lead.groupBy({ by: ['source'], _count: { source: true } }),
-    db.auditLog.findMany({ take: 10, orderBy: { created_at: 'desc' } }),
+    db.from('cases').select('*', { count: 'exact', head: true }),
+    db.from('cases').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+    db.from('leads').select('*', { count: 'exact', head: true }),
+    db.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'new'),
+    db.from('documents').select('*', { count: 'exact', head: true }),
+    db.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    db.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'client'),
   ]);
 
-  // Calculate total revenue from case estimated values
-  const revenueResult = await db.case.aggregate({ _sum: { estimated_value: true } });
-  const totalRevenue = revenueResult._sum.estimated_value || 0;
+  // Cases by type
+  const { data: casesByType } = await db.from('cases').select('case_type');
+  const casesByTypeMap = (casesByType || []).reduce((acc: any, c: any) => {
+    acc[c.case_type] = (acc[c.case_type] || 0) + 1;
+    return acc;
+  }, {});
+  const casesByTypeResult = Object.entries(casesByTypeMap).map(([case_type, count]) => ({ case_type, count }));
 
-  const mapGrouped = (data: any[], key: string) =>
-    data.map((item: any) => ({ [key]: item[key], count: item._count[key] }));
+  // Cases by status
+  const { data: casesByStatus } = await db.from('cases').select('status');
+  const casesByStatusMap = (casesByStatus || []).reduce((acc: any, c: any) => {
+    acc[c.status] = (acc[c.status] || 0) + 1;
+    return acc;
+  }, {});
+  const casesByStatusResult = Object.entries(casesByStatusMap).map(([status, count]) => ({ status, count }));
+
+  // Leads by source
+  const { data: leadsBySource } = await db.from('leads').select('source');
+  const leadsBySourceMap = (leadsBySource || []).reduce((acc: any, l: any) => {
+    acc[l.source] = (acc[l.source] || 0) + 1;
+    return acc;
+  }, {});
+  const leadsBySourceResult = Object.entries(leadsBySourceMap).map(([source, count]) => ({ source, count }));
+
+  // Recent activity
+  const { data: recentActivity } = await db
+    .from('audit_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  // Revenue
+  const { data: revenueData } = await db.from('cases').select('estimated_value');
+  const totalRevenue = (revenueData || []).reduce((sum, c) => sum + (c.estimated_value || 0), 0);
 
   return {
-    totalCases,
-    activeCases,
-    totalLeads,
-    newLeads,
-    totalDocuments,
-    pendingTasks,
-    totalClients,
+    totalCases: totalCases || 0,
+    activeCases: activeCases || 0,
+    totalLeads: totalLeads || 0,
+    newLeads: newLeads || 0,
+    totalDocuments: totalDocuments || 0,
+    pendingTasks: pendingTasks || 0,
+    totalClients: totalClients || 0,
     totalRevenue,
-    casesByType: mapGrouped(casesByTypeRaw, 'case_type'),
-    casesByStatus: mapGrouped(casesByStatusRaw, 'status'),
-    leadsBySource: mapGrouped(leadsBySourceRaw, 'source'),
-    recentActivity,
+    casesByType: casesByTypeResult,
+    casesByStatus: casesByStatusResult,
+    leadsBySource: leadsBySourceResult,
+    recentActivity: recentActivity || [],
   };
-}
-
-// Backup tracking
-export async function createBackupRecord(filename: string, backupType: string = 'scheduled') {
-  return db.backupRecord.create({
-    data: {
-      filename,
-      backup_type: backupType,
-      status: 'in_progress',
-    },
-  });
-}
-
-export async function completeBackupRecord(id: string, sizeBytes: number) {
-  return db.backupRecord.update({
-    where: { id },
-    data: {
-      status: 'completed',
-      size_bytes: sizeBytes,
-      completed_at: new Date(),
-    },
-  });
-}
-
-export async function failBackupRecord(id: string, error: string) {
-  return db.backupRecord.update({
-    where: { id },
-    data: {
-      status: 'failed',
-      error,
-    },
-  });
 }

@@ -1,5 +1,5 @@
 /**
- * GET/POST /api/leads - List/Create leads with pagination via Prisma/SQLite
+ * GET/POST /api/leads - List/Create leads with pagination via Supabase
  */
 
 import { NextRequest } from 'next/server';
@@ -11,46 +11,51 @@ import { createAuditLog } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_LEADS)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    const { page, perPage, skip, take } = getPaginationParams(request);
+    const { page, perPage, from, to } = getPaginationParams(request);
     const url = new URL(request.url);
 
     const status = url.searchParams.get('status');
     const source = url.searchParams.get('source');
     const search = url.searchParams.get('search');
 
-    const where: any = {};
-    if (status) where.status = status;
-    if (source) where.source = source;
+    // Build Supabase query
+    const selectFields = '*, assigned_paralegal:profiles!assigned_paralegal_id(id, full_name), assigned_officer:profiles!assigned_officer_id(id, full_name)';
+
+    let query = db.from('leads').select(selectFields, { count: 'exact' });
+
+    // Apply filters
+    if (status) query = query.eq('status', status);
+    if (source) query = query.eq('source', source);
+
+    // Search across multiple fields
     if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { email: { contains: search } },
-        { description: { contains: search } },
-      ];
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
-    const [leads, total] = await Promise.all([
-      db.lead.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { created_at: 'desc' },
-        include: {
-          assigned_paralegal: { select: { id: true, full_name: true } },
-          assigned_officer: { select: { id: true, full_name: true } },
-        },
-      }),
-      db.lead.count({ where }),
-    ]);
+    // Apply pagination and ordering
+    const result = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
-    const formattedLeads = leads.map(l => ({
+    if (result.error) {
+      console.error('Leads query error:', result.error);
+      return apiError('Failed to load leads', 500, 'LEADS_ERROR');
+    }
+
+    const total = result.count || 0;
+
+    const formattedLeads = (result.data || []).map((l: any) => ({
       id: l.id,
       name: l.name,
       email: l.email,
@@ -83,7 +88,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.CREATE_LEAD)) {
@@ -110,8 +119,9 @@ export async function POST(request: NextRequest) {
 
     const slaDeadline = new Date(Date.now() + 7 * 86400000);
 
-    const lead = await db.lead.create({
-      data: {
+    const { data: lead, error: insertError } = await db
+      .from('leads')
+      .insert({
         name: sanitizeString(name),
         email: email.toLowerCase(),
         phone: phone ? sanitizeString(phone) : null,
@@ -119,11 +129,17 @@ export async function POST(request: NextRequest) {
         case_type: case_type || null,
         description: description ? sanitizeString(description) : null,
         status: 'new',
-        first_contact_date: new Date(),
-        sla_deadline: slaDeadline,
+        first_contact_date: new Date().toISOString(),
+        sla_deadline: slaDeadline.toISOString(),
         lead_score: 50,
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (insertError || !lead) {
+      console.error('Create lead insert error:', insertError);
+      return apiError('Failed to create lead', 500, 'CREATE_LEAD_ERROR');
+    }
 
     await createAuditLog({
       user_id: auth.user.userId,

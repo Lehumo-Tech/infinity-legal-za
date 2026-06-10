@@ -1,5 +1,5 @@
 /**
- * GET /api/analytics - Analytics data from Prisma/SQLite
+ * GET /api/analytics - Analytics data from Supabase
  */
 
 import { NextRequest } from 'next/server';
@@ -9,7 +9,11 @@ import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ANALYTICS)) {
@@ -28,22 +32,54 @@ export async function GET(request: NextRequest) {
       case '1y': startDate.setFullYear(startDate.getFullYear() - 1); break;
     }
 
-    const dateFilter = { gte: startDate };
+    const startDateIso = startDate.toISOString();
 
-    const [apiCalls, errorCount, errorsByType, topEndpoints] = await Promise.all([
-      db.apiAnalytic.count({ where: { created_at: dateFilter } }),
-      db.errorLog.count({ where: { created_at: dateFilter } }),
-      db.errorLog.groupBy({
-        by: ['error_type'],
-        _count: { error_type: true },
-        where: { created_at: dateFilter },
-      }),
-      db.apiAnalytic.groupBy({
-        by: ['endpoint'],
-        _count: { endpoint: true },
-        where: { created_at: dateFilter },
-      }),
+    // Run all queries in parallel
+    const [
+      apiCallsResult,
+      errorCountResult,
+      errorsData,
+      topEndpointsData,
+    ] = await Promise.all([
+      // Total API calls in period
+      db.from('api_analytics')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateIso),
+      // Total errors in period
+      db.from('error_logs')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', startDateIso),
+      // Errors by type — select and group in JS
+      db.from('error_logs')
+        .select('error_type')
+        .gte('created_at', startDateIso),
+      // Top endpoints — select and group in JS
+      db.from('api_analytics')
+        .select('endpoint')
+        .gte('created_at', startDateIso),
     ]);
+
+    const apiCalls = apiCallsResult.count || 0;
+    const errorCount = errorCountResult.count || 0;
+
+    // Group errors by type in JS
+    const errorsByTypeMap: Record<string, number> = {};
+    for (const item of (errorsData.data || [])) {
+      const t = item.error_type || 'unknown';
+      errorsByTypeMap[t] = (errorsByTypeMap[t] || 0) + 1;
+    }
+    const errorsByType = Object.entries(errorsByTypeMap).map(([type, count]) => ({ type, count }));
+
+    // Group endpoints in JS and get top 10
+    const endpointMap: Record<string, number> = {};
+    for (const item of (topEndpointsData.data || [])) {
+      const ep = item.endpoint || 'unknown';
+      endpointMap[ep] = (endpointMap[ep] || 0) + 1;
+    }
+    const topEndpoints = Object.entries(endpointMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([endpoint, calls]) => ({ endpoint, calls }));
 
     return apiResponse({
       period,
@@ -53,11 +89,8 @@ export async function GET(request: NextRequest) {
         totalErrors: errorCount,
         errorRate: apiCalls > 0 ? ((errorCount / apiCalls) * 100).toFixed(2) : '0',
       },
-      topEndpoints: topEndpoints
-        .sort((a: any, b: any) => b._count.endpoint - a._count.endpoint)
-        .slice(0, 10)
-        .map((item: any) => ({ endpoint: item.endpoint, calls: item._count.endpoint })),
-      errorsByType: errorsByType.map((item: any) => ({ type: item.error_type, count: item._count.error_type })),
+      topEndpoints,
+      errorsByType,
     });
   } catch (error) {
     console.error('Analytics error:', error);

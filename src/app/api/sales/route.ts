@@ -19,7 +19,11 @@ const ALLOWED_ROLES: RoleKey[] = [
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const userRole = auth.user.role as RoleKey;
@@ -30,93 +34,87 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
 
     // Run all queries in parallel
     const [
-      leadsByStatus,
-      leadsBySource,
-      totalLeads,
-      convertedLeads,
-      avgLeadScoreResult,
-      revenueBySource,
-      followUpsDue,
-      recentConversions,
+      allLeadsData,
+      convertedLeadsResult,
+      recentConversionsData,
     ] = await Promise.all([
-      // Leads grouped by status with counts and sum of estimated_value
-      db.lead.groupBy({
-        by: ['status'],
-        _count: { status: true },
-        _sum: { estimated_value: true },
-      }),
-      // Leads grouped by source with counts
-      db.lead.groupBy({
-        by: ['source'],
-        _count: { source: true },
-      }),
-      // Total leads count
-      db.lead.count(),
-      // Converted leads count (status: retained)
-      db.lead.count({
-        where: { status: 'retained' },
-      }),
-      // Average lead score
-      db.lead.aggregate({
-        _avg: { lead_score: true },
-      }),
-      // Revenue by source (retained leads only)
-      db.lead.groupBy({
-        by: ['source'],
-        where: { status: 'retained' },
-        _sum: { estimated_value: true },
-        _count: { source: true },
-      }),
-      // Follow-ups due (sla_deadline <= now, status not in retained/lost/disqualified)
-      db.lead.count({
-        where: {
-          sla_deadline: { lte: now },
-          status: { notIn: ['retained', 'lost', 'disqualified'] },
-        },
-      }),
+      // All leads (for grouping by status and source)
+      db.from('leads')
+        .select('status, source, estimated_value, lead_score, sla_deadline, name, email, updated_at, id')
+        .order('updated_at', { ascending: false }),
+      // Converted leads count
+      db.from('leads')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'retained'),
       // Recent conversions (retained, updated last 30 days)
-      db.lead.findMany({
-        where: {
-          status: 'retained',
-          updated_at: { gte: thirtyDaysAgo },
-        },
-        orderBy: { updated_at: 'desc' },
-        take: 10,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          source: true,
-          estimated_value: true,
-          updated_at: true,
-        },
-      }),
+      db.from('leads')
+        .select('id, name, email, source, estimated_value, updated_at')
+        .eq('status', 'retained')
+        .gte('updated_at', thirtyDaysAgoIso)
+        .order('updated_at', { ascending: false })
+        .limit(10),
     ]);
 
-    // Format pipeline summary from leadsByStatus
-    const pipelineSummary = leadsByStatus.map((item) => ({
-      status: item.status,
-      count: item._count.status,
-      total_estimated_value: item._sum.estimated_value || 0,
+    const allLeads = allLeadsData.data || [];
+    const totalLeads = allLeads.length;
+    const convertedLeads = convertedLeadsResult.count || 0;
+    const recentConversions = recentConversionsData.data || [];
+
+    // Group by status with counts and sum of estimated_value
+    const statusMap: Record<string, { count: number; totalEstimatedValue: number }> = {};
+    for (const lead of allLeads) {
+      const s = lead.status || 'unknown';
+      if (!statusMap[s]) statusMap[s] = { count: 0, totalEstimatedValue: 0 };
+      statusMap[s].count++;
+      statusMap[s].totalEstimatedValue += lead.estimated_value || 0;
+    }
+    const pipelineSummary = Object.entries(statusMap).map(([status, data]) => ({
+      status,
+      count: data.count,
+      total_estimated_value: data.totalEstimatedValue,
     }));
 
-    // Format top lead sources from leadsBySource
-    const topLeadSources = leadsBySource
-      .sort((a, b) => b._count.source - a._count.source)
-      .map((item) => ({
-        source: item.source,
-        count: item._count.source,
-      }));
+    // Group by source with counts
+    const sourceMap: Record<string, number> = {};
+    for (const lead of allLeads) {
+      const src = lead.source || 'unknown';
+      sourceMap[src] = (sourceMap[src] || 0) + 1;
+    }
+    const topLeadSources = Object.entries(sourceMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([source, count]) => ({ source, count }));
 
-    // Format revenue by source
-    const revenueBySourceFormatted = revenueBySource.map((item) => ({
-      source: item.source,
-      revenue: item._sum.estimated_value || 0,
-      converted_count: item._count.source,
+    // Average lead score
+    const totalScore = allLeads.reduce((sum, l) => sum + (l.lead_score || 0), 0);
+    const averageLeadScore = totalLeads > 0
+      ? Math.round((totalScore / totalLeads) * 10) / 10
+      : 0;
+
+    // Revenue by source (retained leads only)
+    const revenueSourceMap: Record<string, { revenue: number; convertedCount: number }> = {};
+    for (const lead of allLeads.filter((l: any) => l.status === 'retained')) {
+      const src = lead.source || 'unknown';
+      if (!revenueSourceMap[src]) revenueSourceMap[src] = { revenue: 0, convertedCount: 0 };
+      revenueSourceMap[src].revenue += lead.estimated_value || 0;
+      revenueSourceMap[src].convertedCount++;
+    }
+    const revenueBySourceFormatted = Object.entries(revenueSourceMap).map(([source, data]) => ({
+      source,
+      revenue: data.revenue,
+      converted_count: data.convertedCount,
     }));
+
+    // Follow-ups due (sla_deadline <= now, status not in retained/lost/disqualified)
+    const followUpStatuses = ['new', 'contacted', 'qualified', 'consultation_scheduled'];
+    const followUpsDue = allLeads.filter((l: any) => {
+      if (!followUpStatuses.includes(l.status)) return false;
+      if (!l.sla_deadline) return false;
+      return new Date(l.sla_deadline) <= now;
+    }).length;
 
     // Calculate conversion rate
     const conversionRate = totalLeads > 0
@@ -133,9 +131,7 @@ export async function GET(request: NextRequest) {
       total_leads: totalLeads,
       monthly_targets: monthlyTargets,
       top_lead_sources: topLeadSources,
-      average_lead_score: avgLeadScoreResult._avg.lead_score
-        ? Math.round(avgLeadScoreResult._avg.lead_score * 10) / 10
-        : 0,
+      average_lead_score: averageLeadScore,
       revenue_by_source: revenueBySourceFormatted,
       follow_ups_due: followUpsDue,
       recent_conversions: recentConversions,

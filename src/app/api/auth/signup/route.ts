@@ -1,17 +1,20 @@
 /**
- * POST /api/auth/signup - Register new user via Prisma/PostgreSQL
+ * POST /api/auth/signup - Register new user via Supabase Auth
  */
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
-import { generateToken, hashPassword, validatePasswordStrength, getPasswordExpiryDate } from '@/lib/auth';
+import { validatePasswordStrength } from '@/lib/auth';
 import { signupRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
 import { createAuditLog, logConsent } from '@/lib/audit';
-import { isDisposableEmail, validateEmailDeliverability } from '@/lib/email-validation';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!db) {
+      return apiError('Service temporarily unavailable', 503, 'SERVICE_UNAVAILABLE');
+    }
+
     const rateResult = await checkRateLimit(request, signupRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many signup attempts. Please try again later.', 429, 'RATE_LIMITED');
@@ -20,7 +23,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, full_name, phone, consent_given, popia_consent } = body;
 
-    // SECURITY: Signup is always 'client' role — ignore any user-supplied role
+    // Signup is always 'client' role
     const role = 'client';
 
     if (!email || !password || !full_name) {
@@ -29,32 +32,6 @@ export async function POST(request: NextRequest) {
 
     if (!isValidEmail(email)) {
       return apiError('Invalid email format', 400, 'INVALID_EMAIL');
-    }
-
-    // External email validation: disposable + deliverability checks
-    // If APIs are down, validation passes (graceful degradation)
-    try {
-      const [disposableResult, deliverabilityResult] = await Promise.all([
-        isDisposableEmail(email),
-        validateEmailDeliverability(email),
-      ]);
-
-      // Reject disposable/temporary emails
-      if (!disposableResult.valid) {
-        return apiError(
-          disposableResult.reason || 'Disposable email addresses are not allowed. Please use a permanent email.',
-          400,
-          'DISPOSABLE_EMAIL'
-        );
-      }
-
-      // Warn about undeliverable emails but don't block (soft check)
-      if (!deliverabilityResult.valid && deliverabilityResult.checked) {
-        console.warn(`[Signup] Email deliverability warning for ${email}: ${deliverabilityResult.reason}`);
-      }
-    } catch (error) {
-      // Never block signup if external email validation APIs fail
-      console.warn('[Signup] Email validation API failed, continuing signup:', error);
     }
 
     const strengthCheck = validatePasswordStrength(password);
@@ -66,49 +43,53 @@ export async function POST(request: NextRequest) {
       return apiError('POPIA consent is required to create an account', 400, 'CONSENT_REQUIRED');
     }
 
-    // Check if email already exists
-    const existingUser = await db.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
+    // Check if email already exists in profiles
+    const { data: existingProfile } = await db
+      .from('profiles')
+      .select('id')
+      .eq('email', email.toLowerCase())
+      .single();
 
-    if (existingUser) {
+    if (existingProfile) {
       return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
     }
 
-    const passwordExpiry = getPasswordExpiryDate();
-    const hashedPassword = hashPassword(password);
+    // Create user in Supabase Auth
+    const { data: authData, error: authError } = await db.auth.admin.createUser({
+      email: email.toLowerCase(),
+      password,
+      email_confirm: true, // Auto-confirm for now
+      user_metadata: {
+        full_name: sanitizeString(full_name),
+        phone: phone ? sanitizeString(phone) : undefined,
+        role,
+      },
+    });
 
-    // Create user
-    const user = await db.user.create({
-      data: {
-        email: email.toLowerCase(),
-        password: hashedPassword,
+    if (authError || !authData.user) {
+      if (authError?.message?.includes('already registered')) {
+        return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
+      }
+      return apiError('Failed to create account', 500, 'SIGNUP_ERROR');
+    }
+
+    // Update the profile with additional info (auto-created by trigger)
+    const { error: profileError } = await db
+      .from('profiles')
+      .update({
         full_name: sanitizeString(full_name),
         phone: phone ? sanitizeString(phone) : null,
-        role: role,
-        is_active: true,
-        email_verified: false,
-        password_expires_at: passwordExpiry,
-        last_password_change: new Date(),
-      },
-    });
+      })
+      .eq('user_id', authData.user.id);
 
-    // Create profile
-    await db.profile.create({
-      data: {
-        user_id: user.id,
-        email: user.email,
-        full_name: user.full_name || '',
-        phone: user.phone,
-        role: user.role,
-        department: user.department,
-        is_active: true,
-      },
-    });
+    if (profileError) {
+      console.error('Profile update error:', profileError);
+    }
 
     // Log consent
+    const userId = authData.user.id;
     await logConsent({
-      user_id: user.id,
+      user_id: userId,
       consent_type: 'data_processing',
       purpose: 'Account creation and service provision',
       granted: true,
@@ -116,7 +97,7 @@ export async function POST(request: NextRequest) {
     });
 
     await logConsent({
-      user_id: user.id,
+      user_id: userId,
       consent_type: 'popia_general',
       purpose: 'POPIA compliance - data processing consent',
       granted: true,
@@ -124,30 +105,45 @@ export async function POST(request: NextRequest) {
     });
 
     await createAuditLog({
-      user_id: user.id,
+      user_id: userId,
       action: 'USER_SIGNUP',
       resource_type: 'user',
-      resource_id: user.id,
+      resource_id: userId,
       ip_address: request.headers.get('x-forwarded-for') || undefined,
     });
 
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      department: user.department || undefined,
+    // Sign in to get access token
+    const { data: signInData, error: signInError } = await db.auth.signInWithPassword({
+      email: email.toLowerCase(),
+      password,
     });
 
+    if (signInError || !signInData.session) {
+      // User was created but can't sign in immediately — still return success
+      return apiResponse({
+        message: 'Account created successfully. Please sign in.',
+        user: {
+          id: userId,
+          email: email.toLowerCase(),
+          full_name: sanitizeString(full_name),
+          role,
+          department: null,
+          is_active: true,
+          email_verified: true,
+        },
+      }, 201);
+    }
+
     return apiResponse({
-      token,
+      token: signInData.session.access_token,
       user: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-        department: user.department,
-        is_active: user.is_active,
-        email_verified: user.email_verified,
+        id: userId,
+        email: email.toLowerCase(),
+        full_name: sanitizeString(full_name),
+        role,
+        department: null,
+        is_active: true,
+        email_verified: true,
       },
     }, 201);
   } catch (error) {

@@ -10,9 +10,20 @@ import { type RoleKey } from '@/lib/auth';
 
 const ALLOWED_ROLES: RoleKey[] = ['hr_manager', 'managing_director', 'senior_partner', 'systems_admin'];
 
+const NON_CLIENT_ROLES = [
+  'managing_director', 'senior_partner', 'associate', 'paralegal',
+  'legal_officer', 'supervising_officer', 'senior_consultant',
+  'consultant', 'candidate_attorney', 'hr_manager', 'finance_manager',
+  'office_administrator', 'systems_admin', 'receptionist',
+];
+
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireAuth(request);
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
+
+    const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const userRole = auth.user.role as RoleKey;
@@ -22,59 +33,61 @@ export async function GET(request: NextRequest) {
 
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    const ninetyDaysAgoIso = ninetyDaysAgo.toISOString();
 
     // Run all queries in parallel
     const [
-      totalEmployees,
-      activeEmployees,
-      employeesByDepartment,
-      employeesByRole,
-      recentHires,
+      totalEmployeesResult,
+      activeEmployeesResult,
+      employeesData,
+      recentHiresData,
     ] = await Promise.all([
-      db.user.count({
-        where: { role: { notIn: ['client', 'guest'] } },
-      }),
-      db.user.count({
-        where: {
-          role: { notIn: ['client', 'guest'] },
-          is_active: true,
-        },
-      }),
-      db.user.groupBy({
-        by: ['department'],
-        where: { role: { notIn: ['client', 'guest'] } },
-        _count: { department: true },
-      }),
-      db.user.groupBy({
-        by: ['role'],
-        where: { role: { notIn: ['client', 'guest'] } },
-        _count: { role: true },
-      }),
-      db.user.findMany({
-        where: {
-          role: { notIn: ['client', 'guest'] },
-          hire_date: { gte: ninetyDaysAgo },
-        },
-        select: {
-          id: true,
-          full_name: true,
-          role: true,
-          department: true,
-          hire_date: true,
-        },
-        orderBy: { hire_date: 'desc' },
-      }),
+      // Total employees
+      db.from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .in('role', NON_CLIENT_ROLES),
+      // Active employees
+      db.from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .in('role', NON_CLIENT_ROLES)
+        .eq('is_active', true),
+      // All employees for grouping (department + role)
+      db.from('profiles')
+        .select('department, role')
+        .in('role', NON_CLIENT_ROLES),
+      // Recent hires
+      db.from('profiles')
+        .select('id, full_name, role, department, hire_date')
+        .in('role', NON_CLIENT_ROLES)
+        .gte('hire_date', ninetyDaysAgoIso)
+        .order('hire_date', { ascending: false }),
     ]);
 
-    // Format grouped data
-    const employeesByDeptFormatted = employeesByDepartment.map((item) => ({
-      department: item.department || 'unassigned',
-      count: item._count.department,
+    const totalEmployees = totalEmployeesResult.count || 0;
+    const activeEmployees = activeEmployeesResult.count || 0;
+    const employees = employeesData.data || [];
+    const recentHires = recentHiresData.data || [];
+
+    // Group by department in JS
+    const deptMap: Record<string, number> = {};
+    for (const item of employees) {
+      const dept = item.department || 'unassigned';
+      deptMap[dept] = (deptMap[dept] || 0) + 1;
+    }
+    const employeesByDeptFormatted = Object.entries(deptMap).map(([department, count]) => ({
+      department,
+      count,
     }));
 
-    const employeesByRoleFormatted = employeesByRole.map((item) => ({
-      role: item.role,
-      count: item._count.role,
+    // Group by role in JS
+    const roleMap: Record<string, number> = {};
+    for (const item of employees) {
+      const r = item.role;
+      roleMap[r] = (roleMap[r] || 0) + 1;
+    }
+    const employeesByRoleFormatted = Object.entries(roleMap).map(([role, count]) => ({
+      role,
+      count,
     }));
 
     // Leave balances — empty until leave management system is built

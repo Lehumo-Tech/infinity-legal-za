@@ -18,7 +18,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https: blob:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://vercel.live https://vercel-insights.com https://*.vercel.app https://www.payfast.co.za https://sandbox.payfast.co.za",
+      "connect-src 'self' https://vercel.live https://vercel-insights.com https://*.vercel.app https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co",
       "frame-ancestors 'self' https: http:",
       "base-uri 'self'",
       "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
@@ -42,11 +42,6 @@ const securityHeaders = [
     value: "1800",
   },
 ];
-
-// Fix: System-level DATABASE_URL may point to SQLite, override with PostgreSQL URL
-if (process.env.DATABASE_URL?.startsWith('file:') && process.env.POSTGRES_URL) {
-  process.env.DATABASE_URL = process.env.POSTGRES_URL;
-}
 
 const nextConfig: NextConfig = {
   typescript: {
