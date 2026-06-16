@@ -3,27 +3,19 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Legal roles that can be assigned as attorneys for consultations
-const LEGAL_ROLES = [
-  'managing_director',
-  'senior_partner',
-  'associate',
-  'legal_officer',
-  'supervising_officer',
-  'candidate_attorney',
-  'senior_consultant',
-  'consultant',
-];
+// Valid enum values per Supabase schema
+const VALID_STATUSES = ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'];
 
 // GET - List consultations with pagination and filters
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -40,10 +32,12 @@ export async function GET(request: NextRequest) {
     const date_from = url.searchParams.get('date_from');
     const date_to = url.searchParams.get('date_to');
 
-    // Build query
+    // Build query — consultations.attorney_id FK → attorneys(id) → profiles(id)
+    // consultations has scheduled_at (not scheduled_date/scheduled_time)
+    // cases has case_ref (not matter_number)
     let query = db
       .from('consultations')
-      .select('*, client:profiles!consultations_client_id_fkey(user_id, full_name, email, phone), attorney:profiles!consultations_attorney_id_fkey(user_id, full_name, email, role, department), case:cases(id, matter_number, title)', { count: 'exact' });
+      .select('*, client:profiles!consultations_client_id_fkey(id, full_name, email, phone), attorney:attorneys!consultations_attorney_id_fkey(id, profile:profiles(full_name, email, role)), case:cases(id, case_ref, title)', { count: 'exact' });
 
     // Permission-based access control
     const canViewAll =
@@ -51,19 +45,19 @@ export async function GET(request: NextRequest) {
       hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_LEADS);
 
     if (!canViewAll) {
-      // Clients can only see their own consultations;
-      // Other staff can see consultations where they are the attorney or the client
-      query = query.or(`client_id.eq.${auth.user.userId},attorney_id.eq.${auth.user.userId}`);
+      // Clients can only see their own consultations
+      query = query.eq('client_id', auth.user.userId);
     }
 
     if (attorney_id) query = query.eq('attorney_id', attorney_id);
     if (client_id) query = query.eq('client_id', client_id);
     if (status) query = query.eq('status', status);
-    if (date_from) query = query.gte('scheduled_date', date_from);
-    if (date_to) query = query.lte('scheduled_date', date_to);
+    // Use scheduled_at instead of scheduled_date
+    if (date_from) query = query.gte('scheduled_at', date_from);
+    if (date_to) query = query.lte('scheduled_at', date_to);
 
     const { data: consultations, count, error } = await query
-      .order('scheduled_date', { ascending: false })
+      .order('scheduled_at', { ascending: false })
       .range(from, to);
 
     if (error) {
@@ -84,6 +78,7 @@ export async function GET(request: NextRequest) {
 // POST - Create a new consultation
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -95,68 +90,52 @@ export async function POST(request: NextRequest) {
     const {
       client_id,
       attorney_id,
-      scheduled_date,
-      scheduled_time,
+      scheduled_at,
       case_id,
       duration_minutes,
       meeting_type,
       notes,
       status,
+      location,
+      meeting_link,
     } = body;
 
-    // Validate required fields
-    if (!client_id || !attorney_id || !scheduled_date || !scheduled_time) {
+    // Validate required fields — schema has scheduled_at (not scheduled_date + scheduled_time)
+    if (!client_id || !scheduled_at) {
       return apiError(
-        'client_id, attorney_id, scheduled_date, and scheduled_time are required',
+        'client_id and scheduled_at are required',
         400,
         'MISSING_FIELDS'
       );
     }
 
-    // Validate meeting_type enum
-    const validMeetingTypes = ['in_person', 'video_call', 'phone_call'];
-    if (meeting_type && !validMeetingTypes.includes(meeting_type)) {
+    // Validate status enum if provided
+    if (status && !VALID_STATUSES.includes(status)) {
       return apiError(
-        `Invalid meeting_type. Must be one of: ${validMeetingTypes.join(', ')}`,
-        400,
-        'INVALID_MEETING_TYPE'
-      );
-    }
-
-    // Validate status enum
-    const validStatuses = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'];
-    if (status && !validStatuses.includes(status)) {
-      return apiError(
-        `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+        `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`,
         400,
         'INVALID_STATUS'
       );
     }
 
-    // Validate that the attorney exists and has a legal role
-    const { data: attorney } = await db
-      .from('profiles')
-      .select('user_id, full_name, email, role, department')
-      .eq('user_id', attorney_id)
-      .single();
+    // Validate that the attorney exists in attorneys table if provided
+    if (attorney_id) {
+      const { data: attorney } = await db
+        .from('attorneys')
+        .select('id, profile:profiles(full_name, email, role)')
+        .eq('id', attorney_id)
+        .single();
 
-    if (!attorney) {
-      return apiError('Attorney not found', 404, 'ATTORNEY_NOT_FOUND');
-    }
-
-    if (!LEGAL_ROLES.includes(attorney.role)) {
-      return apiError(
-        'The specified user does not have a legal role suitable for consultations',
-        400,
-        'INVALID_ATTORNEY_ROLE'
-      );
+      if (!attorney) {
+        return apiError('Attorney not found', 404, 'ATTORNEY_NOT_FOUND');
+      }
     }
 
     // Validate client exists
     const { data: client } = await db
       .from('profiles')
-      .select('user_id, full_name, email')
-      .eq('user_id', client_id)
+      .select('id, full_name, email')
+      .eq('id', client_id)
       .single();
 
     if (!client) {
@@ -179,16 +158,17 @@ export async function POST(request: NextRequest) {
       .from('consultations')
       .insert({
         client_id,
-        attorney_id,
-        scheduled_date,
-        scheduled_time,
+        attorney_id: attorney_id || null,
+        scheduled_at,
         case_id: case_id || null,
         duration_minutes: duration_minutes || 60,
         meeting_type: meeting_type || 'in_person',
         notes: notes ? sanitizeString(notes) : null,
         status: status || 'scheduled',
+        location: location || null,
+        meeting_link: meeting_link || null,
       })
-      .select('*, client:profiles!consultations_client_id_fkey(user_id, full_name, email), attorney:profiles!consultations_attorney_id_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title)')
+      .select('*, client:profiles!consultations_client_id_fkey(id, full_name, email), attorney:attorneys!consultations_attorney_id_fkey(id, profile:profiles(full_name, email, role)), case:cases(id, case_ref, title)')
       .single();
 
     if (insertError || !consultation) {
@@ -202,18 +182,19 @@ export async function POST(request: NextRequest) {
       action: 'CREATE_CONSULTATION',
       resource_type: 'consultation',
       resource_id: consultation.id,
-      details: `Consultation scheduled for client ${client_id} with attorney ${attorney_id}`,
+      details: { message: `Consultation scheduled for client ${client_id}` },
     });
 
-    // Create notification for the attorney
-    await db.from('notifications').insert({
-      user_id: attorney_id,
-      type: 'consultation',
-      title: 'New Consultation Scheduled',
-      message: `A consultation has been scheduled with ${client.full_name || client.email} on ${scheduled_date} at ${scheduled_time}`,
-      link: `/consultations/${consultation.id}`,
-      related_id: consultation.id,
-    });
+    // Create notification for the attorney — notifications has no `related_id` column
+    if (attorney_id) {
+      await db.from('notifications').insert({
+        user_id: attorney_id,
+        type: 'consultation',
+        title: 'New Consultation Scheduled',
+        message: `A consultation has been scheduled with ${client.full_name || client.email} on ${scheduled_at}`,
+        link: `/consultations/${consultation.id}`,
+      });
+    }
 
     return apiResponse(consultation, 201);
   } catch (error) {

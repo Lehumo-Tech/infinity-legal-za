@@ -17,7 +17,7 @@ import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 export async function GET(request: NextRequest) {
   try {
     // Auth required — only staff should see provider details
-    const authResult = requireAuth(request);
+    const authResult = await requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
     }

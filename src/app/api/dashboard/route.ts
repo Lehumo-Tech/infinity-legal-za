@@ -4,12 +4,13 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { requireAuth, apiResponse, apiError } from '@/lib/middleware';
 import { getDashboardStats } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -30,18 +31,18 @@ export async function GET(request: NextRequest) {
       recentLeadsResult,
       backupRecordResult,
     ] = await Promise.all([
-      db.from('cases').select('*', { count: 'exact', head: true }).eq('status', 'pending_review'),
+      db.from('cases').select('*', { count: 'exact', head: true }).eq('status', 'review'),
       db.from('cases').select('*', { count: 'exact', head: true }).eq('status', 'closed'),
-      db.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'overdue'),
+      db.from('tasks').select('*', { count: 'exact', head: true }).lt('due_date', new Date().toISOString()).neq('status', 'completed'),
       db.from('attorneys').select('*', { count: 'exact', head: true }),
       db
         .from('cases')
-        .select('id, matter_number, title, case_type, urgency, status, created_at, client:profiles!cases_client_id_fkey(full_name, email), lead_attorney:profiles!cases_lead_attorney_id_fkey(full_name)')
+        .select('id, case_ref, title, case_type, status, created_at, client:profiles!cases_client_id_fkey(full_name, email), attorney:attorneys!cases_attorney_id_fkey(profile:profiles(full_name, email))')
         .order('created_at', { ascending: false })
         .limit(5),
       db
         .from('leads')
-        .select('id, name, email, source, status, lead_score, created_at')
+        .select('id, first_name, last_name, email, source, status, lead_score, created_at')
         .order('created_at', { ascending: false })
         .limit(5),
       db
@@ -61,19 +62,18 @@ export async function GET(request: NextRequest) {
 
     const recentCasesData = recentCases.map((c: any) => ({
       id: c.id,
-      matter_number: c.matter_number,
+      case_ref: c.case_ref,
       title: c.title,
       case_type: c.case_type,
-      urgency: c.urgency,
       status: c.status,
       client: c.client,
-      lead_attorney: c.lead_attorney,
+      lead_attorney: c.attorney?.profile || null,
       created_at: c.created_at,
     }));
 
     const recentLeadsData = recentLeads.map((l: any) => ({
       id: l.id,
-      name: l.name,
+      name: `${l.first_name} ${l.last_name}`.trim(),
       email: l.email,
       source: l.source,
       status: l.status,

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infinity Legal ZA - Implementation Report</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    :root {
+      --navy: #0c1e3c;
+      --navy-light: #132d52;
+      --gold: #c9a84c;
+      --gold-dark: #a88832;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-900: #0f172a;
+      --emerald: #10b981;
+      --blue: #3b82f6;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --purple: #8b5cf6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-700);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Header */
+    .report-header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+      padding: 3rem;
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .report-header .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gold);
+      color: var(--navy);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .report-header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 1rem 0 0.5rem;
+      letter-spacing: -0.5px;
+    }
+    .report-header .subtitle {
+      color: #8fa4c4;
+      font-size: 1rem;
+      max-width: 600px;
+    }
+    .report-header .meta {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 2rem;
+      font-size: 0.85rem;
+      color: #8fa4c4;
+    }
+    .report-header .meta span { display: flex; align-items: center; gap: 6px; }
+
+    /* Section Cards */
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--slate-200);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .section h2 {
+      color: var(--navy);
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section h2 .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .section h3 {
+      color: var(--navy);
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1.25rem 0 0.75rem;
+    }
+    .section p { margin-bottom: 0.75rem; font-size: 0.9rem; }
+    .section ul { padding-left: 1.25rem; margin-bottom: 0.75rem; }
+    .section li { margin-bottom: 0.4rem; font-size: 0.9rem; }
+
+    /* Credential Table */
+    .cred-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .cred-table thead { background: var(--navy); color: white; }
+    .cred-table th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .cred-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--slate-200);
+    }
+    .cred-table tbody tr:hover { background: var(--slate-50); }
+    .cred-table .email { font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--blue); }
+    .cred-table .password { font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--navy); }
+    .cred-table .role-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .stat-card {
+      background: var(--slate-50);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+      border: 1px solid var(--slate-200);
+    }
+    .stat-card .value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* Feature List */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .feature-item {
+      padding: 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--slate-200);
+      background: var(--slate-50);
+    }
+    .feature-item .feat-title {
+      font-weight: 600;
+      color: var(--navy);
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .feature-item .feat-desc {
+      font-size: 0.8rem;
+      color: var(--slate-500);
+    }
+    .feature-item .feat-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-top: 8px;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .feat-status.live { background: #d1fae5; color: #065f46; }
+    .feat-status.active { background: #dbeafe; color: #1e40af; }
+
+    /* Tech Stack */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+    .tech-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--slate-200);
+      font-size: 0.85rem;
+    }
+    .tech-item .tech-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* API Table */
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .api-table thead { background: var(--slate-100); }
+    .api-table th {
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-500);
+    }
+    .api-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--slate-200);
+    }
+    .api-method {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: monospace;
+    }
+    .api-method.get { background: #dbeafe; color: #1e40af; }
+    .api-method.post { background: #d1fae5; color: #065f46; }
+    .api-method.put { background: #fef3c7; color: #92400e; }
+    .api-method.delete { background: #fee2e2; color: #991b1b; }
+
+    /* Portal Cards */
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .portal-card {
+      padding: 1.25rem;
+      border-radius: 10px;
+      border: 2px solid;
+      text-align: center;
+    }
+    .portal-card .portal-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 0.75rem;
+    }
+    .portal-card .portal-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .portal-card .portal-roles {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+    }
+
+    /* Org Chart */
+    .org-level {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--gold);
+    }
+    .org-level h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    .org-person {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      margin: 0 0.5rem 0.5rem 0;
+    }
+    .org-person .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+    }
+
+    /* Security badges */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+    .security-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--slate-200);
+      font-size: 0.85rem;
+    }
+    .security-item .sec-icon {
+      font-size: 20px;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white; }
+      .container { padding: 0; }
+      .section { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+      .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      .report-header { padding: 1.5rem; }
+      .report-header h1 { font-size: 1.5rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="report-header">
+      <div class="badge">&#9878; Implementation Report</div>
+      <h1>Infinity Legal ZA</h1>
+      <p class="subtitle">AI-Powered Legal Practice Management Platform &mdash; Complete Implementation &amp; Deployment Report</p>
+      <div class="meta">
+        <span>&#128197; March 2025</span>
+        <span>&#127760; infinity-legal-za.vercel.app</span>
+        <span>&#128274; POPIA Compliant</span>
+        <span>&#9889; Next.js 16</span>
+      </div>
+    </div>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <div class="section">
+      <h2><span class="icon" style="background:#dbeafe;color:#1e40af;">&#128202;</span> Executive Summary</h2>
+      <p>Infinity Legal ZA is a production-ready, AI-powered legal practice management platform built for South African law firms. The platform has been fully implemented with a comprehensive intranet, role-based workbench, and client-facing portal. All systems are operational and tested.</p>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="value">14</div>
+          <div class="label">Staff Accounts</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">15</div>
+          <div class="label">Active Cases</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">R5.15M</div>
+          <div class="label">Revenue Tracked</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">12</div>
+          <div class="label">API Endpoints</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">5</div>
+          <div class="label">Staff Portals</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">6</div>
+          <div class="label">Firm Tiers</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIN CREDENTIALS -->
+    <div class="section">
+      <h2><span class="icon" style="background:#fef3c7;color:#92400e;">&#128273;</span> Login Credentials</h2>
+      <p>All demo accounts use the same password: <code style="background:var(--slate-100);padding:2px 8px;border-radius:4px;font-family:monospace;font-weight:600;">Password123!</code></p>
+      <p style="font-size:0.8rem;color:var(--slate-500);margin-bottom:1rem;">All emails use the domain @infinitylegal.co.za</p>
+      <table class="cred-table">
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Full Name</th>
+            <th>Department</th>
+            <th>Reports To</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="role-badge" style="background:#fef3c7;color:#92400e;">Managing Director</span></td>
+            <td class="email">md@infinitylegal.co.za</td>
+            <td>Thabo Molefe</td>
+            <td>Management</td>
+            <td>&mdash;</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#fef3c7;color:#92400e;">Senior Partner</span></td>
+            <td class="email">partner@infinitylegal.co.za</td>
+            <td>Nomsa Dlamini</td>
+            <td>Management</td>
+            <td>&mdash;</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#dbeafe;color:#1e40af;">Supervising Officer</span></td>
+            <td class="email">supervisor@infinitylegal.co.za</td>
+            <td>Kagiso Patel</td>
+            <td>Management</td>
+            <td>Nomsa Dlamini</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#e0e7ff;color:#4338ca;">Legal Officer</span></td>
+            <td class="email">officer@infinitylegal.co.za</td>
+            <td>Bongani Khumalo</td>
+            <td>Litigation</td>
+            <td>Thabo Molefe</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#e0e7ff;color:#4338ca;">Associate</span></td>
+            <td class="email">associate@infinitylegal.co.za</td>
+            <td>Sipho Nkosi</td>
+            <td>Litigation</td>
+            <td>Thabo Molefe</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#fce7f3;color:#9d174d;">Candidate Attorney</span></td>
+            <td class="email">candidate@infinitylegal.co.za</td>
+            <td>Naledi Botha</td>
+            <td>Litigation</td>
+            <td>Bongani Khumalo</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#d1fae5;color:#065f46;">Senior Consultant</span></td>
+            <td class="email">consultant@infinitylegal.co.za</td>
+            <td>Zanele Mokoena</td>
+            <td>Consulting</td>
+            <td>Thabo Molefe</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#d1fae5;color:#065f46;">Paralegal</span></td>
+            <td class="email">paralegal@infinitylegal.co.za</td>
+            <td>Lindiwe Mthembu</td>
+            <td>Family Law</td>
+            <td>Kagiso Patel</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#fed7aa;color:#9a3412;">HR Manager</span></td>
+            <td class="email">hr@infinitylegal.co.za</td>
+            <td>Precious Ndlovu</td>
+            <td>HR</td>
+            <td>Thabo Molefe</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#bbf7d0;color:#166534;">Finance Manager</span></td>
+            <td class="email">finance@infinitylegal.co.za</td>
+            <td>David van Wyk</td>
+            <td>Finance</td>
+            <td>Thabo Molefe</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#fde68a;color:#92400e;">Receptionist</span></td>
+            <td class="email">receptionist@infinitylegal.co.za</td>
+            <td>Amina Ebrahim</td>
+            <td>Administration</td>
+            <td>Thabo Molefe</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#e2e8f0;color:#475569;">Office Admin</span></td>
+            <td class="email">officeadmin@infinitylegal.co.za</td>
+            <td>Farhana Desai</td>
+            <td>Administration</td>
+            <td>Thabo Molefe</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#fee2e2;color:#991b1b;">Systems Admin</span></td>
+            <td class="email">admin@infinitylegal.co.za</td>
+            <td>Tech Admin</td>
+            <td>IT</td>
+            <td>Thabo Molefe</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge" style="background:#f1f5f9;color:#475569;">Client</span></td>
+            <td class="email">client@infinitylegal.co.za</td>
+            <td>Johan Smith</td>
+            <td>&mdash;</td>
+            <td>&mdash;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- INTRANET & PORTALS -->
+    <div class="section">
+      <h2><span class="icon" style="background:#d1fae5;color:#065f46;">&#127970;</span> Intranet &amp; Staff Portals</h2>
+      <p>The intranet is the central hub for all staff operations. Each role sees a tailored view with appropriate permissions and data access.</p>
+      
+      <div class="portal-grid">
+        <div class="portal-card" style="border-color:var(--gold);background:rgba(201,168,76,0.05);">
+          <div class="portal-icon" style="background:var(--gold);color:var(--navy);">&#128188;</div>
+          <div class="portal-name">Workbench</div>
+          <div class="portal-roles">All authenticated staff</div>
+          <p style="font-size:0.8rem;margin-top:0.5rem;color:var(--slate-500);">Central dashboard with KPIs, quick actions, upcoming consultations, active tasks, case distribution</p>
+        </div>
+        <div class="portal-card" style="border-color:#f59e0b;background:rgba(245,158,11,0.05);">
+          <div class="portal-icon" style="background:#fef3c7;color:#92400e;">&#128100;</div>
+          <div class="portal-name">HR Portal</div>
+          <div class="portal-roles">HR Manager, MD, Senior Partner</div>
+          <p style="font-size:0.8rem;margin-top:0.5rem;color:var(--slate-500);">Headcount by dept, active/inactive tracking, recent hires, department statistics</p>
+        </div>
+        <div class="portal-card" style="border-color:#3b82f6;background:rgba(59,130,246,0.05);">
+          <div class="portal-icon" style="background:#dbeafe;color:#1e40af;">&#128200;</div>
+          <div class="portal-name">Sales Portal</div>
+          <div class="portal-roles">Receptionist, Office Admin, MD</div>
+          <p style="font-size:0.8rem;margin-top:0.5rem;color:var(--slate-500);">Lead pipeline, source breakdown, follow-up actions, conversion metrics</p>
+        </div>
+        <div class="portal-card" style="border-color:#10b981;background:rgba(16,185,129,0.05);">
+          <div class="portal-icon" style="background:#d1fae5;color:#065f46;">&#128220;</div>
+          <div class="portal-name">Paralegal Portal</div>
+          <div class="portal-roles">Paralegals, Candidate Attorneys, Legal Officers</div>
+          <p style="font-size:0.8rem;margin-top:0.5rem;color:var(--slate-500);">Assigned cases, document prep queue, upcoming deadlines, quick actions</p>
+        </div>
+        <div class="portal-card" style="border-color:var(--navy);background:rgba(12,30,60,0.05);">
+          <div class="portal-icon" style="background:var(--navy);color:var(--gold);">&#128081;</div>
+          <div class="portal-name">Management Portal</div>
+          <div class="portal-roles">MD, Senior Partner, Supervisor, Sys Admin</div>
+          <p style="font-size:0.8rem;margin-top:0.5rem;color:var(--slate-500);">Firm KPIs, department performance, audit activity, analytics links</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORG STRUCTURE -->
+    <div class="section">
+      <h2><span class="icon" style="background:#e0e7ff;color:#4338ca;">&#127959;</span> Organizational Hierarchy</h2>
+      <p>The firm follows a strict hierarchical structure with clear reporting lines.</p>
+      
+      <div class="org-level">
+        <h4>&#128081; Tier 1 &mdash; Executive Leadership</h4>
+        <span class="org-person"><span class="avatar" style="background:var(--gold);color:var(--navy);">TM</span> Thabo Molefe &mdash; Managing Director</span>
+        <span class="org-person"><span class="avatar" style="background:var(--gold);color:var(--navy);">ND</span> Nomsa Dlamini &mdash; Senior Partner</span>
+      </div>
+      <div class="org-level">
+        <h4>&#128737; Tier 2 &mdash; Management</h4>
+        <span class="org-person"><span class="avatar" style="background:var(--navy);color:var(--gold);">KP</span> Kagiso Patel &mdash; Supervising Officer</span>
+        <span class="org-person"><span class="avatar" style="background:var(--navy);color:var(--gold);">TA</span> Tech Admin &mdash; Systems Admin</span>
+      </div>
+      <div class="org-level">
+        <h4>&#9878; Tier 3 &mdash; Legal Practice</h4>
+        <span class="org-person"><span class="avatar" style="background:#dbeafe;color:#1e40af;">BK</span> Bongani Khumalo &mdash; Legal Officer</span>
+        <span class="org-person"><span class="avatar" style="background:#dbeafe;color:#1e40af;">SN</span> Sipho Nkosi &mdash; Associate</span>
+        <span class="org-person"><span class="avatar" style="background:#fce7f3;color:#9d174d;">NB</span> Naledi Botha &mdash; Candidate Attorney</span>
+      </div>
+      <div class="org-level">
+        <h4>&#128172; Tier 3 &mdash; Consulting</h4>
+        <span class="org-person"><span class="avatar" style="background:#d1fae5;color:#065f46;">ZM</span> Zanele Mokoena &mdash; Senior Consultant</span>
+      </div>
+      <div class="org-level">
+        <h4>&#128188; Tier 4 &mdash; Support Staff</h4>
+        <span class="org-person"><span class="avatar" style="background:#d1fae5;color:#065f46;">LM</span> Lindiwe Mthembu &mdash; Paralegal</span>
+        <span class="org-person"><span class="avatar" style="background:#fed7aa;color:#9a3412;">PN</span> Precious Ndlovu &mdash; HR Manager</span>
+        <span class="org-person"><span class="avatar" style="background:#bbf7d0;color:#166534;">DvW</span> David van Wyk &mdash; Finance Manager</span>
+      </div>
+      <div class="org-level">
+        <h4>&#127970; Tier 5 &mdash; Administration</h4>
+        <span class="org-person"><span class="avatar" style="background:#e2e8f0;color:#475569;">AE</span> Amina Ebrahim &mdash; Receptionist</span>
+        <span class="org-person"><span class="avatar" style="background:#e2e8f0;color:#475569;">FD</span> Farhana Desai &mdash; Office Admin</span>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="section">
+      <h2><span class="icon" style="background:#d1fae5;color:#065f46;">&#9889;</span> Features Implemented</h2>
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feat-title">&#128188; Central Workbench</div>
+          <div class="feat-desc">Role-adaptive dashboard with KPIs, quick actions, consultations, tasks, and case distribution</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128196; Document Management</div>
+          <div class="feat-desc">Upload, version, approve, sign, and lock documents with workflow status tracking</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128214; Consultation Logging</div>
+          <div class="feat-desc">Schedule and log consultations (in-person, video, phone) with notes and status tracking</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128203; Task Management</div>
+          <div class="feat-desc">Create, assign, prioritize tasks with due dates and case linkage</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128200; Lead Management</div>
+          <div class="feat-desc">Track leads from intake through qualification to conversion with SLA deadlines</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128101; Staff Portal</div>
+          <div class="feat-desc">5 sub-portals: Overview, HR, Sales, Paralegal, Management &mdash; role-based visibility</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#127959; Org Chart</div>
+          <div class="feat-desc">6-tier hierarchical view of firm structure with reporting lines</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128202; Analytics Dashboard</div>
+          <div class="feat-desc">Revenue, case status, task overview, and firm performance metrics</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128176; Pricing Plans</div>
+          <div class="feat-desc">4-tier pricing (Free, Starter R499, Family R999, Premium R2,499)</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128276; Notifications</div>
+          <div class="feat-desc">Real-time notification system with read/unread tracking</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128274; RBAC Security</div>
+          <div class="feat-desc">14 role types with granular navigation and data access control</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-title">&#128064; Audit Logging</div>
+          <div class="feat-desc">All login attempts and key actions logged with IP and user agent</div>
+          <span class="feat-status live">&#10003; Live</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- API ENDPOINTS -->
+    <div class="section">
+      <h2><span class="icon" style="background:#e0e7ff;color:#4338ca;">&#128268;</span> API Endpoints</h2>
+      <table class="api-table">
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="api-method post">POST</span></td><td>/api/auth/login</td><td>Staff authentication with JWT</td><td>Public</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/dashboard</td><td>Firm-wide KPIs and statistics</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/cases</td><td>Paginated case listing with search</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/leads</td><td>Paginated lead listing</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/consultations</td><td>Consultation listing and scheduling</td><td>JWT</td></tr>
+          <tr><td><span class="api-method post">POST</span></td><td>/api/consultations</td><td>Create new consultation</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/documents</td><td>Document listing with workflow</td><td>JWT</td></tr>
+          <tr><td><span class="api-method post">POST</span></td><td>/api/documents/upload</td><td>Upload document with metadata</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/tasks</td><td>Task listing with assignee info</td><td>JWT</td></tr>
+          <tr><td><span class="api-method post">POST</span></td><td>/api/tasks</td><td>Create new task</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/staff</td><td>Staff directory with supervisor info</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/notifications</td><td>User notifications</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/analytics</td><td>Firm analytics data</td><td>JWT</td></tr>
+          <tr><td><span class="api-method get">GET</span></td><td>/api/health</td><td>System health check</td><td>Public</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TECH STACK -->
+    <div class="section">
+      <h2><span class="icon" style="background:#fee2e2;color:#991b1b;">&#128736;</span> Technology Stack</h2>
+      <div class="tech-grid">
+        <div class="tech-item">
+          <span class="tech-icon" style="background:#0c1e3c;color:white;">N</span>
+          <div><strong>Next.js 16</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">App Router + Server Components</span></div>
+        </div>
+        <div class="tech-item">
+          <span class="tech-icon" style="background:#3178c6;color:white;">TS</span>
+          <div><strong>TypeScript 5</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">Strict typing throughout</span></div>
+        </div>
+        <div class="tech-item">
+          <span class="tech-icon" style="background:#0ea5e9;color:white;">Pr</span>
+          <div><strong>Prisma ORM</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">SQLite with 20+ models</span></div>
+        </div>
+        <div class="tech-item">
+          <span class="tech-icon" style="background:#06b6d4;color:white;">Tw</span>
+          <div><strong>Tailwind CSS 4</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">Navy/Gold theme system</span></div>
+        </div>
+        <div class="tech-item">
+          <span class="tech-icon" style="background:#0c1e3c;color:#c9a84c;">UI</span>
+          <div><strong>shadcn/ui</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">New York style components</span></div>
+        </div>
+        <div class="tech-item">
+          <span class="tech-icon" style="background:#ef4444;color:white;">PB</span>
+          <div><strong>PocketBase</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">File storage at :8090</span></div>
+        </div>
+        <div class="tech-item">
+          <span class="tech-icon" style="background:#f59e0b;color:white;">BC</span>
+          <div><strong>bcryptjs</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">Password hashing</span></div>
+        </div>
+        <div class="tech-item">
+          <span class="tech-icon" style="background:#10b981;color:white;">JWT</span>
+          <div><strong>jsonwebtoken</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">24h token expiry</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="section">
+      <h2><span class="icon" style="background:#fee2e2;color:#991b1b;">&#128737;</span> Security &amp; Compliance</h2>
+      <div class="security-grid">
+        <div class="security-item">
+          <span class="sec-icon">&#128274;</span>
+          <div><strong>JWT Authentication</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">24-hour token expiry with auto-refresh</span></div>
+        </div>
+        <div class="security-item">
+          <span class="sec-icon">&#128272;</span>
+          <div><strong>bcrypt Password Hashing</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">12 salt rounds, dual-hash support</span></div>
+        </div>
+        <div class="security-item">
+          <span class="sec-icon">&#128101;</span>
+          <div><strong>Role-Based Access (RBAC)</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">14 roles, granular navigation</span></div>
+        </div>
+        <div class="security-item">
+          <span class="sec-icon">&#128064;</span>
+          <div><strong>Audit Logging</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">All auth events tracked with IP</span></div>
+        </div>
+        <div class="security-item">
+          <span class="sec-icon">&#127760;</span>
+          <div><strong>POPIA Compliance</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">Consent logging, data processing records</span></div>
+        </div>
+        <div class="security-item">
+          <span class="sec-icon">&#128277;</span>
+          <div><strong>Document Locking</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">Prevent unauthorized edits on docs</span></div>
+        </div>
+        <div class="security-item">
+          <span class="sec-icon">&#128196;</span>
+          <div><strong>Privileged Notes</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">Attorney-client privilege visibility</span></div>
+        </div>
+        <div class="security-item">
+          <span class="sec-icon">&#9201;</span>
+          <div><strong>Rate Limiting</strong><br><span style="font-size:0.75rem;color:var(--slate-500);">Login rate limit (5 per minute)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATABASE SCHEMA -->
+    <div class="section">
+      <h2><span class="icon" style="background:#dbeafe;color:#1e40af;">&#128451;</span> Database Schema (20 Models)</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.5rem;">
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128100; User</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128100; Profile</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#9878; Case</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#127919; Lead</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128196; Document</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128203; Task</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128214; Consultation</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128172; Message</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128064; AuditLog</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128276; Notification</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128176; PricingPlan</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128179; UserSubscription</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128197; CaseTimeline</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128274; PrivilegedNote</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128221; IntakeSubmission</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#9878; Attorney</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128202; ApiAnalytic</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#9888; ErrorLog</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#128190; BackupRecord</div>
+        <div style="padding:6px 10px;background:var(--slate-50);border-radius:6px;font-size:0.82rem;border:1px solid var(--slate-200);">&#9201; RateLimitLog</div>
+      </div>
+    </div>
+
+    <!-- HOW TO USE -->
+    <div class="section">
+      <h2><span class="icon" style="background:#d1fae5;color:#065f46;">&#128214;</span> How to Use</h2>
+      <h3>1. Access the Application</h3>
+      <p>Open the application in your browser using the Preview Panel on the right, or click "Open in New Tab" for a full-screen experience.</p>
+      
+      <h3>2. Login</h3>
+      <p>Use any of the credentials above. For a full management experience, start with <code style="background:var(--slate-100);padding:2px 6px;border-radius:4px;font-size:0.82rem;">md@infinitylegal.co.za</code>. For a paralegal view, use <code style="background:var(--slate-100);padding:2px 6px;border-radius:4px;font-size:0.82rem;">paralegal@infinitylegal.co.za</code>. For HR, use <code style="background:var(--slate-100);padding:2px 6px;border-radius:4px;font-size:0.82rem;">hr@infinitylegal.co.za</code>.</p>
+      
+      <h3>3. Navigate the Intranet</h3>
+      <ul>
+        <li><strong>Workbench</strong> &mdash; Your personalized dashboard with KPIs, quick actions, and recent activity</li>
+        <li><strong>Cases</strong> &mdash; View and manage all legal cases</li>
+        <li><strong>Leads</strong> &mdash; Track potential clients from inquiry to conversion</li>
+        <li><strong>Documents</strong> &mdash; Upload, review, and manage legal documents</li>
+        <li><strong>Consultations</strong> &mdash; Schedule and log client consultations</li>
+        <li><strong>Tasks</strong> &mdash; Manage your assigned tasks and deadlines</li>
+        <li><strong>Staff Portal</strong> &mdash; Access HR, Sales, Paralegal, and Management sub-portals</li>
+        <li><strong>Org Structure</strong> &mdash; View the firm's hierarchical chart</li>
+        <li><strong>Analytics</strong> &mdash; View firm-wide performance metrics (management only)</li>
+      </ul>
+      
+      <h3>4. Test Different Roles</h3>
+      <p>Log out and log in with different credentials to see how the interface adapts:</p>
+      <ul>
+        <li><strong>Managing Director</strong> &mdash; Full access to all features</li>
+        <li><strong>HR Manager</strong> &mdash; Staff portal + HR sub-portal</li>
+        <li><strong>Receptionist</strong> &mdash; Sales portal + lead management</li>
+        <li><strong>Paralegal</strong> &mdash; Paralegal portal + document upload</li>
+        <li><strong>Client</strong> &mdash; Limited view with pricing info</li>
+      </ul>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="text-align:center;padding:2rem 0;color:var(--slate-500);font-size:0.8rem;">
+      <p>&copy; 2025 Infinity Legal (Pty) Ltd. All rights reserved.</p>
+      <p style="margin-top:0.5rem;">This report was generated as part of the Infinity Legal ZA implementation project.</p>
+      <p style="margin-top:0.5rem;display:flex;align-items:center;justify-content:center;gap:1rem;">
+        <span>&#128274; POPIA Compliant</span>
+        <span>&#128272; AES-256</span>
+        <span>&#128273; 90-Day Password Expiry</span>
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>

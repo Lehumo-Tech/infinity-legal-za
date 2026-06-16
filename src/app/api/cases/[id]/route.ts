@@ -3,16 +3,15 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Valid enum values
-const VALID_CASE_TYPES = ['family_law', 'criminal_defence', 'civil_litigation', 'conveyancing', 'estate_planning', 'corporate_commercial', 'debt_collection', 'immigration', 'labour_law', 'personal_injury', 'other'];
-const VALID_URGENCIES = ['low', 'medium', 'high', 'critical'];
-const VALID_STATUSES = ['intake', 'pending_review', 'active', 'on_hold', 'settled', 'closed', 'archived'];
+// Valid enum values per Supabase schema
+const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'intellectual_property', 'tax', 'personal_injury', 'debt_recovery', 'other'];
+const VALID_STATUSES = ['intake', 'review', 'active', 'on_hold', 'closed', 'archived'];
 
 // GET - Get single case by ID
 export async function GET(
@@ -20,6 +19,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -33,10 +33,10 @@ export async function GET(
 
     const { id } = await params;
 
-    // Fetch case with related data using separate queries
+    // Fetch case with related data — attorney_id FK → attorneys(id) → profiles(id)
     const { data: caseRecord, error: caseError } = await db
       .from('cases')
-      .select('*, client:profiles!client_id(id, full_name, email, phone), lead_attorney:profiles!lead_attorney_id(id, full_name, email, role)')
+      .select('*, client:profiles!cases_client_id_fkey(id, full_name, email, phone), attorney:attorneys!cases_attorney_id_fkey(id, profile:profiles(full_name, email, role))')
       .eq('id', id)
       .single();
 
@@ -46,19 +46,16 @@ export async function GET(
 
     // Non-admin users can only see cases they're assigned to
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      const isAssigned =
-        caseRecord.client_id === auth.user.userId ||
-        caseRecord.lead_attorney_id === auth.user.userId ||
-        caseRecord.support_paralegal_id === auth.user.userId;
+      const isAssigned = caseRecord.client_id === auth.user.userId;
       if (!isAssigned) {
         return apiError('Case not found', 404, 'CASE_NOT_FOUND');
       }
     }
 
-    // Fetch related documents
+    // Fetch related documents — documents uses `status` not `workflow_status`, `file_name` not `title`
     const { data: documents } = await db
       .from('documents')
-      .select('id, title, document_type, workflow_status, version, created_at')
+      .select('id, file_name, document_type, status, version, created_at')
       .eq('case_id', id)
       .order('created_at', { ascending: false });
 
@@ -69,7 +66,7 @@ export async function GET(
       .eq('case_id', id)
       .order('created_at', { ascending: false });
 
-    // Fetch timeline
+    // Fetch timeline — schema uses event_type, event_description, performed_by
     const { data: timeline } = await db
       .from('case_timeline')
       .select('*')
@@ -79,6 +76,7 @@ export async function GET(
 
     const result = {
       ...caseRecord,
+      lead_attorney: caseRecord.attorney?.profile || null,
       documents: documents || [],
       tasks: tasks || [],
       timeline: timeline || [],
@@ -97,6 +95,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -126,25 +125,37 @@ export async function PUT(
       title,
       description,
       case_type,
-      urgency,
       status,
-      lead_attorney_id,
-      support_paralegal_id,
-      court_date,
-      next_action,
-      next_action_date,
+      attorney_id,
+      opposing_party,
+      court_name,
+      case_number,
+      jurisdiction,
       estimated_value,
+      retainer_amount,
+      contingency_fee,
+      notes,
+      tags,
     } = body;
 
     // Validate enum fields if provided
     if (case_type && !VALID_CASE_TYPES.includes(case_type)) {
       return apiError(`Invalid case_type. Must be one of: ${VALID_CASE_TYPES.join(', ')}`, 400, 'INVALID_CASE_TYPE');
     }
-    if (urgency && !VALID_URGENCIES.includes(urgency)) {
-      return apiError(`Invalid urgency. Must be one of: ${VALID_URGENCIES.join(', ')}`, 400, 'INVALID_URGENCY');
-    }
     if (status && !VALID_STATUSES.includes(status)) {
       return apiError(`Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`, 400, 'INVALID_STATUS');
+    }
+
+    // Validate attorney_id references attorneys table if provided
+    if (attorney_id) {
+      const { data: attorneyExists } = await db
+        .from('attorneys')
+        .select('id')
+        .eq('id', attorney_id)
+        .single();
+      if (!attorneyExists) {
+        return apiError('Attorney not found', 404, 'ATTORNEY_NOT_FOUND');
+      }
     }
 
     // Build update data
@@ -152,20 +163,23 @@ export async function PUT(
     if (title !== undefined) updateData.title = sanitizeString(title);
     if (description !== undefined) updateData.description = description ? sanitizeString(description) : null;
     if (case_type !== undefined) updateData.case_type = case_type;
-    if (urgency !== undefined) updateData.urgency = urgency;
     if (status !== undefined) updateData.status = status;
-    if (lead_attorney_id !== undefined) updateData.lead_attorney_id = lead_attorney_id || null;
-    if (support_paralegal_id !== undefined) updateData.support_paralegal_id = support_paralegal_id || null;
-    if (court_date !== undefined) updateData.court_date = court_date ? new Date(court_date).toISOString() : null;
-    if (next_action !== undefined) updateData.next_action = next_action ? sanitizeString(next_action) : null;
-    if (next_action_date !== undefined) updateData.next_action_date = next_action_date ? new Date(next_action_date).toISOString() : null;
+    if (attorney_id !== undefined) updateData.attorney_id = attorney_id || null;
+    if (opposing_party !== undefined) updateData.opposing_party = opposing_party ? sanitizeString(opposing_party) : null;
+    if (court_name !== undefined) updateData.court_name = court_name ? sanitizeString(court_name) : null;
+    if (case_number !== undefined) updateData.case_number = case_number ? sanitizeString(case_number) : null;
+    if (jurisdiction !== undefined) updateData.jurisdiction = jurisdiction ? sanitizeString(jurisdiction) : null;
     if (estimated_value !== undefined) updateData.estimated_value = estimated_value || null;
+    if (retainer_amount !== undefined) updateData.retainer_amount = retainer_amount || null;
+    if (contingency_fee !== undefined) updateData.contingency_fee = contingency_fee || null;
+    if (notes !== undefined) updateData.notes = notes ? sanitizeString(notes) : null;
+    if (tags !== undefined) updateData.tags = tags;
 
     const { data: updatedCase, error: updateError } = await db
       .from('cases')
       .update(updateData)
       .eq('id', id)
-      .select('*, client:profiles!client_id(id, full_name, email), lead_attorney:profiles!lead_attorney_id(id, full_name)')
+      .select('*, client:profiles!cases_client_id_fkey(id, full_name, email), attorney:attorneys!cases_attorney_id_fkey(profile:profiles(full_name, email))')
       .single();
 
     if (updateError || !updatedCase) {
@@ -173,15 +187,13 @@ export async function PUT(
       return apiError('Failed to update case', 500, 'UPDATE_CASE_ERROR');
     }
 
-    // Create timeline entry on status change
+    // Create timeline entry on status change — schema uses event_type, event_description, performed_by
     if (status && status !== existingCase.status) {
       await db.from('case_timeline').insert({
         case_id: id,
-        user_id: auth.user.userId,
-        action: 'STATUS_CHANGED',
-        description: `Case status changed from ${existingCase.status} to ${status}`,
-        previous_value: existingCase.status,
-        new_value: status,
+        event_type: 'status_change',
+        event_description: `Case status changed from ${existingCase.status} to ${status}`,
+        performed_by: auth.user.userId,
       });
     }
 
@@ -190,7 +202,7 @@ export async function PUT(
       action: 'UPDATE_CASE',
       resource_type: 'case',
       resource_id: id,
-      details: `Case "${existingCase.title}" updated`,
+      details: { message: `Case "${existingCase.title}" updated` },
     });
 
     return apiResponse(updatedCase);
@@ -206,6 +218,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -243,14 +256,12 @@ export async function DELETE(
       return apiError('Failed to archive case', 500, 'DELETE_CASE_ERROR');
     }
 
-    // Create timeline entry
+    // Create timeline entry — schema uses event_type, event_description, performed_by
     await db.from('case_timeline').insert({
       case_id: id,
-      user_id: auth.user.userId,
-      action: 'CASE_ARCHIVED',
-      description: `Case archived by ${auth.user.email}`,
-      previous_value: existingCase.status,
-      new_value: 'archived',
+      event_type: 'CASE_ARCHIVED',
+      event_description: `Case archived by ${auth.user.email}`,
+      performed_by: auth.user.userId,
     });
 
     await createAuditLog({
@@ -258,7 +269,7 @@ export async function DELETE(
       action: 'ARCHIVE_CASE',
       resource_type: 'case',
       resource_id: id,
-      details: `Case "${existingCase.title}" archived`,
+      details: { message: `Case "${existingCase.title}" archived` },
     });
 
     return apiResponse(archivedCase);

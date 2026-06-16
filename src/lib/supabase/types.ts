@@ -1,6 +1,7 @@
 /**
  * Supabase Database Types
- * Auto-generated style types for the Infinity Legal database
+ * Generated from 000_complete_schema.sql
+ * Uses TEXT + CHECK constraints (no PostgreSQL enums)
  */
 
 export type Json =
@@ -17,46 +18,87 @@ export interface Database {
       profiles: {
         Row: {
           id: string
-          user_id: string
           email: string
           full_name: string | null
           phone: string | null
+          avatar_url: string | null
           role: UserRole
-          department: string | null
-          bar_number: string | null
-          hire_date: string | null
-          is_active: boolean
-          avatar: string | null
+          id_number: string | null
+          company: string | null
+          address: Json | null
+          preferences: Json | null
+          popi_consent: boolean | null
+          email_verified: boolean | null
+          last_login_at: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
-          id?: string
-          user_id: string
+          id: string
           email: string
           full_name?: string | null
           phone?: string | null
+          avatar_url?: string | null
           role?: UserRole
-          department?: string | null
-          bar_number?: string | null
-          hire_date?: string | null
-          is_active?: boolean
-          avatar?: string | null
+          id_number?: string | null
+          company?: string | null
+          address?: Json | null
+          preferences?: Json | null
+          popi_consent?: boolean | null
+          email_verified?: boolean | null
+          last_login_at?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          user_id?: string
           email?: string
           full_name?: string | null
           phone?: string | null
+          avatar_url?: string | null
           role?: UserRole
-          department?: string | null
-          bar_number?: string | null
-          hire_date?: string | null
-          is_active?: boolean
-          avatar?: string | null
+          id_number?: string | null
+          company?: string | null
+          address?: Json | null
+          preferences?: Json | null
+          popi_consent?: boolean | null
+          email_verified?: boolean | null
+          last_login_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      attorneys: {
+        Row: {
+          id: string
+          practice_number: string | null
+          specialization: string[] | null
+          bar_admission_date: string | null
+          hourly_rate: number | null
+          bio: string | null
+          available: boolean | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          practice_number?: string | null
+          specialization?: string[] | null
+          bar_admission_date?: string | null
+          hourly_rate?: number | null
+          bio?: string | null
+          available?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          practice_number?: string | null
+          specialization?: string[] | null
+          bar_admission_date?: string | null
+          hourly_rate?: number | null
+          bio?: string | null
+          available?: boolean | null
           created_at?: string
           updated_at?: string
         }
@@ -64,70 +106,70 @@ export interface Database {
       cases: {
         Row: {
           id: string
-          matter_number: string
+          case_ref: string | null
           title: string
           description: string | null
           case_type: CaseType
-          urgency: CaseUrgency
           status: CaseStatus
           client_id: string
-          lead_attorney_id: string | null
-          support_paralegal_id: string | null
-          lead_id: string | null
-          court_date: string | null
-          filing_date: string | null
-          closing_date: string | null
+          attorney_id: string | null
+          opposing_party: string | null
+          court_name: string | null
+          case_number: string | null
+          jurisdiction: string | null
           estimated_value: number | null
-          ai_analysis: string | null
-          is_high_risk: boolean
-          next_action: string | null
-          next_action_date: string | null
+          retainer_amount: number | null
+          contingency_fee: number | null
+          next_deadline: string | null
+          notes: string | null
+          tags: string[] | null
+          metadata: Json | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          matter_number: string
+          case_ref?: string | null
           title: string
           description?: string | null
-          case_type: CaseType
-          urgency: CaseUrgency
+          case_type?: CaseType
           status?: CaseStatus
           client_id: string
-          lead_attorney_id?: string | null
-          support_paralegal_id?: string | null
-          lead_id?: string | null
-          court_date?: string | null
-          filing_date?: string | null
-          closing_date?: string | null
+          attorney_id?: string | null
+          opposing_party?: string | null
+          court_name?: string | null
+          case_number?: string | null
+          jurisdiction?: string | null
           estimated_value?: number | null
-          ai_analysis?: string | null
-          is_high_risk?: boolean
-          next_action?: string | null
-          next_action_date?: string | null
+          retainer_amount?: number | null
+          contingency_fee?: number | null
+          next_deadline?: string | null
+          notes?: string | null
+          tags?: string[] | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          matter_number?: string
+          case_ref?: string | null
           title?: string
           description?: string | null
           case_type?: CaseType
-          urgency?: CaseUrgency
           status?: CaseStatus
           client_id?: string
-          lead_attorney_id?: string | null
-          support_paralegal_id?: string | null
-          lead_id?: string | null
-          court_date?: string | null
-          filing_date?: string | null
-          closing_date?: string | null
+          attorney_id?: string | null
+          opposing_party?: string | null
+          court_name?: string | null
+          case_number?: string | null
+          jurisdiction?: string | null
           estimated_value?: number | null
-          ai_analysis?: string | null
-          is_high_risk?: boolean
-          next_action?: string | null
-          next_action_date?: string | null
+          retainer_amount?: number | null
+          contingency_fee?: number | null
+          next_deadline?: string | null
+          notes?: string | null
+          tags?: string[] | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -135,123 +177,82 @@ export interface Database {
       leads: {
         Row: {
           id: string
-          name: string
+          first_name: string
+          last_name: string
           email: string
           phone: string | null
+          company: string | null
           source: LeadSource
           status: LeadStatus
           case_type: CaseType | null
           description: string | null
-          assigned_paralegal_id: string | null
-          assigned_officer_id: string | null
-          lead_score: number | null
-          qualification_notes: string | null
           estimated_value: number | null
-          first_contact_date: string | null
-          sla_deadline: string | null
+          lead_score: number | null
+          assigned_to: string | null
+          converted_client_id: string | null
           converted_case_id: string | null
+          notes: string | null
+          tags: string[] | null
+          utm_source: string | null
+          utm_medium: string | null
+          utm_campaign: string | null
+          last_contacted_at: string | null
+          next_follow_up: string | null
+          metadata: Json | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          name: string
+          first_name: string
+          last_name: string
           email: string
           phone?: string | null
-          source: LeadSource
-          status?: LeadStatus
-          case_type?: CaseType | null
-          description?: string | null
-          assigned_paralegal_id?: string | null
-          assigned_officer_id?: string | null
-          lead_score?: number | null
-          qualification_notes?: string | null
-          estimated_value?: number | null
-          first_contact_date?: string | null
-          sla_deadline?: string | null
-          converted_case_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          email?: string
-          phone?: string | null
+          company?: string | null
           source?: LeadSource
           status?: LeadStatus
           case_type?: CaseType | null
           description?: string | null
-          assigned_paralegal_id?: string | null
-          assigned_officer_id?: string | null
-          lead_score?: number | null
-          qualification_notes?: string | null
           estimated_value?: number | null
-          first_contact_date?: string | null
-          sla_deadline?: string | null
+          lead_score?: number | null
+          assigned_to?: string | null
+          converted_client_id?: string | null
           converted_case_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      documents: {
-        Row: {
-          id: string
-          title: string
-          case_id: string
-          document_type: DocumentType
-          workflow_status: WorkflowStatus
-          version: number
-          file_url: string | null
-          file_name: string | null
-          file_size: number | null
-          prepared_by: string | null
-          approved_by: string | null
-          signed_by: string | null
-          supervising_officer: string | null
-          is_locked: boolean
-          locked_by: string | null
-          description: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          case_id: string
-          document_type: DocumentType
-          workflow_status?: WorkflowStatus
-          version?: number
-          file_url?: string | null
-          file_name?: string | null
-          file_size?: number | null
-          prepared_by?: string | null
-          approved_by?: string | null
-          signed_by?: string | null
-          supervising_officer?: string | null
-          is_locked?: boolean
-          locked_by?: string | null
-          description?: string | null
+          notes?: string | null
+          tags?: string[] | null
+          utm_source?: string | null
+          utm_medium?: string | null
+          utm_campaign?: string | null
+          last_contacted_at?: string | null
+          next_follow_up?: string | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          title?: string
-          case_id?: string
-          document_type?: DocumentType
-          workflow_status?: WorkflowStatus
-          version?: number
-          file_url?: string | null
-          file_name?: string | null
-          file_size?: number | null
-          prepared_by?: string | null
-          approved_by?: string | null
-          signed_by?: string | null
-          supervising_officer?: string | null
-          is_locked?: boolean
-          locked_by?: string | null
+          first_name?: string
+          last_name?: string
+          email?: string
+          phone?: string | null
+          company?: string | null
+          source?: LeadSource
+          status?: LeadStatus
+          case_type?: CaseType | null
           description?: string | null
+          estimated_value?: number | null
+          lead_score?: number | null
+          assigned_to?: string | null
+          converted_client_id?: string | null
+          converted_case_id?: string | null
+          notes?: string | null
+          tags?: string[] | null
+          utm_source?: string | null
+          utm_medium?: string | null
+          utm_campaign?: string | null
+          last_contacted_at?: string | null
+          next_follow_up?: string | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -259,61 +260,303 @@ export interface Database {
       intake_submissions: {
         Row: {
           id: string
-          reference_id: string
-          full_name: string
-          email: string
-          phone: string | null
-          id_number: string | null
+          client_id: string | null
+          case_id: string | null
+          lead_id: string | null
+          status: IntakeStatus
           case_type: CaseType
-          description: string
+          case_description: string
           opposing_party: string | null
-          urgency: CaseUrgency | null
-          has_documents: boolean
-          consent_given: boolean
-          popia_consent: boolean
-          ai_analysis: string | null
-          converted_case_id: string | null
-          status: string
+          estimated_value: number | null
+          urgency: string | null
+          timeline: string | null
+          desired_outcome: string | null
+          previous_legal_help: string | null
+          documents_ready: boolean | null
+          personal_info: Json | null
+          case_details: Json | null
+          financial_info: Json | null
+          ai_extracted_data: Json | null
+          ai_confidence: number | null
+          review_notes: string | null
+          reviewed_by: string | null
+          reviewed_at: string | null
+          submitted_at: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          reference_id: string
-          full_name: string
-          email: string
-          phone?: string | null
-          id_number?: string | null
+          client_id?: string | null
+          case_id?: string | null
+          lead_id?: string | null
+          status?: IntakeStatus
           case_type: CaseType
-          description: string
+          case_description: string
           opposing_party?: string | null
-          urgency?: CaseUrgency | null
-          has_documents?: boolean
-          consent_given: boolean
-          popia_consent: boolean
-          ai_analysis?: string | null
-          converted_case_id?: string | null
-          status?: string
+          estimated_value?: number | null
+          urgency?: string | null
+          timeline?: string | null
+          desired_outcome?: string | null
+          previous_legal_help?: string | null
+          documents_ready?: boolean | null
+          personal_info?: Json | null
+          case_details?: Json | null
+          financial_info?: Json | null
+          ai_extracted_data?: Json | null
+          ai_confidence?: number | null
+          review_notes?: string | null
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          submitted_at?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          reference_id?: string
-          full_name?: string
-          email?: string
-          phone?: string | null
-          id_number?: string | null
+          client_id?: string | null
+          case_id?: string | null
+          lead_id?: string | null
+          status?: IntakeStatus
           case_type?: CaseType
-          description?: string
+          case_description?: string
           opposing_party?: string | null
-          urgency?: CaseUrgency | null
-          has_documents?: boolean
-          consent_given?: boolean
-          popia_consent?: boolean
-          ai_analysis?: string | null
-          converted_case_id?: string | null
-          status?: string
+          estimated_value?: number | null
+          urgency?: string | null
+          timeline?: string | null
+          desired_outcome?: string | null
+          previous_legal_help?: string | null
+          documents_ready?: boolean | null
+          personal_info?: Json | null
+          case_details?: Json | null
+          financial_info?: Json | null
+          ai_extracted_data?: Json | null
+          ai_confidence?: number | null
+          review_notes?: string | null
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          submitted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      ai_intake_sessions: {
+        Row: {
+          id: string
+          client_id: string | null
+          intake_submission_id: string | null
+          session_token: string | null
+          status: IntakeStatus
+          conversation_history: Json | null
+          extracted_entities: Json | null
+          current_step: string | null
+          steps_completed: string[] | null
+          steps_remaining: string[] | null
+          ai_model_used: string | null
+          total_tokens: number | null
+          completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id?: string | null
+          intake_submission_id?: string | null
+          session_token?: string | null
+          status?: IntakeStatus
+          conversation_history?: Json | null
+          extracted_entities?: Json | null
+          current_step?: string | null
+          steps_completed?: string[] | null
+          steps_remaining?: string[] | null
+          ai_model_used?: string | null
+          total_tokens?: number | null
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string | null
+          intake_submission_id?: string | null
+          session_token?: string | null
+          status?: IntakeStatus
+          conversation_history?: Json | null
+          extracted_entities?: Json | null
+          current_step?: string | null
+          steps_completed?: string[] | null
+          steps_remaining?: string[] | null
+          ai_model_used?: string | null
+          total_tokens?: number | null
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      ai_analyses: {
+        Row: {
+          id: string
+          case_id: string | null
+          intake_id: string | null
+          analysis_type: AnalysisType
+          status: AnalysisStatus
+          input_data: Json | null
+          result: Json | null
+          summary: string | null
+          recommendations: Json | null
+          risk_flags: Json | null
+          confidence_score: number | null
+          ai_model_used: string | null
+          tokens_used: number | null
+          processing_time_ms: number | null
+          error_message: string | null
+          requested_by: string | null
+          completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          case_id?: string | null
+          intake_id?: string | null
+          analysis_type: AnalysisType
+          status?: AnalysisStatus
+          input_data?: Json | null
+          result?: Json | null
+          summary?: string | null
+          recommendations?: Json | null
+          risk_flags?: Json | null
+          confidence_score?: number | null
+          ai_model_used?: string | null
+          tokens_used?: number | null
+          processing_time_ms?: number | null
+          error_message?: string | null
+          requested_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          case_id?: string | null
+          intake_id?: string | null
+          analysis_type?: AnalysisType
+          status?: AnalysisStatus
+          input_data?: Json | null
+          result?: Json | null
+          summary?: string | null
+          recommendations?: Json | null
+          risk_flags?: Json | null
+          confidence_score?: number | null
+          ai_model_used?: string | null
+          tokens_used?: number | null
+          processing_time_ms?: number | null
+          error_message?: string | null
+          requested_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      ai_analysis_queue: {
+        Row: {
+          id: string
+          analysis_id: string | null
+          priority: Priority
+          retry_count: number | null
+          max_retries: number | null
+          scheduled_at: string
+          started_at: string | null
+          completed_at: string | null
+          error_message: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          analysis_id?: string | null
+          priority?: Priority
+          retry_count?: number | null
+          max_retries?: number | null
+          scheduled_at?: string
+          started_at?: string | null
+          completed_at?: string | null
+          error_message?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          analysis_id?: string | null
+          priority?: Priority
+          retry_count?: number | null
+          max_retries?: number | null
+          scheduled_at?: string
+          started_at?: string | null
+          completed_at?: string | null
+          error_message?: string | null
+          created_at?: string
+        }
+      }
+      documents: {
+        Row: {
+          id: string
+          case_id: string | null
+          uploaded_by: string
+          document_type: DocumentType
+          status: DocumentStatus
+          file_name: string
+          file_path: string
+          file_size: number | null
+          mime_type: string | null
+          description: string | null
+          tags: string[] | null
+          version: number | null
+          parent_document_id: string | null
+          ai_extracted_text: string | null
+          ai_summary: string | null
+          is_confidential: boolean | null
+          metadata: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          case_id?: string | null
+          uploaded_by: string
+          document_type?: DocumentType
+          status?: DocumentStatus
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          mime_type?: string | null
+          description?: string | null
+          tags?: string[] | null
+          version?: number | null
+          parent_document_id?: string | null
+          ai_extracted_text?: string | null
+          ai_summary?: string | null
+          is_confidential?: boolean | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          case_id?: string | null
+          uploaded_by?: string
+          document_type?: DocumentType
+          status?: DocumentStatus
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          mime_type?: string | null
+          description?: string | null
+          tags?: string[] | null
+          version?: number | null
+          parent_document_id?: string | null
+          ai_extracted_text?: string | null
+          ai_summary?: string | null
+          is_confidential?: boolean | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -321,43 +564,46 @@ export interface Database {
       tasks: {
         Row: {
           id: string
-          title: string
-          description: string | null
           case_id: string | null
           assigned_to: string
           created_by: string
-          priority: TaskPriority
+          title: string
+          description: string | null
           status: TaskStatus
+          priority: Priority
           due_date: string | null
-          completed_date: string | null
+          completed_at: string | null
+          metadata: Json | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          title: string
-          description?: string | null
           case_id?: string | null
           assigned_to: string
           created_by: string
-          priority: TaskPriority
+          title: string
+          description?: string | null
           status?: TaskStatus
+          priority?: Priority
           due_date?: string | null
-          completed_date?: string | null
+          completed_at?: string | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          title?: string
-          description?: string | null
           case_id?: string | null
           assigned_to?: string
           created_by?: string
-          priority?: TaskPriority
+          title?: string
+          description?: string | null
           status?: TaskStatus
+          priority?: Priority
           due_date?: string | null
-          completed_date?: string | null
+          completed_at?: string | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -365,139 +611,101 @@ export interface Database {
       messages: {
         Row: {
           id: string
-          case_id: string
+          case_id: string | null
           sender_id: string
           recipient_id: string | null
-          content: string
-          is_read: boolean
           message_type: MessageType
+          subject: string | null
+          content: string
+          is_read: boolean | null
+          parent_message_id: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          case_id?: string | null
+          sender_id: string
+          recipient_id?: string | null
+          message_type?: MessageType
+          subject?: string | null
+          content: string
+          is_read?: boolean | null
+          parent_message_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          case_id?: string | null
+          sender_id?: string
+          recipient_id?: string | null
+          message_type?: MessageType
+          subject?: string | null
+          content?: string
+          is_read?: boolean | null
+          parent_message_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
+      case_timeline: {
+        Row: {
+          id: string
+          case_id: string
+          event_type: string
+          event_description: string
+          performed_by: string | null
+          metadata: Json | null
+          is_system_event: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          case_id: string
+          event_type: string
+          event_description: string
+          performed_by?: string | null
+          metadata?: Json | null
+          is_system_event?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          case_id?: string
+          event_type?: string
+          event_description?: string
+          performed_by?: string | null
+          metadata?: Json | null
+          is_system_event?: boolean | null
+          created_at?: string
+        }
+      }
+      privileged_notes: {
+        Row: {
+          id: string
+          case_id: string
+          author_id: string
+          content: string
+          is_privileged: boolean | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           case_id: string
-          sender_id: string
-          recipient_id?: string | null
+          author_id: string
           content: string
-          is_read?: boolean
-          message_type?: MessageType
+          is_privileged?: boolean | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           case_id?: string
-          sender_id?: string
-          recipient_id?: string | null
+          author_id?: string
           content?: string
-          is_read?: boolean
-          message_type?: MessageType
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      audit_logs: {
-        Row: {
-          id: string
-          user_id: string | null
-          action: string
-          resource_type: string
-          resource_id: string | null
-          details: string | null
-          ip_address: string | null
-          user_agent: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id?: string | null
-          action: string
-          resource_type: string
-          resource_id?: string | null
-          details?: string | null
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string | null
-          action?: string
-          resource_type?: string
-          resource_id?: string | null
-          details?: string | null
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-      }
-      consent_logs: {
-        Row: {
-          id: string
-          user_id: string | null
-          consent_type: ConsentType
-          purpose: string
-          granted: boolean
-          ip_address: string | null
-          user_agent: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id?: string | null
-          consent_type: ConsentType
-          purpose: string
-          granted: boolean
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string | null
-          consent_type?: ConsentType
-          purpose?: string
-          granted?: boolean
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-      }
-      notifications: {
-        Row: {
-          id: string
-          user_id: string
-          type: NotificationType
-          title: string
-          message: string
-          is_read: boolean
-          link: string | null
-          related_id: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          type: NotificationType
-          title: string
-          message: string
-          is_read?: boolean
-          link?: string | null
-          related_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          type?: NotificationType
-          title?: string
-          message?: string
-          is_read?: boolean
-          link?: string | null
-          related_id?: string | null
+          is_privileged?: boolean | null
           created_at?: string
           updated_at?: string
         }
@@ -505,45 +713,121 @@ export interface Database {
       consultations: {
         Row: {
           id: string
-          client_id: string
-          attorney_id: string
           case_id: string | null
-          scheduled_date: string
-          scheduled_time: string
-          duration_minutes: number
+          client_id: string
+          attorney_id: string | null
           status: ConsultationStatus
+          scheduled_at: string
+          duration_minutes: number | null
+          meeting_type: string | null
+          meeting_link: string | null
+          location: string | null
           notes: string | null
-          meeting_type: MeetingType
+          follow_up_required: boolean | null
+          fee: number | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          client_id: string
-          attorney_id: string
           case_id?: string | null
-          scheduled_date: string
-          scheduled_time: string
-          duration_minutes?: number
+          client_id: string
+          attorney_id?: string | null
           status?: ConsultationStatus
+          scheduled_at: string
+          duration_minutes?: number | null
+          meeting_type?: string | null
+          meeting_link?: string | null
+          location?: string | null
           notes?: string | null
-          meeting_type?: MeetingType
+          follow_up_required?: boolean | null
+          fee?: number | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          client_id?: string
-          attorney_id?: string
           case_id?: string | null
-          scheduled_date?: string
-          scheduled_time?: string
-          duration_minutes?: number
+          client_id?: string
+          attorney_id?: string | null
           status?: ConsultationStatus
+          scheduled_at?: string
+          duration_minutes?: number | null
+          meeting_type?: string | null
+          meeting_link?: string | null
+          location?: string | null
           notes?: string | null
-          meeting_type?: MeetingType
+          follow_up_required?: boolean | null
+          fee?: number | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      consent_logs: {
+        Row: {
+          id: string
+          user_id: string
+          consent_type: ConsentType
+          granted: boolean
+          ip_address: string | null
+          user_agent: string | null
+          version: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          consent_type: ConsentType
+          granted: boolean
+          ip_address?: string | null
+          user_agent?: string | null
+          version?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          consent_type?: ConsentType
+          granted?: boolean
+          ip_address?: string | null
+          user_agent?: string | null
+          version?: string | null
+          created_at?: string
+        }
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          message: string
+          type: string
+          link: string | null
+          is_read: boolean | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          message: string
+          type?: string
+          link?: string | null
+          is_read?: boolean | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          message?: string
+          type?: string
+          link?: string | null
+          is_read?: boolean | null
+          metadata?: Json | null
+          created_at?: string
         }
       }
       pricing_plans: {
@@ -551,14 +835,14 @@ export interface Database {
           id: string
           name: string
           slug: string
+          description: string | null
           price_monthly: number
           price_annual: number | null
-          currency: string
-          features: string
-          max_cases: number | null
-          max_documents: number | null
-          is_active: boolean
-          sort_order: number
+          currency: string | null
+          features: Json | null
+          is_popular: boolean | null
+          is_active: boolean | null
+          sort_order: number | null
           created_at: string
           updated_at: string
         }
@@ -566,14 +850,14 @@ export interface Database {
           id?: string
           name: string
           slug: string
-          price_monthly: number
+          description?: string | null
+          price_monthly?: number
           price_annual?: number | null
-          currency?: string
-          features: string
-          max_cases?: number | null
-          max_documents?: number | null
-          is_active?: boolean
-          sort_order?: number
+          currency?: string | null
+          features?: Json | null
+          is_popular?: boolean | null
+          is_active?: boolean | null
+          sort_order?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -581,14 +865,14 @@ export interface Database {
           id?: string
           name?: string
           slug?: string
+          description?: string | null
           price_monthly?: number
           price_annual?: number | null
-          currency?: string
-          features?: string
-          max_cases?: number | null
-          max_documents?: number | null
-          is_active?: boolean
-          sort_order?: number
+          currency?: string | null
+          features?: Json | null
+          is_popular?: boolean | null
+          is_active?: boolean | null
+          sort_order?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -599,9 +883,11 @@ export interface Database {
           user_id: string
           plan_id: string
           status: SubscriptionStatus
-          current_period_start: string | null
+          current_period_start: string
           current_period_end: string | null
-          cancel_at_period_end: boolean
+          cancel_at_period_end: boolean | null
+          trial_ends_at: string | null
+          payfast_token: string | null
           created_at: string
           updated_at: string
         }
@@ -610,9 +896,11 @@ export interface Database {
           user_id: string
           plan_id: string
           status?: SubscriptionStatus
-          current_period_start?: string | null
+          current_period_start?: string
           current_period_end?: string | null
-          cancel_at_period_end?: boolean
+          cancel_at_period_end?: boolean | null
+          trial_ends_at?: string | null
+          payfast_token?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -621,9 +909,11 @@ export interface Database {
           user_id?: string
           plan_id?: string
           status?: SubscriptionStatus
-          current_period_start?: string | null
+          current_period_start?: string
           current_period_end?: string | null
-          cancel_at_period_end?: boolean
+          cancel_at_period_end?: boolean | null
+          trial_ends_at?: string | null
+          payfast_token?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -631,112 +921,86 @@ export interface Database {
       payment_records: {
         Row: {
           id: string
-          user_id: string
           subscription_id: string | null
-          m_payment_id: string
-          pf_payment_id: string | null
-          amount_gross: number
-          amount_fee: number | null
-          amount_net: number | null
-          payment_status: string
-          item_name: string
-          billing_cycle: string
-          payfast_data: string | null
+          case_id: string | null
+          user_id: string
+          amount: number
+          currency: string | null
+          status: PaymentStatus
+          payfast_payment_id: string | null
+          payfast_token: string | null
+          payment_method: string | null
+          description: string | null
+          metadata: Json | null
+          paid_at: string | null
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
-          user_id: string
           subscription_id?: string | null
-          m_payment_id: string
-          pf_payment_id?: string | null
-          amount_gross: number
-          amount_fee?: number | null
-          amount_net?: number | null
-          payment_status?: string
-          item_name: string
-          billing_cycle: string
-          payfast_data?: string | null
+          case_id?: string | null
+          user_id: string
+          amount: number
+          currency?: string | null
+          status?: PaymentStatus
+          payfast_payment_id?: string | null
+          payfast_token?: string | null
+          payment_method?: string | null
+          description?: string | null
+          metadata?: Json | null
+          paid_at?: string | null
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
-          user_id?: string
           subscription_id?: string | null
-          m_payment_id?: string
-          pf_payment_id?: string | null
-          amount_gross?: number
-          amount_fee?: number | null
-          amount_net?: number | null
-          payment_status?: string
-          item_name?: string
-          billing_cycle?: string
-          payfast_data?: string | null
+          case_id?: string | null
+          user_id?: string
+          amount?: number
+          currency?: string | null
+          status?: PaymentStatus
+          payfast_payment_id?: string | null
+          payfast_token?: string | null
+          payment_method?: string | null
+          description?: string | null
+          metadata?: Json | null
+          paid_at?: string | null
           created_at?: string
-          updated_at?: string
         }
       }
-      case_timeline: {
+      audit_logs: {
         Row: {
           id: string
-          case_id: string
           user_id: string | null
           action: string
-          description: string | null
-          previous_value: string | null
-          new_value: string | null
+          resource_type: string
+          resource_id: string | null
+          details: Json | null
+          ip_address: string | null
+          user_agent: string | null
           created_at: string
         }
         Insert: {
           id?: string
-          case_id: string
           user_id?: string | null
           action: string
-          description?: string | null
-          previous_value?: string | null
-          new_value?: string | null
+          resource_type: string
+          resource_id?: string | null
+          details?: Json | null
+          ip_address?: string | null
+          user_agent?: string | null
           created_at?: string
         }
         Update: {
           id?: string
-          case_id?: string
           user_id?: string | null
           action?: string
-          description?: string | null
-          previous_value?: string | null
-          new_value?: string | null
+          resource_type?: string
+          resource_id?: string | null
+          details?: Json | null
+          ip_address?: string | null
+          user_agent?: string | null
           created_at?: string
-        }
-      }
-      privileged_notes: {
-        Row: {
-          id: string
-          case_id: string
-          author_id: string
-          content: string
-          visibility: PrivilegedNoteVisibility
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          case_id: string
-          author_id: string
-          content: string
-          visibility?: PrivilegedNoteVisibility
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          case_id?: string
-          author_id?: string
-          content?: string
-          visibility?: PrivilegedNoteVisibility
-          created_at?: string
-          updated_at?: string
         }
       }
       api_analytics: {
@@ -744,7 +1008,7 @@ export interface Database {
           id: string
           endpoint: string
           method: string
-          status_code: number
+          status_code: number | null
           response_time_ms: number | null
           user_id: string | null
           ip_address: string | null
@@ -755,7 +1019,7 @@ export interface Database {
           id?: string
           endpoint: string
           method: string
-          status_code: number
+          status_code?: number | null
           response_time_ms?: number | null
           user_id?: string | null
           ip_address?: string | null
@@ -766,7 +1030,7 @@ export interface Database {
           id?: string
           endpoint?: string
           method?: string
-          status_code?: number
+          status_code?: number | null
           response_time_ms?: number | null
           user_id?: string | null
           ip_address?: string | null
@@ -777,221 +1041,979 @@ export interface Database {
       error_logs: {
         Row: {
           id: string
-          error_type: ErrorType
+          error_type: string
           message: string
           stack_trace: string | null
-          url: string | null
           user_id: string | null
-          metadata: string | null
-          resolved: boolean
+          request_path: string | null
+          metadata: Json | null
+          resolved: boolean | null
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
-          error_type: ErrorType
+          error_type: string
           message: string
           stack_trace?: string | null
-          url?: string | null
           user_id?: string | null
-          metadata?: string | null
-          resolved?: boolean
+          request_path?: string | null
+          metadata?: Json | null
+          resolved?: boolean | null
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
-          error_type?: ErrorType
+          error_type?: string
           message?: string
           stack_trace?: string | null
-          url?: string | null
           user_id?: string | null
-          metadata?: string | null
-          resolved?: boolean
+          request_path?: string | null
+          metadata?: Json | null
+          resolved?: boolean | null
           created_at?: string
-          updated_at?: string
-        }
-      }
-      attorneys: {
-        Row: {
-          id: string
-          user_id: string
-          lpc_number: string | null
-          firm_name: string | null
-          specializations: string | null
-          years_experience: number | null
-          is_verified: boolean
-          hourly_rate: number | null
-          bio: string | null
-          availability_status: AttorneyAvailability
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          lpc_number?: string | null
-          firm_name?: string | null
-          specializations?: string | null
-          years_experience?: number | null
-          is_verified?: boolean
-          hourly_rate?: number | null
-          bio?: string | null
-          availability_status?: AttorneyAvailability
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          lpc_number?: string | null
-          firm_name?: string | null
-          specializations?: string | null
-          years_experience?: number | null
-          is_verified?: boolean
-          hourly_rate?: number | null
-          bio?: string | null
-          availability_status?: AttorneyAvailability
-          created_at?: string
-          updated_at?: string
         }
       }
       rate_limit_logs: {
         Row: {
           id: string
-          ip: string
-          endpoint: string
-          request_count: number
-          window_start: string
+          identifier: string
+          endpoint: string | null
+          request_count: number | null
+          blocked: boolean | null
           created_at: string
         }
         Insert: {
           id?: string
-          ip: string
-          endpoint: string
-          request_count?: number
-          window_start?: string
+          identifier: string
+          endpoint?: string | null
+          request_count?: number | null
+          blocked?: boolean | null
           created_at?: string
         }
         Update: {
           id?: string
-          ip?: string
-          endpoint?: string
-          request_count?: number
-          window_start?: string
+          identifier?: string
+          endpoint?: string | null
+          request_count?: number | null
+          blocked?: boolean | null
           created_at?: string
         }
       }
       backup_records: {
         Row: {
           id: string
-          filename: string
-          size_bytes: number | null
           backup_type: string
-          status: BackupStatus
-          started_at: string
+          status: string
+          file_path: string | null
+          file_size_bytes: number | null
+          started_at: string | null
           completed_at: string | null
-          error: string | null
+          error_message: string | null
+          metadata: Json | null
           created_at: string
         }
         Insert: {
           id?: string
-          filename: string
-          size_bytes?: number | null
           backup_type?: string
-          status?: BackupStatus
-          started_at?: string
+          status?: string
+          file_path?: string | null
+          file_size_bytes?: number | null
+          started_at?: string | null
           completed_at?: string | null
-          error?: string | null
+          error_message?: string | null
+          metadata?: Json | null
           created_at?: string
         }
         Update: {
           id?: string
-          filename?: string
-          size_bytes?: number | null
           backup_type?: string
-          status?: BackupStatus
-          started_at?: string
+          status?: string
+          file_path?: string | null
+          file_size_bytes?: number | null
+          started_at?: string | null
           completed_at?: string | null
-          error?: string | null
+          error_message?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
+      workbench_configs: {
+        Row: {
+          id: string
+          user_id: string
+          layout: WorkbenchLayout
+          widgets: Json | null
+          sidebar_collapsed: boolean | null
+          theme: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          layout?: WorkbenchLayout
+          widgets?: Json | null
+          sidebar_collapsed?: boolean | null
+          theme?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          layout?: WorkbenchLayout
+          widgets?: Json | null
+          sidebar_collapsed?: boolean | null
+          theme?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      workbench_widgets: {
+        Row: {
+          id: string
+          user_id: string
+          widget_type: WidgetType
+          title: string | null
+          position_x: number
+          position_y: number
+          width: number
+          height: number
+          is_visible: boolean | null
+          config: Json | null
+          sort_order: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          widget_type: WidgetType
+          title?: string | null
+          position_x?: number
+          position_y?: number
+          width?: number
+          height?: number
+          is_visible?: boolean | null
+          config?: Json | null
+          sort_order?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          widget_type?: WidgetType
+          title?: string | null
+          position_x?: number
+          position_y?: number
+          width?: number
+          height?: number
+          is_visible?: boolean | null
+          config?: Json | null
+          sort_order?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      workbench_quick_actions: {
+        Row: {
+          id: string
+          user_id: string
+          action_type: string
+          label: string
+          icon: string | null
+          target_url: string | null
+          config: Json | null
+          sort_order: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          action_type: string
+          label: string
+          icon?: string | null
+          target_url?: string | null
+          config?: Json | null
+          sort_order?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          action_type?: string
+          label?: string
+          icon?: string | null
+          target_url?: string | null
+          config?: Json | null
+          sort_order?: number | null
+          created_at?: string
+        }
+      }
+      workbench_pinned_items: {
+        Row: {
+          id: string
+          user_id: string
+          item_type: string
+          item_id: string
+          label: string | null
+          metadata: Json | null
+          sort_order: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          item_type: string
+          item_id: string
+          label?: string | null
+          metadata?: Json | null
+          sort_order?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          item_type?: string
+          item_id?: string
+          label?: string | null
+          metadata?: Json | null
+          sort_order?: number | null
+          created_at?: string
+        }
+      }
+      workbench_recent_activity: {
+        Row: {
+          id: string
+          user_id: string
+          activity_type: string
+          resource_type: string
+          resource_id: string | null
+          description: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          activity_type: string
+          resource_type: string
+          resource_id?: string | null
+          description?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          activity_type?: string
+          resource_type?: string
+          resource_id?: string | null
+          description?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
+      lead_pipeline_stages: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          description: string | null
+          sort_order: number
+          color: string | null
+          is_default: boolean | null
+          auto_assign_to: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          description?: string | null
+          sort_order?: number
+          color?: string | null
+          is_default?: boolean | null
+          auto_assign_to?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          description?: string | null
+          sort_order?: number
+          color?: string | null
+          is_default?: boolean | null
+          auto_assign_to?: string | null
+          created_at?: string
+        }
+      }
+      lead_pipeline_transitions: {
+        Row: {
+          id: string
+          lead_id: string
+          from_stage: string | null
+          to_stage: string
+          changed_by: string | null
+          reason: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          from_stage?: string | null
+          to_stage: string
+          changed_by?: string | null
+          reason?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          from_stage?: string | null
+          to_stage?: string
+          changed_by?: string | null
+          reason?: string | null
+          created_at?: string
+        }
+      }
+      lead_communications: {
+        Row: {
+          id: string
+          lead_id: string
+          type: string
+          direction: string | null
+          subject: string | null
+          content: string
+          contacted_by: string | null
+          follow_up_date: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          type?: string
+          direction?: string | null
+          subject?: string | null
+          content: string
+          contacted_by?: string | null
+          follow_up_date?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          type?: string
+          direction?: string | null
+          subject?: string | null
+          content?: string
+          contacted_by?: string | null
+          follow_up_date?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
+      lead_automation_rules: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          trigger_event: string
+          conditions: Json | null
+          actions: Json | null
+          is_active: boolean | null
+          created_by: string | null
+          last_triggered_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          trigger_event: string
+          conditions?: Json | null
+          actions?: Json | null
+          is_active?: boolean | null
+          created_by?: string | null
+          last_triggered_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          trigger_event?: string
+          conditions?: Json | null
+          actions?: Json | null
+          is_active?: boolean | null
+          created_by?: string | null
+          last_triggered_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      lead_form_submissions: {
+        Row: {
+          id: string
+          form_slug: string
+          lead_id: string | null
+          form_data: Json
+          utm_source: string | null
+          utm_medium: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          ip_address: string | null
+          user_agent: string | null
+          is_processed: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          form_slug: string
+          lead_id?: string | null
+          form_data?: Json
+          utm_source?: string | null
+          utm_medium?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          is_processed?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          form_slug?: string
+          lead_id?: string | null
+          form_data?: Json
+          utm_source?: string | null
+          utm_medium?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          is_processed?: boolean | null
+          created_at?: string
+        }
+      }
+      admin_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          token: string
+          ip_address: string | null
+          user_agent: string | null
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          token: string
+          ip_address?: string | null
+          user_agent?: string | null
+          expires_at: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          token?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          expires_at?: string
+          created_at?: string
+        }
+      }
+      admin_activity_logs: {
+        Row: {
+          id: string
+          user_id: string
+          action: string
+          resource_type: string | null
+          resource_id: string | null
+          details: Json | null
+          ip_address: string | null
+          severity: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          action: string
+          resource_type?: string | null
+          resource_id?: string | null
+          details?: Json | null
+          ip_address?: string | null
+          severity?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          action?: string
+          resource_type?: string | null
+          resource_id?: string | null
+          details?: Json | null
+          ip_address?: string | null
+          severity?: string | null
+          created_at?: string
+        }
+      }
+      crm_dashboard_widgets: {
+        Row: {
+          id: string
+          widget_key: string
+          title: string
+          description: string | null
+          widget_type: string
+          config: Json | null
+          data_source: string | null
+          is_active: boolean | null
+          sort_order: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          widget_key: string
+          title: string
+          description?: string | null
+          widget_type?: string
+          config?: Json | null
+          data_source?: string | null
+          is_active?: boolean | null
+          sort_order?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          widget_key?: string
+          title?: string
+          description?: string | null
+          widget_type?: string
+          config?: Json | null
+          data_source?: string | null
+          is_active?: boolean | null
+          sort_order?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_reports: {
+        Row: {
+          id: string
+          title: string
+          report_type: ReportType
+          description: string | null
+          parameters: Json | null
+          result_data: Json | null
+          generated_by: string | null
+          is_scheduled: boolean | null
+          schedule_cron: string | null
+          format: string | null
+          status: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          report_type: ReportType
+          description?: string | null
+          parameters?: Json | null
+          result_data?: Json | null
+          generated_by?: string | null
+          is_scheduled?: boolean | null
+          schedule_cron?: string | null
+          format?: string | null
+          status?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          report_type?: ReportType
+          description?: string | null
+          parameters?: Json | null
+          result_data?: Json | null
+          generated_by?: string | null
+          is_scheduled?: boolean | null
+          schedule_cron?: string | null
+          format?: string | null
+          status?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: string
+          title: string
+          message: string
+          priority: Priority | null
+          link: string | null
+          is_read: boolean | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: string
+          title: string
+          message: string
+          priority?: Priority | null
+          link?: string | null
+          is_read?: boolean | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: string
+          title?: string
+          message?: string
+          priority?: Priority | null
+          link?: string | null
+          is_read?: boolean | null
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
+      crm_system_settings: {
+        Row: {
+          id: string
+          setting_key: string
+          setting_value: Json
+          description: string | null
+          is_public: boolean | null
+          updated_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          setting_key: string
+          setting_value?: Json
+          description?: string | null
+          is_public?: boolean | null
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          description?: string | null
+          is_public?: boolean | null
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_contact_messages: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string | null
+          subject: string | null
+          message: string
+          status: ContactMessageStatus
+          assigned_to: string | null
+          replied_at: string | null
+          reply_content: string | null
+          lead_id: string | null
+          metadata: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string | null
+          subject?: string | null
+          message: string
+          status?: ContactMessageStatus
+          assigned_to?: string | null
+          replied_at?: string | null
+          reply_content?: string | null
+          lead_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string | null
+          subject?: string | null
+          message?: string
+          status?: ContactMessageStatus
+          assigned_to?: string | null
+          replied_at?: string | null
+          reply_content?: string | null
+          lead_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_user_notes: {
+        Row: {
+          id: string
+          user_id: string
+          author_id: string
+          content: string
+          is_pinned: boolean | null
+          is_internal: boolean | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          author_id: string
+          content: string
+          is_pinned?: boolean | null
+          is_internal?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          author_id?: string
+          content?: string
+          is_pinned?: boolean | null
+          is_internal?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_subscription_events: {
+        Row: {
+          id: string
+          subscription_id: string | null
+          user_id: string
+          event_type: string
+          description: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          subscription_id?: string | null
+          user_id: string
+          event_type: string
+          description?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          subscription_id?: string | null
+          user_id?: string
+          event_type?: string
+          description?: string | null
+          metadata?: Json | null
           created_at?: string
         }
       }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
-    Enums: {
-      user_role: UserRole
-      case_type: CaseType
-      case_urgency: CaseUrgency
-      case_status: CaseStatus
-      lead_source: LeadSource
-      lead_status: LeadStatus
-      document_type: DocumentType
-      workflow_status: WorkflowStatus
-      task_priority: TaskPriority
-      task_status: TaskStatus
-      message_type: MessageType
-      consent_type: ConsentType
-      notification_type: NotificationType
-      consultation_status: ConsultationStatus
-      meeting_type: MeetingType
-      subscription_status: SubscriptionStatus
-      attorney_availability: AttorneyAvailability
-      privileged_note_visibility: PrivilegedNoteVisibility
-      error_type: ErrorType
-      backup_status: BackupStatus
-    }
   }
 }
 
-// Enum types
+// ---------------------------------------------------------------------------
+// String union type aliases for CHECK-constrained TEXT columns
+// ---------------------------------------------------------------------------
+
 export type UserRole =
-  | 'managing_director'
-  | 'senior_partner'
-  | 'associate'
-  | 'paralegal'
-  | 'legal_officer'
-  | 'supervising_officer'
-  | 'senior_consultant'
-  | 'consultant'
-  | 'candidate_attorney'
-  | 'hr_manager'
-  | 'finance_manager'
-  | 'office_administrator'
-  | 'systems_admin'
-  | 'receptionist'
   | 'client'
-  | 'guest'
+  | 'attorney'
+  | 'paralegal'
+  | 'admin'
+  | 'managing_director'
+  | 'systems_admin'
 
 export type CaseType =
-  | 'family_law'
-  | 'criminal_defence'
-  | 'civil_litigation'
-  | 'conveyancing'
-  | 'estate_planning'
-  | 'corporate_commercial'
-  | 'debt_collection'
+  | 'civil'
+  | 'criminal'
+  | 'family'
+  | 'corporate'
+  | 'property'
+  | 'labour'
   | 'immigration'
-  | 'labour_law'
+  | 'intellectual_property'
+  | 'tax'
   | 'personal_injury'
+  | 'debt_recovery'
   | 'other'
 
-export type CaseUrgency = 'low' | 'medium' | 'high' | 'critical'
-export type CaseStatus = 'intake' | 'pending_review' | 'active' | 'on_hold' | 'settled' | 'closed' | 'archived'
-export type LeadSource = 'website' | 'referral' | 'walk_in' | 'social_media' | 'advertisement' | 'cold_call' | 'other'
-export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'consultation_scheduled' | 'retained' | 'lost' | 'disqualified'
-export type DocumentType = 'contract' | 'pleading' | 'correspondence' | 'court_filing' | 'affidavit' | 'opinion' | 'memo' | 'invoice' | 'consent_form' | 'id_document' | 'other'
-export type WorkflowStatus = 'draft' | 'review' | 'approved' | 'signed' | 'filed' | 'archived'
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'overdue' | 'cancelled'
-export type MessageType = 'message' | 'note' | 'system' | 'alert'
-export type ConsentType = 'data_processing' | 'marketing' | 'third_party_sharing' | 'automated_decision' | 'popia_general'
-export type NotificationType = 'case_update' | 'task_assigned' | 'document_review' | 'message' | 'system' | 'deadline' | 'lead_assigned' | 'consultation'
-export type ConsultationStatus = 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'
-export type MeetingType = 'in_person' | 'video_call' | 'phone_call'
-export type SubscriptionStatus = 'active' | 'past_due' | 'cancelled' | 'expired' | 'trialing'
-export type AttorneyAvailability = 'available' | 'busy' | 'on_leave' | 'unavailable'
-export type PrivilegedNoteVisibility = 'officer_only' | 'managing_partner_only' | 'attorney_client'
-export type ErrorType = 'runtime' | 'api' | 'database' | 'auth' | 'validation' | 'network' | 'unknown'
-export type BackupStatus = 'pending' | 'in_progress' | 'completed' | 'failed'
+export type CaseStatus =
+  | 'intake'
+  | 'review'
+  | 'active'
+  | 'on_hold'
+  | 'closed'
+  | 'archived'
+
+export type LeadSource =
+  | 'website'
+  | 'referral'
+  | 'social_media'
+  | 'google_ads'
+  | 'walk_in'
+  | 'phone'
+  | 'email'
+  | 'partner'
+  | 'event'
+  | 'other'
+
+export type LeadStatus =
+  | 'new'
+  | 'contacted'
+  | 'qualified'
+  | 'consultation_scheduled'
+  | 'retained'
+  | 'lost'
+  | 'nurturing'
+
+export type IntakeStatus =
+  | 'draft'
+  | 'submitted'
+  | 'under_review'
+  | 'approved'
+  | 'rejected'
+  | 'additional_info_needed'
+
+export type AnalysisType =
+  | 'merit_assessment'
+  | 'risk_analysis'
+  | 'cost_estimate'
+  | 'timeline_prediction'
+  | 'document_review'
+  | 'legal_research'
+  | 'strategy_recommendation'
+
+export type AnalysisStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'failed'
+
+export type Priority =
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'urgent'
+
+export type DocumentType =
+  | 'id_document'
+  | 'contract'
+  | 'court_filing'
+  | 'correspondence'
+  | 'evidence'
+  | 'financial'
+  | 'medical'
+  | 'police_report'
+  | 'affidavit'
+  | 'other'
+
+export type DocumentStatus =
+  | 'uploading'
+  | 'uploaded'
+  | 'reviewing'
+  | 'approved'
+  | 'rejected'
+  | 'archived'
+
+export type TaskStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+
+export type MessageType =
+  | 'system'
+  | 'direct'
+  | 'group'
+  | 'notification'
+
+export type ConsultationStatus =
+  | 'scheduled'
+  | 'confirmed'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show'
+
+export type ConsentType =
+  | 'terms_of_service'
+  | 'privacy_policy'
+  | 'popi_act'
+  | 'marketing'
+  | 'data_processing'
+
+export type SubscriptionStatus =
+  | 'active'
+  | 'past_due'
+  | 'cancelled'
+  | 'expired'
+  | 'trial'
+
+export type PaymentStatus =
+  | 'pending'
+  | 'completed'
+  | 'failed'
+  | 'refunded'
+  | 'partially_refunded'
+
+export type WorkbenchLayout =
+  | 'grid'
+  | 'list'
+  | 'compact'
+
+export type WidgetType =
+  | 'case_summary'
+  | 'task_list'
+  | 'upcoming_deadlines'
+  | 'recent_documents'
+  | 'billing_overview'
+  | 'lead_pipeline'
+  | 'ai_insights'
+  | 'quick_actions'
+  | 'notifications'
+  | 'calendar'
+
+export type ReportType =
+  | 'leads_summary'
+  | 'revenue'
+  | 'case_metrics'
+  | 'client_acquisition'
+  | 'attorney_performance'
+  | 'ai_usage'
+  | 'conversion_funnel'
+
+export type ContactMessageStatus =
+  | 'unread'
+  | 'read'
+  | 'replied'
+  | 'archived'

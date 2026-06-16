@@ -4,13 +4,19 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit } from '@/lib/middleware';
+import { checkRateLimit, requireAuth } from '@/lib/middleware';
 import { aiChatRateLimiter } from '@/lib/security';
 
 const SUPPORTED_SIZES = ['1024x1024', '768x1344', '864x1152', '1344x768', '1152x864', '1440x720', '720x1440'];
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth required for image generation
+    const authResult = await requireAuth(request);
+    if (!authResult.authenticated) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+
     const rateResult = await checkRateLimit(request, aiChatRateLimiter);
     if (!rateResult.allowed) {
       return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });

@@ -1,67 +1,109 @@
 /**
  * POST /api/auth/signup - Register new user via Supabase Auth
+ *
+ * SECURITY:
+ * - Strict rate limiting (3 per hour per IP)
+ * - Password strength validation
+ * - POPIA consent required (SA law)
+ * - Email validation and normalization
+ * - Input sanitization
+ * - Audit logging
+ * - CSRF protection
+ * - No role escalation (always 'client' for self-signup)
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { validatePasswordStrength } from '@/lib/auth';
 import { signupRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
-import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
+import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF } from '@/lib/middleware';
 import { createAuditLog, logConsent } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Service temporarily unavailable', 503, 'SERVICE_UNAVAILABLE');
     }
 
+    // CSRF validation
+    const csrf = validateCSRF(request);
+    if (!csrf.valid) return csrf.error!;
+
+    // Rate limiting — very strict for signup
     const rateResult = await checkRateLimit(request, signupRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many signup attempts. Please try again later.', 429, 'RATE_LIMITED');
     }
 
+    // Body size check
+    const bodyCheck = validateBodySize(request, 8192); // 8KB max for signup
+    if (!bodyCheck.valid) return bodyCheck.error!;
+
     const body = await request.json();
     const { email, password, full_name, phone, consent_given, popia_consent } = body;
 
-    // Signup is always 'client' role
+    // Signup is always 'client' role — no role escalation possible
     const role = 'client';
+
+    // ---- Input Validation ----
 
     if (!email || !password || !full_name) {
       return apiError('Email, password, and full name are required', 400, 'MISSING_FIELDS');
+    }
+
+    if (typeof email !== 'string' || typeof password !== 'string' || typeof full_name !== 'string') {
+      return apiError('Invalid input format', 400, 'INVALID_FORMAT');
     }
 
     if (!isValidEmail(email)) {
       return apiError('Invalid email format', 400, 'INVALID_EMAIL');
     }
 
+    // Name length limits
+    const sanitizedName = sanitizeString(full_name.trim());
+    if (sanitizedName.length < 2 || sanitizedName.length > 100) {
+      return apiError('Full name must be between 2 and 100 characters', 400, 'INVALID_NAME');
+    }
+
+    // Phone validation (if provided)
+    if (phone && typeof phone !== 'string') {
+      return apiError('Invalid phone format', 400, 'INVALID_PHONE');
+    }
+
+    // Password strength
     const strengthCheck = validatePasswordStrength(password);
     if (!strengthCheck.valid) {
       return apiError(`Password does not meet requirements: ${strengthCheck.errors.join(', ')}`, 400, 'WEAK_PASSWORD');
     }
 
+    // POPIA consent required (South African law)
     if (!consent_given || !popia_consent) {
       return apiError('POPIA consent is required to create an account', 400, 'CONSENT_REQUIRED');
     }
 
-    // Check if email already exists in profiles
+    // ---- Check for existing account ----
+
     const { data: existingProfile } = await db
       .from('profiles')
       .select('id')
-      .eq('email', email.toLowerCase())
+      .eq('email', email.toLowerCase().trim())
       .single();
 
     if (existingProfile) {
+      // Don't reveal that email exists — but still return 409 for UX
       return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
     }
 
-    // Create user in Supabase Auth
+    // ---- Create User ----
+
     const { data: authData, error: authError } = await db.auth.admin.createUser({
-      email: email.toLowerCase(),
+      email: email.toLowerCase().trim(),
       password,
-      email_confirm: true, // Auto-confirm for now
+      email_confirm: true, // Auto-confirm for now (can switch to email verification later)
       user_metadata: {
-        full_name: sanitizeString(full_name),
-        phone: phone ? sanitizeString(phone) : undefined,
+        full_name: sanitizedName,
+        phone: phone ? sanitizeString(phone.trim()) : undefined,
         role,
       },
     });
@@ -70,65 +112,77 @@ export async function POST(request: NextRequest) {
       if (authError?.message?.includes('already registered')) {
         return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
       }
+      console.error('Signup auth error:', authError?.message);
       return apiError('Failed to create account', 500, 'SIGNUP_ERROR');
     }
 
-    // Update the profile with additional info (auto-created by trigger)
+    // ---- Update Profile ----
+    // (auto-created by handle_new_user() trigger)
+
     const { error: profileError } = await db
       .from('profiles')
       .update({
-        full_name: sanitizeString(full_name),
-        phone: phone ? sanitizeString(phone) : null,
+        full_name: sanitizedName,
+        phone: phone ? sanitizeString(phone.trim()) : null,
+        popi_consent: true,
       })
-      .eq('user_id', authData.user.id);
+      .eq('id', authData.user.id);
 
     if (profileError) {
       console.error('Profile update error:', profileError);
+      // Non-fatal — profile exists but may lack some data
     }
 
-    // Log consent
-    const userId = authData.user.id;
-    await logConsent({
-      user_id: userId,
-      consent_type: 'data_processing',
-      purpose: 'Account creation and service provision',
-      granted: true,
-      ip_address: request.headers.get('x-forwarded-for') || undefined,
-    });
+    // ---- Log Consent ----
 
-    await logConsent({
-      user_id: userId,
-      consent_type: 'popia_general',
-      purpose: 'POPIA compliance - data processing consent',
-      granted: true,
-      ip_address: request.headers.get('x-forwarded-for') || undefined,
-    });
+    const userId = authData.user.id;
+    const ipAddress = request.headers.get('x-forwarded-for') || undefined;
+    const userAgent = request.headers.get('user-agent') || undefined;
+
+    await Promise.all([
+      logConsent({
+        user_id: userId,
+        consent_type: 'data_processing',
+        granted: true,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+      }),
+      logConsent({
+        user_id: userId,
+        consent_type: 'popi_act',
+        granted: true,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+      }),
+    ]);
+
+    // ---- Audit Log ----
 
     await createAuditLog({
       user_id: userId,
       action: 'USER_SIGNUP',
       resource_type: 'user',
       resource_id: userId,
-      ip_address: request.headers.get('x-forwarded-for') || undefined,
+      ip_address: ipAddress,
+      user_agent: userAgent,
     });
 
-    // Sign in to get access token
+    // ---- Sign In to Get Token ----
+
     const { data: signInData, error: signInError } = await db.auth.signInWithPassword({
-      email: email.toLowerCase(),
+      email: email.toLowerCase().trim(),
       password,
     });
 
     if (signInError || !signInData.session) {
-      // User was created but can't sign in immediately — still return success
+      // User was created but can't sign in immediately
       return apiResponse({
         message: 'Account created successfully. Please sign in.',
         user: {
           id: userId,
-          email: email.toLowerCase(),
-          full_name: sanitizeString(full_name),
+          email: email.toLowerCase().trim(),
+          full_name: sanitizedName,
           role,
-          department: null,
-          is_active: true,
           email_verified: true,
         },
       }, 201);
@@ -138,11 +192,9 @@ export async function POST(request: NextRequest) {
       token: signInData.session.access_token,
       user: {
         id: userId,
-        email: email.toLowerCase(),
-        full_name: sanitizeString(full_name),
+        email: email.toLowerCase().trim(),
+        full_name: sanitizedName,
         role,
-        department: null,
-        is_active: true,
         email_verified: true,
       },
     }, 201);

@@ -63,21 +63,20 @@ export function DocumentsView({ token, documents, onRefresh, user, loading }: {
   };
 
   const workflowColors: Record<string, string> = {
-    draft: 'bg-slate-50 text-slate-700 border-slate-100', review: 'bg-amber-50 text-amber-700 border-amber-100',
-    approved: 'bg-emerald-50 text-emerald-700 border-emerald-100', signed: 'bg-blue-50 text-blue-700 border-blue-100',
-    filed: 'bg-teal-50 text-teal-700 border-teal-100', archived: 'bg-slate-50 text-slate-500 border-slate-100',
+    uploading: 'bg-slate-50 text-slate-700 border-slate-100', uploaded: 'bg-blue-50 text-blue-700 border-blue-100',
+    reviewing: 'bg-amber-50 text-amber-700 border-amber-100', approved: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    rejected: 'bg-red-50 text-red-700 border-red-100', archived: 'bg-slate-50 text-slate-500 border-slate-100',
   };
 
   const typeIcons: Record<string, { bg: string; text: string }> = {
     contract: { bg: 'bg-blue-50', text: 'text-blue-600' },
-    pleading: { bg: 'bg-purple-50', text: 'text-purple-600' },
     correspondence: { bg: 'bg-emerald-50', text: 'text-emerald-600' },
     court_filing: { bg: 'bg-red-50', text: 'text-red-600' },
     affidavit: { bg: 'bg-amber-50', text: 'text-amber-600' },
-    opinion: { bg: 'bg-teal-50', text: 'text-teal-600' },
-    memo: { bg: 'bg-cyan-50', text: 'text-cyan-600' },
-    invoice: { bg: 'bg-orange-50', text: 'text-orange-600' },
-    consent_form: { bg: 'bg-pink-50', text: 'text-pink-600' },
+    evidence: { bg: 'bg-purple-50', text: 'text-purple-600' },
+    financial: { bg: 'bg-teal-50', text: 'text-teal-600' },
+    medical: { bg: 'bg-cyan-50', text: 'text-cyan-600' },
+    police_report: { bg: 'bg-orange-50', text: 'text-orange-600' },
     id_document: { bg: 'bg-indigo-50', text: 'text-indigo-600' },
     other: { bg: 'bg-slate-50', text: 'text-slate-600' },
   };
@@ -116,14 +115,13 @@ export function DocumentsView({ token, documents, onRefresh, user, loading }: {
                       <SelectTrigger className="mt-1 text-[12px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="contract">Contract</SelectItem>
-                        <SelectItem value="pleading">Pleading</SelectItem>
                         <SelectItem value="correspondence">Correspondence</SelectItem>
                         <SelectItem value="court_filing">Court Filing</SelectItem>
                         <SelectItem value="affidavit">Affidavit</SelectItem>
-                        <SelectItem value="opinion">Opinion</SelectItem>
-                        <SelectItem value="memo">Memo</SelectItem>
-                        <SelectItem value="invoice">Invoice</SelectItem>
-                        <SelectItem value="consent_form">Consent Form</SelectItem>
+                        <SelectItem value="evidence">Evidence</SelectItem>
+                        <SelectItem value="financial">Financial</SelectItem>
+                        <SelectItem value="medical">Medical</SelectItem>
+                        <SelectItem value="police_report">Police Report</SelectItem>
                         <SelectItem value="id_document">ID Document</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
@@ -177,13 +175,13 @@ export function DocumentsView({ token, documents, onRefresh, user, loading }: {
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${iconStyle.bg}`}>
                       <FileCheck className={`w-4 h-4 ${iconStyle.text}`} />
                     </div>
-                    <Badge className={`text-[9px] border ${workflowColors[doc.workflow_status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{doc.workflow_status}</Badge>
+                    <Badge className={`text-[9px] border ${workflowColors[doc.status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{doc.status}</Badge>
                   </div>
                   <div className="mt-3">
-                    <div className="text-[13px] font-medium text-[#0c1e3c]">{doc.title}</div>
+                    <div className="text-[13px] font-medium text-[#0c1e3c]">{doc.file_name}</div>
                     <div className="text-[10px] text-slate-500 mt-1">{doc.document_type?.replace(/_/g, ' ')} · v{doc.version}</div>
                     {doc.case && <div className="text-[10px] text-slate-500">Case: {doc.case.title}</div>}
-                    {doc.prepared_by_user && <div className="text-[10px] text-slate-500">By: {doc.prepared_by_user.full_name}</div>}
+                    {doc.uploaded_by_user && <div className="text-[10px] text-slate-500">By: {doc.uploaded_by_user.full_name}</div>}
                   </div>
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-[9px] text-slate-400">{new Date(doc.created_at).toLocaleDateString('en-ZA')}</span>

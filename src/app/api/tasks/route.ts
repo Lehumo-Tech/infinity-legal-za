@@ -3,15 +3,20 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
+// Valid enum values per Supabase schema
+const VALID_STATUSES = ['pending', 'in_progress', 'completed', 'cancelled'];
+const VALID_PRIORITIES = ['low', 'medium', 'high', 'urgent'];
+
 // GET - List tasks with pagination and filters
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -32,10 +37,10 @@ export async function GET(request: NextRequest) {
     const priority = url.searchParams.get('priority');
     const search = url.searchParams.get('search');
 
-    // Build query
+    // Build query — cases has case_ref (not matter_number), profiles has no department column
     let query = db
       .from('tasks')
-      .select('*, assignee:profiles!tasks_assigned_to_fkey(user_id, full_name, email, role, department), creator:profiles!tasks_created_by_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title, status)', { count: 'exact' });
+      .select('*, assignee:profiles!tasks_assigned_to_fkey(id, full_name, email, role), creator:profiles!tasks_created_by_fkey(id, full_name, email, role), case:cases(id, case_ref, title, status)', { count: 'exact' });
 
     if (assigned_to) query = query.eq('assigned_to', assigned_to);
     if (case_id) query = query.eq('case_id', case_id);
@@ -65,6 +70,7 @@ export async function GET(request: NextRequest) {
 // POST - Create a new task
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -92,10 +98,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate priority enum
-    const validPriorities = ['low', 'medium', 'high', 'urgent'];
-    if (!validPriorities.includes(priority)) {
+    if (!VALID_PRIORITIES.includes(priority)) {
       return apiError(
-        `Invalid priority. Must be one of: ${validPriorities.join(', ')}`,
+        `Invalid priority. Must be one of: ${VALID_PRIORITIES.join(', ')}`,
         400,
         'INVALID_PRIORITY'
       );
@@ -105,11 +110,11 @@ export async function POST(request: NextRequest) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    // Validate assignee exists (profiles table uses user_id for auth UUID)
+    // Validate assignee exists — profiles PK is `id` (not `user_id`)
     const { data: assignee } = await db
       .from('profiles')
-      .select('user_id, full_name, email, role, department')
-      .eq('user_id', assigned_to)
+      .select('id, full_name, email, role')
+      .eq('id', assigned_to)
       .single();
 
     if (!assignee) {
@@ -140,7 +145,7 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         due_date: due_date || null,
       })
-      .select('*, assignee:profiles!tasks_assigned_to_fkey(user_id, full_name, email, role, department), creator:profiles!tasks_created_by_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title)')
+      .select('*, assignee:profiles!tasks_assigned_to_fkey(id, full_name, email, role), creator:profiles!tasks_created_by_fkey(id, full_name, email, role), case:cases(id, case_ref, title)')
       .single();
 
     if (insertError || !task) {
@@ -154,17 +159,16 @@ export async function POST(request: NextRequest) {
       action: 'CREATE_TASK',
       resource_type: 'task',
       resource_id: task.id,
-      details: `Task "${title}" assigned to ${assigned_to}`,
+      details: { message: `Task "${title}" assigned to ${assigned_to}` },
     });
 
-    // Create notification for the assignee
+    // Create notification for the assignee — notifications has no `related_id` column
     await db.from('notifications').insert({
       user_id: assigned_to,
       type: 'task_assigned',
       title: 'New Task Assigned',
       message: `You have been assigned a new task: "${title}"`,
       link: `/tasks/${task.id}`,
-      related_id: task.id,
     });
 
     return apiResponse(task, 201);

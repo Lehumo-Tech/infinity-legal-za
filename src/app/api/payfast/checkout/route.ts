@@ -5,7 +5,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { requireAuth, apiResponse, apiError } from '@/lib/middleware';
 import {
   buildPaymentForm,
@@ -20,6 +20,7 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
     const { data: dbUser, error: userError } = await db
       .from('profiles')
       .select('*')
-      .eq('user_id', user.userId)
+      .eq('id', user.userId)
       .single();
 
     if (userError || !dbUser) {
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id: user.userId,
         plan_id: planId,
-        status: 'trialing', // Will be set to active on ITN confirmation
+        status: 'trial', // Will be set to active on ITN confirmation
         current_period_start: periodStart.toISOString(),
         current_period_end: periodEnd.toISOString(),
         cancel_at_period_end: false,
@@ -127,11 +128,11 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id: user.userId,
         subscription_id: subscription.id,
-        m_payment_id: mPaymentId,
-        amount_gross: amount,
-        payment_status: 'pending',
-        item_name: `${plan.name} - ${billingCycle === 'annual' ? 'Annual' : 'Monthly'}`,
-        billing_cycle: billingCycle,
+        payfast_payment_id: mPaymentId,
+        amount,
+        status: 'pending',
+        description: `${plan.name} - ${billingCycle === 'annual' ? 'Annual' : 'Monthly'}`,
+        metadata: { billing_cycle: billingCycle, plan_name: plan.name },
       });
 
     if (paymentError) {

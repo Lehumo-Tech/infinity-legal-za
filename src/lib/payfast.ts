@@ -284,6 +284,49 @@ export async function verifyITN(itnData: PayFastITNData): Promise<{
 }
 
 // ============================================
+// PAYFAST IP VALIDATION
+// ============================================
+
+/**
+ * Known PayFast server IP addresses for ITN validation.
+ * In production, ITN requests should only come from these IPs.
+ * @see https://www.payfast.co.za/documentation/pf-integration-guide/
+ */
+const PAYFAST_IPS = [
+  '164.160.83.19',
+  '164.160.83.20',
+  '164.160.83.21',
+  '164.160.83.22',
+  '164.160.83.23',
+  '164.160.83.24',
+  '164.160.83.25',
+  '164.160.83.26',
+  '197.97.97.74',
+  '197.97.97.75',
+  '197.97.97.76',
+];
+
+/**
+ * Validate that the request IP is from PayFast's servers.
+ * In sandbox mode, this check is relaxed (sandbox can come from any IP).
+ */
+export function isValidPayFastIP(requestIp: string | null): boolean {
+  // In sandbox mode, don't enforce IP validation (testing can come from any IP)
+  if (getPayFastMode() === 'sandbox') {
+    return true;
+  }
+
+  if (!requestIp) {
+    return false;
+  }
+
+  // Handle x-forwarded-for with multiple IPs — take the first one
+  const ip = requestIp.split(',')[0].trim();
+
+  return PAYFAST_IPS.includes(ip);
+}
+
+// ============================================
 // HELPER FUNCTIONS
 // ============================================
 

@@ -3,14 +3,20 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
+// Valid enum values per Supabase schema
+const VALID_SOURCES = ['website', 'referral', 'social_media', 'google_ads', 'walk_in', 'phone', 'email', 'partner', 'event', 'other'];
+const VALID_STATUSES = ['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'nurturing'];
+const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'intellectual_property', 'tax', 'personal_injury', 'debt_recovery', 'other'];
+
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -29,8 +35,8 @@ export async function GET(request: NextRequest) {
     const source = url.searchParams.get('source');
     const search = url.searchParams.get('search');
 
-    // Build Supabase query
-    const selectFields = '*, assigned_paralegal:profiles!assigned_paralegal_id(id, full_name), assigned_officer:profiles!assigned_officer_id(id, full_name)';
+    // Build Supabase query — leads has `assigned_to` FK to profiles(id)
+    const selectFields = '*, assigned_to_profile:profiles!leads_assigned_to_fkey(id, full_name, email)';
 
     let query = db.from('leads').select(selectFields, { count: 'exact' });
 
@@ -38,9 +44,9 @@ export async function GET(request: NextRequest) {
     if (status) query = query.eq('status', status);
     if (source) query = query.eq('source', source);
 
-    // Search across multiple fields
+    // Search across multiple fields — leads has first_name, last_name (not name)
     if (search) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,description.ilike.%${search}%`);
+      query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
     // Apply pagination and ordering
@@ -57,23 +63,24 @@ export async function GET(request: NextRequest) {
 
     const formattedLeads = (result.data || []).map((l: any) => ({
       id: l.id,
-      name: l.name,
+      first_name: l.first_name,
+      last_name: l.last_name,
+      name: `${l.first_name || ''} ${l.last_name || ''}`.trim(),
       email: l.email,
       phone: l.phone,
+      company: l.company,
       source: l.source,
       status: l.status,
       case_type: l.case_type,
       description: l.description,
-      assigned_paralegal_id: l.assigned_paralegal_id,
-      assigned_officer_id: l.assigned_officer_id,
-      lead_score: l.lead_score,
       estimated_value: l.estimated_value,
-      sla_deadline: l.sla_deadline,
-      first_contact_date: l.first_contact_date,
+      lead_score: l.lead_score,
+      assigned_to: l.assigned_to,
+      notes: l.notes,
+      tags: l.tags,
       created_at: l.created_at,
       updated_at: l.updated_at,
-      assigned_paralegal: l.assigned_paralegal,
-      assigned_officer: l.assigned_officer,
+      assigned_to_profile: l.assigned_to_profile,
     }));
 
     return apiResponse({
@@ -88,6 +95,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -100,10 +108,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, phone, source, case_type, description } = body;
+    const { first_name, last_name, email, phone, source, case_type, description, estimated_value, company } = body;
 
-    if (!name || !email || !source) {
-      return apiError('Name, email, and source are required', 400, 'MISSING_FIELDS');
+    if (!first_name || !last_name || !email || !source) {
+      return apiError('First name, last name, email, and source are required', 400, 'MISSING_FIELDS');
     }
 
     // Validate email format
@@ -112,26 +120,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate source enum
-    const validSources = ['website', 'referral', 'walk_in', 'social_media', 'advertisement', 'cold_call', 'other'];
-    if (!validSources.includes(source)) {
-      return apiError(`Invalid source. Must be one of: ${validSources.join(', ')}`, 400, 'INVALID_SOURCE');
+    if (!VALID_SOURCES.includes(source)) {
+      return apiError(`Invalid source. Must be one of: ${VALID_SOURCES.join(', ')}`, 400, 'INVALID_SOURCE');
     }
 
-    const slaDeadline = new Date(Date.now() + 7 * 86400000);
+    // Validate case_type if provided
+    if (case_type && !VALID_CASE_TYPES.includes(case_type)) {
+      return apiError(`Invalid case_type. Must be one of: ${VALID_CASE_TYPES.join(', ')}`, 400, 'INVALID_CASE_TYPE');
+    }
 
     const { data: lead, error: insertError } = await db
       .from('leads')
       .insert({
-        name: sanitizeString(name),
+        first_name: sanitizeString(first_name),
+        last_name: sanitizeString(last_name),
         email: email.toLowerCase(),
         phone: phone ? sanitizeString(phone) : null,
+        company: company ? sanitizeString(company) : null,
         source,
         case_type: case_type || null,
         description: description ? sanitizeString(description) : null,
+        estimated_value: estimated_value || null,
         status: 'new',
-        first_contact_date: new Date().toISOString(),
-        sla_deadline: slaDeadline.toISOString(),
-        lead_score: 50,
       })
       .select()
       .single();

@@ -10,14 +10,12 @@ export function CasesView({ cases, page, total, onPageChange, onRefresh, loading
   const totalPages = Math.ceil(total / 10);
   const statusColors: Record<string, string> = {
     intake: 'bg-blue-50 text-blue-700 border-blue-100',
-    pending_review: 'bg-amber-50 text-amber-700 border-amber-100',
+    review: 'bg-amber-50 text-amber-700 border-amber-100',
     active: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     on_hold: 'bg-orange-50 text-orange-700 border-orange-100',
-    settled: 'bg-teal-50 text-teal-700 border-teal-100',
     closed: 'bg-slate-50 text-slate-700 border-slate-100',
     archived: 'bg-slate-50 text-slate-500 border-slate-100',
   };
-  const urgencyColors: Record<string, string> = { low: 'text-slate-500', medium: 'text-amber-600', high: 'text-orange-600', critical: 'text-red-600' };
 
   return (
     <div className="space-y-4">
@@ -40,26 +38,24 @@ export function CasesView({ cases, page, total, onPageChange, onRefresh, loading
             <table className="w-full text-[12px]">
               <thead>
                 <tr className="border-b bg-[#0c1e3c]/[0.03]">
-                  <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Matter #</th>
+                  <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Case Ref</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Title</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Type</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Status</th>
-                  <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Urgency</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Client</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Value (ZAR)</th>
                 </tr>
               </thead>
               <tbody>
                 {cases.length === 0 ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-slate-500">No cases found</td></tr>
+                  <tr><td colSpan={6} className="p-8 text-center text-slate-500">No cases found</td></tr>
                 ) : (
                   cases.map(c => (
                     <tr key={c.id} className="border-b hover:bg-[#f7f8fa] transition-colors">
-                      <td className="p-2.5 font-mono text-[#a88832]">{c.matter_number}</td>
+                      <td className="p-2.5 font-mono text-[#a88832]">{c.case_ref}</td>
                       <td className="p-2.5 font-medium text-[#0c1e3c] max-w-xs truncate">{c.title}</td>
                       <td className="p-2.5"><Badge variant="outline" className="text-[9px] border-slate-200 text-slate-600">{(c.case_type || '').replace(/_/g, ' ')}</Badge></td>
                       <td className="p-2.5"><Badge className={`text-[9px] border ${statusColors[c.status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{(c.status || '').replace(/_/g, ' ')}</Badge></td>
-                      <td className="p-2.5"><span className={`font-semibold text-[9px] uppercase tracking-wider ${urgencyColors[c.urgency]}`}>{(c.urgency || '').toUpperCase()}</span></td>
                       <td className="p-2.5 text-slate-600">{c.client?.full_name || '-'}</td>
                       <td className="p-2.5 font-medium text-[#0c1e3c]">R{(c.estimated_value || 0).toLocaleString()}</td>
                     </tr>

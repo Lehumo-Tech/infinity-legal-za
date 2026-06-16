@@ -15,17 +15,18 @@ import { db, isSupabaseConfigured } from '@/lib/db';
 export const ROLES = {
   managing_director: { tier: 100, label: 'Managing Director', department: 'management' },
   senior_partner: { tier: 95, label: 'Senior Partner', department: 'management' },
-  associate: { tier: 70, label: 'Associate', department: 'litigation' },
-  paralegal: { tier: 50, label: 'Paralegal', department: 'litigation' },
-  legal_officer: { tier: 75, label: 'Legal Officer', department: 'litigation' },
+  systems_admin: { tier: 90, label: 'Systems Admin', department: 'it' },
+  admin: { tier: 85, label: 'Admin', department: 'management' },
   supervising_officer: { tier: 80, label: 'Supervising Officer', department: 'management' },
+  legal_officer: { tier: 75, label: 'Legal Officer', department: 'litigation' },
+  associate: { tier: 70, label: 'Associate', department: 'litigation' },
   senior_consultant: { tier: 65, label: 'Senior Consultant', department: 'consulting' },
-  consultant: { tier: 55, label: 'Consultant', department: 'consulting' },
-  candidate_attorney: { tier: 45, label: 'Candidate Attorney', department: 'litigation' },
   hr_manager: { tier: 60, label: 'HR Manager', department: 'hr' },
   finance_manager: { tier: 60, label: 'Finance Manager', department: 'finance' },
+  consultant: { tier: 55, label: 'Consultant', department: 'consulting' },
+  paralegal: { tier: 50, label: 'Paralegal', department: 'litigation' },
+  candidate_attorney: { tier: 45, label: 'Candidate Attorney', department: 'litigation' },
   office_administrator: { tier: 40, label: 'Office Administrator', department: 'administration' },
-  systems_admin: { tier: 90, label: 'Systems Admin', department: 'it' },
   receptionist: { tier: 30, label: 'Receptionist', department: 'administration' },
   client: { tier: 10, label: 'Client', department: undefined },
   guest: { tier: 5, label: 'Guest', department: undefined },
@@ -146,6 +147,17 @@ const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[]> = {
     PERMISSIONS.VIEW_AUDIT_LOGS, PERMISSIONS.VIEW_ANALYTICS, PERMISSIONS.RUN_BACKUPS,
     PERMISSIONS.VIEW_ALL_CASES, PERMISSIONS.DELETE_CASE, PERMISSIONS.DELETE_DOCUMENT,
   ],
+  admin: [
+    PERMISSIONS.VIEW_ALL_CASES, PERMISSIONS.VIEW_OWN_CASES, PERMISSIONS.CREATE_CASE, PERMISSIONS.EDIT_CASE,
+    PERMISSIONS.ASSIGN_CASE, PERMISSIONS.CLOSE_CASE, PERMISSIONS.ARCHIVE_CASE,
+    PERMISSIONS.VIEW_DOCUMENTS, PERMISSIONS.UPLOAD_DOCUMENT, PERMISSIONS.APPROVE_DOCUMENT,
+    PERMISSIONS.VIEW_LEADS, PERMISSIONS.CREATE_LEAD, PERMISSIONS.EDIT_LEAD, PERMISSIONS.CONVERT_LEAD,
+    PERMISSIONS.VIEW_TASKS, PERMISSIONS.CREATE_TASK, PERMISSIONS.EDIT_TASK,
+    PERMISSIONS.VIEW_USERS, PERMISSIONS.MANAGE_USERS,
+    PERMISSIONS.VIEW_PRIVILEGED_NOTES, PERMISSIONS.CREATE_PRIVILEGED_NOTE,
+    PERMISSIONS.VIEW_AUDIT_LOGS, PERMISSIONS.VIEW_ANALYTICS, PERMISSIONS.VIEW_BILLING,
+    PERMISSIONS.MANAGE_SUBSCRIPTIONS,
+  ],
   receptionist: [
     PERMISSIONS.VIEW_LEADS, PERMISSIONS.CREATE_LEAD,
   ],
@@ -186,8 +198,8 @@ export const ROLE_GROUPS = {
   OFFICERS: ['legal_officer', 'supervising_officer'] as RoleKey[],
   DIRECTORS: ['managing_director', 'senior_partner'] as RoleKey[],
   PORTAL_STAFF: ['associate', 'paralegal', 'legal_officer', 'supervising_officer', 'candidate_attorney'] as RoleKey[],
-  ADMIN_STAFF: ['managing_director', 'senior_partner', 'systems_admin'] as RoleKey[],
-  ALL_STAFF: ['managing_director', 'senior_partner', 'associate', 'paralegal', 'legal_officer', 'supervising_officer', 'senior_consultant', 'consultant', 'candidate_attorney', 'hr_manager', 'finance_manager', 'office_administrator', 'systems_admin', 'receptionist'] as RoleKey[],
+  ADMIN_STAFF: ['managing_director', 'senior_partner', 'systems_admin', 'admin'] as RoleKey[],
+  ALL_STAFF: ['managing_director', 'senior_partner', 'associate', 'paralegal', 'legal_officer', 'supervising_officer', 'senior_consultant', 'consultant', 'candidate_attorney', 'hr_manager', 'finance_manager', 'office_administrator', 'systems_admin', 'admin', 'receptionist'] as RoleKey[],
 };
 
 export function isLegalStaff(role: RoleKey): boolean { return ROLE_GROUPS.LEGAL_STAFF.includes(role); }
@@ -225,17 +237,16 @@ export async function getUserFromToken(authHeader: string | null): Promise<Token
     // Get the user's profile for role information
     const { data: profile } = await db
       .from('profiles')
-      .select('role, department, is_active')
-      .eq('user_id', user.id)
+      .select('role')
+      .eq('id', user.id)
       .single();
 
-    if (!profile || !profile.is_active) return null;
+    if (!profile) return null;
 
     return {
       userId: user.id,
       email: user.email || '',
       role: profile.role,
-      department: profile.department || undefined,
     };
   } catch {
     return null;

@@ -1,24 +1,24 @@
 /**
  * GET /api/hr - HR Portal aggregated data
- * Access: hr_manager, managing_director, senior_partner, systems_admin
+ * Access: admin, managing_director, systems_admin
+ * profiles.role CHECK: ('client','attorney','paralegal','admin','managing_director','systems_admin')
+ * profiles has NO: is_active, department, hire_date, supervisor_id
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { type RoleKey } from '@/lib/auth';
 
-const ALLOWED_ROLES: RoleKey[] = ['hr_manager', 'managing_director', 'senior_partner', 'systems_admin'];
+// Only roles in the actual profiles CHECK constraint
+const ALLOWED_ROLES: RoleKey[] = ['admin', 'managing_director', 'systems_admin'];
 
-const NON_CLIENT_ROLES = [
-  'managing_director', 'senior_partner', 'associate', 'paralegal',
-  'legal_officer', 'supervising_officer', 'senior_consultant',
-  'consultant', 'candidate_attorney', 'hr_manager', 'finance_manager',
-  'office_administrator', 'systems_admin', 'receptionist',
-];
+// Non-client roles from profiles CHECK constraint
+const STAFF_ROLES = ['attorney', 'paralegal', 'admin', 'managing_director', 'systems_admin'];
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -31,55 +31,26 @@ export async function GET(request: NextRequest) {
       return apiError('Insufficient role privileges', 403, 'ROLE_FORBIDDEN');
     }
 
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-    const ninetyDaysAgoIso = ninetyDaysAgo.toISOString();
-
     // Run all queries in parallel
+    // profiles has no department, is_active, hire_date columns
     const [
       totalEmployeesResult,
-      activeEmployeesResult,
       employeesData,
-      recentHiresData,
     ] = await Promise.all([
-      // Total employees
+      // Total employees (non-client)
       db.from('profiles')
         .select('*', { count: 'exact', head: true })
-        .in('role', NON_CLIENT_ROLES),
-      // Active employees
+        .in('role', STAFF_ROLES),
+      // All employees for grouping (role only, no department)
       db.from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .in('role', NON_CLIENT_ROLES)
-        .eq('is_active', true),
-      // All employees for grouping (department + role)
-      db.from('profiles')
-        .select('department, role')
-        .in('role', NON_CLIENT_ROLES),
-      // Recent hires
-      db.from('profiles')
-        .select('id, full_name, role, department, hire_date')
-        .in('role', NON_CLIENT_ROLES)
-        .gte('hire_date', ninetyDaysAgoIso)
-        .order('hire_date', { ascending: false }),
+        .select('role')
+        .in('role', STAFF_ROLES),
     ]);
 
     const totalEmployees = totalEmployeesResult.count || 0;
-    const activeEmployees = activeEmployeesResult.count || 0;
     const employees = employeesData.data || [];
-    const recentHires = recentHiresData.data || [];
 
-    // Group by department in JS
-    const deptMap: Record<string, number> = {};
-    for (const item of employees) {
-      const dept = item.department || 'unassigned';
-      deptMap[dept] = (deptMap[dept] || 0) + 1;
-    }
-    const employeesByDeptFormatted = Object.entries(deptMap).map(([department, count]) => ({
-      department,
-      count,
-    }));
-
-    // Group by role in JS
+    // Group by role in JS (no department column to group by)
     const roleMap: Record<string, number> = {};
     for (const item of employees) {
       const r = item.role;
@@ -89,6 +60,14 @@ export async function GET(request: NextRequest) {
       role,
       count,
     }));
+
+    // Also fetch attorney details for enrichment
+    const { data: attorneysData } = await db
+      .from('attorneys')
+      .select('id, practice_number, specialization, available, profile:profiles(id, full_name, email, role)');
+
+    const activeAttorneys = (attorneysData || []).filter((a: any) => a.available).length;
+    const totalAttorneys = (attorneysData || []).length;
 
     // Leave balances — empty until leave management system is built
     const leaveBalances: any[] = [];
@@ -101,10 +80,12 @@ export async function GET(request: NextRequest) {
 
     return apiResponse({
       total_employees: totalEmployees,
-      active_employees: activeEmployees,
-      employees_by_department: employeesByDeptFormatted,
+      active_employees: totalEmployees, // No is_active column, all are considered active
       employees_by_role: employeesByRoleFormatted,
-      recent_hires: recentHires,
+      attorneys: {
+        total: totalAttorneys,
+        available: activeAttorneys,
+      },
       leave_balances: leaveBalances,
       open_positions: openPositions,
       upcoming_reviews: upcomingReviews,

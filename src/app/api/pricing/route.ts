@@ -2,11 +2,12 @@
  * GET /api/pricing - Active pricing plans from Supabase
  */
 
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError } from '@/lib/middleware';
 
 export async function GET() {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }

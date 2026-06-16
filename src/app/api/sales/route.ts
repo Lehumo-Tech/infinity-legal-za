@@ -1,24 +1,27 @@
 /**
  * GET /api/sales - Sales Portal aggregated data
- * Access: receptionist, office_administrator, managing_director, senior_partner, associate, legal_officer
+ * Access: admin, managing_director, systems_admin
+ * profiles.role CHECK: ('client','attorney','paralegal','admin','managing_director','systems_admin')
+ * leads has: first_name, last_name (not name), assigned_to (not assigned_paralegal_id)
+ * leads has NO: sla_deadline, first_contact_date
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { type RoleKey } from '@/lib/auth';
 
+// Only roles from the actual profiles CHECK constraint
 const ALLOWED_ROLES: RoleKey[] = [
-  'receptionist',
-  'office_administrator',
+  'admin',
   'managing_director',
-  'senior_partner',
-  'associate',
-  'legal_officer',
+  'systems_admin',
+  'attorney',
 ];
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -37,6 +40,7 @@ export async function GET(request: NextRequest) {
     const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
 
     // Run all queries in parallel
+    // leads has first_name/last_name (not name), assigned_to (not assigned_paralegal_id)
     const [
       allLeadsData,
       convertedLeadsResult,
@@ -44,7 +48,7 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       // All leads (for grouping by status and source)
       db.from('leads')
-        .select('status, source, estimated_value, lead_score, sla_deadline, name, email, updated_at, id')
+        .select('status, source, estimated_value, lead_score, first_name, last_name, email, updated_at, id, next_follow_up')
         .order('updated_at', { ascending: false }),
       // Converted leads count
       db.from('leads')
@@ -52,7 +56,7 @@ export async function GET(request: NextRequest) {
         .eq('status', 'retained'),
       // Recent conversions (retained, updated last 30 days)
       db.from('leads')
-        .select('id, name, email, source, estimated_value, updated_at')
+        .select('id, first_name, last_name, email, source, estimated_value, updated_at')
         .eq('status', 'retained')
         .gte('updated_at', thirtyDaysAgoIso)
         .order('updated_at', { ascending: false })
@@ -108,12 +112,12 @@ export async function GET(request: NextRequest) {
       converted_count: data.convertedCount,
     }));
 
-    // Follow-ups due (sla_deadline <= now, status not in retained/lost/disqualified)
+    // Follow-ups due — use next_follow_up column instead of sla_deadline
     const followUpStatuses = ['new', 'contacted', 'qualified', 'consultation_scheduled'];
     const followUpsDue = allLeads.filter((l: any) => {
       if (!followUpStatuses.includes(l.status)) return false;
-      if (!l.sla_deadline) return false;
-      return new Date(l.sla_deadline) <= now;
+      if (!l.next_follow_up) return false;
+      return new Date(l.next_follow_up) <= now;
     }).length;
 
     // Calculate conversion rate
@@ -123,6 +127,16 @@ export async function GET(request: NextRequest) {
 
     // Monthly targets — empty until target system is built
     const monthlyTargets: any[] = [];
+
+    // Format recent conversions — has first_name/last_name (not name)
+    const recentConversionsFormatted = recentConversions.map((l: any) => ({
+      id: l.id,
+      name: `${l.first_name || ''} ${l.last_name || ''}`.trim(),
+      email: l.email,
+      source: l.source,
+      estimated_value: l.estimated_value,
+      updated_at: l.updated_at,
+    }));
 
     return apiResponse({
       pipeline_summary: pipelineSummary,
@@ -134,7 +148,7 @@ export async function GET(request: NextRequest) {
       average_lead_score: averageLeadScore,
       revenue_by_source: revenueBySourceFormatted,
       follow_ups_due: followUpsDue,
-      recent_conversions: recentConversions,
+      recent_conversions: recentConversionsFormatted,
     });
   } catch (error) {
     console.error('Sales portal error:', error);

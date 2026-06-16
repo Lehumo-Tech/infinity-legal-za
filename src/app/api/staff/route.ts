@@ -1,18 +1,22 @@
 /**
- * GET /api/staff - List staff members with organizational hierarchy via Supabase
+ * GET /api/staff - List staff members via Supabase
+ * profiles.role CHECK: ('client','attorney','paralegal','admin','managing_director','systems_admin')
+ * profiles has no: is_active, department, supervisor_id, hire_date, avatar (has avatar_url)
+ * profiles PK is `id` (not `user_id`)
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 
-// Roles excluded from staff listing
-const EXCLUDED_ROLES = ['client', 'guest'];
+// Roles included in staff listing — only roles that exist in profiles CHECK constraint
+const STAFF_ROLES = ['attorney', 'paralegal', 'admin', 'managing_director', 'systems_admin'];
 
-// GET - List staff members with organizational hierarchy
+// GET - List staff members
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -27,30 +31,21 @@ export async function GET(request: NextRequest) {
     const { page, perPage, from, to } = getPaginationParams(request);
     const url = new URL(request.url);
 
-    const department = url.searchParams.get('department');
     const role = url.searchParams.get('role');
-    const is_active = url.searchParams.get('is_active');
     const view = url.searchParams.get('view'); // 'flat' or 'hierarchy' (default: flat)
 
-    // Build query — exclude client and guest roles by default
+    // Build query — exclude client role by default
+    // profiles has no department, is_active, supervisor_id columns
     let query = db
       .from('profiles')
-      .select('*, supervisor:profiles!profiles_supervisor_id_fkey(user_id, full_name, email, role)', { count: 'exact' })
-      .not('role', 'in', '("client","guest")');
+      .select('*', { count: 'exact' })
+      .in('role', STAFF_ROLES);
 
-    if (department) query = query.eq('department', department);
     if (role) query = query.eq('role', role);
 
-    const isActiveFilter = is_active !== null && is_active !== undefined
-      ? is_active === 'true'
-      : true; // Default to active staff only
-
-    query = query.eq('is_active', isActiveFilter);
-
-    // If hierarchy view requested, return grouped by department
+    // If hierarchy view requested, return grouped by role
     if (view === 'hierarchy') {
       const { data: staff, error } = await query
-        .order('department', { ascending: true })
         .order('role', { ascending: true })
         .order('full_name', { ascending: true });
 
@@ -59,68 +54,60 @@ export async function GET(request: NextRequest) {
         return apiError('Failed to load staff', 500, 'STAFF_ERROR');
       }
 
-      // Get all supervisees for the staff members
-      const staffUserIds = (staff || []).map((m: any) => m.user_id);
-      let superviseesMap: Record<string, any[]> = {};
+      // Also fetch attorneys for enriched data
+      const staffIds = (staff || []).map((m: any) => m.id);
+      let attorneysMap: Record<string, any> = {};
 
-      if (staffUserIds.length > 0) {
-        const { data: supervisees } = await db
-          .from('profiles')
-          .select('user_id, full_name, email, role, department, supervisor_id')
-          .in('supervisor_id', staffUserIds);
+      if (staffIds.length > 0) {
+        const { data: attorneys } = await db
+          .from('attorneys')
+          .select('id, practice_number, specialization, hourly_rate, available')
+          .in('id', staffIds);
 
-        if (supervisees) {
-          for (const s of supervisees) {
-            if (!superviseesMap[s.supervisor_id]) {
-              superviseesMap[s.supervisor_id] = [];
-            }
-            superviseesMap[s.supervisor_id].push(s);
+        if (attorneys) {
+          for (const a of attorneys) {
+            attorneysMap[a.id] = a;
           }
         }
       }
 
-      // Group by department
-      const departments: Record<string, any[]> = {};
+      // Group by role
+      const roles: Record<string, any[]> = {};
       for (const member of staff || []) {
-        const dept = member.department || 'unassigned';
-        if (!departments[dept]) {
-          departments[dept] = [];
+        const r = member.role || 'unknown';
+        if (!roles[r]) {
+          roles[r] = [];
         }
-        departments[dept].push({
+        roles[r].push({
           ...member,
-          supervisees: superviseesMap[member.user_id] || [],
+          attorney_details: attorneysMap[member.id] || null,
         });
       }
 
       // Build hierarchy structure
-      const hierarchy = Object.entries(departments).map(([dept, members]) => ({
-        department: dept,
+      const hierarchy = Object.entries(roles).map(([role, members]) => ({
+        role,
         members: members.map((m: any) => ({
-          user_id: m.user_id,
+          id: m.id,
           full_name: m.full_name,
           email: m.email,
           phone: m.phone,
           role: m.role,
-          department: m.department,
-          hire_date: m.hire_date,
-          is_active: m.is_active,
-          avatar: m.avatar,
-          supervisor: m.supervisor,
-          supervisees: m.supervisees,
+          avatar_url: m.avatar_url,
+          attorney_details: m.attorney_details,
         })),
         head_count: members.length,
       }));
 
       return apiResponse({
         data: hierarchy,
-        total_departments: Object.keys(departments).length,
+        total_roles: Object.keys(roles).length,
         total_staff: (staff || []).length,
       });
     }
 
     // Flat list view (default)
     const { data: staff, count, error } = await query
-      .order('department', { ascending: true })
       .order('role', { ascending: true })
       .order('full_name', { ascending: true })
       .range(from, to);
@@ -130,17 +117,31 @@ export async function GET(request: NextRequest) {
       return apiError('Failed to load staff', 500, 'STAFF_ERROR');
     }
 
+    // Fetch attorney details for staff members who are attorneys
+    const staffIds = (staff || []).map((m: any) => m.id);
+    let attorneysMap: Record<string, any> = {};
+
+    if (staffIds.length > 0) {
+      const { data: attorneys } = await db
+        .from('attorneys')
+        .select('id, practice_number, specialization, hourly_rate, available')
+        .in('id', staffIds);
+
+      if (attorneys) {
+        for (const a of attorneys) {
+          attorneysMap[a.id] = a;
+        }
+      }
+    }
+
     const formattedStaff = (staff || []).map((m: any) => ({
-      user_id: m.user_id,
+      id: m.id,
       full_name: m.full_name,
       email: m.email,
       phone: m.phone,
       role: m.role,
-      department: m.department,
-      hire_date: m.hire_date,
-      is_active: m.is_active,
-      avatar: m.avatar,
-      supervisor: m.supervisor,
+      avatar_url: m.avatar_url,
+      attorney_details: attorneysMap[m.id] || null,
     }));
 
     return apiResponse({

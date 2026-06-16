@@ -18,9 +18,14 @@ import { aiChatRateLimiter } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth check — optional: allow unauthenticated but rate limit more strictly
-    const authResult = requireAuth(request);
-    const isAuthenticated = authResult.authenticated;
+    // SECURITY: Auth required for AI chat — no unauthenticated access on a legal platform
+    const authResult = await requireAuth(request);
+    if (!authResult.authenticated) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required. Please sign in to use the AI assistant.' },
+        { status: 401 }
+      );
+    }
 
     // Rate limiting — use DB-backed rate limiter
     const rateResult = await checkRateLimit(request, aiChatRateLimiter);
@@ -29,17 +34,6 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Rate limit exceeded. Please wait a moment before sending another message.' },
         { status: 429 }
       );
-    }
-
-    // If not authenticated, enforce stricter limits via a secondary check
-    if (!isAuthenticated) {
-      const strictRateResult = await checkRateLimit(request, aiChatRateLimiter);
-      if (!strictRateResult.allowed) {
-        return NextResponse.json(
-          { success: false, error: 'Please sign in for continued access to the AI assistant.' },
-          { status: 429 }
-        );
-      }
     }
 
     const body = await request.json();
@@ -97,6 +91,12 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Auth required
+    const authResult = await requireAuth(request);
+    if (!authResult.authenticated) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const sid = searchParams.get('sessionId');
     if (sid) {

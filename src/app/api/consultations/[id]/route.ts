@@ -3,13 +3,13 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Valid enum values
-const VALID_STATUSES = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'];
+// Valid enum values per Supabase schema
+const VALID_STATUSES = ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'];
 const VALID_MEETING_TYPES = ['in_person', 'video_call', 'phone_call'];
 
 // GET - Get single consultation by ID
@@ -18,6 +18,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -27,9 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
+    // consultations.attorney_id FK → attorneys(id) → profiles(id)
+    // cases has case_ref (not matter_number)
     const { data: consultation, error } = await db
       .from('consultations')
-      .select('*, client:profiles!consultations_client_id_fkey(user_id, full_name, email, phone), attorney:profiles!consultations_attorney_id_fkey(user_id, full_name, email, role, department), case:cases(id, matter_number, title, status)')
+      .select('*, client:profiles!consultations_client_id_fkey(id, full_name, email, phone), attorney:attorneys!consultations_attorney_id_fkey(id, profile:profiles(full_name, email, role)), case:cases(id, case_ref, title, status)')
       .eq('id', id)
       .single();
 
@@ -50,6 +53,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -74,10 +78,11 @@ export async function PUT(
     const {
       status,
       notes,
-      scheduled_date,
-      scheduled_time,
+      scheduled_at,
       duration_minutes,
       meeting_type,
+      location,
+      meeting_link,
     } = body;
 
     // Validate status enum if provided
@@ -90,20 +95,21 @@ export async function PUT(
       return apiError(`Invalid meeting_type. Must be one of: ${VALID_MEETING_TYPES.join(', ')}`, 400, 'INVALID_MEETING_TYPE');
     }
 
-    // Build update data
+    // Build update data — schema has scheduled_at (not scheduled_date + scheduled_time)
     const updateData: Record<string, unknown> = {};
     if (status !== undefined) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes ? sanitizeString(notes) : null;
-    if (scheduled_date !== undefined) updateData.scheduled_date = scheduled_date;
-    if (scheduled_time !== undefined) updateData.scheduled_time = scheduled_time;
+    if (scheduled_at !== undefined) updateData.scheduled_at = scheduled_at;
     if (duration_minutes !== undefined) updateData.duration_minutes = duration_minutes;
     if (meeting_type !== undefined) updateData.meeting_type = meeting_type;
+    if (location !== undefined) updateData.location = location;
+    if (meeting_link !== undefined) updateData.meeting_link = meeting_link;
 
     const { data: updatedConsultation, error: updateError } = await db
       .from('consultations')
       .update(updateData)
       .eq('id', id)
-      .select('*, client:profiles!consultations_client_id_fkey(user_id, full_name, email), attorney:profiles!consultations_attorney_id_fkey(user_id, full_name, email, role), case:cases(id, matter_number, title)')
+      .select('*, client:profiles!consultations_client_id_fkey(id, full_name, email), attorney:attorneys!consultations_attorney_id_fkey(id, profile:profiles(full_name, email, role)), case:cases(id, case_ref, title)')
       .single();
 
     if (updateError || !updatedConsultation) {
@@ -116,7 +122,7 @@ export async function PUT(
       action: 'UPDATE_CONSULTATION',
       resource_type: 'consultation',
       resource_id: id,
-      details: 'Consultation updated',
+      details: { message: 'Consultation updated' },
     });
 
     return apiResponse(updatedConsultation);
@@ -132,6 +138,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -170,7 +177,7 @@ export async function DELETE(
       action: 'CANCEL_CONSULTATION',
       resource_type: 'consultation',
       resource_id: id,
-      details: 'Consultation cancelled',
+      details: { message: 'Consultation cancelled' },
     });
 
     return apiResponse(cancelledConsultation);

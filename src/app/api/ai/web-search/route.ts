@@ -4,11 +4,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit } from '@/lib/middleware';
+import { checkRateLimit, requireAuth } from '@/lib/middleware';
 import { searchRateLimiter } from '@/lib/security';
 
 export async function GET(request: NextRequest) {
   try {
+    // Auth required for web search
+    const authResult = await requireAuth(request);
+    if (!authResult.authenticated) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+
     const rateResult = await checkRateLimit(request, searchRateLimiter);
     if (!rateResult.allowed) {
       return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });

@@ -1,6 +1,9 @@
 /**
  * Supabase Server Client
  * Used in Server Components, Route Handlers, and Server Actions
+ *
+ * Uses @supabase/ssr with cookie-based session management.
+ * The middleware refreshes sessions on every request.
  */
 
 import { createServerClient } from '@supabase/ssr';
@@ -8,6 +11,10 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { Database } from '@/lib/supabase/types';
 
+/**
+ * Create a Supabase client that reads/writes auth cookies.
+ * Use this in API routes and server components to get the current user.
+ */
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -36,7 +43,8 @@ export async function createClient() {
 
 /**
  * Supabase Admin Client
- * Uses service role key to bypass RLS for admin operations
+ * Uses service role key to bypass RLS for admin operations.
+ * Does NOT use cookies — always operates as the service role.
  */
 export function createAdminClient() {
   return createSupabaseClient<Database>(

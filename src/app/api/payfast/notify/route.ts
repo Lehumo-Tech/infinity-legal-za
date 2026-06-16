@@ -7,16 +7,23 @@
  *
  * IMPORTANT: This endpoint does NOT require authentication as PayFast
  * calls it server-to-server without a JWT token.
+ *
+ * payment_records schema: id, subscription_id, case_id, user_id, amount, currency,
+ *   status (pending/completed/failed/refunded/partially_refunded),
+ *   payfast_payment_id, payfast_token, payment_method, description, metadata (JSONB),
+ *   paid_at, created_at
+ * No columns: m_payment_id, payment_status, amount_gross, amount_fee, amount_net, pf_payment_id, payfast_data
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { verifyITN, type PayFastITNData } from '@/lib/payfast';
+import { getAdminClient } from '@/lib/supabase/api-client';
+import { verifyITN, isValidPayFastIP, type PayFastITNData } from '@/lib/payfast';
 import { apiError } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -31,13 +38,18 @@ export async function POST(request: NextRequest) {
 
     console.log('PayFast ITN received:', JSON.stringify(itnData, null, 2));
 
+    // SECURITY: Validate that the request comes from PayFast's servers
+    const requestIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null;
+    if (!isValidPayFastIP(requestIp)) {
+      console.error('PayFast ITN: Invalid source IP:', requestIp);
+      return new NextResponse('FORBIDDEN', { status: 403 });
+    }
+
     // Extract key fields
     const mPaymentId = itnData.m_payment_id;
     const pfPaymentId = itnData.pf_payment_id;
     const paymentStatus = itnData.payment_status;
     const amountGross = itnData.amount_gross;
-    const amountFee = itnData.amount_fee;
-    const amountNet = itnData.amount_net;
     const signature = itnData.signature;
 
     if (!mPaymentId || !paymentStatus || !signature) {
@@ -53,32 +65,34 @@ export async function POST(request: NextRequest) {
       return new NextResponse('INVALID', { status: 400 });
     }
 
-    // Find the payment record
+    // Find the payment record — use payfast_payment_id (which we stored mPaymentId into)
     const { data: paymentRecord, error: findError } = await db
       .from('payment_records')
       .select('*')
-      .eq('m_payment_id', mPaymentId)
+      .eq('payfast_payment_id', mPaymentId)
       .single();
 
     if (findError || !paymentRecord) {
-      console.error('PayFast ITN: Payment record not found for m_payment_id:', mPaymentId);
+      console.error('PayFast ITN: Payment record not found for payfast_payment_id:', mPaymentId);
       return new NextResponse('NOT_FOUND', { status: 404 });
     }
 
     // Update the payment record based on payment status
     if (paymentStatus === 'COMPLETE') {
-      // Payment successful
+      // Payment successful — use schema columns: status, paid_at, metadata
       const { error: updateError } = await db
         .from('payment_records')
         .update({
-          pf_payment_id: pfPaymentId || null,
-          payment_status: 'complete',
-          amount_gross: amountGross ? parseFloat(amountGross) : paymentRecord.amount_gross,
-          amount_fee: amountFee ? parseFloat(amountFee) : null,
-          amount_net: amountNet ? parseFloat(amountNet) : null,
-          payfast_data: JSON.stringify(itnData),
+          status: 'completed',
+          paid_at: new Date().toISOString(),
+          metadata: {
+            ...(typeof paymentRecord.metadata === 'object' && paymentRecord.metadata ? paymentRecord.metadata : {}),
+            pf_payment_id: pfPaymentId || null,
+            amount_gross: amountGross || null,
+            itn_data: itnData,
+          },
         })
-        .eq('m_payment_id', mPaymentId);
+        .eq('id', paymentRecord.id);
 
       if (updateError) {
         console.error('PayFast ITN: Failed to update payment record:', updateError);
@@ -90,7 +104,6 @@ export async function POST(request: NextRequest) {
           .from('user_subscriptions')
           .update({
             status: 'active',
-            updated_at: new Date().toISOString(),
           })
           .eq('id', paymentRecord.subscription_id);
 
@@ -105,7 +118,7 @@ export async function POST(request: NextRequest) {
         action: 'payment_complete',
         resource_type: 'payment',
         resource_id: paymentRecord.id,
-        details: `Payment of R${amountGross} completed via PayFast (pf_payment_id: ${pfPaymentId})`,
+        details: { message: `Payment of R${amountGross} completed via PayFast`, pf_payment_id: pfPaymentId },
       });
 
       console.log(`PayFast ITN: Payment ${mPaymentId} completed successfully`);
@@ -114,11 +127,14 @@ export async function POST(request: NextRequest) {
       const { error: updateError } = await db
         .from('payment_records')
         .update({
-          pf_payment_id: pfPaymentId || null,
-          payment_status: 'failed',
-          payfast_data: JSON.stringify(itnData),
+          status: 'failed',
+          metadata: {
+            ...(typeof paymentRecord.metadata === 'object' && paymentRecord.metadata ? paymentRecord.metadata : {}),
+            pf_payment_id: pfPaymentId || null,
+            itn_data: itnData,
+          },
         })
-        .eq('m_payment_id', mPaymentId);
+        .eq('id', paymentRecord.id);
 
       if (updateError) {
         console.error('PayFast ITN: Failed to update payment record:', updateError);
@@ -130,7 +146,6 @@ export async function POST(request: NextRequest) {
           .from('user_subscriptions')
           .update({
             status: 'expired',
-            updated_at: new Date().toISOString(),
           })
           .eq('id', paymentRecord.subscription_id);
 
@@ -145,20 +160,22 @@ export async function POST(request: NextRequest) {
         action: 'payment_failed',
         resource_type: 'payment',
         resource_id: paymentRecord.id,
-        details: `Payment of R${amountGross} failed via PayFast (pf_payment_id: ${pfPaymentId})`,
+        details: { message: `Payment of R${amountGross} failed via PayFast`, pf_payment_id: pfPaymentId },
       });
 
       console.log(`PayFast ITN: Payment ${mPaymentId} failed`);
     } else if (paymentStatus === 'PENDING') {
-      // Payment pending - just update the record
+      // Payment pending - just update the metadata
       const { error: updateError } = await db
         .from('payment_records')
         .update({
-          pf_payment_id: pfPaymentId || null,
-          payment_status: 'pending',
-          payfast_data: JSON.stringify(itnData),
+          metadata: {
+            ...(typeof paymentRecord.metadata === 'object' && paymentRecord.metadata ? paymentRecord.metadata : {}),
+            pf_payment_id: pfPaymentId || null,
+            itn_data: itnData,
+          },
         })
-        .eq('m_payment_id', mPaymentId);
+        .eq('id', paymentRecord.id);
 
       if (updateError) {
         console.error('PayFast ITN: Failed to update payment record:', updateError);

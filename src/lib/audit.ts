@@ -16,7 +16,7 @@ export async function createAuditLog(params: {
   action: string;
   resource_type: string;
   resource_id?: string;
-  details?: string;
+  details?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
 }) {
@@ -66,9 +66,9 @@ export async function logError(params: {
   error_type: string;
   message: string;
   stack_trace?: string;
-  url?: string;
+  request_path?: string;
   user_id?: string;
-  metadata?: string;
+  metadata?: Record<string, unknown>;
 }) {
   if (!checkDb()) return;
   try {
@@ -76,7 +76,7 @@ export async function logError(params: {
       error_type: params.error_type as any,
       message: params.message,
       stack_trace: params.stack_trace || null,
-      url: params.url || null,
+      request_path: params.request_path || null,
       user_id: params.user_id || null,
       metadata: params.metadata || null,
     });
@@ -85,23 +85,25 @@ export async function logError(params: {
   }
 }
 
+export type ConsentType = 'terms_of_service' | 'privacy_policy' | 'popi_act' | 'marketing' | 'data_processing';
+
 export async function logConsent(params: {
   user_id?: string;
-  consent_type: string;
-  purpose: string;
+  consent_type: ConsentType;
   granted: boolean;
   ip_address?: string;
   user_agent?: string;
+  version?: string;
 }) {
   if (!checkDb()) return;
   try {
     await db.from('consent_logs').insert({
       user_id: params.user_id || null,
-      consent_type: params.consent_type as any,
-      purpose: params.purpose,
+      consent_type: params.consent_type,
       granted: params.granted,
       ip_address: params.ip_address || null,
       user_agent: params.user_agent || null,
+      version: params.version || null,
     });
   } catch (error) {
     console.error('Failed to log consent:', error);

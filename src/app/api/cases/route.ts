@@ -3,15 +3,20 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { checkHighRisk, sanitizeString } from '@/lib/security';
+import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
+
+// Valid enum values per Supabase schema
+const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'intellectual_property', 'tax', 'personal_injury', 'debt_recovery', 'other'];
+const VALID_STATUSES = ['intake', 'review', 'active', 'on_hold', 'closed', 'archived'];
 
 // GET - List cases with pagination and filters
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -24,27 +29,25 @@ export async function GET(request: NextRequest) {
 
     const status = url.searchParams.get('status');
     const case_type = url.searchParams.get('case_type');
-    const urgency = url.searchParams.get('urgency');
     const search = url.searchParams.get('search');
 
-    // Build Supabase query
-    const selectFields = '*, client:profiles!client_id(id, full_name, email), lead_attorney:profiles!lead_attorney_id(id, full_name)';
+    // Build Supabase query — attorney_id FK references attorneys(id), attorneys.id → profiles(id)
+    const selectFields = '*, client:profiles!cases_client_id_fkey(id, full_name, email), attorney:attorneys!cases_attorney_id_fkey(profile:profiles(full_name, email))';
 
     let query = db.from('cases').select(selectFields, { count: 'exact' });
 
     // Apply filters
     if (status) query = query.eq('status', status);
     if (case_type) query = query.eq('case_type', case_type);
-    if (urgency) query = query.eq('urgency', urgency);
 
     // Search across multiple fields
     if (search) {
-      query = query.or(`title.ilike.%${search}%,matter_number.ilike.%${search}%,description.ilike.%${search}%`);
+      query = query.or(`title.ilike.%${search}%,case_ref.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
     // Non-admin users can only see their own cases
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      query = query.or(`client_id.eq.${auth.user.userId},lead_attorney_id.eq.${auth.user.userId},support_paralegal_id.eq.${auth.user.userId}`);
+      query = query.eq('client_id', auth.user.userId);
     }
 
     // Apply pagination and ordering
@@ -61,24 +64,26 @@ export async function GET(request: NextRequest) {
 
     const formattedCases = (result.data || []).map((c: any) => ({
       id: c.id,
-      matter_number: c.matter_number,
+      case_ref: c.case_ref,
       title: c.title,
       description: c.description,
       case_type: c.case_type,
-      urgency: c.urgency,
       status: c.status,
       client_id: c.client_id,
-      lead_attorney_id: c.lead_attorney_id,
-      support_paralegal_id: c.support_paralegal_id,
-      court_date: c.court_date,
+      attorney_id: c.attorney_id,
+      opposing_party: c.opposing_party,
+      court_name: c.court_name,
+      case_number: c.case_number,
+      jurisdiction: c.jurisdiction,
       estimated_value: c.estimated_value,
-      is_high_risk: c.is_high_risk,
-      next_action: c.next_action,
-      next_action_date: c.next_action_date,
+      retainer_amount: c.retainer_amount,
+      next_deadline: c.next_deadline,
+      notes: c.notes,
+      tags: c.tags,
       created_at: c.created_at,
       updated_at: c.updated_at,
       client: c.client,
-      lead_attorney: c.lead_attorney,
+      lead_attorney: c.attorney?.profile || null,
     }));
 
     return apiResponse({
@@ -94,6 +99,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new case
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -106,59 +112,62 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, case_type, urgency, client_id, estimated_value } = body;
+    const { title, description, case_type, client_id, estimated_value, opposing_party, court_name, jurisdiction, notes } = body;
 
-    if (!title || !case_type || !urgency || !client_id) {
-      return apiError('Title, case type, urgency, and client are required', 400, 'MISSING_FIELDS');
+    if (!title || !case_type || !client_id) {
+      return apiError('Title, case type, and client are required', 400, 'MISSING_FIELDS');
     }
 
-    // Validate enum fields
-    const validCaseTypes = ['family_law', 'criminal_defence', 'civil_litigation', 'conveyancing', 'estate_planning', 'corporate_commercial', 'debt_collection', 'immigration', 'labour_law', 'personal_injury', 'other'];
-    if (!validCaseTypes.includes(case_type)) {
-      return apiError(`Invalid case_type. Must be one of: ${validCaseTypes.join(', ')}`, 400, 'INVALID_CASE_TYPE');
+    // Validate case_type enum
+    if (!VALID_CASE_TYPES.includes(case_type)) {
+      return apiError(`Invalid case_type. Must be one of: ${VALID_CASE_TYPES.join(', ')}`, 400, 'INVALID_CASE_TYPE');
     }
-    const validUrgencies = ['low', 'medium', 'high', 'critical'];
-    if (!validUrgencies.includes(urgency)) {
-      return apiError(`Invalid urgency. Must be one of: ${validUrgencies.join(', ')}`, 400, 'INVALID_URGENCY');
+
+    // Validate status if provided
+    const status = body.status || 'intake';
+    if (!VALID_STATUSES.includes(status)) {
+      return apiError(`Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`, 400, 'INVALID_STATUS');
     }
 
     // Validate client exists
     const { data: clientExists } = await db
       .from('profiles')
-      .select('user_id')
-      .eq('user_id', client_id)
+      .select('id')
+      .eq('id', client_id)
       .single();
     if (!clientExists) {
       return apiError('Client not found', 404, 'CLIENT_NOT_FOUND');
     }
 
-    // High-risk detection
-    const highRiskCheck = checkHighRisk(`${title} ${description || ''}`);
-
     // Sanitize string inputs
     const sanitizedTitle = sanitizeString(title);
     const sanitizedDescription = description ? sanitizeString(description) : null;
 
-    // Generate matter number
-    const { count: caseCount } = await db
-      .from('cases')
-      .select('*', { count: 'exact', head: true });
-    const currentYear = new Date().getFullYear();
-    const matter_number = `IL-${currentYear}-${String((caseCount || 0) + 1).padStart(4, '0')}`;
+    // Resolve attorney_id: look up the attorney record for the current user
+    let attorneyId: string | null = null;
+    const { data: attorneyRecord } = await db
+      .from('attorneys')
+      .select('id')
+      .eq('id', auth.user.userId)
+      .single();
+    if (attorneyRecord) {
+      attorneyId = attorneyRecord.id;
+    }
 
     const { data: newCase, error: insertError } = await db
       .from('cases')
       .insert({
-        matter_number,
         title: sanitizedTitle,
         description: sanitizedDescription,
         case_type,
-        urgency,
-        status: 'intake',
+        status,
         client_id,
-        lead_attorney_id: auth.user.userId,
+        attorney_id: attorneyId,
         estimated_value: estimated_value || null,
-        is_high_risk: highRiskCheck.isHighRisk,
+        opposing_party: opposing_party ? sanitizeString(opposing_party) : null,
+        court_name: court_name ? sanitizeString(court_name) : null,
+        jurisdiction: jurisdiction ? sanitizeString(jurisdiction) : null,
+        notes: notes ? sanitizeString(notes) : null,
       })
       .select()
       .single();
@@ -168,12 +177,12 @@ export async function POST(request: NextRequest) {
       return apiError('Failed to create case', 500, 'CREATE_CASE_ERROR');
     }
 
-    // Create timeline entry
+    // Create timeline entry — schema uses event_type, event_description, performed_by
     await db.from('case_timeline').insert({
       case_id: newCase.id,
-      user_id: auth.user.userId,
-      action: 'CASE_CREATED',
-      description: 'Case created and assigned',
+      event_type: 'CASE_CREATED',
+      event_description: 'Case created and assigned',
+      performed_by: auth.user.userId,
     });
 
     await createAuditLog({

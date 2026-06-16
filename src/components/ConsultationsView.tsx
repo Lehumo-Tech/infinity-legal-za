@@ -26,12 +26,12 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
-    client_name: '', client_email: '', attorney_id: '', case_id: '',
-    scheduled_date: '', scheduled_time: '09:00', duration_minutes: 60,
+    client_id: '', attorney_id: '', case_id: '',
+    scheduled_at: '', duration_minutes: 60,
     meeting_type: 'in_person', notes: '',
   });
 
-  const attorneys = staff.filter(s => ['associate', 'legal_officer', 'senior_partner', 'supervising_officer', 'senior_consultant', 'candidate_attorney'].includes(s.role));
+  const attorneys = staff.filter(s => s.role === 'attorney');
 
   const handleCreate = async () => {
     if (!token) return;
@@ -45,7 +45,7 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
       const data = await res.json();
       if (data.success) {
         setShowCreate(false);
-        setForm({ client_name: '', client_email: '', attorney_id: '', case_id: '', scheduled_date: '', scheduled_time: '09:00', duration_minutes: 60, meeting_type: 'in_person', notes: '' });
+        setForm({ client_id: '', attorney_id: '', case_id: '', scheduled_at: '', duration_minutes: 60, meeting_type: 'in_person', notes: '' });
         onRefresh();
       }
     } catch (e) {
@@ -56,6 +56,7 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
 
   const statusColors: Record<string, string> = {
     scheduled: 'bg-blue-50 text-blue-700 border-blue-100', confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    in_progress: 'bg-purple-50 text-purple-700 border-purple-100',
     completed: 'bg-slate-50 text-slate-700 border-slate-100', cancelled: 'bg-red-50 text-red-700 border-red-100', no_show: 'bg-orange-50 text-orange-700 border-orange-100',
   };
 
@@ -91,12 +92,12 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[12px]">Client Name</Label>
-                    <Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Client name" className="mt-1 text-[13px]" />
+                    <Label className="text-[12px]">Client ID (UUID)</Label>
+                    <Input value={form.client_id} onChange={e => setForm(f => ({ ...f, client_id: e.target.value }))} placeholder="Client profile UUID" className="mt-1 text-[13px]" />
                   </div>
                   <div>
-                    <Label className="text-[12px]">Client Email</Label>
-                    <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@example.co.za" className="mt-1 text-[13px]" />
+                    <Label className="text-[12px]">Case ID (optional)</Label>
+                    <Input value={form.case_id} onChange={e => setForm(f => ({ ...f, case_id: e.target.value }))} placeholder="Case UUID" className="mt-1 text-[13px]" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -123,14 +124,10 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[12px]">Date</Label>
-                    <Input type="date" value={form.scheduled_date} onChange={e => setForm(f => ({ ...f, scheduled_date: e.target.value }))} className="mt-1 text-[12px]" />
-                  </div>
-                  <div>
-                    <Label className="text-[12px]">Time</Label>
-                    <Input type="time" value={form.scheduled_time} onChange={e => setForm(f => ({ ...f, scheduled_time: e.target.value }))} className="mt-1 text-[12px]" />
+                    <Label className="text-[12px]">Date & Time</Label>
+                    <Input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} className="mt-1 text-[12px]" />
                   </div>
                   <div>
                     <Label className="text-[12px]">Duration (min)</Label>
@@ -152,7 +149,7 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
               </div>
               <DialogFooter>
                 <DialogClose asChild><Button variant="outline" className="text-[12px]">Cancel</Button></DialogClose>
-                <Button onClick={handleCreate} disabled={creating || !form.attorney_id || !form.scheduled_date}
+                <Button onClick={handleCreate} disabled={creating || !form.client_id || !form.scheduled_at}
                   className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] text-[13px]">
                   {creating ? <RefreshCw className="w-3.5 h-3.5 animate-spin mr-2" /> : <BookOpen className="w-3.5 h-3.5 mr-2" />}
                   Log Consultation
@@ -195,8 +192,8 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
                           </div>
                         </td>
                         <td className="p-2.5 font-medium text-[#0c1e3c]">{c.client?.full_name || 'Client'}</td>
-                        <td className="p-2.5 text-slate-600">{c.attorney?.full_name || '-'}</td>
-                        <td className="p-2.5 text-slate-600">{c.scheduled_date} at {c.scheduled_time}</td>
+                        <td className="p-2.5 text-slate-600">{c.attorney?.profile?.full_name || c.attorney?.full_name || '-'}</td>
+                        <td className="p-2.5 text-slate-600">{c.scheduled_at ? (() => { const d = new Date(c.scheduled_at); return `${d.toLocaleDateString('en-ZA')} at ${d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}`; })() : '-'}</td>
                         <td className="p-2.5 text-slate-600">{c.duration_minutes} min</td>
                         <td className="p-2.5"><Badge className={`text-[9px] border ${statusColors[c.status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{c.status}</Badge></td>
                       </tr>

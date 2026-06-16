@@ -5,7 +5,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { requireAuth, apiResponse, apiError } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
@@ -15,6 +15,7 @@ import { createAuditLog } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
       .from('user_subscriptions')
       .select('*')
       .eq('user_id', user.userId)
-      .in('status', ['active', 'trialing', 'past_due'])
+      .in('status', ['active', 'trial', 'past_due'])
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
     // Fetch recent payment records
     const { data: paymentRecords } = await db
       .from('payment_records')
-      .select('id, m_payment_id, amount_gross, payment_status, billing_cycle, created_at')
+      .select('id, payfast_payment_id, amount, status, metadata, created_at')
       .eq('subscription_id', subscription.id)
       .order('created_at', { ascending: false })
       .limit(10);
@@ -93,10 +94,10 @@ export async function GET(request: NextRequest) {
         created_at: subscription.created_at,
         recent_payments: (paymentRecords || []).map((pr: any) => ({
           id: pr.id,
-          m_payment_id: pr.m_payment_id,
-          amount_gross: pr.amount_gross,
-          payment_status: pr.payment_status,
-          billing_cycle: pr.billing_cycle,
+          payfast_payment_id: pr.payfast_payment_id,
+          amount: pr.amount,
+          status: pr.status,
+          billing_cycle: pr.metadata?.billing_cycle || null,
           created_at: pr.created_at,
         })),
       },
@@ -113,6 +114,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -129,7 +131,7 @@ export async function POST(request: NextRequest) {
       .from('user_subscriptions')
       .select('*')
       .eq('user_id', user.userId)
-      .in('status', ['active', 'trialing', 'past_due'])
+      .in('status', ['active', 'trial', 'past_due'])
       .order('created_at', { ascending: false })
       .limit(1);
 

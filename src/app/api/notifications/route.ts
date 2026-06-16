@@ -1,15 +1,18 @@
 /**
  * GET/PATCH/PUT /api/notifications - List/Update notifications for current user via Supabase
+ * notifications schema: id, user_id, title, message, type, link, is_read, metadata, created_at
+ * No `related_id` column
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
 // GET - List notifications for current user
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -67,6 +70,7 @@ export async function GET(request: NextRequest) {
 // PATCH - Mark all notifications as read for current user
 export async function PATCH(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -101,6 +105,7 @@ export async function PATCH(request: NextRequest) {
 // PUT - Mark notification as read
 export async function PUT(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }

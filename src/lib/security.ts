@@ -196,7 +196,16 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
 // ENCRYPTION (AES-256-GCM)
 // ============================================
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-encryption-key-min-32-ch';
+// SECURITY: No default encryption key — must be set via environment variable
+// If not set, encryption/decryption will throw an error in production
+const ENCRYPTION_KEY = (() => {
+  const key = process.env.ENCRYPTION_KEY;
+  if (!key && process.env.NODE_ENV === 'production') {
+    throw new Error('ENCRYPTION_KEY environment variable is required in production');
+  }
+  // Dev-only fallback (NOT for production use)
+  return key || 'dev-only-encryption-key-32ch!!';
+})();
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 

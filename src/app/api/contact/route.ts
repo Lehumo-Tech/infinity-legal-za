@@ -1,16 +1,17 @@
 /**
  * POST /api/contact - Handle contact form submissions
- * Saves to intake_submissions table and logs POPIA consent via Supabase
+ * Saves to crm_contact_messages table and logs POPIA consent via Supabase
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { sanitizeString, isValidEmail, contactRateLimiter } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
 import { createAuditLog, logConsent } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, phone, message } = body;
+    const { name, email, phone, subject, message } = body;
 
     if (!name || !email || !message) {
       return apiError('Name, email, and message are required', 400, 'MISSING_FIELDS');
@@ -35,24 +36,25 @@ export async function POST(request: NextRequest) {
       return apiError('Message too long (max 5000 characters)', 400, 'MESSAGE_TOO_LONG');
     }
 
-    // Create an intake submission as a contact inquiry
-    const referenceId = `IL-CONTACT-${Date.now().toString(36).toUpperCase()}`;
-
-    const { error: insertError } = await db
-      .from('intake_submissions')
+    // Create a CRM contact message — this table has name, email, phone, subject, message columns
+    const { data: contactMessage, error: insertError } = await db
+      .from('crm_contact_messages')
       .insert({
-        reference_id: referenceId,
-        full_name: sanitizeString(name),
+        name: sanitizeString(name),
         email: email.toLowerCase().trim(),
         phone: phone ? sanitizeString(phone) : null,
-        case_type: 'other',
-        description: sanitizeString(message),
-        consent_given: true,
-        popia_consent: true,
-        status: 'submitted',
-      });
+        subject: subject ? sanitizeString(subject) : 'Contact Form Inquiry',
+        message: sanitizeString(message),
+        status: 'unread',
+        metadata: {
+          source: 'contact_form',
+          submitted_at: new Date().toISOString(),
+        },
+      })
+      .select()
+      .single();
 
-    if (insertError) {
+    if (insertError || !contactMessage) {
       console.error('Contact form insert error:', insertError);
       return apiError('Failed to submit message', 500, 'CONTACT_ERROR');
     }
@@ -60,22 +62,21 @@ export async function POST(request: NextRequest) {
     // Log POPIA consent for the contact form
     await logConsent({
       consent_type: 'data_processing',
-      purpose: 'Contact form submission - general inquiry',
       granted: true,
       ip_address: request.headers.get('x-forwarded-for') || undefined,
     });
 
     await createAuditLog({
       action: 'CONTACT_FORM_SUBMISSION',
-      resource_type: 'intake_submission',
-      resource_id: referenceId,
+      resource_type: 'contact_message',
+      resource_id: contactMessage.id,
       ip_address: request.headers.get('x-forwarded-for') || undefined,
       user_agent: request.headers.get('user-agent') || undefined,
     });
 
     return apiResponse({
       message: 'Your message has been received. Our team will get back to you shortly.',
-      reference_id: referenceId,
+      id: contactMessage.id,
     }, 201);
   } catch (error) {
     console.error('Contact form error:', error);

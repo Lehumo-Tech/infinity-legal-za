@@ -6,22 +6,16 @@ import type { StaffMember } from '@/components/types';
 
 export function OrgChartView({ staff }: { staff: StaffMember[] }) {
   const hierarchy: Record<string, { tier: number; label: string; roles: string[] }> = {
-    'Executive Leadership': { tier: 1, label: 'Executive Leadership', roles: ['managing_director', 'senior_partner'] },
-    'Management': { tier: 2, label: 'Management', roles: ['supervising_officer', 'systems_admin'] },
-    'Legal Practice': { tier: 3, label: 'Legal Practice', roles: ['legal_officer', 'associate', 'candidate_attorney'] },
-    'Consulting': { tier: 3, label: 'Consulting', roles: ['senior_consultant', 'consultant'] },
-    'Support Staff': { tier: 4, label: 'Support Staff', roles: ['paralegal', 'hr_manager', 'finance_manager'] },
-    'Administration': { tier: 5, label: 'Administration', roles: ['office_administrator', 'receptionist'] },
+    'Executive Leadership': { tier: 1, label: 'Executive Leadership', roles: ['managing_director'] },
+    'Management': { tier: 2, label: 'Management', roles: ['admin', 'systems_admin'] },
+    'Legal Practice': { tier: 3, label: 'Legal Practice', roles: ['attorney'] },
+    'Support Staff': { tier: 4, label: 'Support Staff', roles: ['paralegal'] },
   };
 
   const roleLabels: Record<string, string> = {
-    managing_director: 'Managing Director', senior_partner: 'Senior Partner',
-    associate: 'Associate', paralegal: 'Paralegal', legal_officer: 'Legal Officer',
-    supervising_officer: 'Supervising Officer', senior_consultant: 'Senior Consultant',
-    consultant: 'Consultant', candidate_attorney: 'Candidate Attorney',
-    hr_manager: 'HR Manager', finance_manager: 'Finance Manager',
-    office_administrator: 'Office Admin', systems_admin: 'Systems Admin',
-    receptionist: 'Receptionist',
+    managing_director: 'Managing Director', admin: 'Admin',
+    attorney: 'Attorney', paralegal: 'Paralegal',
+    systems_admin: 'Systems Admin', client: 'Client',
   };
 
   const tierColors: Record<number, { icon: string; line: string }> = {
@@ -70,12 +64,6 @@ export function OrgChartView({ staff }: { staff: StaffMember[] }) {
                       <div className="text-[12px] font-medium text-[#0c1e3c]">{m.full_name}</div>
                       <div className="text-[10px] text-slate-500">{roleLabels[m.role] || m.role.replace(/_/g, ' ')}</div>
                     </div>
-                    {m.supervisor && (
-                      <div className="text-[9px] text-slate-400 flex items-center gap-1">
-                        <ArrowUpRight className="w-3 h-3" />
-                        {m.supervisor.full_name}
-                      </div>
-                    )}
                   </div>
                 ))}
                 {members.length === 0 && (

@@ -3,16 +3,16 @@
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Valid enum values
-const VALID_SOURCES = ['website', 'referral', 'walk_in', 'social_media', 'advertisement', 'cold_call', 'other'];
-const VALID_STATUSES = ['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'disqualified'];
-const VALID_CASE_TYPES = ['family_law', 'criminal_defence', 'civil_litigation', 'conveyancing', 'estate_planning', 'corporate_commercial', 'debt_collection', 'immigration', 'labour_law', 'personal_injury', 'other'];
+// Valid enum values per Supabase schema
+const VALID_SOURCES = ['website', 'referral', 'social_media', 'google_ads', 'walk_in', 'phone', 'email', 'partner', 'event', 'other'];
+const VALID_STATUSES = ['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'nurturing'];
+const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'intellectual_property', 'tax', 'personal_injury', 'debt_recovery', 'other'];
 
 // GET - Get single lead by ID
 export async function GET(
@@ -20,6 +20,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -33,9 +34,10 @@ export async function GET(
 
     const { id } = await params;
 
+    // leads has `assigned_to` FK to profiles(id), not assigned_paralegal_id / assigned_officer_id
     const { data: lead, error: fetchError } = await db
       .from('leads')
-      .select('*, assigned_paralegal:profiles!assigned_paralegal_id(id, full_name, email, role), assigned_officer:profiles!assigned_officer_id(id, full_name, email, role)')
+      .select('*, assigned_to_profile:profiles!leads_assigned_to_fkey(id, full_name, email, role)')
       .eq('id', id)
       .single();
 
@@ -56,6 +58,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -82,18 +85,19 @@ export async function PUT(
 
     const body = await request.json();
     const {
-      name,
+      first_name,
+      last_name,
       email,
       phone,
+      company,
       source,
       status,
       case_type,
       description,
-      assigned_paralegal_id,
-      assigned_officer_id,
+      assigned_to,
       lead_score,
-      qualification_notes,
       estimated_value,
+      notes,
       converted_case_id,
     } = body;
 
@@ -117,20 +121,21 @@ export async function PUT(
       return apiError('Invalid email format', 400, 'INVALID_EMAIL');
     }
 
-    // Build update data
+    // Build update data — leads has first_name/last_name (not name), assigned_to (not assigned_paralegal_id/assigned_officer_id)
     const updateData: Record<string, unknown> = {};
-    if (name !== undefined) updateData.name = sanitizeString(name);
+    if (first_name !== undefined) updateData.first_name = sanitizeString(first_name);
+    if (last_name !== undefined) updateData.last_name = sanitizeString(last_name);
     if (email !== undefined) updateData.email = email.toLowerCase();
     if (phone !== undefined) updateData.phone = phone ? sanitizeString(phone) : null;
+    if (company !== undefined) updateData.company = company ? sanitizeString(company) : null;
     if (source !== undefined) updateData.source = source;
     if (status !== undefined) updateData.status = status;
     if (case_type !== undefined) updateData.case_type = case_type || null;
     if (description !== undefined) updateData.description = description ? sanitizeString(description) : null;
-    if (assigned_paralegal_id !== undefined) updateData.assigned_paralegal_id = assigned_paralegal_id || null;
-    if (assigned_officer_id !== undefined) updateData.assigned_officer_id = assigned_officer_id || null;
+    if (assigned_to !== undefined) updateData.assigned_to = assigned_to || null;
     if (lead_score !== undefined) updateData.lead_score = lead_score || null;
-    if (qualification_notes !== undefined) updateData.qualification_notes = qualification_notes ? sanitizeString(qualification_notes) : null;
     if (estimated_value !== undefined) updateData.estimated_value = estimated_value || null;
+    if (notes !== undefined) updateData.notes = notes ? sanitizeString(notes) : null;
 
     // If status changes to 'retained', set converted_case_id if provided
     if (status === 'retained' && converted_case_id) {
@@ -150,7 +155,7 @@ export async function PUT(
       .from('leads')
       .update(updateData)
       .eq('id', id)
-      .select('*, assigned_paralegal:profiles!assigned_paralegal_id(id, full_name), assigned_officer:profiles!assigned_officer_id(id, full_name)')
+      .select('*, assigned_to_profile:profiles!leads_assigned_to_fkey(id, full_name, email)')
       .single();
 
     if (updateError || !updatedLead) {
@@ -163,7 +168,7 @@ export async function PUT(
       action: 'UPDATE_LEAD',
       resource_type: 'lead',
       resource_id: id,
-      details: `Lead "${existingLead.name}" updated`,
+      details: { message: `Lead "${existingLead.first_name} ${existingLead.last_name}" updated` },
     });
 
     return apiResponse(updatedLead);
@@ -179,6 +184,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -218,7 +224,7 @@ export async function DELETE(
       action: 'DELETE_LEAD',
       resource_type: 'lead',
       resource_id: id,
-      details: `Lead "${existingLead.name}" deleted`,
+      details: { message: `Lead "${existingLead.first_name} ${existingLead.last_name}" deleted` },
     });
 
     return apiResponse({ message: 'Lead deleted successfully' });

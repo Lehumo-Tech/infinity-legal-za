@@ -37,12 +37,26 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Infinity Legal Brand Colors */
   --color-navy: #0c1e3c;
   --color-navy-light: #132d52;
   --color-navy-dark: #081428;
   --color-gold: #c9a84c;
   --color-gold-light: #dfc475;
   --color-gold-dark: #a88832;
+  --color-navy-50: #f0f4f8;
+  --color-navy-100: #dbe4ed;
+  --color-navy-200: #b8c9dc;
+  --color-navy-700: #1a3358;
+  --color-navy-800: #0f2240;
+  --color-navy-900: #081428;
+  --color-gold-50: #fdf8ed;
+  --color-gold-100: #f9edcc;
+  --color-gold-200: #f0d68f;
+  --color-gold-700: #a88832;
+  --color-gold-800: #8a6e28;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -127,17 +141,385 @@
   }
 }
 
-/* Custom scrollbar */
+/* ============================================
+   PREMIUM SCROLLBAR
+   ============================================ */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: oklch(0.7 0 0 / 30%);
-  border-radius: 3px;
+  background: oklch(0.7 0 0 / 20%);
+  border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.5 0 0 / 50%);
+  background: oklch(0.5 0 0 / 40%);
+}
+
+/* ============================================
+   LOADING ANIMATION
+   ============================================ */
+@keyframes loading {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes scale-in {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-right {
+  0% { opacity: 0; transform: translateX(16px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(201, 168, 76, 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.93 0 0) 25%,
+    oklch(0.96 0 0) 50%,
+    oklch(0.93 0 0) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Staggered children */
+.stagger-children > * {
+  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+
+/* ============================================
+   GLASS MORPHISM
+   ============================================ */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-dark {
+  background: rgba(12, 30, 60, 0.7);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(200%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================
+   PREMIUM CARD STYLES
+   ============================================ */
+.card-premium {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid oklch(0.91 0.005 250);
+  background: white;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-premium:hover {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 8px 32px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+  border-color: oklch(0.88 0.01 250);
+}
+
+.card-navy {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0c1e3c 0%, #132d52 100%);
+  border: 1px solid rgba(201, 168, 76, 0.1);
+  box-shadow:
+    0 4px 16px rgba(12, 30, 60, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ============================================
+   STAT CARD VARIANTS
+   ============================================ */
+.stat-card {
+  position: relative;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: white;
+  border: 1px solid oklch(0.93 0.005 250);
+  transition: all 0.25s ease;
+}
+
+.stat-card:hover {
+  border-color: oklch(0.88 0.01 250);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   PREMIUM INPUT STYLES
+   ============================================ */
+.input-premium {
+  transition: all 0.2s ease;
+  border: 1.5px solid oklch(0.91 0.005 250);
+  border-radius: 10px;
+  background: white;
+}
+
+.input-premium:focus {
+  border-color: #c9a84c;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+  outline: none;
+}
+
+/* ============================================
+   BUTTON PRESETS
+   ============================================ */
+.btn-gold {
+  background: linear-gradient(135deg, #c9a84c 0%, #d4b85c 100%);
+  color: #0c1e3c;
+  font-weight: 600;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(201, 168, 76, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #d4b85c 0%, #dfc475 100%);
+  box-shadow: 0 4px 16px rgba(201, 168, 76, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-gold:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(201, 168, 76, 0.2);
+}
+
+.btn-navy {
+  background: linear-gradient(135deg, #0c1e3c 0%, #1a3358 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(12, 30, 60, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-navy:hover {
+  background: linear-gradient(135deg, #1a3358 0%, #243f65 100%);
+  box-shadow: 0 4px 16px rgba(12, 30, 60, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   SIDEBAR STYLES
+   ============================================ */
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #7a94b8;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.sidebar-nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #d4dce8;
+}
+
+.sidebar-nav-item.active {
+  background: linear-gradient(135deg, #c9a84c 0%, #d4b85c 100%);
+  color: #0c1e3c;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(201, 168, 76, 0.2);
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.badge-status::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.badge-active::before { background: #10b981; }
+.badge-active { background: #ecfdf5; color: #065f46; }
+
+.badge-pending::before { background: #f59e0b; }
+.badge-pending { background: #fffbeb; color: #92400e; }
+
+.badge-closed::before { background: #6b7280; }
+.badge-closed { background: #f3f4f6; color: #374151; }
+
+.badge-urgent::before { background: #ef4444; }
+.badge-urgent { background: #fef2f2; color: #991b1b; }
+
+/* ============================================
+   TABLE STYLES
+   ============================================ */
+.table-premium th {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  padding: 10px 16px;
+  border-bottom: 1px solid oklch(0.93 0.005 250);
+  background: oklch(0.98 0.002 250);
+}
+
+.table-premium td {
+  font-size: 13px;
+  padding: 12px 16px;
+  border-bottom: 1px solid oklch(0.96 0.002 250);
+  color: #334155;
+}
+
+.table-premium tr {
+  transition: background 0.15s ease;
+}
+
+.table-premium tbody tr:hover {
+  background: oklch(0.98 0.004 250);
+}
+
+/* ============================================
+   TOOLTIP / HOVER CARD
+   ============================================ */
+.hover-lift {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================
+   GRADIENT HELPERS
+   ============================================ */
+.gradient-navy {
+  background: linear-gradient(135deg, #081428 0%, #0c1e3c 40%, #132d52 100%);
+}
+
+.gradient-gold-subtle {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.04) 0%, rgba(201, 168, 76, 0.08) 100%);
+}
+
+/* ============================================
+   DIVIDER
+   ============================================ */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.3), transparent);
+}
+
+/* ============================================
+   NOTIFICATION DOT
+   ============================================ */
+.dot-notification {
+  position: relative;
+}
+
+.dot-notification::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 7px;
+  height: 7px;
+  background: #c9a84c;
+  border-radius: 50%;
+  border: 1.5px solid white;
 }

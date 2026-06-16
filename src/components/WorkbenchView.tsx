@@ -21,8 +21,8 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
   charts: any; firmHealth: Record<string, boolean>; loading?: boolean;
 }) {
   const role = user?.role || 'client';
-  const isManagement = ['managing_director', 'senior_partner', 'supervising_officer', 'systems_admin'].includes(role);
-  const isLegal = ['associate', 'legal_officer', 'candidate_attorney', 'senior_consultant', 'consultant'].includes(role);
+  const isManagement = ['managing_director', 'admin', 'systems_admin'].includes(role);
+  const isLegal = role === 'attorney';
   const isParalegal = role === 'paralegal';
 
   const firstName = user?.full_name?.split(' ')[0] || 'there';
@@ -206,7 +206,7 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[13px] font-medium text-[#0c1e3c] truncate">{c.client?.full_name || 'Client'}</div>
-                        <div className="text-[10px] text-slate-500">{c.scheduled_date} at {c.scheduled_time} &middot; {c.duration_minutes}min</div>
+                        <div className="text-[10px] text-slate-500">{c.scheduled_at ? (() => { const d = new Date(c.scheduled_at); return `${d.toLocaleDateString('en-ZA')} at ${d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}`; })() : 'TBD'} &middot; {c.duration_minutes}min</div>
                       </div>
                       <Badge className={`text-[9px] h-5 ${
                         c.status === 'scheduled' ? 'bg-blue-50 text-blue-700 border-blue-100' :
@@ -234,16 +234,17 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
             <CardContent className="px-5 pb-5">
               {(() => {
                 const caseTypeColorMap: Record<string, { label: string; color: string }> = {
-                  family_law: { label: 'Family Law', color: 'bg-[#0c1e3c]' },
-                  civil_litigation: { label: 'Civil Litigation', color: 'bg-[#c9a84c]' },
-                  criminal_defence: { label: 'Criminal', color: 'bg-red-500' },
-                  conveyancing: { label: 'Conveyancing', color: 'bg-emerald-500' },
-                  estate_planning: { label: 'Estate', color: 'bg-purple-500' },
-                  corporate_commercial: { label: 'Corporate', color: 'bg-teal-500' },
-                  debt_collection: { label: 'Debt', color: 'bg-orange-500' },
+                  family: { label: 'Family', color: 'bg-[#0c1e3c]' },
+                  civil: { label: 'Civil', color: 'bg-[#c9a84c]' },
+                  criminal: { label: 'Criminal', color: 'bg-red-500' },
+                  corporate: { label: 'Corporate', color: 'bg-emerald-500' },
+                  property: { label: 'Property', color: 'bg-purple-500' },
+                  labour: { label: 'Labour', color: 'bg-teal-500' },
                   immigration: { label: 'Immigration', color: 'bg-cyan-500' },
-                  labour_law: { label: 'Labour', color: 'bg-pink-500' },
+                  intellectual_property: { label: 'IP', color: 'bg-orange-500' },
+                  tax: { label: 'Tax', color: 'bg-pink-500' },
                   personal_injury: { label: 'Injury', color: 'bg-indigo-500' },
+                  debt_recovery: { label: 'Debt Recovery', color: 'bg-amber-500' },
                   other: { label: 'Other', color: 'bg-slate-400' },
                 };
                 const data = charts?.casesByType || [];

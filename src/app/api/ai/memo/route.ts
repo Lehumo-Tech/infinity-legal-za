@@ -18,7 +18,7 @@ import { aiChatRateLimiter } from '@/lib/security';
 export async function POST(request: NextRequest) {
   try {
     // Auth required for memo generation
-    const authResult = requireAuth(request);
+    const authResult = await requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
     }

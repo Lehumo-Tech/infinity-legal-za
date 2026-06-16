@@ -7,11 +7,11 @@ import {
   Bell, Search, ChevronRight, Activity, Clock, AlertTriangle, CheckCircle2,
   LogOut, DollarSign, UserPlus, FileCheck,
   ArrowUpRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
-  Mail, Phone, Building, Star, Zap,
+  Mail, Phone, Building, Star, Zap, Globe,
   KeyRound, ShieldCheck, Upload, Plus,
   BookOpen, Briefcase, Crown, MessageSquare, LayoutDashboard,
   Gavel, Landmark, PhoneCall, Video, MapPin,
-  Clock3, FileUp,
+  Clock3, FileUp, Calendar, Download,
   Send, AlertCircle, TreePine,
   Home as HomeIcon, ArrowLeft, Scale, Heart, Handshake, Sparkles
 } from 'lucide-react';
@@ -40,19 +40,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { LandingPage } from '@/components/LandingPage';
 import { LoginScreen } from '@/components/LoginScreen';
+import { useAuth } from '@/hooks/useAuth';
 
 // ============================================
 // TYPES
 // ============================================
 type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart';
-type UserRole = 'managing_director' | 'senior_partner' | 'associate' | 'paralegal' | 'legal_officer' | 'supervising_officer' | 'senior_consultant' | 'consultant' | 'candidate_attorney' | 'hr_manager' | 'finance_manager' | 'office_administrator' | 'systems_admin' | 'receptionist' | 'client' | 'guest';
+type UserRole = 'managing_director' | 'admin' | 'attorney' | 'paralegal' | 'systems_admin' | 'client';
 
 interface User {
   id: string;
   email: string;
   full_name: string | null;
   role: UserRole;
-  department?: string | null;
+  avatar_url?: string | null;
+  phone?: string | null;
 }
 
 interface Stats {
@@ -75,32 +77,31 @@ interface Consultation {
   client_id: string;
   attorney_id: string;
   case_id?: string | null;
-  scheduled_date: string;
-  scheduled_time: string;
+  scheduled_at: string;
   duration_minutes: number;
   status: string;
   notes?: string | null;
   meeting_type: string;
   client?: { full_name: string | null; email: string };
   attorney?: { full_name: string | null; email: string };
-  case?: { title: string; matter_number: string } | null;
+  case?: { title: string; case_ref: string } | null;
   created_at: string;
 }
 
 interface DocumentItem {
   id: string;
-  title: string;
+  file_name: string;
   case_id: string;
   document_type: string;
-  workflow_status: string;
+  status: string;
   version: number;
+  file_path: string;
   file_url?: string | null;
-  file_name?: string | null;
   file_size?: number | null;
-  prepared_by?: string | null;
+  uploaded_by?: string | null;
   created_at: string;
-  case?: { title: string; matter_number: string };
-  prepared_by_user?: { full_name: string | null };
+  case?: { title: string; case_ref: string };
+  uploaded_by_user?: { full_name: string | null };
 }
 
 interface TaskItem {
@@ -113,7 +114,7 @@ interface TaskItem {
   priority: string;
   status: string;
   due_date?: string | null;
-  completed_date?: string | null;
+  completed_at?: string | null;
   assignee?: { full_name: string | null };
   creator?: { full_name: string | null };
   case?: { title: string } | null;
@@ -125,10 +126,8 @@ interface StaffMember {
   full_name: string | null;
   email: string;
   role: string;
-  department?: string | null;
   phone?: string | null;
-  is_active: boolean;
-  supervisor?: { full_name: string | null; role: string } | null;
+  avatar_url?: string | null;
 }
 
 interface Notification {
@@ -144,9 +143,17 @@ interface Notification {
 // MAIN APP COMPONENT (Client-side)
 // ============================================
 export default function HomePageClient() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const { user: authUser, accessToken, loading: authLoading, signOut } = useAuth();
+  const isAuthenticated = !!authUser && !!accessToken;
+  const user: User | null = authUser ? {
+    id: authUser.id,
+    email: authUser.email,
+    full_name: authUser.full_name,
+    role: (authUser.role || 'client') as UserRole,
+    avatar_url: authUser.avatar_url || null,
+    phone: authUser.phone || null,
+  } : null;
+  const token = accessToken;
   const [currentView, setCurrentView] = useState<View>('workbench');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showLanding, setShowLanding] = useState(true);
@@ -170,48 +177,11 @@ export default function HomePageClient() {
   const [loginError, setLoginError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
-  // Auth functions
-  const login = async (email: string, password: string) => {
-    setLoading(true);
-    setLoginError('');
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        if (data.data?.requiresPasswordChange) {
-          setLoginError('Password expired. Contact admin to reset.');
-          setLoading(false);
-          return;
-        }
-        setToken(data.data.token);
-        setUser(data.data.user);
-        setIsAuthenticated(true);
-        setShowLogin(false);
-        setShowLanding(false);
-        localStorage.setItem('il_token', data.data.token);
-        localStorage.setItem('il_user', JSON.stringify(data.data.user));
-        loadDashboard(data.data.token);
-      } else {
-        setLoginError(data.error?.message || 'Login failed');
-      }
-    } catch {
-      setLoginError('Network error');
-    }
-    setLoading(false);
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('il_token');
-    localStorage.removeItem('il_user');
-  };
+  // Auth is handled by useAuth() hook - signIn/signOut are in the LoginScreen and topbar
+  // The auth state (isAuthenticated, user, token) is derived from the auth context
+  // No more localStorage - sessions are managed via Supabase cookies
 
   const loadDashboard = async (authToken?: string) => {
     const t = authToken || token;
@@ -340,29 +310,8 @@ export default function HomePageClient() {
     }
   };
 
-  // Restore session on mount
-  const sessionRestored = useRef(false);
-  useEffect(() => {
-    if (sessionRestored.current) return;
-    sessionRestored.current = true;
-    const savedToken = localStorage.getItem('il_token');
-    const savedUser = localStorage.getItem('il_user');
-    if (savedToken && savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        // Use startTransition to avoid cascading renders
-        React.startTransition(() => {
-          setToken(savedToken);
-          setUser(parsedUser);
-          setIsAuthenticated(true);
-          setShowLanding(false);
-        });
-      } catch {
-        localStorage.removeItem('il_token');
-        localStorage.removeItem('il_user');
-      }
-    }
-  }, []);
+  // Session is now managed by Supabase cookies via the AuthProvider
+  // No need for localStorage session restoration
 
   // Load data when view changes
   useEffect(() => {
@@ -394,11 +343,11 @@ export default function HomePageClient() {
   // Role-based navigation
   const getNavItems = () => {
     const role = user?.role || 'client';
-    const isManagement = ['managing_director', 'senior_partner', 'supervising_officer', 'systems_admin'].includes(role);
-    const isLegal = ['associate', 'legal_officer', 'candidate_attorney', 'senior_consultant', 'consultant'].includes(role);
+    const isManagement = ['managing_director', 'admin', 'systems_admin'].includes(role);
+    const isLegal = role === 'attorney';
     const isParalegal = role === 'paralegal';
-    const isSales = ['receptionist', 'office_administrator'].includes(role);
-    const isFinance = ['finance_manager', 'hr_manager'].includes(role);
+    const isSales = role === 'admin';
+    const isFinance = false; // no finance-specific roles in schema
     const isClient = role === 'client';
 
     const items: { id: View; label: string; icon: any; group: string }[] = [
@@ -438,8 +387,8 @@ export default function HomePageClient() {
     if (showLogin) {
       return (
         <LoginScreen
-          onLogin={login}
-          loading={loading}
+          onLogin={() => {}}
+          loading={false}
           error={loginError}
           onBackToHome={() => setShowLogin(false)}
         />
@@ -464,9 +413,17 @@ export default function HomePageClient() {
   return (
     <div className="min-h-screen flex bg-slate-50">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-[#0c1e3c] text-white flex flex-col transition-all duration-300 flex-shrink-0`}>
-        <div className="p-4 flex items-center gap-3 border-b border-[#1a3358] cursor-pointer hover:bg-[#132d52]/50 transition-colors rounded-t-lg" onClick={() => setShowLanding(true)} title="Visit Homepage">
-          <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={36} height={20} className="flex-shrink-0 object-contain" />
+      <aside className={`${sidebarOpen ? 'w-[272px]' : 'w-[68px]'} bg-[#0c1e3c] text-white flex flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex-shrink-0`}>
+        {/* Logo Area */}
+        <div
+          className="p-4 flex items-center gap-3 border-b border-[#c9a84c]/20 cursor-pointer hover:bg-[#132d52]/30 transition-all duration-200 group"
+          onClick={() => setShowLanding(true)}
+          title="Visit Homepage"
+        >
+          <div className="relative">
+            <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={36} height={20} className="flex-shrink-0 object-contain" />
+            <div className="absolute -inset-2 bg-[#c9a84c]/0 group-hover:bg-[#c9a84c]/5 rounded-lg transition-all duration-300" />
+          </div>
           {sidebarOpen && (
             <div>
               <span className="font-bold text-lg tracking-tight">Infinity Legal</span>
@@ -477,19 +434,32 @@ export default function HomePageClient() {
 
         <ScrollArea className="flex-1">
           <nav className="p-2 space-y-0.5">
-            {/* Homepage Link */}
+            {/* Homepage Link — card-style */}
             <button
               onClick={() => setShowLanding(true)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors text-[#c9a84c] hover:bg-[#132d52] hover:text-[#c9a84c] border border-[#c9a84c]/20 mb-2"
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 text-[#c9a84c] hover:bg-[#c9a84c]/10 border border-[#c9a84c]/15 hover:border-[#c9a84c]/30 mb-2 ${sidebarOpen ? '' : 'justify-center'}`}
             >
               <HomeIcon className="w-4 h-4 flex-shrink-0" />
-              {sidebarOpen && <span>Visit Homepage</span>}
+              {sidebarOpen && <span className="font-medium">Visit Homepage</span>}
             </button>
-            {navGroups.map(group => (
+
+            {navGroups.map((group, gi) => (
               <div key={group}>
-                {sidebarOpen && group !== navGroups[0] && (
-                  <div className="px-3 pt-4 pb-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7a94b8]">{group}</span>
+                {sidebarOpen && gi > 0 && (
+                  <>
+                    <div className="divider-gold my-2 mx-3" />
+                    <div className="px-3 pt-2 pb-1.5">
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a94b8]">
+                        <span className="text-[#c9a84c]/60 mr-1.5">—</span>{group}
+                      </span>
+                    </div>
+                  </>
+                )}
+                {sidebarOpen && gi === 0 && group !== 'Main' && (
+                  <div className="px-3 pt-2 pb-1.5">
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a94b8]">
+                      <span className="text-[#c9a84c]/60 mr-1.5">—</span>{group}
+                    </span>
                   </div>
                 )}
                 {navItems.filter(i => i.group === group).map(item => (
@@ -497,12 +467,11 @@ export default function HomePageClient() {
                     key={item.id}
                     onClick={() => setCurrentView(item.id)}
                     aria-label={item.label}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      currentView === item.id
-                        ? 'bg-[#c9a84c] text-[#0c1e3c] font-semibold'
-                        : 'text-[#8fa4c4] hover:bg-[#132d52] hover:text-white'
-                    }`}
+                    className={`sidebar-nav-item ${currentView === item.id ? 'active' : ''} relative ${!sidebarOpen ? 'justify-center !px-0' : ''}`}
                   >
+                    {currentView === item.id && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-[#c9a84c] rounded-r-full" />
+                    )}
                     <item.icon className="w-4 h-4 flex-shrink-0" />
                     {sidebarOpen && <span>{item.label}</span>}
                   </button>
@@ -512,13 +481,31 @@ export default function HomePageClient() {
           </nav>
         </ScrollArea>
 
+        {/* User Profile Section */}
+        <div className={`p-3 border-t border-[#1a3358] ${sidebarOpen ? '' : 'flex justify-center'}`}>
+          <div className={`flex items-center ${sidebarOpen ? 'gap-3' : ''} p-2 rounded-lg hover:bg-[#132d52]/50 transition-all duration-200 cursor-default`}>
+            <Avatar className="w-8 h-8 flex-shrink-0">
+              <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold">
+                {user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            {sidebarOpen && (
+              <div className="min-w-0">
+                <div className="text-xs font-medium text-white truncate">{user?.full_name}</div>
+                <div className="text-[10px] text-[#7a94b8] capitalize truncate">{user?.role?.replace(/_/g, ' ')}</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Collapse Button */}
         <div className="p-3 border-t border-[#1a3358]">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle sidebar"
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[#7a94b8] hover:bg-[#132d52] hover:text-white text-sm"
+            className="sidebar-nav-item !py-2 group/collapse"
           >
-            <Menu className="w-4 h-4" />
+            <ChevronLeft className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${!sidebarOpen ? 'rotate-180' : ''}`} />
             {sidebarOpen && <span>Collapse</span>}
           </button>
         </div>
@@ -527,42 +514,49 @@ export default function HomePageClient() {
       {/* Main content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-14 bg-white border-b flex items-center justify-between px-6 flex-shrink-0">
+        <header className="glass-nav h-14 flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => setShowLanding(true)} className="text-[#0c1e3c] hover:bg-[#0c1e3c]/5 gap-1.5 h-8" title="Visit Homepage">
-              <HomeIcon className="w-4 h-4" />
-              <span className="hidden sm:inline text-xs">Homepage</span>
-            </Button>
-            <Separator orientation="vertical" className="h-5" />
-            <h1 className="text-base font-semibold text-[#0c1e3c] capitalize">{currentView.replace('-', ' ')}</h1>
-            <Badge variant="outline" className="text-[10px] border-[#c9a84c] text-[#a88832]">
+            {/* Breadcrumbs */}
+            <nav className="flex items-center gap-1.5 text-sm">
+              <button
+                onClick={() => setShowLanding(true)}
+                className="text-[#7a94b8] hover:text-[#0c1e3c] transition-colors duration-200 flex items-center gap-1"
+                title="Visit Homepage"
+              >
+                <HomeIcon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Home</span>
+              </button>
+              <ChevronRight className="w-3 h-3 text-slate-300" />
+              <span className="font-semibold text-[#0c1e3c] capitalize">{currentView.replace('-', ' ')}</span>
+            </nav>
+            <Badge className="bg-[#c9a84c]/5 text-[#a88832] text-[9px] font-medium border-0 hover:bg-[#c9a84c]/10 transition-colors duration-200">
               <ShieldCheck className="w-3 h-3 mr-1" />
-              POPIA Compliant
+              POPIA
             </Badge>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
+            {/* Search bar */}
+            <div className="relative hidden sm:block">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <Input
                 placeholder="Search..."
                 aria-label="Search cases and documents"
-                className="pl-9 w-56 h-8 text-sm"
+                className="pl-9 pr-16 w-64 h-8 text-sm input-premium focus:ring-0"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && currentView === 'cases' && loadCases(1)}
               />
+              <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 font-mono pointer-events-none">⌘K</kbd>
             </div>
+            {/* Notifications */}
             <div className="relative">
               <button
-                className="relative p-2 hover:bg-slate-100 rounded-lg"
+                className={`relative p-2 hover:bg-slate-100 rounded-lg transition-all duration-200 ${notifications.filter(n => !n.is_read).length > 0 ? 'dot-notification' : ''}`}
                 onClick={() => setShowNotifications(!showNotifications)}
                 aria-label="Notifications"
                 aria-expanded={showNotifications}
               >
                 <Bell className="w-4 h-4 text-slate-600" />
-                {notifications.filter(n => !n.is_read).length > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-[#c9a84c] rounded-full" />
-                )}
               </button>
               {showNotifications && (
                 <div className="absolute right-0 top-10 w-80 bg-white border shadow-xl rounded-xl z-50 max-h-96 overflow-y-auto">
@@ -609,20 +603,52 @@ export default function HomePageClient() {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-semibold">
-                  {user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-sm hidden sm:block">
-                <div className="font-medium text-[#0c1e3c] text-xs">{user?.full_name}</div>
-                <div className="text-[10px] text-slate-500">{user?.role?.replace(/_/g, ' ')}</div>
-              </div>
+            {/* User Avatar Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => { setShowUserMenu(!showUserMenu); setShowNotifications(false); }}
+                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-all duration-200"
+                aria-label="User menu"
+                aria-expanded={showUserMenu}
+              >
+                <Avatar className="w-8 h-8">
+                  <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-bold">
+                    {user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-sm hidden sm:block text-left">
+                  <div className="font-medium text-[#0c1e3c] text-xs leading-tight">{user?.full_name}</div>
+                  <div className="text-[10px] text-slate-500 capitalize leading-tight">{user?.role?.replace(/_/g, ' ')}</div>
+                </div>
+                <ChevronRight className={`w-3 h-3 text-slate-400 hidden sm:block transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`} />
+              </button>
+              {showUserMenu && (
+                <div className="absolute right-0 top-12 w-56 bg-white border shadow-xl rounded-xl z-50 overflow-hidden animate-scale-in">
+                  <div className="p-3 border-b bg-slate-50/50">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-9 h-9">
+                        <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-bold">
+                          {user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-[#0c1e3c] truncate">{user?.full_name}</div>
+                        <div className="text-[10px] text-slate-500 truncate">{user?.email}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-1">
+                    <button
+                      onClick={() => { signOut(); setShowUserMenu(false); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            <Button variant="ghost" size="sm" onClick={logout} className="text-slate-400 hover:text-red-500">
-              <LogOut className="w-4 h-4" />
-            </Button>
           </div>
         </header>
 
@@ -641,7 +667,7 @@ export default function HomePageClient() {
         </div>
 
         {/* Footer */}
-        <footer className="bg-[#0c1e3c] py-3 px-6 flex-shrink-0">
+        <footer className="bg-[#0c1e3c] py-4 px-6 flex-shrink-0 border-t border-[#c9a84c]/15">
           <div className="flex items-center justify-between text-[10px] text-[#7a94b8]">
             <span>&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</span>
             <div className="flex items-center gap-4">
@@ -659,7 +685,7 @@ export default function HomePageClient() {
 }
 
 // ============================================
-// WORKBENCH VIEW - Central Hub
+// WORKBENCH VIEW - Premium Legal Dashboard
 // ============================================
 function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth }: {
   stats: Stats | null; user: User | null; cases: any[]; consultations: Consultation[];
@@ -668,33 +694,58 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
 }) {
   const role = user?.role || 'client';
   const isClient = role === 'client';
-  const isManagement = ['managing_director', 'senior_partner', 'supervising_officer', 'systems_admin'].includes(role);
-  const isLegal = ['associate', 'legal_officer', 'candidate_attorney', 'senior_consultant', 'consultant'].includes(role);
+  const isManagement = ['managing_director', 'admin', 'systems_admin'].includes(role);
+  const isLegal = role === 'attorney';
   const isParalegal = role === 'paralegal';
 
-  const todayStr = new Date().toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const todayStr = now.toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   const quickActions = [
-    ...(isLegal || isManagement ? [{ label: 'Log Consultation', icon: BookOpen, color: 'bg-[#0c1e3c] text-[#c9a84c]', view: 'consultations' as View }] : []),
-    ...(isLegal || isParalegal || isManagement ? [{ label: 'Upload Document', icon: FileUp, color: 'bg-emerald-50 text-emerald-700', view: 'documents' as View }] : []),
-    ...(isManagement || isLegal ? [{ label: 'New Case', icon: FolderKanban, color: 'bg-blue-50 text-blue-700', view: 'cases' as View }] : []),
-    { label: 'My Tasks', icon: CheckCircle2, color: 'bg-amber-50 text-amber-700', view: 'tasks' as View },
-    ...(!isClient ? [{ label: 'View Staff', icon: Users, color: 'bg-purple-50 text-purple-700', view: 'staff' as View }] : []),
-    ...(isManagement ? [{ label: 'View Analytics', icon: TrendingUp, color: 'bg-teal-50 text-teal-700', view: 'analytics' as View }] : []),
+    ...(isLegal || isManagement ? [{ label: 'Log Consultation', icon: BookOpen, color: 'bg-[#0c1e3c] text-[#c9a84c]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'consultations' as View }] : []),
+    ...(isLegal || isParalegal || isManagement ? [{ label: 'Upload Document', icon: FileUp, color: 'bg-emerald-50 text-emerald-700', accent: 'group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)]', view: 'documents' as View }] : []),
+    ...(isManagement || isLegal ? [{ label: 'New Case', icon: FolderKanban, color: 'bg-blue-50 text-blue-700', accent: 'group-hover:shadow-[0_0_12px_rgba(59,130,246,0.2)]', view: 'cases' as View }] : []),
+    { label: 'My Tasks', icon: CheckCircle2, color: 'bg-amber-50 text-amber-700', accent: 'group-hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]', view: 'tasks' as View },
+    ...(!isClient ? [{ label: 'View Staff', icon: Users, color: 'bg-purple-50 text-purple-700', accent: 'group-hover:shadow-[0_0_12px_rgba(147,51,234,0.2)]', view: 'staff' as View }] : []),
+    ...(isManagement ? [{ label: 'View Analytics', icon: TrendingUp, color: 'bg-teal-50 text-teal-700', accent: 'group-hover:shadow-[0_0_12px_rgba(20,184,166,0.2)]', view: 'analytics' as View }] : []),
   ];
 
+  // Firm health items
+  const healthItems = [
+    { label: 'RBAC Authorization', ok: firmHealth.rbac !== undefined ? firmHealth.rbac : true },
+    { label: 'POPIA Consent', ok: firmHealth.popia !== undefined ? firmHealth.popia : true },
+    { label: 'Audit Logging', ok: firmHealth.auditLogging !== undefined ? firmHealth.auditLogging : true },
+    { label: 'Encryption (AES-256)', ok: firmHealth.encryption !== undefined ? firmHealth.encryption : true },
+    { label: 'Password Policy', ok: firmHealth.passwordPolicy !== undefined ? firmHealth.passwordPolicy : true },
+    { label: 'Backup Active', ok: firmHealth.backupActive || false },
+  ];
+  const healthyCount = healthItems.filter(h => h.ok).length;
+
   return (
-    <div className="space-y-6">
-      {/* Welcome banner */}
-      <div className="relative rounded-xl overflow-hidden bg-[#0c1e3c]">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-[url('/images/hero-legal.png')] bg-cover bg-center" />
+    <div className="space-y-6 animate-fade-in-up">
+      {/* ═══════════════════════════════════════════
+          WELCOME BANNER — Premium Navy Card
+          ═══════════════════════════════════════════ */}
+      <div className="card-navy relative">
+        {/* Diagonal gold accent stripe — top right */}
+        <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden pointer-events-none">
+          <div className="absolute -top-10 -right-10 w-44 h-44 bg-gradient-to-br from-[#c9a84c]/20 to-[#c9a84c]/5 rotate-45 transform origin-center" />
+          <div className="absolute top-2 right-2 w-16 h-[2px] bg-gradient-to-l from-[#c9a84c]/40 to-transparent" />
+          <div className="absolute top-6 right-2 w-10 h-[1px] bg-gradient-to-l from-[#c9a84c]/25 to-transparent" />
         </div>
+
         <div className="relative p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white">Welcome back, {user?.full_name?.split(' ')[0] || 'User'}</h2>
-            <p className="text-[#8fa4c4] text-sm mt-1">{todayStr}</p>
-            <Badge className="mt-2 bg-[#c9a84c] text-[#0c1e3c] text-[10px]">
+            <p className="text-[#c9a84c] text-xs font-semibold uppercase tracking-wider mb-1">{greeting}</p>
+            <h2 className="text-2xl font-bold text-white">{user?.full_name?.split(' ')[0] || 'User'}</h2>
+            <div className="flex items-center gap-2 mt-1.5">
+              <Clock3 className="w-3.5 h-3.5 text-[#8fa4c4]" />
+              <p className="text-[#8fa4c4] text-sm">{todayStr}</p>
+            </div>
+            {/* Role badge with gold shimmer */}
+            <Badge className="mt-3 bg-gradient-to-r from-[#c9a84c] via-[#dfc475] to-[#c9a84c] text-[#0c1e3c] text-[10px] font-semibold animate-shimmer bg-[length:200%_100%] shadow-sm">
               <Crown className="w-3 h-3 mr-1" />
               {role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </Badge>
@@ -711,51 +762,67 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
         </div>
       </div>
 
-      {/* Quick actions */}
+      {/* ═══════════════════════════════════════════
+          QUICK ACTIONS — Staggered Premium Cards
+          ═══════════════════════════════════════════ */}
       <div>
         <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Quick Actions</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 stagger-children">
           {quickActions.map(action => (
             <button
               key={action.label}
               onClick={() => onViewChange(action.view)}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border hover:shadow-md transition-all text-center group"
+              className="card-premium flex flex-col items-center gap-2.5 p-4 text-center group relative"
             >
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.color} group-hover:scale-110 transition-transform`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${action.color} transition-all duration-300 group-hover:scale-110 ${action.accent}`}>
                 <action.icon className="w-5 h-5" />
               </div>
               <span className="text-xs font-medium text-slate-700">{action.label}</span>
+              {/* Arrow indicator on hover */}
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <ChevronRight className="w-3.5 h-3.5 text-[#c9a84c]" />
+              </div>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Stats grid */}
+      {/* ═══════════════════════════════════════════
+          STATS GRID — Premium Stat Cards
+          ═══════════════════════════════════════════ */}
       {stats ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
           {[
-            { label: 'Cases', value: stats.totalCases, icon: FolderKanban, color: 'text-blue-600 bg-blue-50' },
-            { label: 'Active', value: stats.activeCases, icon: Activity, color: 'text-emerald-600 bg-emerald-50' },
+            { label: 'Total Cases', value: stats.totalCases, icon: FolderKanban, color: 'text-blue-600 bg-blue-50', border: 'border-l-blue-500' },
+            { label: 'Active Cases', value: stats.activeCases, icon: Activity, color: 'text-emerald-600 bg-emerald-50', border: 'border-l-emerald-500' },
             ...(!isClient ? [
-              { label: 'Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-600 bg-purple-50' },
-              { label: 'Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10' },
+              { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-600 bg-purple-50', border: 'border-l-purple-500' },
+              { label: 'Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
             ] : []),
-            { label: 'Tasks', value: stats.pendingTasks, icon: Clock, color: 'text-orange-600 bg-orange-50' },
-            { label: 'Overdue', value: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600 bg-red-50' },
+            { label: 'Pending Tasks', value: stats.pendingTasks, icon: Clock, color: 'text-orange-600 bg-orange-50', border: 'border-l-orange-500' },
+            { label: 'Overdue', value: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600 bg-red-50', border: 'border-l-red-500' },
             ...(!isClient ? [
-              { label: 'Clients', value: stats.totalClients, icon: Users, color: 'text-teal-600 bg-teal-50' },
+              { label: 'Clients', value: stats.totalClients, icon: Users, color: 'text-teal-600 bg-teal-50', border: 'border-l-teal-500' },
             ] : []),
-            { label: 'Docs', value: stats.totalDocuments, icon: FileText, color: 'text-slate-600 bg-slate-100' },
+            { label: 'Documents', value: stats.totalDocuments, icon: FileText, color: 'text-slate-600 bg-slate-100', border: 'border-l-slate-400' },
           ].map(card => (
-            <Card key={card.label} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-3 text-center">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${card.color} mx-auto`}>
+            <div key={card.label} className={`stat-card border-l-4 ${card.border}`}>
+              <div className="flex items-start justify-between">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
                   <card.icon className="w-4 h-4" />
                 </div>
-                <div className="text-lg font-bold text-[#0c1e3c] mt-2">{card.value}</div>
-                <div className="text-[10px] text-slate-500">{card.label}</div>
-              </CardContent>
-            </Card>
+                {card.trend && (
+                  <div className="flex items-center gap-0.5 text-emerald-600 text-[10px] font-semibold">
+                    <ArrowUpRight className="w-3 h-3" />
+                    <span>12%</span>
+                  </div>
+                )}
+              </div>
+              <div className="mt-3">
+                <div className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">{card.label}</div>
+              </div>
+            </div>
           ))}
         </div>
       ) : (
@@ -772,80 +839,98 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
         </div>
       )}
 
-      {/* Two column layout */}
+      {/* ═══════════════════════════════════════════
+          CONSULTATIONS & TASKS — Premium Cards
+          ═══════════════════════════════════════════ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Consultations */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold text-[#0c1e3c]">Upcoming Consultations</CardTitle>
-              <Button variant="ghost" size="sm" className="text-[#c9a84c] text-xs h-7" onClick={() => onViewChange('consultations')}>
-                View All <ChevronRight className="w-3 h-3 ml-1" />
-              </Button>
+        <div className="card-premium">
+          <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
+              <h3 className="text-sm font-semibold text-[#0c1e3c]">Upcoming Consultations</h3>
             </div>
-          </CardHeader>
-          <CardContent>
+            <Button variant="ghost" size="sm" className="text-[#c9a84c] text-xs h-7" onClick={() => onViewChange('consultations')}>
+              View All <ChevronRight className="w-3 h-3 ml-1" />
+            </Button>
+          </div>
+          <div className="p-4">
             {consultations.length === 0 ? (
-              <div className="text-center py-8 text-sm text-slate-400">
-                <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p>No consultations scheduled</p>
-                <Button variant="outline" size="sm" className="mt-2 text-xs" onClick={() => onViewChange('consultations')}>Schedule One</Button>
+              <div className="text-center py-8 text-sm">
+                <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                  <BookOpen className="w-7 h-7 text-slate-300" />
+                </div>
+                <p className="text-slate-400 font-medium">No consultations scheduled</p>
+                <p className="text-[11px] text-slate-300 mt-1">Schedule your first consultation to get started</p>
+                <Button variant="outline" size="sm" className="mt-3 text-xs border-[#c9a84c]/30 text-[#a88832] hover:bg-[#c9a84c]/5" onClick={() => onViewChange('consultations')}>Schedule One</Button>
               </div>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
-                {consultations.slice(0, 5).map(c => (
-                  <div key={c.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                      c.meeting_type === 'video_call' ? 'bg-blue-50 text-blue-600' :
-                      c.meeting_type === 'phone_call' ? 'bg-green-50 text-green-600' :
-                      'bg-[#c9a84c]/10 text-[#a88832]'
-                    }`}>
-                      {c.meeting_type === 'video_call' ? <Video className="w-4 h-4" /> :
-                       c.meeting_type === 'phone_call' ? <PhoneCall className="w-4 h-4" /> :
-                       <MapPin className="w-4 h-4" />}
+                {consultations.slice(0, 5).map(c => {
+                  const meetingColor = c.meeting_type === 'video_call' ? 'border-l-blue-400' : c.meeting_type === 'phone_call' ? 'border-l-emerald-400' : 'border-l-[#c9a84c]';
+                  return (
+                    <div key={c.id} className={`flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50/80 transition-colors border-l-[3px] ${meetingColor}`}>
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                        c.meeting_type === 'video_call' ? 'bg-blue-50 text-blue-600' :
+                        c.meeting_type === 'phone_call' ? 'bg-emerald-50 text-emerald-600' :
+                        'bg-[#c9a84c]/10 text-[#a88832]'
+                      }`}>
+                        {c.meeting_type === 'video_call' ? <Video className="w-4 h-4" /> :
+                         c.meeting_type === 'phone_call' ? <PhoneCall className="w-4 h-4" /> :
+                         <MapPin className="w-4 h-4" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-slate-900 truncate">{c.client?.full_name || 'Client'}</div>
+                        <div className="text-[10px] text-slate-500">{c.scheduled_at ? (() => { const d = new Date(c.scheduled_at); return `${d.toLocaleDateString('en-ZA')} at ${d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}`; })() : 'TBD'} · {c.duration_minutes}min</div>
+                      </div>
+                      <Badge className={`text-[10px] ${
+                        c.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                        c.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' :
+                        c.status === 'completed' ? 'bg-slate-100 text-slate-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>{c.status}</Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-slate-900 truncate">{c.client?.full_name || 'Client'}</div>
-                      <div className="text-[10px] text-slate-500">{c.scheduled_date} at {c.scheduled_time} · {c.duration_minutes}min</div>
-                    </div>
-                    <Badge className={`text-[10px] ${
-                      c.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
-                      c.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' :
-                      c.status === 'completed' ? 'bg-slate-100 text-slate-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>{c.status}</Badge>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* My Tasks */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold text-[#0c1e3c]">My Tasks</CardTitle>
-              <Button variant="ghost" size="sm" className="text-[#c9a84c] text-xs h-7" onClick={() => onViewChange('tasks')}>
-                View All <ChevronRight className="w-3 h-3 ml-1" />
-              </Button>
+        <div className="card-premium">
+          <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-5 rounded-full bg-emerald-500" />
+              <h3 className="text-sm font-semibold text-[#0c1e3c]">My Tasks</h3>
             </div>
-          </CardHeader>
-          <CardContent>
+            <Button variant="ghost" size="sm" className="text-[#c9a84c] text-xs h-7" onClick={() => onViewChange('tasks')}>
+              View All <ChevronRight className="w-3 h-3 ml-1" />
+            </Button>
+          </div>
+          <div className="p-4">
             {tasks.length === 0 ? (
-              <div className="text-center py-8 text-sm text-slate-400">
-                <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p>All caught up!</p>
+              <div className="text-center py-8 text-sm">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-3 animate-float">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-300" />
+                </div>
+                <p className="text-slate-500 font-medium">All caught up!</p>
+                <p className="text-[11px] text-slate-300 mt-1">No pending tasks remaining</p>
               </div>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
                 {tasks.filter(t => t.status !== 'completed' && t.status !== 'cancelled').slice(0, 5).map(t => (
-                  <div key={t.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                      t.priority === 'urgent' ? 'bg-red-500' :
-                      t.priority === 'high' ? 'bg-orange-500' :
-                      t.priority === 'medium' ? 'bg-amber-500' : 'bg-slate-300'
-                    }`} />
+                  <div key={t.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50/80 transition-colors">
+                    {/* Checkbox-like indicator */}
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                      t.priority === 'urgent' ? 'border-red-400 bg-red-50' :
+                      t.priority === 'high' ? 'border-orange-400 bg-orange-50' :
+                      t.priority === 'medium' ? 'border-amber-400 bg-amber-50' : 'border-slate-300 bg-slate-50'
+                    }`}>
+                      {t.priority === 'urgent' && <div className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+                      {t.priority === 'high' && <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
+                      {t.priority === 'medium' && <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-slate-900 truncate">{t.title}</div>
                       <div className="text-[10px] text-slate-500">
@@ -862,92 +947,117 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Case distribution + Firm health */}
+      {/* ═══════════════════════════════════════════
+          CASE DISTRIBUTION + FIRM HEALTH
+          ═══════════════════════════════════════════ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold text-[#0c1e3c]">Case Distribution by Type</CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* Case Distribution — Elegant gradient bars */}
+        <div className="card-premium lg:col-span-2">
+          <div className="p-4 pb-3 border-b border-slate-100/80">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-5 rounded-full bg-[#0c1e3c]" />
+              <h3 className="text-sm font-semibold text-[#0c1e3c]">Case Distribution by Type</h3>
+            </div>
+          </div>
+          <div className="p-4">
             <div className="space-y-3">
               {(() => {
-                const caseTypeColorMap: Record<string, { label: string; color: string }> = {
-                  family_law: { label: 'Family Law', color: 'bg-[#0c1e3c]' },
-                  civil_litigation: { label: 'Civil Litigation', color: 'bg-[#c9a84c]' },
-                  criminal_defence: { label: 'Criminal Defence', color: 'bg-red-500' },
-                  conveyancing: { label: 'Conveyancing', color: 'bg-emerald-500' },
-                  estate_planning: { label: 'Estate Planning', color: 'bg-purple-500' },
-                  corporate_commercial: { label: 'Corporate', color: 'bg-teal-500' },
-                  debt_collection: { label: 'Debt Collection', color: 'bg-orange-500' },
-                  immigration: { label: 'Immigration', color: 'bg-cyan-500' },
-                  labour_law: { label: 'Labour Law', color: 'bg-pink-500' },
-                  personal_injury: { label: 'Personal Injury', color: 'bg-indigo-500' },
-                  other: { label: 'Other', color: 'bg-slate-400' },
+                const caseTypeGradientMap: Record<string, { label: string; from: string; to: string }> = {
+                  family: { label: 'Family', from: 'from-[#0c1e3c]', to: 'to-[#1a3358]' },
+                  civil: { label: 'Civil', from: 'from-[#c9a84c]', to: 'to-[#dfc475]' },
+                  criminal: { label: 'Criminal', from: 'from-red-500', to: 'to-red-400' },
+                  corporate: { label: 'Corporate', from: 'from-emerald-600', to: 'to-emerald-400' },
+                  property: { label: 'Property', from: 'from-purple-600', to: 'to-purple-400' },
+                  labour: { label: 'Labour', from: 'from-teal-600', to: 'to-teal-400' },
+                  immigration: { label: 'Immigration', from: 'from-cyan-600', to: 'to-cyan-400' },
+                  intellectual_property: { label: 'IP', from: 'from-orange-600', to: 'to-orange-400' },
+                  tax: { label: 'Tax', from: 'from-pink-600', to: 'to-pink-400' },
+                  personal_injury: { label: 'Personal Injury', from: 'from-indigo-600', to: 'to-indigo-400' },
+                  debt_recovery: { label: 'Debt Recovery', from: 'from-amber-600', to: 'to-amber-400' },
+                  other: { label: 'Other', from: 'from-slate-500', to: 'to-slate-400' },
                 };
                 const data = charts?.casesByType || [];
                 const total = data.reduce((s: number, d: any) => s + d.count, 0) || 1;
                 if (data.length === 0) {
-                  return <div className="text-center py-8 text-sm text-slate-400">No case data available</div>;
+                  return (
+                    <div className="text-center py-10 text-sm">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                        <FolderKanban className="w-7 h-7 text-slate-300" />
+                      </div>
+                      <p className="text-slate-400">No case data available</p>
+                    </div>
+                  );
                 }
                 return data.map((item: any) => {
-                  const mapping = caseTypeColorMap[item.case_type] || { label: item.case_type?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()), color: 'bg-slate-400' };
+                  const mapping = caseTypeGradientMap[item.case_type] || { label: item.case_type?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()), from: 'from-slate-500', to: 'to-slate-400' };
                   const pct = Math.round((item.count / total) * 100);
                   return (
-                    <div key={item.case_type} className="flex items-center gap-3">
-                      <span className="text-sm text-slate-600 w-32">{mapping.label}</span>
-                      <div className="flex-1 bg-slate-100 rounded-full h-2">
-                        <div className={`${mapping.color} rounded-full h-2 transition-all`} style={{ width: `${pct}%` }} />
+                    <div key={item.case_type} className="flex items-center gap-3 group hover:bg-slate-50/50 rounded-lg px-1 py-1 -mx-1 transition-colors">
+                      <span className="text-[13px] text-slate-600 w-28 flex-shrink-0">{mapping.label}</span>
+                      <div className="flex-1 bg-slate-100/80 rounded-full h-[6px]">
+                        <div className={`bg-gradient-to-r ${mapping.from} ${mapping.to} rounded-full h-[6px] transition-all duration-500`} style={{ width: `${pct}%` }} />
                       </div>
-                      <span className="text-sm font-medium text-[#0c1e3c] w-10 text-right">{pct}%</span>
+                      <div className="w-20 text-right flex-shrink-0">
+                        <span className="text-[11px] font-medium text-[#0c1e3c]">{pct}%</span>
+                        <span className="text-[10px] text-slate-400 ml-1">({item.count})</span>
+                      </div>
                     </div>
                   );
                 });
               })()}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {!isClient && <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold text-[#0c1e3c]">Firm Health</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {[
-              { label: 'RBAC Authorization', ok: firmHealth.rbac !== undefined ? firmHealth.rbac : true },
-              { label: 'POPIA Consent', ok: firmHealth.popia !== undefined ? firmHealth.popia : true },
-              { label: 'Audit Logging', ok: firmHealth.auditLogging !== undefined ? firmHealth.auditLogging : true },
-              { label: 'Encryption (AES-256)', ok: firmHealth.encryption !== undefined ? firmHealth.encryption : true },
-              { label: 'Password Policy', ok: firmHealth.passwordPolicy !== undefined ? firmHealth.passwordPolicy : true },
-              { label: 'Backup Active', ok: firmHealth.backupActive || false },
-            ].map(item => (
-              <div key={item.label} className="flex items-center gap-2">
-                {item.ok ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                )}
-                <span className="text-sm text-slate-700">{item.label}</span>
+        {/* Firm Health — Status indicators */}
+        {!isClient && (
+          <div className="card-premium">
+            <div className="p-4 pb-3 border-b border-slate-100/80">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-5 rounded-full bg-emerald-500" />
+                  <h3 className="text-sm font-semibold text-[#0c1e3c]">Firm Health</h3>
+                </div>
+                <Badge className={`text-[10px] font-semibold ${healthyCount === healthItems.length ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {healthyCount}/{healthItems.length} Healthy
+                </Badge>
               </div>
-            ))}
-          </CardContent>
-        </Card>}
+            </div>
+            <div className="p-4 space-y-3">
+              {healthItems.map(item => (
+                <div key={item.label} className="flex items-center gap-2.5">
+                  {item.ok ? (
+                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 animate-pulse-gold" style={{ animationDuration: '3s' }}>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                      <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                    </div>
+                  )}
+                  <span className={`text-sm ${item.ok ? 'text-slate-700' : 'text-red-700 font-medium'}`}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 // ============================================
-// MINI STAT COMPONENT
+// MINI STAT COMPONENT — Premium Glass Card
 // ============================================
 function MiniStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white/10 rounded-lg px-4 py-2 text-center backdrop-blur-sm">
-      <div className="text-lg font-bold text-[#c9a84c]">{value}</div>
-      <div className="text-[10px] text-[#8fa4c4]">{label}</div>
+    <div className="glass-dark rounded-xl px-4 py-3 text-center min-w-[100px] border-b-2 border-[#c9a84c]/30">
+      <div className="text-lg font-bold text-[#c9a84c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{value}</div>
+      <div className="text-[10px] text-[#8fa4c4] font-medium uppercase tracking-wider mt-0.5">{label}</div>
     </div>
   );
 }
@@ -957,71 +1067,125 @@ function MiniStat({ label, value }: { label: string; value: string | number }) {
 // ============================================
 function CasesView({ cases, page, total, onPageChange, onRefresh }: { cases: any[]; page: number; total: number; onPageChange: (p: number) => void; onRefresh: () => void }) {
   const totalPages = Math.ceil(total / 10);
-  const statusColors: Record<string, string> = {
-    intake: 'bg-blue-100 text-blue-700',
-    pending_review: 'bg-amber-100 text-amber-700',
-    active: 'bg-emerald-100 text-emerald-700',
-    on_hold: 'bg-orange-100 text-orange-700',
-    settled: 'bg-teal-100 text-teal-700',
-    closed: 'bg-slate-100 text-slate-700',
-    archived: 'bg-slate-100 text-slate-500',
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [caseSearch, setCaseSearch] = useState('');
+
+  const caseTypeColors: Record<string, string> = {
+    civil: '#3b82f6', criminal: '#ef4444', family: '#8b5cf6',
+    corporate: '#f59e0b', property: '#10b981', labour: '#6366f1',
+    immigration: '#06b6d4', intellectual_property: '#ec4899',
+    tax: '#14b8a6', personal_injury: '#f97316', debt_recovery: '#64748b', other: '#94a3b8',
   };
-  const urgencyColors: Record<string, string> = { low: 'text-slate-500', medium: 'text-amber-600', high: 'text-orange-600', critical: 'text-red-600' };
+
+  const statusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'active': return 'badge-active';
+      case 'intake': case 'review': case 'on_hold': return 'badge-pending';
+      case 'closed': case 'archived': return 'badge-closed';
+      default: return 'badge-pending';
+    }
+  };
+
+  const filteredCases = cases.filter(c => {
+    if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+    if (caseSearch && !c.title?.toLowerCase().includes(caseSearch.toLowerCase()) && !c.case_ref?.toLowerCase().includes(caseSearch.toLowerCase())) return false;
+    return true;
+  });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-[#0c1e3c]">Cases</h2>
-          <p className="text-sm text-slate-500">{total} total cases</p>
+    <div className="space-y-4 animate-fade-in-up">
+      <div className="card-premium p-6">
+        {/* Header with gold accent */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="border-l-2 border-[#c9a84c] pl-4">
+              <h2 className="text-xl font-bold text-[#0c1e3c]">Cases</h2>
+              <p className="text-sm text-slate-500">{total} total cases</p>
+            </div>
+            <Badge className="bg-[#0c1e3c] text-white text-[10px] font-semibold ml-2 hover:bg-[#0c1e3c]">{total}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={onRefresh} className="text-slate-500 hover:text-[#0c1e3c]">
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+            <Button size="sm" className="btn-gold px-4">
+              <Plus className="w-4 h-4 mr-1.5" /> New Case
+            </Button>
+          </div>
         </div>
-        <Button size="sm" variant="outline" onClick={onRefresh} className="border-[#0c1e3c] text-[#0c1e3c]">
-          <RefreshCw className="w-4 h-4 mr-1" /> Refresh
-        </Button>
+
+        {/* Search & Filter Bar */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input placeholder="Search cases..." value={caseSearch} onChange={e => setCaseSearch(e.target.value)} className="pl-9 input-premium focus:ring-0" />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40 input-premium focus:ring-0">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="intake">Intake</SelectItem>
+              <SelectItem value="review">Review</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="on_hold">On Hold</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="archived">Archived</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto -mx-6">
+          <table className="w-full table-premium">
+            <thead>
+              <tr>
+                <th className="text-left">Case Ref</th>
+                <th className="text-left">Title</th>
+                <th className="text-left">Type</th>
+                <th className="text-left">Status</th>
+                <th className="text-left">Client</th>
+                <th className="text-left">Created</th>
+              </tr>
+            </thead>
+            <tbody className="stagger-children">
+              {filteredCases.length === 0 ? (
+                <tr><td colSpan={6} className="p-12 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                    <FolderKanban className="w-7 h-7 text-slate-300" />
+                  </div>
+                  <p className="text-slate-400 font-medium">No cases found</p>
+                  <p className="text-[11px] text-slate-300 mt-1">Create a new case or adjust your filters</p>
+                </td></tr>
+              ) : (
+                filteredCases.map(c => (
+                  <tr key={c.id} className="group" style={{ borderLeft: `3px solid ${caseTypeColors[c.case_type] || '#94a3b8'}` }}>
+                    <td className="font-mono text-xs text-[#a88832]">{c.case_ref?.substring(0, 8) || '-'}</td>
+                    <td className="font-medium text-[#0c1e3c] max-w-xs truncate">{c.title}</td>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: caseTypeColors[c.case_type] || '#94a3b8' }} />
+                        <span className="text-xs text-slate-600 capitalize">{(c.case_type || '').replace(/_/g, ' ')}</span>
+                      </div>
+                    </td>
+                    <td><span className={`badge-status ${statusBadgeClass(c.status)}`}>{(c.status || '').replace(/_/g, ' ')}</span></td>
+                    <td className="text-slate-600">{c.client?.full_name || '-'}</td>
+                    <td className="text-slate-500 text-xs">{c.created_at ? new Date(c.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-[#0c1e3c]/5">
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Matter #</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Title</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Type</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Status</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Urgency</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Client</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Value (ZAR)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cases.length === 0 ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-slate-500">No cases found</td></tr>
-                ) : (
-                  cases.map(c => (
-                    <tr key={c.id} className="border-b hover:bg-slate-50 transition-colors">
-                      <td className="p-3 font-mono text-xs text-[#a88832]">{c.matter_number}</td>
-                      <td className="p-3 font-medium text-[#0c1e3c] max-w-xs truncate">{c.title}</td>
-                      <td className="p-3"><Badge variant="outline" className="text-xs">{(c.case_type || '').replace(/_/g, ' ')}</Badge></td>
-                      <td className="p-3"><Badge className={`text-xs ${statusColors[c.status] || 'bg-slate-100'}`}>{(c.status || '').replace(/_/g, ' ')}</Badge></td>
-                      <td className="p-3"><span className={`font-medium text-xs ${urgencyColors[c.urgency]}`}>{(c.urgency || '').toUpperCase()}</span></td>
-                      <td className="p-3 text-slate-600">{c.client?.full_name || '-'}</td>
-                      <td className="p-3 font-medium text-[#0c1e3c]">R{(c.estimated_value || 0).toLocaleString()}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-500">Page {page} of {totalPages} ({total} results)</p>
+        <div className="flex items-center justify-between px-2">
+          <p className="text-sm text-slate-500">Page {page} of {totalPages} · {total} results</p>
           <div className="flex gap-1">
-            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
+            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)} className="hover-lift">
               <ChevronLeft className="w-4 h-4" />
             </Button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -1029,12 +1193,12 @@ function CasesView({ cases, page, total, onPageChange, onRefresh }: { cases: any
               if (p > totalPages) return null;
               return (
                 <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => onPageChange(p)}
-                  className={p === page ? 'bg-[#0c1e3c]' : ''}>
+                  className={p === page ? 'btn-navy' : 'hover-lift'}>
                   {p}
                 </Button>
               );
             })}
-            <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>
+            <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} className="hover-lift">
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -1049,74 +1213,149 @@ function CasesView({ cases, page, total, onPageChange, onRefresh }: { cases: any
 // ============================================
 function LeadsView({ leads, page, total, onPageChange, onRefresh }: { leads: any[]; page: number; total: number; onPageChange: (p: number) => void; onRefresh: () => void }) {
   const totalPages = Math.ceil(total / 10);
-  const statusColors: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-700', contacted: 'bg-amber-100 text-amber-700',
-    qualified: 'bg-emerald-100 text-emerald-700', consultation_scheduled: 'bg-purple-100 text-purple-700',
-    retained: 'bg-teal-100 text-teal-700', lost: 'bg-red-100 text-red-700',
-    disqualified: 'bg-slate-100 text-slate-500',
+
+  const sourceIcons: Record<string, any> = {
+    website: Globe, referral: Users, social_media: MessageSquare,
+    google_ads: Zap, walk_in: MapPin, phone: Phone, email: Mail,
+    partner: Handshake, event: Star, other: AlertCircle,
+  };
+
+  const statusBorderColor: Record<string, string> = {
+    new: '#3b82f6', contacted: '#f59e0b', qualified: '#10b981',
+    consultation_scheduled: '#8b5cf6', retained: '#14b8a6', lost: '#ef4444',
+    nurturing: '#94a3b8',
+  };
+
+  const statusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'retained': case 'qualified': return 'badge-active';
+      case 'new': case 'contacted': case 'consultation_scheduled': return 'badge-pending';
+      case 'lost': return 'badge-closed';
+      case 'nurturing': return 'badge-pending';
+      default: return 'badge-pending';
+    }
+  };
+
+  const scoreColor = (score: number) => {
+    if (score >= 80) return 'text-emerald-600 bg-emerald-50';
+    if (score >= 60) return 'text-amber-600 bg-amber-50';
+    if (score >= 40) return 'text-orange-600 bg-orange-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  const pipelineTopColors: Record<string, string> = {
+    new: 'border-t-blue-500', contacted: 'border-t-amber-500',
+    qualified: 'border-t-emerald-500', consultation_scheduled: 'border-t-purple-500',
+    retained: 'border-t-teal-500', lost: 'border-t-red-500', nurturing: 'border-t-slate-400',
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-[#0c1e3c]">Leads Pipeline</h2>
-          <p className="text-sm text-slate-500">{total} total leads</p>
-        </div>
-        <Button size="sm" variant="outline" onClick={onRefresh} className="border-[#0c1e3c] text-[#0c1e3c]">
-          <RefreshCw className="w-4 h-4 mr-1" /> Refresh
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-        {['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'disqualified'].map(status => {
-          const count = leads.filter(l => l.status === status).length;
-          return (
-            <div key={status} className="text-center p-2 rounded-lg bg-white border">
-              <div className="text-lg font-bold text-[#0c1e3c]">{count}</div>
-              <div className="text-[10px] text-slate-500 capitalize">{status.replace(/_/g, ' ')}</div>
+    <div className="space-y-4 animate-fade-in-up">
+      <div className="card-premium p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="border-l-2 border-[#c9a84c] pl-4">
+              <h2 className="text-xl font-bold text-[#0c1e3c]">Leads Pipeline</h2>
+              <p className="text-sm text-slate-500">{total} total leads</p>
             </div>
-          );
-        })}
+            <Badge className="bg-[#0c1e3c] text-white text-[10px] font-semibold ml-2 hover:bg-[#0c1e3c]">{total}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={onRefresh} className="text-slate-500 hover:text-[#0c1e3c]">
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+            <Button size="sm" className="btn-gold px-4">
+              <Plus className="w-4 h-4 mr-1.5" /> New Lead
+            </Button>
+          </div>
+        </div>
+
+        {/* Pipeline Count Bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-6">
+          {['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'nurturing'].map(status => {
+            const count = leads.filter(l => l.status === status).length;
+            return (
+              <div key={status} className={`text-center p-2.5 rounded-lg bg-white border border-slate-100 border-t-2 ${pipelineTopColors[status] || 'border-t-slate-300'}`}>
+                <div className="text-lg font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{count}</div>
+                <div className="text-[10px] text-slate-500 capitalize">{status.replace(/_/g, ' ')}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Lead Cards */}
+        <div className="space-y-3 stagger-children">
+          {leads.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                <Target className="w-7 h-7 text-slate-300" />
+              </div>
+              <p className="text-slate-400 font-medium">No leads found</p>
+              <p className="text-[11px] text-slate-300 mt-1">Add a new lead to start tracking your pipeline</p>
+            </div>
+          ) : (
+            leads.map(l => {
+              const SourceIcon = sourceIcons[l.source] || AlertCircle;
+              const leadName = [l.first_name, l.last_name].filter(Boolean).join(' ') || l.name || '-';
+              return (
+                <div key={l.id} className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-100 hover:border-slate-200 hover:shadow-sm transition-all duration-200" style={{ borderLeft: `3px solid ${statusBorderColor[l.status] || '#94a3b8'}` }}>
+                  {/* Avatar */}
+                  <Avatar className="w-10 h-10 flex-shrink-0">
+                    <AvatarFallback className="bg-[#0c1e3c]/5 text-[#0c1e3c] text-xs font-bold">
+                      {leadName.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-[#0c1e3c] text-sm">{leadName}</span>
+                      <span className={`badge-status ${statusBadgeClass(l.status)}`}>{(l.status || '').replace(/_/g, ' ')}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      {l.email && <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <Mail className="w-3 h-3" />{l.email}
+                      </span>}
+                      <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <SourceIcon className="w-3 h-3" />{(l.source || '').replace(/_/g, ' ')}
+                      </span>
+                      {l.case_type && <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <Briefcase className="w-3 h-3" />{l.case_type.replace(/_/g, ' ')}
+                      </span>}
+                    </div>
+                  </div>
+                  {/* Score */}
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${scoreColor(l.lead_score || 0)}`}>
+                    <span className="text-sm font-bold">{l.lead_score || 0}</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-[#0c1e3c]/5">
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Name</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Email</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Source</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Status</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Score</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Value (ZAR)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map(l => (
-                  <tr key={l.id} className="border-b hover:bg-slate-50 transition-colors">
-                    <td className="p-3 font-medium text-[#0c1e3c]">{l.name}</td>
-                    <td className="p-3 text-slate-600">{l.email}</td>
-                    <td className="p-3"><Badge variant="outline" className="text-xs capitalize">{l.source?.replace(/_/g, ' ')}</Badge></td>
-                    <td className="p-3"><Badge className={`text-xs ${statusColors[l.status] || 'bg-slate-100'}`}>{(l.status || '').replace(/_/g, ' ')}</Badge></td>
-                    <td className="p-3"><div className="flex items-center gap-2"><Progress value={l.lead_score || 0} className="w-16 h-2" /><span className="text-xs font-medium">{l.lead_score || 0}</span></div></td>
-                    <td className="p-3 font-medium text-[#0c1e3c]">R{(l.estimated_value || 0).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-2">
           <p className="text-sm text-slate-500">Page {page} of {totalPages}</p>
           <div className="flex gap-1">
-            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)}><ChevronLeft className="w-4 h-4" /></Button>
-            <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}><ChevronRight className="w-4 h-4" /></Button>
+            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)} className="hover-lift">
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i;
+              if (p > totalPages) return null;
+              return (
+                <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => onPageChange(p)}
+                  className={p === page ? 'btn-navy' : 'hover-lift'}>
+                  {p}
+                </Button>
+              );
+            })}
+            <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} className="hover-lift">
+              <ChevronRight className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       )}
@@ -1136,6 +1375,10 @@ function DocumentsView({ token, documents, onRefresh, user }: {
   const [uploadType, setUploadType] = useState('contract');
   const [uploadCaseId, setUploadCaseId] = useState('');
   const [uploadDesc, setUploadDesc] = useState('');
+  const [docTypeFilter, setDocTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchFilter, setSearchFilter] = useState('');
+  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async () => {
@@ -1169,124 +1412,276 @@ function DocumentsView({ token, documents, onRefresh, user }: {
     setUploading(false);
   };
 
-  const workflowColors: Record<string, string> = {
-    draft: 'bg-slate-100 text-slate-700', review: 'bg-amber-100 text-amber-700',
-    approved: 'bg-emerald-100 text-emerald-700', signed: 'bg-blue-100 text-blue-700',
-    filed: 'bg-teal-100 text-teal-700', archived: 'bg-slate-100 text-slate-500',
+  // Document type visual config: icon + colors
+  const docTypeConfig: Record<string, { icon: any; color: string; bg: string }> = {
+    contract: { icon: FileCheck, color: 'text-blue-600', bg: 'bg-blue-50' },
+    court_filing: { icon: Gavel, color: 'text-red-600', bg: 'bg-red-50' },
+    affidavit: { icon: Scale, color: 'text-purple-600', bg: 'bg-purple-50' },
+    pleading: { icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
+    correspondence: { icon: Mail, color: 'text-teal-600', bg: 'bg-teal-50' },
+    opinion: { icon: MessageSquare, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    memo: { icon: FileText, color: 'text-slate-600', bg: 'bg-slate-50' },
+    invoice: { icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    consent_form: { icon: ShieldCheck, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10' },
+    id_document: { icon: KeyRound, color: 'text-orange-600', bg: 'bg-orange-50' },
+    other: { icon: FileText, color: 'text-slate-500', bg: 'bg-slate-50' },
   };
 
+  const statusBadge: Record<string, string> = {
+    uploading: 'bg-amber-50 text-amber-700 before:bg-amber-500',
+    uploaded: 'bg-blue-50 text-blue-700 before:bg-blue-500',
+    reviewing: 'bg-purple-50 text-purple-700 before:bg-purple-500',
+    approved: 'bg-emerald-50 text-emerald-700 before:bg-emerald-500',
+    rejected: 'bg-red-50 text-red-700 before:bg-red-500',
+    archived: 'bg-slate-100 text-slate-500 before:bg-slate-400',
+  };
+
+  const formatFileSize = (bytes: number | null | undefined) => {
+    if (!bytes) return null;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const filteredDocs = documents.filter(doc => {
+    if (docTypeFilter !== 'all' && doc.document_type !== docTypeFilter) return false;
+    if (statusFilter !== 'all' && doc.status !== statusFilter) return false;
+    if (searchFilter && !doc.file_name.toLowerCase().includes(searchFilter.toLowerCase())) return false;
+    return true;
+  });
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 animate-fade-in-up">
+      {/* ═══════════════════════════════════════════
+          HEADER — Gold Left-Border Accent
+          ═══════════════════════════════════════════ */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="border-l-2 border-[#c9a84c] pl-4">
           <h2 className="text-xl font-bold text-[#0c1e3c]">Documents</h2>
-          <p className="text-sm text-slate-500">{documents.length} documents</p>
+          <p className="text-sm text-slate-500">{documents.length} document{documents.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={onRefresh} className="border-[#0c1e3c] text-[#0c1e3c]">
+          <Button size="sm" variant="outline" onClick={onRefresh} className="border-slate-200 text-slate-600 hover:border-[#0c1e3c] hover:text-[#0c1e3c] transition-all duration-200">
             <RefreshCw className="w-4 h-4 mr-1" /> Refresh
           </Button>
           <Dialog open={showUpload} onOpenChange={setShowUpload}>
             <DialogTrigger asChild>
-              <Button size="sm" className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c]">
-                <Upload className="w-4 h-4 mr-1" /> Upload Document
+              <Button size="sm" className="btn-gold">
+                <Upload className="w-4 h-4 mr-1" /> Upload
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="text-[#0c1e3c]">Upload Document</DialogTitle>
-                <DialogDescription>Upload a document to the case management system</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Title</Label>
-                  <Input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Document title" className="mt-1" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Document Type</Label>
-                    <Select value={uploadType} onValueChange={setUploadType}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="contract">Contract</SelectItem>
-                        <SelectItem value="pleading">Pleading</SelectItem>
-                        <SelectItem value="correspondence">Correspondence</SelectItem>
-                        <SelectItem value="court_filing">Court Filing</SelectItem>
-                        <SelectItem value="affidavit">Affidavit</SelectItem>
-                        <SelectItem value="opinion">Opinion</SelectItem>
-                        <SelectItem value="memo">Memo</SelectItem>
-                        <SelectItem value="invoice">Invoice</SelectItem>
-                        <SelectItem value="consent_form">Consent Form</SelectItem>
-                        <SelectItem value="id_document">ID Document</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+            <DialogContent className="max-w-lg animate-scale-in">
+              <div className="card-premium">
+                <DialogHeader>
+                  <DialogTitle className="text-[#0c1e3c] text-lg font-semibold">Upload Document</DialogTitle>
+                  <DialogDescription className="text-slate-500">Upload a document to the case management system</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  {/* Drag-drop area */}
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${dragActive ? 'border-[#c9a84c] bg-[#c9a84c]/5' : 'border-slate-200 hover:border-[#c9a84c]/40 hover:bg-slate-50/50'}`}
+                    onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                    onDragLeave={() => setDragActive(false)}
+                    onDrop={e => { e.preventDefault(); setDragActive(false); }}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <FileUp className="w-8 h-8 mx-auto text-slate-300 mb-2" />
+                    <p className="text-sm font-medium text-slate-600">Drag & drop files here</p>
+                    <p className="text-[11px] text-slate-400 mt-1">or click to browse</p>
+                    <p className="text-[10px] text-slate-400 mt-2">Max 10MB · PDF, DOC, DOCX, TXT, JPG, PNG</p>
+                    <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.doc,.docx,.txt,.jpg,.png" />
                   </div>
                   <div>
-                    <Label>Case ID</Label>
-                    <Input value={uploadCaseId} onChange={e => setUploadCaseId(e.target.value)} placeholder="Enter case ID" className="mt-1" />
+                    <Label className="text-xs font-medium text-slate-600">Title</Label>
+                    <Input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Document title" className="mt-1 input-premium" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-medium text-slate-600">Document Type</Label>
+                      <Select value={uploadType} onValueChange={setUploadType}>
+                        <SelectTrigger className="mt-1 input-premium"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="contract">Contract</SelectItem>
+                          <SelectItem value="pleading">Pleading</SelectItem>
+                          <SelectItem value="correspondence">Correspondence</SelectItem>
+                          <SelectItem value="court_filing">Court Filing</SelectItem>
+                          <SelectItem value="affidavit">Affidavit</SelectItem>
+                          <SelectItem value="opinion">Opinion</SelectItem>
+                          <SelectItem value="memo">Memo</SelectItem>
+                          <SelectItem value="invoice">Invoice</SelectItem>
+                          <SelectItem value="consent_form">Consent Form</SelectItem>
+                          <SelectItem value="id_document">ID Document</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-slate-600">Case ID</Label>
+                      <Input value={uploadCaseId} onChange={e => setUploadCaseId(e.target.value)} placeholder="Enter case ID" className="mt-1 input-premium" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium text-slate-600">Description (Optional)</Label>
+                    <Textarea value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} placeholder="Brief description..." className="mt-1 input-premium" rows={2} />
                   </div>
                 </div>
-                <div>
-                  <Label>Description (Optional)</Label>
-                  <Textarea value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} placeholder="Brief description..." className="mt-1" rows={2} />
-                </div>
-                <div>
-                  <Label>File</Label>
-                  <Input type="file" ref={fileInputRef} className="mt-1" accept=".pdf,.doc,.docx,.txt,.jpg,.png" />
-                  <p className="text-[10px] text-slate-400 mt-1">Max 10MB · PDF, DOC, DOCX, TXT, JPG, PNG</p>
-                </div>
+                <DialogFooter className="mt-4">
+                  <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                  <Button onClick={handleUpload} disabled={uploading || !uploadTitle || !uploadCaseId} className="btn-gold">
+                    {uploading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+                    Upload
+                  </Button>
+                </DialogFooter>
               </div>
-              <DialogFooter>
-                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                <Button onClick={handleUpload} disabled={uploading || !uploadTitle || !uploadCaseId} className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c]">
-                  {uploading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
-                  Upload
-                </Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {documents.length === 0 ? (
-          <div className="col-span-full text-center py-16 text-slate-400">
-            <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-lg">No documents yet</p>
-            <p className="text-sm">Upload your first document to get started</p>
+      {/* ═══════════════════════════════════════════
+          FILTER BAR — Premium Inputs
+          ═══════════════════════════════════════════ */}
+      <div className="card-premium p-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Search documents..."
+              value={searchFilter}
+              onChange={e => setSearchFilter(e.target.value)}
+              className="pl-9 h-8 text-sm input-premium"
+            />
           </div>
-        ) : (
-          documents.map(doc => (
-            <Card key={doc.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="w-10 h-10 rounded-lg bg-[#0c1e3c] flex items-center justify-center">
-                    <FileCheck className="w-5 h-5 text-[#c9a84c]" />
-                  </div>
-                  <Badge className={`text-[10px] ${workflowColors[doc.workflow_status] || 'bg-slate-100'}`}>{doc.workflow_status}</Badge>
-                </div>
-                <div className="mt-3">
-                  <div className="font-medium text-[#0c1e3c]">{doc.title}</div>
-                  <div className="text-[10px] text-slate-500 mt-1">{doc.document_type?.replace(/_/g, ' ')} · v{doc.version}</div>
-                  {doc.case && <div className="text-[10px] text-slate-500">Case: {doc.case.title}</div>}
-                  {doc.prepared_by_user && <div className="text-[10px] text-slate-500">By: {doc.prepared_by_user.full_name}</div>}
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400">{new Date(doc.created_at).toLocaleDateString('en-ZA')}</span>
-                  {doc.file_name && <Button size="sm" variant="ghost" className="h-6 text-[10px]"><Eye className="w-3 h-3 mr-1" />View</Button>}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+          <Select value={docTypeFilter} onValueChange={setDocTypeFilter}>
+            <SelectTrigger className="w-[160px] h-8 text-sm input-premium">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="contract">Contract</SelectItem>
+              <SelectItem value="pleading">Pleading</SelectItem>
+              <SelectItem value="correspondence">Correspondence</SelectItem>
+              <SelectItem value="court_filing">Court Filing</SelectItem>
+              <SelectItem value="affidavit">Affidavit</SelectItem>
+              <SelectItem value="opinion">Opinion</SelectItem>
+              <SelectItem value="memo">Memo</SelectItem>
+              <SelectItem value="invoice">Invoice</SelectItem>
+              <SelectItem value="consent_form">Consent Form</SelectItem>
+              <SelectItem value="id_document">ID Document</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[140px] h-8 text-sm input-premium">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="uploading">Uploading</SelectItem>
+              <SelectItem value="uploaded">Uploaded</SelectItem>
+              <SelectItem value="reviewing">Reviewing</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="archived">Archived</SelectItem>
+            </SelectContent>
+          </Select>
+          {(docTypeFilter !== 'all' || statusFilter !== 'all' || searchFilter) && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-[#0c1e3c]" onClick={() => { setDocTypeFilter('all'); setStatusFilter('all'); setSearchFilter(''); }}>
+              Clear filters
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* ═══════════════════════════════════════════
+          DOCUMENT LIST — Refined List Format
+          ═══════════════════════════════════════════ */}
+      {filteredDocs.length === 0 ? (
+        <div className="card-premium p-12 text-center animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-slate-300" />
+          </div>
+          <p className="text-lg font-semibold text-slate-400">No documents yet</p>
+          <p className="text-sm text-slate-400 mt-1">{documents.length === 0 ? 'Upload your first document to get started' : 'No documents match your filters'}</p>
+          {documents.length === 0 && (
+            <Button className="btn-gold mt-4" onClick={() => setShowUpload(true)}>
+              <Upload className="w-4 h-4 mr-2" /> Upload Document
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="card-premium overflow-hidden">
+          <div className="divide-y divide-slate-100/80 stagger-children">
+            {filteredDocs.map(doc => {
+              const typeConfig = docTypeConfig[doc.document_type] || docTypeConfig.other;
+              const TypeIcon = typeConfig.icon;
+              return (
+                <div key={doc.id} className="flex items-center gap-4 p-4 hover:bg-slate-50/50 transition-all duration-200 group">
+                  {/* File type icon — colored by document type */}
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${typeConfig.bg}`}>
+                    <TypeIcon className={`w-5 h-5 ${typeConfig.color}`} />
+                  </div>
+                  {/* File info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-[#0c1e3c] truncate">{doc.file_name}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[11px] text-slate-500 capitalize">{doc.document_type?.replace(/_/g, ' ')}</span>
+                      {doc.case && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-[11px] text-slate-500 truncate">{doc.case.title}</span>
+                        </>
+                      )}
+                      {doc.uploaded_by_user && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <div className="flex items-center gap-1">
+                            <Avatar className="w-4 h-4">
+                              <AvatarFallback className="text-[7px] bg-[#0c1e3c] text-white">
+                                {doc.uploaded_by_user.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-[11px] text-slate-500">{doc.uploaded_by_user.full_name}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {/* File size */}
+                  {doc.file_size && (
+                    <span className="text-[11px] text-slate-400 hidden sm:block">{formatFileSize(doc.file_size)}</span>
+                  )}
+                  {/* Version */}
+                  <span className="text-[11px] text-slate-400 hidden md:block">v{doc.version}</span>
+                  {/* Date */}
+                  <span className="text-[11px] text-slate-400 hidden lg:block">{new Date(doc.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  {/* Status badge */}
+                  <span className={`badge-status text-[10px] ${statusBadge[doc.status] || 'bg-slate-100 text-slate-500 before:bg-slate-400'}`}>
+                    {doc.status}
+                  </span>
+                  {/* Hover actions */}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {doc.file_name && (
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-slate-400 hover:text-[#0c1e3c]">
+                        <Eye className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-slate-400 hover:text-[#0c1e3c]">
+                      <Download className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ============================================
-// CONSULTATIONS VIEW - with create dialog
+// CONSULTATIONS VIEW — Premium Detail View
 // ============================================
 function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
   token: string | null; consultations: Consultation[]; onRefresh: () => void; user: User | null; staff: StaffMember[];
@@ -1295,11 +1690,11 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
     client_name: '', client_email: '', attorney_id: '', case_id: '',
-    scheduled_date: '', scheduled_time: '09:00', duration_minutes: 60,
+    scheduled_at: '', duration_minutes: 60,
     meeting_type: 'in_person', notes: '',
   });
 
-  const attorneys = staff.filter(s => ['associate', 'legal_officer', 'senior_partner', 'supervising_officer', 'senior_consultant', 'candidate_attorney'].includes(s.role));
+  const attorneys = staff.filter(s => s.role === 'attorney');
 
   const handleCreate = async () => {
     if (!token) return;
@@ -1313,7 +1708,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
       const data = await res.json();
       if (data.success) {
         setShowCreate(false);
-        setForm({ client_name: '', client_email: '', attorney_id: '', case_id: '', scheduled_date: '', scheduled_time: '09:00', duration_minutes: 60, meeting_type: 'in_person', notes: '' });
+        setForm({ client_name: '', client_email: '', attorney_id: '', case_id: '', scheduled_at: '', duration_minutes: 60, meeting_type: 'in_person', notes: '' });
         onRefresh();
       }
     } catch (e) {
@@ -1322,151 +1717,212 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
     setCreating(false);
   };
 
-  const statusColors: Record<string, string> = {
-    scheduled: 'bg-blue-100 text-blue-700', confirmed: 'bg-emerald-100 text-emerald-700',
-    completed: 'bg-slate-100 text-slate-700', cancelled: 'bg-red-100 text-red-700', no_show: 'bg-orange-100 text-orange-700',
+  // Status badge colors with dot indicator
+  const statusBadge: Record<string, string> = {
+    scheduled: 'bg-blue-50 text-blue-700 before:bg-blue-500',
+    confirmed: 'bg-emerald-50 text-emerald-700 before:bg-emerald-500',
+    in_progress: 'bg-purple-50 text-purple-700 before:bg-purple-500',
+    completed: 'bg-slate-100 text-slate-600 before:bg-slate-400',
+    cancelled: 'bg-red-50 text-red-700 before:bg-red-500',
+    no_show: 'bg-orange-50 text-orange-700 before:bg-orange-500',
   };
 
-  const meetingIcons: Record<string, any> = { in_person: MapPin, video_call: Video, phone_call: PhoneCall };
+  // Meeting type visual config
+  const meetingConfig: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+    in_person: { icon: MapPin, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10', label: 'In Person' },
+    video_call: { icon: Video, color: 'text-blue-600', bg: 'bg-blue-50', label: 'Video Call' },
+    phone_call: { icon: PhoneCall, color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Phone Call' },
+  };
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const formatTime = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 animate-fade-in-up">
+      {/* ═══════════════════════════════════════════
+          HEADER — Gold Left-Border Accent
+          ═══════════════════════════════════════════ */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="border-l-2 border-[#c9a84c] pl-4">
           <h2 className="text-xl font-bold text-[#0c1e3c]">Consultations</h2>
-          <p className="text-sm text-slate-500">{consultations.length} consultations logged</p>
+          <p className="text-sm text-slate-500">{consultations.length} consultation{consultations.length !== 1 ? 's' : ''} logged</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={onRefresh} className="border-[#0c1e3c] text-[#0c1e3c]">
+          <Button size="sm" variant="outline" onClick={onRefresh} className="border-slate-200 text-slate-600 hover:border-[#0c1e3c] hover:text-[#0c1e3c] transition-all duration-200">
             <RefreshCw className="w-4 h-4 mr-1" /> Refresh
           </Button>
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogTrigger asChild>
-              <Button size="sm" className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c]">
-                <Plus className="w-4 h-4 mr-1" /> Log Consultation
+              <Button size="sm" className="btn-gold">
+                <Plus className="w-4 h-4 mr-1" /> Schedule
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="text-[#0c1e3c]">Log Consultation</DialogTitle>
-                <DialogDescription>Schedule or log a client consultation</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Client Name</Label>
-                    <Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Client name" className="mt-1" />
+            <DialogContent className="max-w-lg animate-scale-in">
+              <div className="card-premium">
+                <DialogHeader>
+                  <DialogTitle className="text-[#0c1e3c] text-lg font-semibold">Schedule Consultation</DialogTitle>
+                  <DialogDescription className="text-slate-500">Schedule or log a client consultation</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-medium text-slate-600">Client Name</Label>
+                      <Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Client name" className="mt-1 input-premium" />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-slate-600">Client Email</Label>
+                      <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@infinitylegal.org" className="mt-1 input-premium" />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Client Email</Label>
-                    <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@infinitylegal.org" className="mt-1" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Attorney</Label>
-                    <Select value={form.attorney_id} onValueChange={v => setForm(f => ({ ...f, attorney_id: v }))}>
-                      <SelectTrigger className="mt-1"><SelectValue placeholder="Select attorney" /></SelectTrigger>
-                      <SelectContent>
-                        {attorneys.map(a => (
-                          <SelectItem key={a.id} value={a.id}>{a.full_name} ({a.role.replace(/_/g, ' ')})</SelectItem>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-medium text-slate-600">Attorney</Label>
+                      <Select value={form.attorney_id} onValueChange={v => setForm(f => ({ ...f, attorney_id: v }))}>
+                        <SelectTrigger className="mt-1 input-premium"><SelectValue placeholder="Select attorney" /></SelectTrigger>
+                        <SelectContent>
+                          {attorneys.map(a => (
+                            <SelectItem key={a.id} value={a.id}>{a.full_name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-slate-600">Meeting Type</Label>
+                      <div className="flex gap-2 mt-1">
+                        {Object.entries(meetingConfig).map(([key, cfg]) => (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, meeting_type: key }))}
+                            className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg border-2 transition-all duration-200 text-xs font-medium ${form.meeting_type === key ? `${cfg.bg} ${cfg.color} border-current` : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                          >
+                            <cfg.icon className="w-4 h-4" />
+                            <span className="text-[10px]">{cfg.label}</span>
+                          </button>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-medium text-slate-600">Date & Time</Label>
+                      <Input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} className="mt-1 input-premium" />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-slate-600">Duration</Label>
+                      <Select value={String(form.duration_minutes)} onValueChange={v => setForm(f => ({ ...f, duration_minutes: parseInt(v) }))}>
+                        <SelectTrigger className="mt-1 input-premium"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="30">30 minutes</SelectItem>
+                          <SelectItem value="60">1 hour</SelectItem>
+                          <SelectItem value="90">1.5 hours</SelectItem>
+                          <SelectItem value="120">2 hours</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div>
-                    <Label>Meeting Type</Label>
-                    <Select value={form.meeting_type} onValueChange={v => setForm(f => ({ ...f, meeting_type: v }))}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="in_person">In Person</SelectItem>
-                        <SelectItem value="video_call">Video Call</SelectItem>
-                        <SelectItem value="phone_call">Phone Call</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-xs font-medium text-slate-600">Notes</Label>
+                    <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Consultation notes..." className="mt-1 input-premium" rows={3} />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>Date</Label>
-                    <Input type="date" value={form.scheduled_date} onChange={e => setForm(f => ({ ...f, scheduled_date: e.target.value }))} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label>Time</Label>
-                    <Input type="time" value={form.scheduled_time} onChange={e => setForm(f => ({ ...f, scheduled_time: e.target.value }))} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label>Duration (min)</Label>
-                    <Select value={String(form.duration_minutes)} onValueChange={v => setForm(f => ({ ...f, duration_minutes: parseInt(v) }))}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="30">30 min</SelectItem>
-                        <SelectItem value="60">60 min</SelectItem>
-                        <SelectItem value="90">90 min</SelectItem>
-                        <SelectItem value="120">2 hours</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div>
-                  <Label>Notes</Label>
-                  <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Consultation notes..." className="mt-1" rows={3} />
-                </div>
+                <DialogFooter className="mt-4">
+                  <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                  <Button onClick={handleCreate} disabled={creating || !form.attorney_id || !form.scheduled_at} className="btn-gold">
+                    {creating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <BookOpen className="w-4 h-4 mr-2" />}
+                    Schedule
+                  </Button>
+                </DialogFooter>
               </div>
-              <DialogFooter>
-                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                <Button onClick={handleCreate} disabled={creating || !form.attorney_id || !form.scheduled_date}
-                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c]">
-                  {creating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <BookOpen className="w-4 h-4 mr-2" />}
-                  Log Consultation
-                </Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-[#0c1e3c]/5">
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Type</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Client</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Attorney</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Date & Time</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Duration</th>
-                  <th className="text-left p-3 font-medium text-[#0c1e3c]">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consultations.length === 0 ? (
-                  <tr><td colSpan={6} className="p-8 text-center text-slate-500">No consultations logged yet</td></tr>
-                ) : (
-                  consultations.map(c => {
-                    const IconComp = meetingIcons[c.meeting_type] || MapPin;
-                    return (
-                      <tr key={c.id} className="border-b hover:bg-slate-50 transition-colors">
-                        <td className="p-3">
-                          <div className="w-8 h-8 rounded-lg bg-[#0c1e3c]/5 flex items-center justify-center">
-                            <IconComp className="w-4 h-4 text-[#0c1e3c]" />
-                          </div>
-                        </td>
-                        <td className="p-3 font-medium text-[#0c1e3c]">{c.client?.full_name || 'Client'}</td>
-                        <td className="p-3 text-slate-600">{c.attorney?.full_name || '-'}</td>
-                        <td className="p-3 text-slate-600">{c.scheduled_date} at {c.scheduled_time}</td>
-                        <td className="p-3 text-slate-600">{c.duration_minutes} min</td>
-                        <td className="p-3"><Badge className={`text-[10px] ${statusColors[c.status] || 'bg-slate-100'}`}>{c.status}</Badge></td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+      {/* ═══════════════════════════════════════════
+          CONSULTATION CARDS — 2-Column Premium Grid
+          ═══════════════════════════════════════════ */}
+      {consultations.length === 0 ? (
+        <div className="card-premium p-12 text-center animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8 text-slate-300" />
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-lg font-semibold text-slate-400">No consultations yet</p>
+          <p className="text-sm text-slate-400 mt-1">Schedule your first consultation to get started</p>
+          <Button className="btn-gold mt-4" onClick={() => setShowCreate(true)}>
+            <Plus className="w-4 h-4 mr-2" /> Schedule Consultation
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 stagger-children">
+          {consultations.map(c => {
+            const mConfig = meetingConfig[c.meeting_type] || meetingConfig.in_person;
+            const MIcon = mConfig.icon;
+            return (
+              <div key={c.id} className="card-premium p-5 hover-lift">
+                <div className="flex items-start gap-3">
+                  {/* Meeting type icon with colored background */}
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${mConfig.bg}`}>
+                    <MIcon className={`w-5 h-5 ${mConfig.color}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {/* Client name + status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="font-semibold text-[#0c1e3c] truncate">{c.client?.full_name || 'Client'}</div>
+                      <span className={`badge-status text-[10px] flex-shrink-0 ${statusBadge[c.status] || 'bg-slate-100 text-slate-500 before:bg-slate-400'}`}>
+                        {c.status?.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+                    {/* Attorney with avatar */}
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <Avatar className="w-5 h-5">
+                        <AvatarFallback className="text-[8px] bg-[#0c1e3c] text-white">
+                          {c.attorney?.profile?.full_name?.split(' ').map(n => n[0]).join('') || c.attorney?.full_name?.split(' ').map(n => n[0]).join('') || 'A'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-slate-500">{c.attorney?.profile?.full_name || c.attorney?.full_name || 'Attorney'}</span>
+                    </div>
+                    {/* Date & Time elegantly formatted */}
+                    {c.scheduled_at && (
+                      <div className="flex items-center gap-3 mt-2.5">
+                        <div className="flex items-center gap-1 text-xs text-slate-600">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{formatDate(c.scheduled_at)}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-slate-600">
+                          <Clock3 className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{formatTime(c.scheduled_at)}</span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Duration badge + case reference */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                        <Clock className="w-3 h-3" />
+                        {c.duration_minutes} min
+                      </span>
+                      {c.case && (
+                        <span className="text-[10px] text-slate-400 truncate">{c.case.title}</span>
+                      )}
+                    </div>
+                    {/* Notes preview */}
+                    {c.notes && (
+                      <p className="text-[11px] text-slate-400 mt-2 line-clamp-2">{c.notes}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -1502,115 +1958,176 @@ function TasksView({ token, tasks, onRefresh, user, staff }: {
     setCreating(false);
   };
 
-  const priorityColors: Record<string, string> = { low: 'text-slate-500', medium: 'text-amber-600', high: 'text-orange-600', urgent: 'text-red-600' };
-  const statusColors: Record<string, string> = { pending: 'bg-amber-100 text-amber-700', in_progress: 'bg-blue-100 text-blue-700', completed: 'bg-emerald-100 text-emerald-700', overdue: 'bg-red-100 text-red-700', cancelled: 'bg-slate-100 text-slate-500' };
+  const priorityDotClass = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-500 animate-pulse';
+      case 'high': return 'bg-orange-500';
+      case 'medium': return 'bg-amber-500';
+      default: return 'bg-slate-300';
+    }
+  };
+
+  const statusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'completed': return 'badge-active';
+      case 'in_progress': return 'badge-pending';
+      case 'pending': return 'badge-pending';
+      case 'cancelled': return 'badge-closed';
+      default: return 'badge-pending';
+    }
+  };
+
+  const getRelativeDueDate = (dueDate: string | null | undefined) => {
+    if (!dueDate) return null;
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffMs = due.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { text: `${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''} overdue`, color: 'text-red-600 bg-red-50' };
+    if (diffDays === 0) return { text: 'Due today', color: 'text-orange-600 bg-orange-50' };
+    if (diffDays === 1) return { text: 'Due tomorrow', color: 'text-amber-600 bg-amber-50' };
+    if (diffDays <= 7) return { text: `Due in ${diffDays} days`, color: 'text-slate-600 bg-slate-50' };
+    return { text: due.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' }), color: 'text-slate-500 bg-slate-50' };
+  };
+
+  // Sort tasks by priority
+  const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+  const sortedTasks = [...tasks].sort((a, b) => (priorityOrder[a.priority] || 99) - (priorityOrder[b.priority] || 99));
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-[#0c1e3c]">Tasks</h2>
-          <p className="text-sm text-slate-500">{tasks.length} total tasks</p>
+    <div className="space-y-4 animate-fade-in-up">
+      <div className="card-premium p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="border-l-2 border-[#c9a84c] pl-4">
+              <h2 className="text-xl font-bold text-[#0c1e3c]">Tasks</h2>
+              <p className="text-sm text-slate-500">{tasks.length} total tasks</p>
+            </div>
+            <Badge className="bg-[#0c1e3c] text-white text-[10px] font-semibold ml-2 hover:bg-[#0c1e3c]">{tasks.length}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={onRefresh} className="text-slate-500 hover:text-[#0c1e3c]">
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+            <Button size="sm" className="btn-gold px-4" onClick={() => setShowCreate(true)}>
+              <Plus className="w-4 h-4 mr-1.5" /> New Task
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={onRefresh} className="border-[#0c1e3c] text-[#0c1e3c]">
-            <RefreshCw className="w-4 h-4 mr-1" /> Refresh
-          </Button>
-          <Dialog open={showCreate} onOpenChange={setShowCreate}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c]">
-                <Plus className="w-4 h-4 mr-1" /> New Task
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="text-[#0c1e3c]">Create Task</DialogTitle>
-                <DialogDescription>Assign a new task to a team member</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Title</Label>
-                  <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Task title" className="mt-1" />
-                </div>
-                <div>
-                  <Label>Description</Label>
-                  <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Task description..." className="mt-1" rows={2} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Assign To</Label>
-                    <Select value={form.assigned_to} onValueChange={v => setForm(f => ({ ...f, assigned_to: v }))}>
-                      <SelectTrigger className="mt-1"><SelectValue placeholder="Select staff" /></SelectTrigger>
-                      <SelectContent>
-                        {staff.map(s => (
-                          <SelectItem key={s.id} value={s.id}>{s.full_name} ({s.role.replace(/_/g, ' ')})</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Priority</Label>
-                    <Select value={form.priority} onValueChange={v => setForm(f => ({ ...f, priority: v }))}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Due Date</Label>
-                    <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label>Case ID (Optional)</Label>
-                    <Input value={form.case_id} onChange={e => setForm(f => ({ ...f, case_id: e.target.value }))} placeholder="Link to case" className="mt-1" />
-                  </div>
-                </div>
+
+        {/* Task List */}
+        <div className="space-y-2 stagger-children">
+          {sortedTasks.length === 0 ? (
+            <div className="text-center py-12 animate-float">
+              <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                <CheckCircle2 className="w-7 h-7 text-slate-300" />
               </div>
-              <DialogFooter>
-                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                <Button onClick={handleCreate} disabled={creating || !form.title || !form.assigned_to}
-                  className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c]">
-                  {creating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-                  Create Task
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              <p className="text-slate-400 font-medium">No tasks found</p>
+              <p className="text-[11px] text-slate-300 mt-1">Create a new task to get started</p>
+            </div>
+          ) : (
+            sortedTasks.map(task => {
+              const dueInfo = getRelativeDueDate(task.due_date);
+              return (
+                <div key={task.id} className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-100 hover:border-slate-200 hover:shadow-sm transition-all duration-200">
+                  {/* Priority indicator — checkbox-style */}
+                  <div className="flex-shrink-0">
+                    <div className="w-5 h-5 rounded-md border-2 border-slate-200 flex items-center justify-center">
+                      <div className={`w-2 h-2 rounded-full ${priorityDotClass(task.priority)}`} />
+                    </div>
+                  </div>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`font-medium text-sm ${task.status === 'completed' ? 'text-slate-400 line-through' : 'text-[#0c1e3c]'}`}>
+                        {task.title}
+                      </span>
+                      <span className={`badge-status ${statusBadgeClass(task.status)}`}>{task.status.replace(/_/g, ' ')}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      {task.assignee?.full_name && (
+                        <span className="text-xs text-slate-500 flex items-center gap-1.5">
+                          <Avatar className="w-4 h-4"><AvatarFallback className="text-[6px] bg-[#0c1e3c]/5 text-[#0c1e3c]">{task.assignee.full_name.split(' ').map(n => n[0]).join('').substring(0, 2)}</AvatarFallback></Avatar>
+                          {task.assignee.full_name}
+                        </span>
+                      )}
+                      {task.case && <span className="text-xs text-slate-500 flex items-center gap-1"><Briefcase className="w-3 h-3" />{task.case.title}</span>}
+                    </div>
+                  </div>
+                  {/* Due date — relative */}
+                  {dueInfo && (
+                    <span className={`text-[10px] font-medium px-2.5 py-1 rounded-md flex-shrink-0 ${dueInfo.color}`}>{dueInfo.text}</span>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
-      <div className="space-y-2">
-        {tasks.length === 0 ? (
-          <Card><CardContent className="p-8 text-center text-slate-400">
-            <CheckCircle2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p>No tasks found</p>
-          </CardContent></Card>
-        ) : (
-          tasks.map(task => (
-            <Card key={task.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${task.priority === 'urgent' ? 'bg-red-500' : task.priority === 'high' ? 'bg-orange-500' : task.priority === 'medium' ? 'bg-amber-500' : 'bg-slate-300'}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-[#0c1e3c]">{task.title}</div>
-                  <div className="text-[10px] text-slate-500">
-                    {task.assignee?.full_name && `Assigned to ${task.assignee.full_name}`}
-                    {task.case && ` · ${task.case.title}`}
-                    {task.due_date && ` · Due: ${new Date(task.due_date).toLocaleDateString('en-ZA')}`}
-                  </div>
-                </div>
-                <Badge className={`text-[10px] ${statusColors[task.status] || 'bg-slate-100'}`}>{task.status.replace(/_/g, ' ')}</Badge>
-                <span className={`text-[10px] font-semibold ${priorityColors[task.priority]}`}>{task.priority.toUpperCase()}</span>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+      {/* Create Task Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-[#0c1e3c] border-l-2 border-[#c9a84c] pl-3">Create Task</DialogTitle>
+            <DialogDescription>Assign a new task to a team member</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Title</Label>
+              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Task title" className="mt-1 input-premium focus:ring-0" />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Task description..." className="mt-1 input-premium focus:ring-0" rows={2} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Assign To</Label>
+                <Select value={form.assigned_to} onValueChange={v => setForm(f => ({ ...f, assigned_to: v }))}>
+                  <SelectTrigger className="mt-1 input-premium focus:ring-0"><SelectValue placeholder="Select staff" /></SelectTrigger>
+                  <SelectContent>
+                    {staff.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.full_name} ({s.role.replace(/_/g, ' ')})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Priority</Label>
+                <Select value={form.priority} onValueChange={v => setForm(f => ({ ...f, priority: v }))}>
+                  <SelectTrigger className="mt-1 input-premium focus:ring-0"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Due Date</Label>
+                <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="mt-1 input-premium focus:ring-0" />
+              </div>
+              <div>
+                <Label>Case ID (Optional)</Label>
+                <Input value={form.case_id} onChange={e => setForm(f => ({ ...f, case_id: e.target.value }))} placeholder="Link to case" className="mt-1 input-premium focus:ring-0" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+            <Button onClick={handleCreate} disabled={creating || !form.title || !form.assigned_to} className="btn-gold">
+              {creating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+              Create Task
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1619,101 +2136,144 @@ function TasksView({ token, tasks, onRefresh, user, staff }: {
 // STAFF PORTAL VIEW
 // ============================================
 function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null }) {
-  const [filterDept, setFilterDept] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
 
-  const departments = [...new Set(staff.map(s => s.department).filter(Boolean))];
   const roles = [...new Set(staff.map(s => s.role))];
 
   const filtered = staff.filter(s => {
-    if (filterDept !== 'all' && s.department !== filterDept) return false;
     if (filterRole !== 'all' && s.role !== filterRole) return false;
     return true;
   });
 
   const roleLabels: Record<string, string> = {
-    managing_director: 'Managing Director', senior_partner: 'Senior Partner',
-    associate: 'Associate', paralegal: 'Paralegal', legal_officer: 'Legal Officer',
-    supervising_officer: 'Supervising Officer', senior_consultant: 'Senior Consultant',
-    consultant: 'Consultant', candidate_attorney: 'Candidate Attorney',
-    hr_manager: 'HR Manager', finance_manager: 'Finance Manager',
-    office_administrator: 'Office Admin', systems_admin: 'Systems Admin',
-    receptionist: 'Receptionist',
+    managing_director: 'Managing Director', admin: 'Admin',
+    attorney: 'Attorney', paralegal: 'Paralegal',
+    systems_admin: 'Systems Admin', client: 'Client',
   };
 
-  const roleColors: Record<string, string> = {
-    managing_director: 'bg-[#c9a84c] text-[#0c1e3c]', senior_partner: 'bg-[#c9a84c]/70 text-[#0c1e3c]',
-    associate: 'bg-blue-100 text-blue-700', paralegal: 'bg-emerald-100 text-emerald-700',
-    legal_officer: 'bg-purple-100 text-purple-700', supervising_officer: 'bg-amber-100 text-amber-700',
-    senior_consultant: 'bg-teal-100 text-teal-700', consultant: 'bg-cyan-100 text-cyan-700',
-    candidate_attorney: 'bg-pink-100 text-pink-700', hr_manager: 'bg-orange-100 text-orange-700',
-    finance_manager: 'bg-green-100 text-green-700', office_administrator: 'bg-slate-100 text-slate-700',
-    systems_admin: 'bg-red-100 text-red-700', receptionist: 'bg-yellow-100 text-yellow-700',
+  const roleBadgeVariant: Record<string, string> = {
+    managing_director: 'badge-status badge-active',
+    admin: 'badge-status badge-active',
+    attorney: 'badge-status badge-pending',
+    paralegal: 'badge-status badge-closed',
+    systems_admin: 'badge-status badge-urgent',
+    client: 'badge-status badge-closed',
   };
 
-  // Group by department
+  const hasGoldRing = (role: string) => ['managing_director', 'admin', 'attorney'].includes(role);
+
+  // Group by role
   const grouped = filtered.reduce((acc, s) => {
-    const dept = s.department || 'unassigned';
-    if (!acc[dept]) acc[dept] = [];
-    acc[dept].push(s);
+    const group = s.role || 'other';
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(s);
     return acc;
   }, {} as Record<string, StaffMember[]>);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 animate-fade-in-up">
+      {/* Header with gold left-border accent */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-[#0c1e3c]">Staff Portal</h2>
-          <p className="text-sm text-slate-500">{staff.length} team members</p>
+        <div className="border-l-2 border-[#c9a84c] pl-4">
+          <h2 className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>Staff Portal</h2>
+          <p className="text-sm text-slate-500 mt-0.5">{staff.length} team members</p>
         </div>
-        <div className="flex gap-2">
-          <Select value={filterDept} onValueChange={setFilterDept}>
-            <SelectTrigger className="w-40 h-8 text-xs"><SelectValue placeholder="Department" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Departments</SelectItem>
-              {departments.map(d => <SelectItem key={d} value={d!}>{d?.replace(/_/g, ' ')}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={filterRole} onValueChange={setFilterRole}>
-            <SelectTrigger className="w-40 h-8 text-xs"><SelectValue placeholder="Role" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              {roles.map(r => <SelectItem key={r} value={r}>{roleLabels[r] || r.replace(/_/g, ' ')}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
+        <Badge className="bg-[#c9a84c]/10 text-[#a88832] text-[10px] font-semibold border-0">
+          <Users className="w-3 h-3 mr-1" />
+          {roles.length} Roles
+        </Badge>
       </div>
 
-      {Object.entries(grouped).map(([dept, members]) => (
-        <div key={dept}>
-          <h3 className="text-sm font-semibold text-[#0c1e3c] uppercase tracking-wider mb-3 capitalize">{dept.replace(/_/g, ' ')} Department</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* Horizontal pill-style role filter */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          onClick={() => setFilterRole('all')}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+            filterRole === 'all' ? 'btn-navy text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          All Roles
+        </button>
+        {roles.map(r => (
+          <button
+            key={r}
+            onClick={() => setFilterRole(r)}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 capitalize ${
+              filterRole === r ? 'btn-navy text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {roleLabels[r] || r.replace(/_/g, ' ')}
+          </button>
+        ))}
+      </div>
+
+      {/* Staff grid by role group */}
+      {Object.entries(grouped).map(([group, members]) => (
+        <div key={group}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
+            <h3 className="text-sm font-semibold text-[#0c1e3c] uppercase tracking-wider capitalize">
+              {roleLabels[group] || group.replace(/_/g, ' ')}
+            </h3>
+            <span className="text-[10px] text-slate-400 font-medium">({members.length})</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 stagger-children">
             {members.map(m => (
-              <Card key={m.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className={`text-xs font-semibold ${roleColors[m.role] || 'bg-slate-100 text-slate-700'}`}>
+              <div key={m.id} className="card-premium p-4 group relative">
+                <div className="flex items-start gap-3">
+                  {/* Avatar with gold ring for attorneys/admins */}
+                  <div className={`relative flex-shrink-0 ${hasGoldRing(m.role) ? 'ring-2 ring-[#c9a84c]/40 ring-offset-2 ring-offset-white rounded-full' : ''}`}>
+                    <Avatar className="w-11 h-11">
+                      <AvatarFallback className={`text-xs font-bold ${
+                        m.role === 'managing_director' ? 'bg-[#c9a84c] text-[#0c1e3c]' :
+                        m.role === 'attorney' ? 'bg-[#0c1e3c] text-[#c9a84c]' :
+                        m.role === 'admin' ? 'bg-blue-600 text-white' :
+                        m.role === 'paralegal' ? 'bg-purple-600 text-white' :
+                        m.role === 'systems_admin' ? 'bg-red-600 text-white' :
+                        'bg-slate-200 text-slate-600'
+                      }`}>
                         {m.full_name?.split(' ').map(n => n[0]).join('') || '?'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-[#0c1e3c] text-sm">{m.full_name}</div>
-                      <Badge className={`text-[9px] ${roleColors[m.role] || 'bg-slate-100 text-slate-700'}`}>{roleLabels[m.role] || m.role.replace(/_/g, ' ')}</Badge>
-                      <div className="text-[10px] text-slate-500 mt-1.5 flex items-center gap-1"><Mail className="w-3 h-3" />{m.email}</div>
-                      {m.supervisor && (
-                        <div className="text-[10px] text-slate-400 mt-0.5">
-                          Reports to: {m.supervisor.full_name}
-                        </div>
-                      )}
-                      <div className="mt-1.5 flex items-center gap-1">
-                        <div className={`w-1.5 h-1.5 rounded-full ${m.is_active ? 'bg-emerald-500' : 'bg-red-400'}`} />
-                        <span className="text-[10px] text-slate-500">{m.is_active ? 'Active' : 'Inactive'}</span>
+                    {m.role === 'managing_director' && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#c9a84c] rounded-full flex items-center justify-center">
+                        <Crown className="w-2.5 h-2.5 text-[#0c1e3c]" />
                       </div>
-                    </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-[#0c1e3c] text-sm truncate">{m.full_name}</div>
+                    <div className={`mt-1 ${roleBadgeVariant[m.role] || 'badge-status badge-closed'}`}>
+                      {roleLabels[m.role] || m.role.replace(/_/g, ' ')}
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-2 flex items-center gap-1.5 truncate">
+                      <Mail className="w-3 h-3 flex-shrink-0 text-slate-400" />{m.email}
+                    </div>
+                    {m.phone && (
+                      <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5 truncate">
+                        <Phone className="w-3 h-3 flex-shrink-0 text-slate-400" />{m.phone}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Hover contact actions */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/95 to-transparent pt-8 pb-3 px-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                  <button
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-[#0c1e3c]/5 hover:bg-[#0c1e3c]/10 text-[#0c1e3c] text-[10px] font-medium transition-colors duration-200"
+                    onClick={() => window.open(`mailto:${m.email}`, '_blank')}
+                  >
+                    <Mail className="w-3 h-3" /> Email
+                  </button>
+                  {m.phone && (
+                    <button
+                      className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-[#c9a84c]/10 hover:bg-[#c9a84c]/20 text-[#a88832] text-[10px] font-medium transition-colors duration-200"
+                      onClick={() => window.open(`tel:${m.phone}`, '_blank')}
+                    >
+                      <Phone className="w-3 h-3" /> Call
+                    </button>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -1727,78 +2287,116 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
 // ============================================
 function OrgChartView({ staff }: { staff: StaffMember[] }) {
   const hierarchy: Record<string, { tier: number; label: string; roles: string[] }> = {
-    'Executive Leadership': { tier: 1, label: 'Executive Leadership', roles: ['managing_director', 'senior_partner'] },
-    'Management': { tier: 2, label: 'Management', roles: ['supervising_officer', 'systems_admin'] },
-    'Legal Practice': { tier: 3, label: 'Legal Practice', roles: ['legal_officer', 'associate', 'candidate_attorney'] },
-    'Consulting': { tier: 3, label: 'Consulting', roles: ['senior_consultant', 'consultant'] },
-    'Support Staff': { tier: 4, label: 'Support Staff', roles: ['paralegal', 'hr_manager', 'finance_manager'] },
-    'Administration': { tier: 5, label: 'Administration', roles: ['office_administrator', 'receptionist'] },
+    'Executive Leadership': { tier: 1, label: 'Executive Leadership', roles: ['managing_director'] },
+    'Management': { tier: 2, label: 'Management', roles: ['admin', 'systems_admin'] },
+    'Legal Practice': { tier: 3, label: 'Legal Practice', roles: ['attorney'] },
+    'Support Staff': { tier: 4, label: 'Support Staff', roles: ['paralegal'] },
   };
 
   const roleLabels: Record<string, string> = {
-    managing_director: 'Managing Director', senior_partner: 'Senior Partner',
-    associate: 'Associate', paralegal: 'Paralegal', legal_officer: 'Legal Officer',
-    supervising_officer: 'Supervising Officer', senior_consultant: 'Senior Consultant',
-    consultant: 'Consultant', candidate_attorney: 'Candidate Attorney',
-    hr_manager: 'HR Manager', finance_manager: 'Finance Manager',
-    office_administrator: 'Office Admin', systems_admin: 'Systems Admin',
-    receptionist: 'Receptionist',
+    managing_director: 'Managing Director', admin: 'Admin',
+    attorney: 'Attorney', paralegal: 'Paralegal',
+    systems_admin: 'Systems Admin', client: 'Client',
   };
 
+  const tierIcons: Record<number, React.ReactNode> = {
+    1: <Crown className="w-5 h-5" />,
+    2: <Shield className="w-5 h-5" />,
+    3: <Gavel className="w-5 h-5" />,
+    4: <Briefcase className="w-5 h-5" />,
+  };
+
+  const tierColors: Record<number, string> = {
+    1: 'bg-[#c9a84c] text-[#0c1e3c]',
+    2: 'bg-[#0c1e3c] text-[#c9a84c]',
+    3: 'bg-blue-600 text-white',
+    4: 'bg-emerald-600 text-white',
+  };
+
+  const sortedHierarchy = Object.entries(hierarchy).sort((a, b) => a[1].tier - b[1].tier);
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-[#0c1e3c]">Organizational Structure</h2>
-        <p className="text-sm text-slate-500">Infinity Legal (Pty) Ltd - Hierarchical Order</p>
+    <div className="space-y-6 animate-fade-in-up">
+      {/* Header with gold left-border accent */}
+      <div className="flex items-center justify-between">
+        <div className="border-l-2 border-[#c9a84c] pl-4">
+          <h2 className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>Organizational Structure</h2>
+          <p className="text-sm text-slate-500 mt-0.5">Infinity Legal (Pty) Ltd — Hierarchical Order</p>
+        </div>
+        <Badge className="bg-[#c9a84c]/10 text-[#a88832] text-[10px] font-semibold border-0">
+          <Users className="w-3 h-3 mr-1" />
+          {staff.length} Members
+        </Badge>
       </div>
 
-      <div className="space-y-4">
-        {Object.entries(hierarchy).sort((a, b) => a[1].tier - b[1].tier).map(([key, group]) => {
+      {/* Hierarchy tree */}
+      <div className="space-y-0 stagger-children">
+        {sortedHierarchy.map(([key, group], idx) => {
           const members = staff.filter(s => group.roles.includes(s.role));
           return (
             <div key={key} className="relative">
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  group.tier === 1 ? 'bg-[#c9a84c] text-[#0c1e3c]' :
-                  group.tier === 2 ? 'bg-[#0c1e3c] text-[#c9a84c]' :
-                  group.tier === 3 ? 'bg-blue-100 text-blue-700' :
-                  group.tier === 4 ? 'bg-emerald-100 text-emerald-700' :
-                  'bg-slate-100 text-slate-700'
-                }`}>
-                  {group.tier === 1 ? <Crown className="w-5 h-5" /> :
-                   group.tier === 2 ? <Shield className="w-5 h-5" /> :
-                   group.tier === 3 ? <Gavel className="w-5 h-5" /> :
-                   group.tier === 4 ? <Briefcase className="w-5 h-5" /> :
-                   <Building className="w-5 h-5" />}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#0c1e3c]">{group.label}</h3>
-                  <p className="text-[10px] text-slate-500">Tier {group.tier} · {members.length} members</p>
-                </div>
-              </div>
-              <div className="ml-5 pl-5 border-l-2 border-[#c9a84c]/30 space-y-2">
-                {members.map(m => (
-                  <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg bg-white border hover:shadow-sm">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="bg-[#0c1e3c] text-[#c9a84c] text-[10px]">
-                        {m.full_name?.split(' ').map(n => n[0]).join('') || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-[#0c1e3c]">{m.full_name}</div>
-                      <div className="text-[10px] text-slate-500">{roleLabels[m.role] || m.role.replace(/_/g, ' ')}</div>
-                    </div>
-                    {m.supervisor && (
-                      <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                        <ArrowUpRight className="w-3 h-3" />
-                        {m.supervisor.full_name}
-                      </div>
-                    )}
+              {/* Connecting line between tiers using divider-gold */}
+              {idx > 0 && (
+                <div className="flex items-center justify-center py-1">
+                  <div className="flex flex-col items-center">
+                    <div className="w-[2px] h-4 bg-gradient-to-b from-[#c9a84c]/30 to-[#c9a84c]/15" />
+                    <ChevronRight className="w-3 h-3 text-[#c9a84c]/40 rotate-90 -mt-1" />
                   </div>
-                ))}
-                {members.length === 0 && (
-                  <p className="text-sm text-slate-400 italic p-2">No staff members in this tier</p>
-                )}
+                </div>
+              )}
+
+              {/* Role group container */}
+              <div className="card-premium p-0 overflow-visible">
+                {/* Tier header band */}
+                <div className={`flex items-center gap-3 px-5 py-3 ${
+                  group.tier === 1 ? 'gradient-gold-subtle' :
+                  group.tier === 2 ? 'bg-[#0c1e3c]/5' :
+                  group.tier === 3 ? 'bg-blue-50/50' :
+                  'bg-emerald-50/50'
+                }`}>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${tierColors[group.tier] || 'bg-slate-100 text-slate-700'}`}>
+                    {tierIcons[group.tier] || <Building className="w-5 h-5" />}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-[#0c1e3c] text-sm">{group.label}</h3>
+                    <p className="text-[10px] text-slate-500">Tier {group.tier} · {members.length} {members.length === 1 ? 'member' : 'members'}</p>
+                  </div>
+                  {group.tier === 1 && (
+                    <Badge className="bg-[#c9a84c]/15 text-[#a88832] text-[9px] font-semibold border-0">
+                      <Star className="w-2.5 h-2.5 mr-0.5" /> Leadership
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Members row — horizontal band */}
+                <div className="px-5 py-3">
+                  {members.length > 0 ? (
+                    <div className="flex flex-wrap gap-2.5">
+                      {members.map(m => (
+                        <div key={m.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white border border-slate-100 hover:border-[#c9a84c]/30 hover:shadow-sm transition-all duration-200 group/card">
+                          <Avatar className={`w-7 h-7 ${group.tier === 1 ? 'ring-2 ring-[#c9a84c]/40 ring-offset-1 ring-offset-white' : ''}`}>
+                            <AvatarFallback className={`text-[9px] font-bold ${
+                              group.tier === 1 ? 'bg-[#c9a84c] text-[#0c1e3c]' :
+                              group.tier === 2 ? 'bg-[#0c1e3c] text-[#c9a84c]' :
+                              group.tier === 3 ? 'bg-blue-100 text-blue-700' :
+                              'bg-emerald-100 text-emerald-700'
+                            }`}>
+                              {m.full_name?.split(' ').map(n => n[0]).join('') || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-xs font-medium text-[#0c1e3c] group-hover/card:text-[#a88832] transition-colors">{m.full_name}</div>
+                            <div className="text-[9px] text-slate-400">{roleLabels[m.role] || m.role.replace(/_/g, ' ')}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-xs text-slate-400 italic">No staff members in this tier</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -1813,85 +2411,155 @@ function OrgChartView({ staff }: { staff: StaffMember[] }) {
 // ============================================
 function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | null }) {
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-[#0c1e3c]">Analytics Dashboard</h2>
-        <p className="text-sm text-slate-500">Firm performance metrics and insights</p>
+    <div className="space-y-6 animate-fade-in-up">
+      {/* Header with gold left-border accent */}
+      <div className="flex items-center justify-between">
+        <div className="border-l-2 border-[#c9a84c] pl-4">
+          <h2 className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>Analytics Dashboard</h2>
+          <p className="text-sm text-slate-500 mt-0.5">Firm performance metrics and insights</p>
+        </div>
+        <button className="btn-gold px-4 py-2 text-xs flex items-center gap-2">
+          <FileText className="w-3.5 h-3.5" />
+          Generate Report
+        </button>
       </div>
 
       {stats && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Stats overview grid — stat-card */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger-children">
             {[
-              { label: 'Total Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(2)}M`, icon: DollarSign, color: 'bg-[#c9a84c]/10 text-[#a88832]' },
-              { label: 'Active Cases', value: stats.activeCases, icon: FolderKanban, color: 'bg-blue-50 text-blue-700' },
-              { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'bg-emerald-50 text-emerald-700' },
-              { label: 'Total Clients', value: stats.totalClients, icon: Users, color: 'bg-purple-50 text-purple-700' },
+              { label: 'Total Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(2)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
+              { label: 'Active Cases', value: stats.activeCases, icon: FolderKanban, color: 'text-emerald-700 bg-emerald-50', border: 'border-l-emerald-500' },
+              { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-700 bg-purple-50', border: 'border-l-purple-500' },
+              { label: 'Total Clients', value: stats.totalClients, icon: Users, color: 'text-blue-700 bg-blue-50', border: 'border-l-blue-500' },
             ].map(card => (
-              <Card key={card.label}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${card.color}`}>
-                      <card.icon className="w-5 h-5" />
+              <div key={card.label} className={`stat-card border-l-4 ${card.border}`}>
+                <div className="flex items-start justify-between">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
+                    <card.icon className="w-4 h-4" />
+                  </div>
+                  {card.trend && (
+                    <div className="flex items-center gap-0.5 text-emerald-600 text-[10px] font-semibold">
+                      <ArrowUpRight className="w-3 h-3" />
+                      <span>12%</span>
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-2xl font-bold text-[#0c1e3c]">{card.value}</div>
-                    <div className="text-xs text-slate-500">{card.label}</div>
-                  </div>
-                </CardContent>
-              </Card>
+                  )}
+                </div>
+                <div className="mt-3">
+                  <div className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">{card.label}</div>
+                </div>
+              </div>
             ))}
           </div>
 
+          {/* Charts area */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold text-[#0c1e3c]">Case Status Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { status: 'Active', count: stats.activeCases, total: stats.totalCases || 1, color: 'bg-emerald-500' },
-                    { status: 'Pending Review', count: stats.pendingCases, total: stats.totalCases || 1, color: 'bg-amber-500' },
-                    { status: 'Closed', count: stats.closedCases, total: stats.totalCases || 1, color: 'bg-slate-400' },
-                  ].map(item => (
-                    <div key={item.status} className="flex items-center gap-3">
-                      <span className="text-sm text-slate-600 w-28">{item.status}</span>
-                      <div className="flex-1 bg-slate-100 rounded-full h-2">
-                        <div className={`${item.color} rounded-full h-2`} style={{ width: `${(item.count / item.total) * 100}%` }} />
-                      </div>
-                      <span className="text-sm font-medium text-[#0c1e3c] w-8 text-right">{item.count}</span>
-                    </div>
-                  ))}
+            {/* Case Status Distribution — refined horizontal bars */}
+            <div className="card-premium">
+              <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
+                  <h3 className="text-sm font-semibold text-[#0c1e3c]">Case Status Distribution</h3>
                 </div>
-              </CardContent>
-            </Card>
+                <span className="text-[10px] text-slate-400">{stats.totalCases} total</span>
+              </div>
+              <div className="p-4 space-y-4">
+                {[
+                  { status: 'Active', count: stats.activeCases, total: stats.totalCases || 1, from: 'from-emerald-500', to: 'to-emerald-400', dot: 'bg-emerald-500' },
+                  { status: 'Pending Review', count: stats.pendingCases, total: stats.totalCases || 1, from: 'from-amber-500', to: 'to-amber-400', dot: 'bg-amber-500' },
+                  { status: 'Closed', count: stats.closedCases, total: stats.totalCases || 1, from: 'from-slate-400', to: 'to-slate-300', dot: 'bg-slate-400' },
+                ].map(item => {
+                  const pct = Math.round((item.count / item.total) * 100);
+                  return (
+                    <div key={item.status} className="group hover:bg-slate-50/50 rounded-lg -mx-1 px-1 py-1 transition-colors duration-150">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${item.dot}`} />
+                          <span className="text-xs font-medium text-slate-700">{item.status}</span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-[#0c1e3c]">{pct}% <span className="text-slate-400 font-normal">({item.count})</span></span>
+                      </div>
+                      <div className="bg-slate-100 rounded-full h-[6px] overflow-hidden">
+                        <div className={`bg-gradient-to-r ${item.from} ${item.to} rounded-full h-[6px] transition-all duration-500`} style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold text-[#0c1e3c]">Task Overview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { status: 'Pending', count: stats.pendingTasks, color: 'bg-amber-500' },
-                    { status: 'Overdue', count: stats.overdueTasks, color: 'bg-red-500' },
-                    { status: 'Documents', count: stats.totalDocuments, color: 'bg-blue-500' },
-                  ].map(item => (
-                    <div key={item.status} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${item.color}`} />
-                        <span className="text-sm text-slate-700">{item.status}</span>
-                      </div>
-                      <span className="text-sm font-medium text-[#0c1e3c]">{item.count}</span>
-                    </div>
-                  ))}
+            {/* Task Overview */}
+            <div className="card-premium">
+              <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
+                  <h3 className="text-sm font-semibold text-[#0c1e3c]">Task Overview</h3>
                 </div>
-              </CardContent>
-            </Card>
+                <span className="text-[10px] text-slate-400">{stats.pendingTasks + stats.overdueTasks} open</span>
+              </div>
+              <div className="p-4 space-y-3">
+                {[
+                  { status: 'Pending Tasks', count: stats.pendingTasks, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-l-amber-400' },
+                  { status: 'Overdue Tasks', count: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', border: 'border-l-red-400' },
+                  { status: 'Total Documents', count: stats.totalDocuments, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-l-blue-400' },
+                  { status: 'Attorneys', count: stats.totalAttorneys, icon: Users, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]' },
+                ].map(item => (
+                  <div key={item.status} className={`flex items-center justify-between p-3 rounded-xl border-l-4 ${item.border} ${item.bg} hover:shadow-sm transition-all duration-200`}>
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.bg}`}>
+                        <item.icon className={`w-4 h-4 ${item.color}`} />
+                      </div>
+                      <span className="text-xs font-medium text-slate-700">{item.status}</span>
+                    </div>
+                    <span className="text-lg font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{item.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Revenue card — bottom row */}
+          <div className="card-navy p-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-[#c9a84c]/15 flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-[#c9a84c]" />
+              </div>
+              <div>
+                <p className="text-[#8fa4c4] text-xs uppercase tracking-wider font-medium">Total Revenue</p>
+                <p className="text-2xl font-bold text-white mt-0.5" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>R{(stats.totalRevenue / 1000000).toFixed(2)}M</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="flex items-center gap-1 text-emerald-400 text-xs font-semibold">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  +12.3%
+                </div>
+                <p className="text-[9px] text-[#7a94b8] mt-0.5">vs last quarter</p>
+              </div>
+              <button className="btn-gold px-3.5 py-2 text-xs flex items-center gap-1.5">
+                <FileText className="w-3 h-3" />
+                Export
+              </button>
+            </div>
           </div>
         </>
+      )}
+
+      {!stats && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 text-center space-y-2">
+                <Skeleton className="w-8 h-8 rounded-lg mx-auto" />
+                <Skeleton className="h-5 w-16 mx-auto" />
+                <Skeleton className="h-3 w-12 mx-auto" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -1901,64 +2569,106 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
 // PRICING VIEW
 // ============================================
 function PricingView({ plans }: { plans: any[] }) {
-  const planColorMap: Record<string, { color: string; buttonColor: string; badge: string | null; popular?: boolean }> = {
-    civil_legal_plan: { color: 'border-slate-200', buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]', badge: null },
-    labour_legal_plan: { color: 'border-[#c9a84c]', buttonColor: 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#a88832]', badge: 'Popular', popular: true },
-    extensive_plan: { color: 'border-slate-200', buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]', badge: 'Best Value' },
+  const planStyleMap: Record<string, { isPopular: boolean; badge: string | null }> = {
+    civil_legal_plan: { isPopular: false, badge: null },
+    labour_legal_plan: { isPopular: true, badge: 'Most Popular' },
+    extensive_plan: { isPopular: false, badge: 'Best Value' },
   };
 
-  const defaultPlanStyle = { color: 'border-slate-200', buttonColor: 'bg-[#0c1e3c] text-white hover:bg-[#132d52]', badge: null };
+  const defaultPlanStyle = { isPopular: false, badge: null };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
+      {/* Header with gold left-border accent */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-[#0c1e3c]">Pricing Plans</h2>
-        <p className="text-slate-500 mt-1">All prices in South African Rand (ZAR). POPIA compliant by default.</p>
+        <div className="inline-block border-l-2 border-[#c9a84c] pl-4 text-left">
+          <h2 className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>Pricing Plans</h2>
+          <p className="text-sm text-slate-500 mt-0.5">All prices in South African Rand (ZAR). POPIA compliant by default.</p>
+        </div>
       </div>
 
       {plans.length === 0 ? (
-        <div className="text-center py-12 text-sm text-slate-400">
-          <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p>No pricing plans available</p>
+        <div className="text-center py-16">
+          <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+            <DollarSign className="w-8 h-8 text-slate-300" />
+          </div>
+          <p className="text-sm text-slate-400 font-medium">No pricing plans available</p>
+          <p className="text-[11px] text-slate-300 mt-1">Plans will appear here when configured</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
           {plans.map(plan => {
-            const style = planColorMap[plan.slug] || defaultPlanStyle;
+            const style = planStyleMap[plan.slug] || defaultPlanStyle;
             const features = Array.isArray(plan.features) ? plan.features : [];
+            const isPopular = style.isPopular;
+
             return (
-              <Card key={plan.id} className={`relative ${style.color} ${style.popular ? 'ring-2 ring-[#c9a84c]' : ''} border-2`}>
+              <div key={plan.id} className={`relative ${isPopular ? 'card-navy p-0' : 'card-premium p-0'} ${isPopular ? 'ring-2 ring-[#c9a84c]/40' : ''}`}>
+                {/* Badge */}
                 {style.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-emerald-600 text-[10px]">{style.badge}</Badge>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <span className={`px-3 py-0.5 rounded-full text-[10px] font-semibold ${
+                      isPopular ? 'bg-[#c9a84c] text-[#0c1e3c]' : 'bg-emerald-600 text-white'
+                    }`}>
+                      {style.badge}
+                    </span>
                   </div>
                 )}
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-[#0c1e3c]">{plan.name}</h3>
-                  <div className="mt-2">
-                    <span className="text-3xl font-bold text-[#0c1e3c]">R{Math.round(plan.price_monthly)}</span>
-                    <span className="text-slate-500 text-sm">/month</span>
+
+                <div className="p-6">
+                  {/* Plan name */}
+                  <h3 className={`font-semibold text-base ${isPopular ? 'text-white' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
+
+                  {/* Price display — large serif font */}
+                  <div className="mt-3 flex items-baseline gap-1">
+                    <span className={`text-4xl font-bold ${isPopular ? 'text-[#c9a84c]' : 'text-[#0c1e3c]'}`} style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+                      R{Math.round(plan.price_monthly)}
+                    </span>
+                    <span className={`text-sm ${isPopular ? 'text-[#8fa4c4]' : 'text-slate-400'}`}>/month</span>
                   </div>
+
+                  {/* Annual savings */}
                   {plan.price_annual && (
-                    <p className="text-xs text-emerald-600 mt-0.5">R{Math.round(plan.price_annual)}/year — save {Math.round((1 - plan.price_annual / (plan.price_monthly * 12)) * 100)}%</p>
+                    <p className={`text-xs mt-1 ${isPopular ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                      R{Math.round(plan.price_annual)}/year — save {Math.round((1 - plan.price_annual / (plan.price_monthly * 12)) * 100)}%
+                    </p>
                   )}
+
+                  {/* Plan limits */}
                   {plan.max_cases && (
-                    <p className="text-xs text-slate-500 mt-1">Up to {plan.max_cases} cases · {plan.max_documents || '∞'} documents</p>
+                    <p className={`text-xs mt-2 ${isPopular ? 'text-[#7a94b8]' : 'text-slate-400'}`}>
+                      Up to {plan.max_cases} cases · {plan.max_documents || '∞'} documents
+                    </p>
                   )}
-                  <Separator className="my-4" />
-                  <ul className="space-y-2">
+
+                  {/* Divider */}
+                  <div className={`my-4 ${isPopular ? 'divider-gold' : 'h-px bg-slate-100'}`} />
+
+                  {/* Features list — checkmark with gold accents */}
+                  <ul className="space-y-2.5">
                     {features.map((f: string, i: number) => (
-                      <li key={i} className="flex items-center gap-2 text-xs text-slate-600">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c] flex-shrink-0" />
-                        {f}
+                      <li key={i} className={`flex items-start gap-2.5 text-xs ${isPopular ? 'text-[#c4d4e8]' : 'text-slate-600'}`}>
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          isPopular ? 'bg-[#c9a84c]/20' : 'bg-[#c9a84c]/10'
+                        }`}>
+                          <CheckCircle2 className={`w-3 h-3 ${isPopular ? 'text-[#c9a84c]' : 'text-[#a88832]'}`} />
+                        </div>
+                        <span>{f}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button className={`w-full mt-4 ${style.buttonColor}`} size="sm" onClick={() => toast.success(`${plan.name} selected! Redirecting to signup...`)}>
-                    Get Started — {plan.name}
-                  </Button>
-                </CardContent>
-              </Card>
+
+                  {/* CTA button */}
+                  <button
+                    className={`w-full mt-5 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                      isPopular ? 'btn-gold' : 'btn-navy'
+                    }`}
+                    onClick={() => toast.success(`${plan.name} selected! Redirecting to signup...`)}
+                  >
+                    {isPopular ? 'Get Started' : `Choose ${plan.name}`}
+                  </button>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -1971,6 +2681,7 @@ function PricingView({ plans }: { plans: any[] }) {
 // ASK INFINITY - Floating Chat Bubble
 // ============================================
 function AskInfinityBubble() {
+  const { accessToken } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; provider?: string }[]>([
     { role: 'assistant', content: 'Sawubona! 👋 I\'m Ask Infinity — your AI legal assistant for South African law. How can I help you today?', provider: 'system' },
@@ -1995,12 +2706,11 @@ function AskInfinityBubble() {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('il_token');
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({ message: trimmed, sessionId: sessionIdRef.current }),
       });
@@ -2041,39 +2751,51 @@ function AskInfinityBubble() {
 
   return (
     <>
-      {/* Floating bubble */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] shadow-lg hover:shadow-xl transition-all flex items-center justify-center group"
-        aria-label="Ask Infinity - AI Legal Assistant"
-      >
-        {isOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <div className="relative">
-            <MessageSquare className="w-6 h-6" />
-            <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-[#0c1e3c] animate-pulse" />
+      {/* Floating bubble — gold gradient with pulse */}
+      <div className="fixed bottom-6 right-6 z-50 group/bubble">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative w-14 h-14 rounded-full bg-gradient-to-br from-[#c9a84c] via-[#d4b85c] to-[#a88832] text-[#0c1e3c] shadow-lg hover:shadow-xl hover:shadow-[#c9a84c]/20 transition-all duration-300 flex items-center justify-center animate-pulse-gold"
+          aria-label="Ask Infinity - AI Legal Assistant"
+        >
+          {isOpen ? (
+            <X className="w-6 h-6" />
+          ) : (
+            <div className="relative">
+              <MessageSquare className="w-6 h-6" />
+              <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-[#0c1e3c] animate-pulse" />
+            </div>
+          )}
+        </button>
+        {/* Tooltip on hover */}
+        {!isOpen && (
+          <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover/bubble:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <div className="bg-[#0c1e3c] text-white text-[10px] font-medium px-2.5 py-1 rounded-lg shadow-lg whitespace-nowrap">
+              Ask Infinity
+              <div className="absolute -bottom-1 right-5 w-2 h-2 bg-[#0c1e3c] rotate-45" />
+            </div>
           </div>
         )}
-      </button>
+      </div>
 
-      {/* Chat popup */}
+      {/* Chat popup — premium dialog */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] bg-[#132d52] rounded-2xl border border-[#1a3358] shadow-2xl flex flex-col overflow-hidden" style={{ height: '520px' }}>
+        <div className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] card-premium flex flex-col overflow-hidden animate-scale-in" style={{ height: '520px' }}>
           {/* Header */}
-          <div className="p-3 border-b border-[#1a3358] flex items-center justify-between bg-[#0c1e3c] flex-shrink-0">
+          <div className="p-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-gradient-to-r from-[#0c1e3c] to-[#132d52] rounded-t-2xl">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#c9a84c] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-[#0c1e3c]" />
+              {/* AI avatar — navy circle with gold sparkle */}
+              <div className="w-9 h-9 rounded-full bg-[#0c1e3c] border-2 border-[#c9a84c]/40 flex items-center justify-center shadow-inner">
+                <Sparkles className="w-4 h-4 text-[#c9a84c]" />
               </div>
               <div>
                 <span className="text-white font-semibold text-sm">Ask Infinity</span>
                 <div className="flex items-center gap-1.5">
-                  <p className="text-[9px] text-[#8fa4c4]">AI Legal Assistant • SA Law</p>
+                  <p className="text-[9px] text-[#8fa4c4]">AI Legal Assistant · SA Law</p>
                   {lastProvider && providerLabel[lastProvider] && (
-                    <Badge className="text-[7px] bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/30 h-3.5 px-1 font-normal">
+                    <span className="text-[7px] bg-[#c9a84c]/20 text-[#c9a84c] px-1.5 py-0.5 rounded-full font-medium">
                       {providerLabel[lastProvider]}
-                    </Badge>
+                    </span>
                   )}
                 </div>
               </div>
@@ -2081,7 +2803,7 @@ function AskInfinityBubble() {
             <div className="flex items-center gap-1">
               <button
                 onClick={clearChat}
-                className="text-[#7a94b8] hover:text-[#c9a84c] p-1 hover:bg-[#132d52] rounded-lg transition-colors"
+                className="text-[#7a94b8] hover:text-[#c9a84c] p-1.5 hover:bg-white/10 rounded-lg transition-colors duration-200"
                 title="Clear chat"
                 aria-label="Clear chat history"
               >
@@ -2089,7 +2811,7 @@ function AskInfinityBubble() {
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-[#7a94b8] hover:text-white p-1 hover:bg-[#132d52] rounded-lg transition-colors"
+                className="text-[#7a94b8] hover:text-white p-1.5 hover:bg-white/10 rounded-lg transition-colors duration-200"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2097,22 +2819,24 @@ function AskInfinityBubble() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-gradient-to-b from-slate-50 to-white custom-scrollbar">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-xl px-3 py-2 ${
+                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
                   msg.role === 'user'
-                    ? 'bg-[#c9a84c]/15 border border-[#c9a84c]/25 text-[#e0c97a]'
-                    : 'bg-[#0c1e3c] border border-[#1a3358] text-[#8fa4c4]'
+                    ? 'bg-gradient-to-r from-[#0c1e3c] to-[#132d52] text-white shadow-sm'
+                    : 'bg-white border border-slate-100 text-slate-700 shadow-sm'
                 }`}>
                   {msg.role === 'assistant' && (
-                    <div className="flex items-center gap-1 mb-1">
-                      <Sparkles className="w-2.5 h-2.5 text-[#c9a84c]" />
-                      <span className="text-[9px] font-medium text-[#c9a84c]">Ask Infinity</span>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <div className="w-4 h-4 rounded-full bg-[#0c1e3c] flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-2 h-2 text-[#c9a84c]" />
+                      </div>
+                      <span className="text-[9px] font-semibold text-[#0c1e3c]">Ask Infinity</span>
                       {msg.provider && providerLabel[msg.provider] && msg.provider !== 'system' && (
-                        <Badge className="text-[7px] bg-[#1a3358] text-[#7a94b8] border-0 h-3 px-1 font-normal ml-1">
+                        <span className="text-[7px] bg-[#c9a84c]/10 text-[#a88832] px-1 py-0.5 rounded font-medium ml-0.5">
                           {providerLabel[msg.provider]}
-                        </Badge>
+                        </span>
                       )}
                     </div>
                   )}
@@ -2122,10 +2846,17 @@ function AskInfinityBubble() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-[#0c1e3c] border border-[#1a3358] rounded-xl px-3 py-2">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles className="w-2.5 h-2.5 text-[#c9a84c] animate-pulse" />
-                    <span className="text-xs text-[#7a94b8]">Thinking...</span>
+                <div className="bg-white border border-slate-100 rounded-2xl px-3.5 py-2.5 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-[#0c1e3c] flex items-center justify-center">
+                      <Sparkles className="w-2 h-2 text-[#c9a84c] animate-pulse" />
+                    </div>
+                    <span className="text-xs text-slate-500">Thinking...</span>
+                    <div className="flex gap-0.5">
+                      <div className="w-1 h-1 rounded-full bg-[#c9a84c] animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-1 h-1 rounded-full bg-[#c9a84c] animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-1 h-1 rounded-full bg-[#c9a84c] animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2134,22 +2865,22 @@ function AskInfinityBubble() {
           </div>
 
           {/* POPIA + Free AI badges */}
-          <div className="px-3 py-1.5 bg-[#0a1628] flex items-center justify-between flex-shrink-0">
+          <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2">
-              <Badge className="text-[7px] bg-[#0c1e3c] text-[#7a94b8] border-[#1a3358] h-4 px-1.5">
-                <Shield className="w-2 h-2 mr-0.5" />
+              <span className="text-[7px] bg-[#0c1e3c]/5 text-slate-500 px-1.5 py-0.5 rounded font-medium flex items-center gap-0.5">
+                <Shield className="w-2 h-2" />
                 POPIA
-              </Badge>
-              <Badge className="text-[7px] bg-[#c9a84c]/10 text-[#c9a84c] border-[#c9a84c]/20 h-4 px-1.5">
-                <Zap className="w-2 h-2 mr-0.5" />
-                Powered by Free AI
-              </Badge>
+              </span>
+              <span className="text-[7px] bg-[#c9a84c]/10 text-[#a88832] px-1.5 py-0.5 rounded font-medium flex items-center gap-0.5">
+                <Zap className="w-2 h-2" />
+                Free AI
+              </span>
             </div>
-            <span className="text-[7px] text-[#5a7199]">Not legal advice</span>
+            <span className="text-[7px] text-slate-400">Not legal advice</span>
           </div>
 
           {/* Input */}
-          <div className="p-2.5 border-t border-[#1a3358] bg-[#0c1e3c] flex-shrink-0">
+          <div className="p-2.5 border-t border-slate-100 bg-white flex-shrink-0 rounded-b-2xl">
             <div className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -2159,18 +2890,17 @@ function AskInfinityBubble() {
                 onKeyDown={e => e.key === 'Enter' && sendMessage()}
                 placeholder="Ask me anything about SA law..."
                 aria-label="Type your legal question for Ask Infinity"
-                className="flex-1 bg-[#132d52] border border-[#1a3358] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5a7199] focus:outline-none focus:border-[#c9a84c] transition-colors"
+                className="flex-1 input-premium px-3 py-2 text-xs rounded-lg"
                 disabled={isLoading}
                 maxLength={2000}
               />
-              <Button
-                size="sm"
+              <button
                 onClick={sendMessage}
                 disabled={isLoading || !input.trim()}
-                className="bg-[#c9a84c] hover:bg-[#a88832] text-[#0c1e3c] disabled:opacity-50 h-8 w-8 p-0"
+                className="btn-gold h-8 w-8 p-0 flex items-center justify-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-3.5 h-3.5" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>

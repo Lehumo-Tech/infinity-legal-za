@@ -4,9 +4,23 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth, checkRateLimit } from '@/lib/middleware';
+import { aiChatRateLimiter } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth required for ASR
+    const authResult = await requireAuth(request);
+    if (!authResult.authenticated) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Rate limiting for expensive audio transcription
+    const rateResult = await checkRateLimit(request, aiChatRateLimiter);
+    if (!rateResult.allowed) {
+      return NextResponse.json({ success: false, error: 'Rate limit exceeded. Please wait a moment.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { audio_base64 } = body;
 

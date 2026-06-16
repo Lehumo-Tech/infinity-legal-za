@@ -12,14 +12,14 @@ export function LeadsView({ leads, page, total, onPageChange, onRefresh, loading
     new: 'bg-blue-50 text-blue-700 border-blue-100', contacted: 'bg-amber-50 text-amber-700 border-amber-100',
     qualified: 'bg-emerald-50 text-emerald-700 border-emerald-100', consultation_scheduled: 'bg-purple-50 text-purple-700 border-purple-100',
     retained: 'bg-teal-50 text-teal-700 border-teal-100', lost: 'bg-red-50 text-red-700 border-red-100',
-    disqualified: 'bg-slate-50 text-slate-500 border-slate-100',
+    nurturing: 'bg-slate-50 text-slate-500 border-slate-100',
   };
 
   const pipelineColors: Record<string, string> = {
     new: 'text-blue-600', contacted: 'text-amber-600',
     qualified: 'text-emerald-600', consultation_scheduled: 'text-purple-600',
     retained: 'text-teal-600', lost: 'text-red-600',
-    disqualified: 'text-slate-500',
+    nurturing: 'text-slate-500',
   };
 
   const scoreColor = (score: number) => {
@@ -42,7 +42,7 @@ export function LeadsView({ leads, page, total, onPageChange, onRefresh, loading
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-        {['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'disqualified'].map(status => {
+        {['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'nurturing'].map(status => {
           const count = leads.filter(l => l.status === status).length;
           return (
             <div key={status} className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-sm text-center">
@@ -76,7 +76,7 @@ export function LeadsView({ leads, page, total, onPageChange, onRefresh, loading
                 ) : (
                   leads.map(l => (
                   <tr key={l.id} className="border-b hover:bg-[#f7f8fa] transition-colors">
-                    <td className="p-2.5 font-medium text-[#0c1e3c]">{l.name}</td>
+                    <td className="p-2.5 font-medium text-[#0c1e3c]">{[l.first_name, l.last_name].filter(Boolean).join(' ') || l.name || '-'}</td>
                     <td className="p-2.5 text-slate-600">{l.email}</td>
                     <td className="p-2.5"><Badge variant="outline" className="text-[9px] border-slate-200 text-slate-600 capitalize">{l.source?.replace(/_/g, ' ')}</Badge></td>
                     <td className="p-2.5"><Badge className={`text-[9px] border ${statusColors[l.status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{(l.status || '').replace(/_/g, ' ')}</Badge></td>

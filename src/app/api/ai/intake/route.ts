@@ -10,51 +10,55 @@
 
 import { NextRequest } from 'next/server';
 import { analyzeIntake } from '@/lib/llm-service';
-import { db } from '@/lib/db';
+import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError, checkRateLimit, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { authRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { isStaff, type RoleKey } from '@/lib/auth';
-import { randomBytes } from 'crypto';
 
 // ============================================
 // HELPERS
 // ============================================
 
-function generateReferenceId(): string {
-  const prefix = 'ILS'; // Infinity Legal Submission
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = randomBytes(3).toString('hex').toUpperCase();
-  return `${prefix}-${timestamp}-${random}`;
-}
-
 const VALID_CASE_TYPES = [
-  'family_law',
-  'criminal_defence',
-  'civil_litigation',
-  'conveyancing',
-  'estate_planning',
-  'corporate_commercial',
-  'debt_collection',
+  'civil',
+  'criminal',
+  'family',
+  'corporate',
+  'property',
+  'labour',
   'immigration',
-  'labour_law',
+  'intellectual_property',
+  'tax',
   'personal_injury',
+  'debt_recovery',
   'other',
 ] as const;
 
 const VALID_URGENCY_LEVELS = ['low', 'medium', 'high', 'critical'] as const;
 
-// Map display names to internal case type values
+// Map display names / old values to schema case type values
 const CASE_TYPE_MAP: Record<string, string> = {
-  'Family Law': 'family_law',
-  'Criminal Defence': 'criminal_defence',
-  'Civil Litigation': 'civil_litigation',
-  'Conveyancing': 'conveyancing',
-  'Estate Planning': 'estate_planning',
-  'Corporate Commercial': 'corporate_commercial',
-  'Labour Law': 'labour_law',
-  'Debt Collection': 'debt_collection',
+  'Family Law': 'family',
+  'family_law': 'family',
+  'Criminal Defence': 'criminal',
+  'criminal_defence': 'criminal',
+  'Civil Litigation': 'civil',
+  'civil_litigation': 'civil',
+  'Conveyancing': 'property',
+  'Estate Planning': 'property',
+  'estate_planning': 'property',
+  'Corporate Commercial': 'corporate',
+  'corporate_commercial': 'corporate',
+  'Labour Law': 'labour',
+  'labour_law': 'labour',
+  'Debt Collection': 'debt_recovery',
+  'debt_collection': 'debt_recovery',
   'Immigration': 'immigration',
   'Personal Injury': 'personal_injury',
+  'personal_injury': 'personal_injury',
+  'Tax': 'tax',
+  'Intellectual Property': 'intellectual_property',
+  'Property': 'property',
   'Other': 'other',
 };
 
@@ -64,6 +68,7 @@ const CASE_TYPE_MAP: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -112,6 +117,7 @@ export async function POST(request: NextRequest) {
     let aiAnalysis: string;
     let aiProvider = 'none';
     let aiModel = 'none';
+    let aiConfidence: number | null = null;
 
     try {
       const result = await analyzeIntake({
@@ -124,6 +130,7 @@ export async function POST(request: NextRequest) {
       aiAnalysis = result.content || 'AI analysis could not be generated at this time. Our team will review your submission manually.';
       aiProvider = result.provider;
       aiModel = result.model;
+      aiConfidence = result.tokensUsed ? 0.85 : null; // placeholder confidence
     } catch (aiError) {
       console.error('AI intake analysis failed:', aiError);
       aiAnalysis =
@@ -131,21 +138,30 @@ export async function POST(request: NextRequest) {
     }
 
     // ---- Save to Database ----
-    const referenceId = generateReferenceId();
-
+    // Schema: intake_submissions uses case_description, personal_info (JSONB), ai_extracted_data (JSONB), etc.
     const { data: submission, error: insertError } = await db
       .from('intake_submissions')
       .insert({
-        reference_id: referenceId,
-        full_name: sanitizeString(name.trim()),
-        email: email.toLowerCase().trim(),
-        phone: phone ? sanitizeString(phone.trim()) : null,
         case_type: normalizedCaseType,
-        description: sanitizeString(description.trim()),
+        case_description: sanitizeString(description.trim()),
         urgency: urgency || 'medium',
-        consent_given: true,
-        popia_consent: true,
-        ai_analysis: aiAnalysis,
+        personal_info: {
+          full_name: sanitizeString(name.trim()),
+          email: email.toLowerCase().trim(),
+          phone: phone ? sanitizeString(phone.trim()) : null,
+          consent_given: true,
+          popia_consent: true,
+        },
+        case_details: {
+          description: sanitizeString(description.trim()),
+          urgency: urgency || 'medium',
+        },
+        ai_extracted_data: {
+          ai_analysis: aiAnalysis,
+          provider: aiProvider,
+          model: aiModel,
+        },
+        ai_confidence: aiConfidence,
         status: 'submitted',
       })
       .select()
@@ -158,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     return apiResponse(
       {
-        reference_id: submission.reference_id,
+        id: submission.id,
         ai_analysis: aiAnalysis,
         case_type: submission.case_type,
         status: submission.status,
@@ -181,6 +197,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
@@ -205,9 +222,9 @@ export async function GET(request: NextRequest) {
       .from('intake_submissions')
       .select('*', { count: 'exact' });
 
-    // Clients can only see their own submissions (matched by email)
+    // Clients can only see their own submissions (matched by personal_info email)
     if (!isStaffMember) {
-      query = query.eq('email', user.email);
+      query = query.contains('personal_info', { email: user.email });
     }
 
     if (statusFilter) {
@@ -228,20 +245,25 @@ export async function GET(request: NextRequest) {
       return apiError('Failed to retrieve submissions', 500, 'INTAKE_LIST_ERROR');
     }
 
-    // For client view, omit sensitive fields
-    const sanitized = (submissions || []).map((sub: any) => ({
-      id: sub.id,
-      reference_id: sub.reference_id,
-      full_name: isStaffMember ? sub.full_name : undefined,
-      email: isStaffMember ? sub.email : undefined,
-      phone: isStaffMember ? sub.phone : undefined,
-      case_type: sub.case_type,
-      urgency: sub.urgency,
-      ai_analysis: sub.ai_analysis,
-      status: sub.status,
-      created_at: sub.created_at,
-      updated_at: sub.updated_at,
-    }));
+    // Map to response format using actual schema columns
+    const sanitized = (submissions || []).map((sub: Record<string, unknown>) => {
+      const personalInfo = (sub.personal_info || {}) as Record<string, unknown>;
+      const aiData = (sub.ai_extracted_data || {}) as Record<string, unknown>;
+      return {
+        id: sub.id,
+        case_type: sub.case_type,
+        case_description: sub.case_description,
+        urgency: sub.urgency,
+        status: sub.status,
+        full_name: isStaffMember ? personalInfo.full_name : undefined,
+        email: isStaffMember ? personalInfo.email : undefined,
+        phone: isStaffMember ? personalInfo.phone : undefined,
+        ai_analysis: aiData.ai_analysis,
+        ai_confidence: sub.ai_confidence,
+        created_at: sub.created_at,
+        updated_at: sub.updated_at,
+      };
+    });
 
     return apiResponse({
       submissions: sanitized,

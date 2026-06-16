@@ -7,12 +7,12 @@ import {
   Lock, KeyRound, ArrowRight, Menu, X, Send, Bot, Sparkles,
   Scale, MessageSquare, Zap, Globe, Smartphone, Newspaper, Tv,
   Users, Briefcase, Bell, ArrowUpRight, Play, ChevronDown,
-  AlertTriangle, RefreshCw, LayoutDashboard, Phone, Mail, MapPin,
+  AlertTriangle, RefreshCw, LayoutDashboard, Phone, Mail, MapPin, Star, Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PaymentWall } from '@/components/PaymentWall';
+
 
 interface LandingPageProps {
   onSignIn?: () => void;
@@ -78,7 +78,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
     { id: 'ask-ai', label: 'Ask AI' },
     { id: 'campaign', label: 'Campaign' },
     { id: 'app', label: 'App' },
-    { id: 'media', label: 'Media' },
+    { id: 'articles', label: 'Legal Articles' },
     { id: 'pricing', label: 'Pricing' },
   ];
 
@@ -210,46 +210,22 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
               </div>
             </div>
 
-            {/* Right: Floating portal preview — 2/5 */}
+            {/* Right: Official branded creative — 2/5 */}
             <div className="lg:col-span-2 hidden lg:block">
               <div className="relative">
-                {/* Glow behind card */}
-                <div className="absolute -inset-4 bg-[#c9a84c]/[0.06] rounded-3xl blur-2xl" />
-                <div className="relative bg-[#0f2240]/80 backdrop-blur-xl border border-[#1a3a65]/60 rounded-2xl p-5 shadow-2xl shadow-black/30">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-                    <span className="ml-3 text-[10px] text-[#7a8fb0] font-mono">portal.infinitylegal.org</span>
-                  </div>
-                  <div className="space-y-2.5">
-                    {[
-                      { icon: FolderKanban, title: 'Case Management', sub: 'Track all your matters in one place', accent: true },
-                      { icon: MessageSquare, title: 'Secure Messaging', sub: 'Communicate with your attorney', accent: false },
-                      { icon: Bot, title: 'AI-Powered Analysis', sub: 'Instant legal insights on your matter', accent: false },
-                      { icon: Bell, title: 'Deadline Tracking', sub: 'Never miss a court date or filing', accent: false },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 bg-[#0a1628]/60 rounded-lg border border-[#1a3358]/40 hover:border-[#c9a84c]/20 transition-colors">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.accent ? 'bg-[#c9a84c]/15' : 'bg-[#132d52]'}`}>
-                          <item.icon className={`w-4 h-4 ${item.accent ? 'text-[#c9a84c]' : 'text-[#5a7199]'}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium text-white truncate">{item.title}</p>
-                          <p className="text-[10px] text-[#7a8fb0]">{item.sub}</p>
-                        </div>
-                        {item.accent && <div className="w-2 h-2 rounded-full bg-[#c9a84c] animate-pulse" />}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-[#1a3358]/60 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-[#c9a84c]/20 flex items-center justify-center text-[8px] font-bold text-[#c9a84c]">IL</div>
-                      <span className="text-[10px] text-[#7a8fb0]">Your Portal</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[9px] text-[#28c840]">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#28c840]" />Online
-                    </div>
-                  </div>
+                {/* Glow behind image */}
+                <div className="absolute -inset-4 bg-[#c9a84c]/[0.08] rounded-3xl blur-2xl" />
+                <div className="relative rounded-2xl overflow-hidden border border-[#1a3a65]/60 shadow-2xl shadow-black/30">
+                  <Image
+                    src="/images/official/creative-app-hero.png"
+                    alt="Infinity Legal SA — Your Rights, Reinforced. AI-powered legal protection on your phone."
+                    width={600}
+                    height={720}
+                    className="w-full object-cover object-center"
+                    priority
+                  />
+                  {/* Subtle bottom gradient overlay for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/30 via-transparent to-transparent" />
                 </div>
               </div>
             </div>
@@ -280,9 +256,19 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
             {/* Form — 3/5 */}
             <div className="lg:col-span-3">
               <IntakeForm onSignUp={handleSignUpWithEmail} />
+              {/* Official branded creative — below the form on mobile, hidden on lg where timeline is */}
+              <div className="mt-6 lg:hidden relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                <Image
+                  src="/images/official/creative-ai-pocket.png"
+                  alt="Infinity Legal SA — Legal in Your Pocket. AI-powered intake handles the heavy lifting."
+                  width={800}
+                  height={500}
+                  className="w-full object-cover object-center"
+                />
+              </div>
             </div>
 
-            {/* How it works — 2/5, vertical timeline */}
+            {/* How it works + branded creative — 2/5 */}
             <div className="lg:col-span-2">
               <div className="space-y-0">
                 {[
@@ -316,6 +302,18 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                     <p className="text-[12px] text-slate-500 mt-0.5 leading-relaxed">Your information is encrypted and only shared with our legal team if you choose to sign up.</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Official branded creative — AI in your pocket */}
+              <div className="mt-6 relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm hidden lg:block">
+                <Image
+                  src="/images/official/creative-ai-pocket.png"
+                  alt="Infinity Legal SA — Legal in Your Pocket. AI-powered intake handles the heavy lifting."
+                  width={600}
+                  height={380}
+                  className="w-full object-cover object-center"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>
@@ -353,16 +351,16 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
             </h2>
           </div>
 
-          {/* Featured campaign — full-width with image */}
+          {/* Featured campaign — full-width with official branded creative */}
           <article className="group relative overflow-hidden rounded-2xl bg-[#0c1e3c] min-h-[380px] flex flex-col lg:flex-row">
             <div className="absolute inset-0 lg:hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-[#0c1e3c] via-[#0c1e3c]/70 to-transparent" />
             </div>
-            {/* Image side */}
+            {/* Image side — official contract review creative */}
             <div className="relative lg:w-1/2 min-h-[240px] lg:min-h-0 overflow-hidden">
               <Image
-                src="/images/campaign/app-1.webp"
-                alt="Infinity Legal SA App — Know Your Rights Campaign"
+                src="/images/official/creative-contracts.png"
+                alt="Infinity Legal SA — Read before you sign. AI reviews your contracts instantly."
                 fill
                 className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 priority
@@ -376,31 +374,31 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-emerald-300 text-[10px] font-semibold uppercase tracking-wider">Active Campaign</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight">Know Your Rights SA</h3>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight">Read Before You Sign</h3>
               <p className="text-[#8fa4c4] text-sm leading-relaxed max-w-md">
-                Free legal awareness campaign powered by AI. Get clarity on your constitutional rights, labour protections, and consumer rights — no sign-up required.
+                Don&apos;t get trapped by the fine print. Our AI reviews your contracts instantly — highlighting risks, unfair clauses, and missing protections before you commit.
               </p>
               <div className="mt-6">
                 <Button onClick={() => handleSignUpWithEmail()} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg font-semibold group/btn">
-                  Learn More <ArrowUpRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                  Try Free Analysis <ArrowUpRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                 </Button>
               </div>
             </div>
           </article>
 
-          {/* Smaller campaign cards with images */}
+          {/* Smaller campaign cards with official branded creatives */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
             {[
-              { img: '/images/campaign/app-2.webp', title: 'Small Business Legal Shield', desc: 'Affordable protection for SMMEs — contracts, CCMA, and debt collection from R99/month.', tag: 'New', tagColor: 'bg-[#c9a84c]/10 text-[#a88832] border-[#c9a84c]/20' },
-              { img: '/images/campaign/app-3.webp', title: 'Access to Justice Initiative', desc: 'Pro bono consultations for qualifying individuals. Everyone deserves fair representation.', tag: 'Ongoing', tagColor: 'bg-slate-100 text-slate-600 border-slate-200' },
+              { img: '/images/official/creative-tenant-rights.png', title: 'Know Your Tenant Rights', desc: 'AI-powered lease analysis that highlights unfair clauses, missing protections, and your rights as a tenant in South Africa.', tag: 'New', tagColor: 'bg-[#c9a84c]/10 text-[#a88832] border-[#c9a84c]/20' },
+              { img: '/images/official/creative-subscription.png', title: 'Legal Peace of Mind from R99', desc: 'Affordable legal subscription plans for everyone. Get attorney access, document review, and AI-powered legal guidance.', tag: 'Popular', tagColor: 'bg-slate-100 text-slate-600 border-slate-200' },
             ].map((campaign) => (
               <article key={campaign.title} className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 hover:border-[#c9a84c]/30 hover:shadow-lg hover:shadow-slate-100/80 transition-all duration-300">
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-56 overflow-hidden">
                   <Image
                     src={campaign.img}
                     alt={campaign.title}
                     fill
-                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
                   <div className="absolute top-3 right-3">
@@ -467,24 +465,24 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
             {/* Glow behind */}
             <div className="absolute -inset-4 bg-[#c9a84c]/[0.03] rounded-3xl blur-2xl" />
 
-            {/* Main screenshot */}
+            {/* Main showcase — official app hero creative */}
             <div className="relative rounded-2xl overflow-hidden border border-[#1a3a65]/60 shadow-2xl shadow-black/30">
               <Image
-                src="/images/campaign/app-4.webp"
-                alt="Infinity Legal SA App Dashboard"
+                src="/images/official/creative-app-hero.png"
+                alt="Infinity Legal SA — Your Rights, Reinforced. Navigate consumer disputes with AI-powered legal protection."
                 width={1200}
                 height={680}
-                className="w-full object-cover object-top"
+                className="w-full object-cover object-center"
                 priority
               />
             </div>
 
-            {/* Thumbnail row */}
+            {/* Thumbnail row — official branded creatives */}
             <div className="grid grid-cols-3 gap-3 mt-4">
               {[
-                { src: '/images/campaign/app-1.webp', alt: 'Know Your Rights Campaign' },
-                { src: '/images/campaign/app-2.webp', alt: 'Small Business Legal Shield' },
-                { src: '/images/campaign/app-3.webp', alt: 'Access to Justice Initiative' },
+                { src: '/images/official/creative-contracts.png', alt: 'Read Before You Sign — AI Contract Review' },
+                { src: '/images/official/creative-tenant-rights.png', alt: 'Know Your Tenant Rights — Lease Analysis' },
+                { src: '/images/official/creative-subscription.png', alt: 'Legal Peace of Mind from R99/Month' },
               ].map((thumb, i) => (
                 <div key={i} className="relative rounded-xl overflow-hidden border border-[#1a3a65]/40 hover:border-[#c9a84c]/30 transition-colors cursor-pointer group">
                   <Image
@@ -492,7 +490,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                     alt={thumb.alt}
                     width={400}
                     height={240}
-                    className="w-full object-cover object-top opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                    className="w-full object-cover object-center opacity-70 group-hover:opacity-100 transition-opacity duration-300"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/60 to-transparent" />
@@ -525,9 +523,18 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
           </div>
 
           <div className="grid lg:grid-cols-3 gap-5">
-            {/* Featured article */}
+            {/* Featured article — with official branded creative */}
             <div className="lg:col-span-2 group relative overflow-hidden rounded-2xl bg-[#f7f8fa] border border-slate-200 hover:border-[#c9a84c]/30 transition-all duration-300 hover:shadow-xl hover:shadow-slate-100/50">
-              <div className="p-8 sm:p-10">
+              <div className="relative h-56 overflow-hidden">
+                <Image
+                  src="/images/official/creative-ai-pocket.png"
+                  alt="Infinity Legal SA — Legal in Your Pocket. AI-powered intake for South Africans."
+                  fill
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#f7f8fa] via-[#f7f8fa]/30 to-transparent" />
+              </div>
+              <div className="p-8 sm:p-10 pt-4">
                 <div className="flex items-center gap-2 mb-5">
                   <Newspaper className="w-4 h-4 text-[#c9a84c]" />
                   <span className="text-[10px] font-semibold text-[#a88832] uppercase tracking-wider">Feature</span>
@@ -569,20 +576,80 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
         </div>
       </section>
 
+      {/* ===== LEGAL ARTICLES ===== */}
+      <section id="articles" aria-labelledby="articles-heading" className="py-20 sm:py-28 bg-white">
+        <LegalArticlesSection />
+      </section>
+
       {/* ===== PRICING ===== */}
       <section id="pricing" aria-labelledby="pricing-heading" className="py-20 sm:py-28 bg-[#f7f8fa]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
+          <div className="text-center mb-16">
             <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Pricing</span>
             <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight mt-3">
               Simple, transparent pricing.
             </h2>
             <p className="mt-4 text-slate-500 text-base">All plans include POPIA compliance and AI-powered case analysis.</p>
           </div>
-          <PaymentWall
-            isAuthenticated={isAuthenticated}
-            onLoginClick={handleSignIn}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-4xl mx-auto">
+            {[
+              {
+                name: 'Civil Legal Plan',
+                price: 'R99',
+                period: '/month',
+                popular: false,
+                description: 'For civil disputes and general legal matters.',
+                features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'],
+              },
+              {
+                name: 'Labour Legal Plan',
+                price: 'R99',
+                period: '/month',
+                popular: false,
+                description: 'For workplace and employment matters.',
+                features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'],
+              },
+              {
+                name: 'Extensive Plan',
+                price: 'R139',
+                period: '/month',
+                popular: true,
+                description: 'Complete legal coverage across all practice areas.',
+                features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'],
+              },
+            ].map((plan) => (
+              <div key={plan.name} className={`relative flex flex-col rounded-2xl transition-all duration-300 ${plan.popular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">
+                      <Star className="w-3 h-3" />Most Popular
+                    </span>
+                  </div>
+                )}
+                <div className="p-6 lg:p-8">
+                  <div className="mb-6">
+                    <h3 className={`text-base font-semibold ${plan.popular ? 'text-[#c9a84c]' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
+                    <p className={`text-[12px] mt-1 ${plan.popular ? 'text-[#8fa4c4]' : 'text-slate-500'}`}>{plan.description}</p>
+                    <div className="mt-4 flex items-baseline gap-1">
+                      <span className={`text-4xl font-bold tracking-tight ${plan.popular ? 'text-white' : 'text-[#0c1e3c]'}`}>{plan.price}</span>
+                      <span className={`text-sm ${plan.popular ? 'text-[#5a7199]' : 'text-slate-400'}`}>{plan.period}</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#c9a84c]" />
+                        <span className={`text-[13px] ${plan.popular ? 'text-[#c4d3e8]' : 'text-slate-600'}`}>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button onClick={() => handleSignUpWithEmail()} className={`w-full rounded-xl py-4 text-sm font-semibold transition-all ${plan.popular ? 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] shadow-lg shadow-[#c9a84c]/20' : 'bg-[#0c1e3c] text-white hover:bg-[#1a3358]'}`}>
+                    Choose Plan
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -831,7 +898,7 @@ export function AIChatWidget() {
       });
       const data = await res.json();
       if (data.success) {
-        setMessages(prev => [...prev, { id: `ai-${Date.now()}`, role: 'assistant', content: data.data.response }]);
+        setMessages(prev => [...prev, { id: `ai-${Date.now()}`, role: 'assistant', content: data.data }]);
       } else {
         setMessages(prev => [...prev, { id: `ai-${Date.now()}`, role: 'assistant', content: 'I\'m having trouble connecting right now. Please try again in a moment.' }]);
       }
@@ -902,6 +969,346 @@ export function AIChatWidget() {
           <p className="text-[9px] text-slate-400 mt-2 text-center">AI responses are for informational purposes only and do not constitute legal advice.</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ============================================
+// LEGAL ARTICLES SECTION
+// ============================================
+
+const CATEGORY_META: Record<string, { label: string; color: string; bg: string }> = {
+  civil_litigation: { label: 'Civil Litigation', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-100' },
+  labour_law: { label: 'Labour Law', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
+  criminal_defence: { label: 'Criminal Defence', color: 'text-red-700', bg: 'bg-red-50 border-red-100' },
+  family_law: { label: 'Family Law', color: 'text-purple-700', bg: 'bg-purple-50 border-purple-100' },
+  corporate_commercial: { label: 'Corporate', color: 'text-slate-700', bg: 'bg-slate-50 border-slate-100' },
+  property_conveyancing: { label: 'Property', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
+  estate_planning: { label: 'Estate Planning', color: 'text-teal-700', bg: 'bg-teal-50 border-teal-100' },
+  debt_recovery: { label: 'Debt Recovery', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-100' },
+  consumer_rights: { label: 'Consumer Rights', color: 'text-sky-700', bg: 'bg-sky-50 border-sky-100' },
+  popia_compliance: { label: 'POPIA', color: 'text-[#a88832]', bg: 'bg-[#fdf8ed] border-[#e8e2d4]' },
+  immigration: { label: 'Immigration', color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-100' },
+  general: { label: 'General', color: 'text-slate-600', bg: 'bg-slate-50 border-slate-100' },
+};
+
+function LegalArticlesSection() {
+  const [articles, setArticles] = useState<any[]>([]);
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
+
+  // Static fallback articles — shown when the database table doesn't exist yet
+  const staticArticles = [
+    {
+      id: 'static-1',
+      slug: 'understanding-your-rights-under-popia',
+      title: 'Understanding Your Rights Under POPIA',
+      subtitle: 'A comprehensive guide to South Africa\'s Protection of Personal Information Act',
+      summary: 'A comprehensive guide to South Africa\'s Protection of Personal Information Act — your 8 rights and how to exercise them.',
+      category: 'popia_compliance',
+      tags: ['POPIA', 'data protection', 'privacy rights'],
+      reading_time_min: 6,
+      is_featured: true,
+      is_published: true,
+      published_at: new Date().toISOString(),
+      content: '# Understanding Your Rights Under POPIA\n\nThe Protection of Personal Information Act (POPIA) is South Africa\'s comprehensive data protection law that gives you rights over how your personal information is collected, used, stored, and shared.\n\n## Your 8 Rights Under POPIA\n\n1. **Right to Access** — Request your personal information from any organisation\n2. **Right to Correction** — Correct inaccurate or outdated information\n3. **Right to Object** — Object to processing of your information\n4. **Right to Withdraw Consent** — Withdraw consent at any time\n5. **Right to Complain** — Lodge a complaint with the Information Regulator\n6. **Right to Not Have Data Processed** — Restrict processing beyond your consent\n7. **Right to Not Be Subject to Automated Decisions** — Not subject to purely automated decisions\n8. **Right to Data Portability** — Receive your data in a structured format\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+    },
+    {
+      id: 'static-2',
+      slug: 'what-to-do-if-you-are-unfairly-dismissed',
+      title: 'What to Do If You Are Unfairly Dismissed',
+      subtitle: 'Your step-by-step guide to CCMA referrals and labour rights in South Africa',
+      summary: 'Step-by-step guide to CCMA referrals and labour rights — including the critical 30-day deadline.',
+      category: 'labour_law',
+      tags: ['unfair dismissal', 'CCMA', 'labour law', 'LRA'],
+      reading_time_min: 8,
+      is_featured: true,
+      is_published: true,
+      published_at: new Date().toISOString(),
+      content: '# What to Do If You Are Unfairly Dismissed\n\nUnfair dismissal is one of the most common labour disputes in South Africa. The Labour Relations Act (LRA) protects employees from being fired without fair reason and proper procedure.\n\n## The 30-Day Rule\n\n**Critical:** You only have **30 days** from the date of dismissal to refer a dispute to the CCMA.\n\n## Steps to Take\n\n1. **Get Your Dismissal in Writing** — Your employer is legally required to provide this\n2. **Gather Evidence** — Employment contract, payslips, written warnings, communications\n3. **Refer to the CCMA** — Submit form LRA 7.11 within 30 days\n4. **Conciliation** — A commissioner helps both parties reach a settlement\n5. **Arbitration** — If conciliation fails, a binding decision is made\n\n## Possible Outcomes\n- **Reinstatement** — Get your job back\n- **Compensation** — Up to 12 months\' salary\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+    },
+    {
+      id: 'static-3',
+      slug: 'your-consumer-rights-in-south-africa',
+      title: 'Your Consumer Rights in South Africa',
+      subtitle: 'How the Consumer Protection Act shields you from unfair business practices',
+      summary: 'How the Consumer Protection Act shields you from unfair business practices — your 9 fundamental rights explained.',
+      category: 'consumer_rights',
+      tags: ['consumer rights', 'CPA', 'Consumer Protection Act'],
+      reading_time_min: 7,
+      is_featured: true,
+      is_published: true,
+      published_at: new Date().toISOString(),
+      content: '# Your Consumer Rights in South Africa\n\nThe Consumer Protection Act (CPA) of 2008 gives you 9 fundamental rights:\n\n1. **Right to Equality** — No discrimination\n2. **Right to Privacy** — Refuse unwanted marketing\n3. **Right to Choose** — Cancel agreements with 20 days\' notice\n4. **Right to Information** — Clear pricing and terms\n5. **Right to Fair Value** — Honest advertising and fair pricing\n6. **Right to Safety** — Safe products with warnings\n7. **Right to Fair Contract Terms** — No unfair clauses\n8. **Right to Fair Marketing** — No bait marketing or pyramid schemes\n9. **Right to Accountability** — Honour warranties\n\n**Key facts:** Return defective goods within **6 months**. Cooling-off period: **5 business days** for direct marketing.\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+    },
+    {
+      id: 'static-4',
+      slug: 'guide-to-south-african-divorce-law',
+      title: 'Guide to South African Divorce Law',
+      subtitle: 'What you need to know about divorce proceedings, maintenance, and custody',
+      summary: 'What you need to know about divorce proceedings, asset division, maintenance, and child custody in South Africa.',
+      category: 'family_law',
+      tags: ['divorce', 'family law', 'custody', 'maintenance'],
+      reading_time_min: 9,
+      is_featured: false,
+      is_published: true,
+      published_at: new Date().toISOString(),
+      content: '# Guide to South African Divorce Law\n\nSouth African law recognises one ground for divorce: the **irretrievable breakdown** of the marriage.\n\n## Division of Assets\n- **In community of property** — Split 50/50\n- **Out of community (without accrual)** — Each keeps their own\n- **Out of community (with accrual)** — Share the growth difference\n\n## The Process\n1. Summons → 2. Response → 3. Discovery → 4. Mediation → 5. Trial → 6. Decree\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+    },
+    {
+      id: 'static-5',
+      slug: 'renters-rights-under-the-rental-housing-act',
+      title: 'Your Rights as a Tenant in South Africa',
+      subtitle: 'Know what your landlord can and cannot do under the Rental Housing Act',
+      summary: 'Know what your landlord can and cannot do — unlawful eviction, deposits, and repairs.',
+      category: 'civil_litigation',
+      tags: ['tenant rights', 'rental housing', 'eviction'],
+      reading_time_min: 7,
+      is_featured: false,
+      is_published: true,
+      published_at: new Date().toISOString(),
+      content: '# Your Rights as a Tenant\n\n- **Right to a Written Lease** — Must state rent, deposit, and terms\n- **Right to a Habitable Dwelling** — Working plumbing, structural integrity\n- **Right Against Unlawful Eviction** — No eviction without a court order (PIE Act)\n- **Right to Privacy** — 24-48 hours notice before entry\n- **Right to Fair Deposit Handling** — Refunded within 7-21 days\n\n**Rental Housing Tribunal**: 0800 11 22 33\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+    },
+    {
+      id: 'static-6',
+      slug: 'debt-review-and-debt-counselling-explained',
+      title: 'Debt Review and Debt Counselling Explained',
+      subtitle: 'How the National Credit Act protects over-indebted South Africans',
+      summary: 'How the National Credit Act protects over-indebted South Africans through debt review and counselling.',
+      category: 'debt_recovery',
+      tags: ['debt review', 'NCA', 'debt counselling'],
+      reading_time_min: 6,
+      is_featured: false,
+      is_published: true,
+      published_at: new Date().toISOString(),
+      content: '# Debt Review Explained\n\nDebt review (debt counselling) is a formal legal process under the NCA where a registered counsellor negotiates with creditors for:\n- Reduced monthly payments\n- Extended payment terms\n- Lower interest rates\n\n## Key Protections\n- **No legal action** from creditors while under debt review\n- **No asset repossession** — Home and car are protected\n- **No harassment** — Creditors must communicate through your counsellor\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+    },
+  ];
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const res = await fetch('/api/articles?limit=20');
+        const data = await res.json();
+        if (data.success && data.data?.articles?.length > 0) {
+          setArticles(data.data.articles);
+        } else {
+          // Fallback to static articles when DB table doesn't exist yet
+          setArticles(staticArticles);
+        }
+      } catch {
+        // Fallback to static articles
+        setArticles(staticArticles);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchArticles();
+  }, []);
+
+  const featuredArticles = articles.filter(a => a.is_featured);
+  const regularArticles = articles.filter(a => !a.is_featured);
+
+  const [fullArticle, setFullArticle] = useState<any>(null);
+  const [loadingArticle, setLoadingArticle] = useState(false);
+
+  // Render markdown-ish content as HTML (skip first h1 since we display title separately)
+  const renderContent = (content: string | undefined | null) => {
+    if (!content) return '<p class="text-slate-400">Article content loading...</p>';
+    // Remove the first # heading since we display it separately in the detail view
+    const withoutFirstH1 = content.replace(/^#\s+.*\n?/, '');
+    return withoutFirstH1
+      .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-[#0c1e3c] mt-6 mb-2">$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold text-[#0c1e3c] mt-8 mb-3">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-[#0c1e3c] mt-4 mb-4">$1</h1>')
+      .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-[#0c1e3c]">$1</strong>')
+      .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+      .replace(/^- (.*$)/gim, '<li class="ml-4 text-slate-600 text-sm leading-relaxed">$1</li>')
+      .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-4 text-slate-600 text-sm leading-relaxed"><span class="font-medium text-[#0c1e3c]">$1.</span> $2</li>')
+      .replace(/\n\n/g, '<div class="h-3"></div>')
+      .replace(/\n/g, '<br/>');
+  };
+
+  // Fetch full article when expanding
+  useEffect(() => {
+    if (!expandedArticle) { setFullArticle(null); return; }
+    const existing = articles.find(a => a.slug === expandedArticle);
+    if (existing?.content) { setFullArticle(existing); return; }
+    setLoadingArticle(true);
+    fetch(`/api/articles?slug=${expandedArticle}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.data) setFullArticle(data.data);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingArticle(false));
+  }, [expandedArticle, articles]);
+
+  // Article detail modal
+  if (expandedArticle) {
+    const article = fullArticle || articles.find(a => a.slug === expandedArticle);
+    if (article) {
+      const catMeta = CATEGORY_META[article.category] || CATEGORY_META.general;
+      return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => setExpandedArticle(null)}
+            className="flex items-center gap-2 text-[#a88832] hover:text-[#8a6e28] text-sm font-medium mb-8 transition-colors"
+          >
+            <ArrowRight className="w-4 h-4 rotate-180" />
+            Back to all articles
+          </button>
+          <article className="max-w-3xl mx-auto">
+            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider mb-5 ${catMeta.bg} ${catMeta.color}`}>
+              {catMeta.label}
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight leading-tight">{article.title}</h1>
+            {article.subtitle && (
+              <p className="mt-3 text-lg text-slate-500 leading-relaxed">{article.subtitle}</p>
+            )}
+            <div className="flex items-center gap-4 mt-5 text-sm text-slate-400">
+              {article.reading_time_min && (
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  {article.reading_time_min} min read
+                </span>
+              )}
+              {article.published_at && (
+                <span>{new Date(article.published_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              )}
+            </div>
+            {article.tags?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {article.tags.map((tag: string) => (
+                  <span key={tag} className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">{tag}</span>
+                ))}
+              </div>
+            )}
+            <div className="mt-8 pt-8 border-t border-slate-200">
+              <div
+                className="prose prose-slate max-w-none"
+                dangerouslySetInnerHTML={{ __html: renderContent(article.content) }}
+              />
+            </div>
+          </article>
+        </div>
+      );
+    }
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-xl mb-14">
+        <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Legal Knowledge</span>
+        <h2 id="articles-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight mt-3 leading-tight">
+          Know your rights.<br />Read the law.
+        </h2>
+        <p className="mt-4 text-slate-500 text-base leading-relaxed">
+          Free legal articles written for South Africans. Understand your rights under POPIA, the LRA, the CPA, and more.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="rounded-2xl border border-slate-100 bg-white p-6 animate-pulse">
+              <div className="h-3 bg-slate-100 rounded w-20 mb-3" />
+              <div className="h-5 bg-slate-200 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-slate-100 rounded w-full mb-1" />
+              <div className="h-3 bg-slate-100 rounded w-2/3" />
+            </div>
+          ))}
+        </div>
+      ) : articles.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-7 h-7 text-slate-300" />
+          </div>
+          <p className="text-[13px] text-slate-500">Legal articles coming soon.</p>
+        </div>
+      ) : (
+        <>
+          {/* Featured articles — larger cards */}
+          {featuredArticles.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+              {featuredArticles.map(article => {
+                const catMeta = CATEGORY_META[article.category] || CATEGORY_META.general;
+                return (
+                  <article
+                    key={article.id}
+                    onClick={() => setExpandedArticle(article.slug)}
+                    className="group relative overflow-hidden rounded-2xl bg-[#f7f8fa] border border-slate-200 hover:border-[#c9a84c]/30 hover:shadow-xl hover:shadow-slate-100/50 transition-all duration-300 cursor-pointer"
+                  >
+                    <div className="p-6 sm:p-8">
+                      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider mb-4 ${catMeta.bg} ${catMeta.color}`}>
+                        {catMeta.label}
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-lg sm:text-xl font-bold text-[#0c1e3c] leading-tight group-hover:text-[#a88832] transition-colors">
+                          {article.title}
+                        </h3>
+                        <ArrowUpRight className="w-5 h-5 text-slate-300 group-hover:text-[#c9a84c] flex-shrink-0 mt-1 transition-colors" />
+                      </div>
+                      {article.subtitle && (
+                        <p className="mt-2 text-sm text-slate-500 leading-relaxed">{article.subtitle}</p>
+                      )}
+                      <div className="flex items-center gap-4 mt-4 text-[12px] text-slate-400">
+                        {article.reading_time_min && (
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            {article.reading_time_min} min read
+                          </span>
+                        )}
+                        {article.tags?.slice(0, 3).map((tag: string) => (
+                          <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Regular articles — smaller cards */}
+          {regularArticles.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {regularArticles.map(article => {
+                const catMeta = CATEGORY_META[article.category] || CATEGORY_META.general;
+                return (
+                  <article
+                    key={article.id}
+                    onClick={() => setExpandedArticle(article.slug)}
+                    className="group relative rounded-xl bg-white border border-slate-200 hover:border-[#c9a84c]/30 hover:shadow-lg hover:shadow-slate-100/50 p-5 transition-all duration-300 cursor-pointer"
+                  >
+                    <div className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[9px] font-semibold uppercase tracking-wider mb-3 ${catMeta.bg} ${catMeta.color}`}>
+                      {catMeta.label}
+                    </div>
+                    <h3 className="text-[15px] font-semibold text-[#0c1e3c] leading-snug group-hover:text-[#a88832] transition-colors line-clamp-2">
+                      {article.title}
+                    </h3>
+                    {article.summary && (
+                      <p className="mt-2 text-[13px] text-slate-500 leading-relaxed line-clamp-2">{article.summary}</p>
+                    )}
+                    <div className="flex items-center gap-3 mt-3 text-[11px] text-slate-400">
+                      {article.reading_time_min && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {article.reading_time_min} min
+                        </span>
+                      )}
+                      {article.tags?.slice(0, 2).map((tag: string) => (
+                        <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{tag}</span>
+                      ))}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
