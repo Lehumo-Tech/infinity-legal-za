@@ -1,0 +1,1315 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useEffect, useRef } from 'react';
+     4→import Image from 'next/image';
+     5→import {
+     6→  FolderKanban, FileText, BookOpen, CheckCircle2, Shield,
+     7→  Lock, KeyRound, ArrowRight, Menu, X, Send, Bot, Sparkles,
+     8→  Scale, MessageSquare, Zap, Globe, Smartphone, Newspaper, Tv,
+     9→  Users, Briefcase, Bell, ArrowUpRight, Play, ChevronDown,
+    10→  AlertTriangle, RefreshCw, LayoutDashboard, Phone, Mail, MapPin, Star, Clock,
+    11→} from 'lucide-react';
+    12→import { Button } from '@/components/ui/button';
+    13→import { Input } from '@/components/ui/input';
+    14→import { Label } from '@/components/ui/label';
+    15→
+    16→
+    17→interface LandingPageProps {
+    18→  onSignIn?: () => void;
+    19→  onSignUp?: (prefillEmail?: string, prefilledName?: string) => void;
+    20→  onLoginClick?: () => void;
+    21→  isAuthenticated?: boolean;
+    22→  onBackToDashboard?: () => void;
+    23→  userName?: string;
+    24→}
+    25→
+    26→const caseTypes = [
+    27→  'Family Law', 'Criminal Defence', 'Civil Litigation', 'Conveyancing',
+    28→  'Estate Planning', 'Corporate Commercial', 'Labour Law', 'Debt Collection',
+    29→  'Immigration', 'Personal Injury', 'Other',
+    30→];
+    31→
+    32→const trustIndicators = [
+    33→  { icon: Shield, label: 'POPIA Compliant' },
+    34→  { icon: Lock, label: '256-bit Encryption' },
+    35→  { icon: KeyRound, label: '90-Day Password Policy' },
+    36→];
+    37→
+    38→interface ChatMessage {
+    39→  id: string;
+    40→  role: 'user' | 'assistant';
+    41→  content: string;
+    42→}
+    43→
+    44→export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated, onBackToDashboard, userName }: LandingPageProps) {
+    45→  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    46→  const [scrolled, setScrolled] = useState(false);
+    47→
+    48→
+    49→  // Resolve action handlers: prefer onLoginClick, fall back to onSignIn/onSignUp
+    50→  const handleSignIn = onLoginClick || onSignIn || (() => {});
+    51→
+    52→  useEffect(() => {
+    53→    const handleScroll = () => setScrolled(window.scrollY > 20);
+    54→    window.addEventListener('scroll', handleScroll, { passive: true });
+    55→    return () => window.removeEventListener('scroll', handleScroll);
+    56→  }, []);
+    57→
+    58→  const handleSignUpWithEmail = (prefillEmail?: string, prefilledName?: string) => {
+    59→    if (onLoginClick) {
+    60→      onLoginClick();
+    61→    } else if (onSignUp) {
+    62→      onSignUp();
+    63→    }
+    64→    if (prefillEmail) {
+    65→      sessionStorage.setItem('il_intake_email', prefillEmail);
+    66→      if (prefilledName) sessionStorage.setItem('il_intake_name', prefilledName);
+    67→    }
+    68→  };
+    69→
+    70→  const handleSmoothScroll = (id: string) => {
+    71→    setMobileMenuOpen(false);
+    72→    const element = document.getElementById(id);
+    73→    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    74→  };
+    75→
+    76→  const navLinks = [
+    77→    { id: 'ai-intake', label: 'Free AI Intake' },
+    78→    { id: 'ask-ai', label: 'Ask AI' },
+    79→    { id: 'campaign', label: 'Campaign' },
+    80→    { id: 'app', label: 'App' },
+    81→    { id: 'articles', label: 'Legal Articles' },
+    82→    { id: 'pricing', label: 'Pricing' },
+    83→  ];
+    84→
+    85→  return (
+    86→    <div className="min-h-screen flex flex-col bg-white">
+    87→      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-[#c9a84c] focus:text-[#0c1e3c] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg">Skip to main content</a>
+    88→      {/* ===== NAVIGATION ===== */}
+    89→      <nav aria-label="Main navigation" className={`sticky top-0 z-50 transition-all duration-500 ${scrolled ? 'bg-[#0a1628]/95 backdrop-blur-xl shadow-2xl shadow-black/10' : 'bg-transparent'}`}>
+    90→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    91→          <div className="flex items-center justify-between h-16 sm:h-20">
+    92→            <div className="flex items-center gap-3">
+    93→              <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={120} height={36} className="object-contain" priority />
+    94→            </div>
+    95→            <div className="hidden lg:flex items-center gap-8">
+    96→              {navLinks.map(link => (
+    97→                <button key={link.id} onClick={() => handleSmoothScroll(link.id)} className="text-[#8fa4c4] hover:text-white text-[13px] font-medium transition-colors relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] focus-visible:ring-offset-2">
+    98→                  {link.label}
+    99→                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#c9a84c] transition-all duration-300 group-hover:w-full" />
+   100→                </button>
+   101→              ))}
+   102→            </div>
+   103→            <div className="hidden lg:flex items-center gap-3">
+   104→              {isAuthenticated ? (
+   105→                <>
+   106→                  <span className="text-[#c9a84c] text-[13px] font-medium">Welcome, {userName}</span>
+   107→                  <Button onClick={onBackToDashboard} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg px-5 text-[13px] font-semibold shadow-lg shadow-[#c9a84c]/20 transition-all hover:shadow-[#c9a84c]/30 gap-2">
+   108→                    <LayoutDashboard className="w-4 h-4" />
+   109→                    Back to Dashboard
+   110→                  </Button>
+   111→                </>
+   112→              ) : (
+   113→                <>
+   114→                  <Button variant="ghost" onClick={handleSignIn} className="text-[#8fa4c4] hover:text-white hover:bg-transparent text-[13px] font-medium">Sign In</Button>
+   115→                  <Button onClick={() => handleSignUpWithEmail()} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg px-5 text-[13px] font-semibold shadow-lg shadow-[#c9a84c]/20 transition-all hover:shadow-[#c9a84c]/30">Get Started</Button>
+   116→                </>
+   117→              )}
+   118→            </div>
+   119→            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 text-white" aria-label="Toggle menu" aria-expanded={mobileMenuOpen}>
+   120→              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+   121→            </button>
+   122→          </div>
+   123→        </div>
+   124→        <div className={`lg:hidden transition-all duration-300 overflow-hidden ${mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+   125→          <div className="px-4 pb-4 space-y-1 border-t border-[#1a3358]/50 bg-[#0a1628]/95 backdrop-blur-xl">
+   126→            {navLinks.map(link => (
+   127→              <button key={link.id} onClick={() => handleSmoothScroll(link.id)} className="block w-full text-left text-[#8fa4c4] hover:text-white px-3 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] focus-visible:ring-offset-2">
+   128→                {link.label}
+   129→              </button>
+   130→            ))}
+   131→            <div className="flex gap-3 pt-3">
+   132→              {isAuthenticated ? (
+   133→                <Button onClick={() => { setMobileMenuOpen(false); onBackToDashboard?.(); }} className="flex-1 bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg text-sm font-semibold gap-2">
+   134→                  <LayoutDashboard className="w-4 h-4" />
+   135→                  Back to Dashboard
+   136→                </Button>
+   137→              ) : (
+   138→                <>
+   139→                  <Button variant="outline" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }} className="flex-1 border-[#c9a84c]/40 text-[#c9a84c] rounded-lg text-sm">Sign In</Button>
+   140→                  <Button onClick={() => { setMobileMenuOpen(false); handleSignUpWithEmail(); }} className="flex-1 bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg text-sm font-semibold">Get Started</Button>
+   141→                </>
+   142→              )}
+   143→            </div>
+   144→          </div>
+   145→        </div>
+   146→      </nav>
+   147→
+   148→      {/* ===== HERO ===== */}
+   149→      <section className="relative bg-[#0a1628] overflow-hidden">
+   150→        {/* Atmospheric background layers */}
+   151→        <div className="absolute inset-0">
+   152→          <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628] via-[#0c1e3c] to-[#071020]" />
+   153→          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#c9a84c]/[0.03] rounded-full blur-[120px] -translate-y-1/3 translate-x-1/4" />
+   154→          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#c9a84c]/[0.02] rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4" />
+   155→          {/* Subtle geometric lines */}
+   156→          <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+   157→            <defs>
+   158→              <pattern id="hero-grid" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+   159→                <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#c9a84c" strokeWidth="0.5" />
+   160→              </pattern>
+   161→            </defs>
+   162→            <rect width="100%" height="100%" fill="url(#hero-grid)" />
+   163→          </svg>
+   164→        </div>
+   165→
+   166→        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-44">
+   167→          <div className="grid lg:grid-cols-5 gap-12 lg:gap-8 items-center">
+   168→            {/* Left: Copy — 3/5 */}
+   169→            <div className="lg:col-span-3 max-w-2xl">
+   170→              <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-[#c9a84c]/[0.08] border border-[#c9a84c]/20 rounded-full mb-8">
+   171→                <div className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse" />
+   172→                <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">AI-Powered Legal Platform</span>
+   173→              </div>
+   174→              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem] font-bold text-white leading-[1.1] tracking-tight">
+   175→                Your Rights,{' '}
+   176→                <span className="relative inline-block">
+   177→                  <span className="relative z-10 text-[#c9a84c]">Reinforced</span>
+   178→                  <span className="absolute bottom-1 left-0 w-full h-2 bg-[#c9a84c]/20 -skew-x-3" />
+   179→                </span>
+   180→                <span className="text-[#c9a84c]">.</span>
+   181→              </h1>
+   182→              <p className="mt-7 text-base sm:text-lg text-[#7a8fb0] max-w-xl leading-relaxed">
+   183→                South Africa&apos;s first AI-powered legal practice management platform. Free AI intake that captures your matter before you even sign up. Plans from{' '}
+   184→                <span className="text-white font-medium">R99/month</span>.
+   185→              </p>
+   186→              <div className="mt-10 flex flex-col sm:flex-row gap-3">
+   187→                {isAuthenticated ? (
+   188→                  <Button onClick={onBackToDashboard} size="lg" className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-12 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 gap-2">
+   189→                    <LayoutDashboard className="w-4 h-4" />
+   190→                    Back to Dashboard
+   191→                  </Button>
+   192→                ) : (
+   193→                  <Button onClick={() => handleSignUpWithEmail()} size="lg" className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-12 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 group">
+   194→                    Free AI Intake <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
+   195→                  </Button>
+   196→                )}
+   197→                <Button onClick={() => handleSmoothScroll('ask-ai')} variant="outline" size="lg" className="border-[#2a3f5f] text-[#8fa4c4] hover:bg-[#132d52] hover:text-white rounded-xl px-7 h-12 text-sm font-medium">
+   198→                  <Bot className="w-4 h-4 mr-2 text-[#c9a84c]" /> Ask AI
+   199→                </Button>
+   200→                <Button onClick={() => handleSmoothScroll('pricing')} size="lg" className="bg-[#1a3358] text-[#c9a84c] hover:bg-[#0c1e3c] rounded-xl px-7 h-12 text-sm font-medium border border-[#c9a84c]/20 transition-colors">
+   201→                  Explore Practice Areas
+   202→                </Button>
+   203→              </div>
+   204→              <div className="mt-12 flex flex-wrap gap-x-8 gap-y-3">
+   205→                {trustIndicators.map((item) => (
+   206→                  <span key={item.label} className="flex items-center gap-2 text-[11px] text-[#7a8fb0] font-medium">
+   207→                    <item.icon className="w-3.5 h-3.5 text-[#c9a84c]/50" />{item.label}
+   208→                  </span>
+   209→                ))}
+   210→              </div>
+   211→            </div>
+   212→
+   213→            {/* Right: Official branded creative — 2/5 */}
+   214→            <div className="lg:col-span-2 hidden lg:block">
+   215→              <div className="relative">
+   216→                {/* Glow behind image */}
+   217→                <div className="absolute -inset-4 bg-[#c9a84c]/[0.08] rounded-3xl blur-2xl" />
+   218→                <div className="relative rounded-2xl overflow-hidden border border-[#1a3a65]/60 shadow-2xl shadow-black/30">
+   219→                  <Image
+   220→                    src="/images/official/creative-app-hero.png"
+   221→                    alt="Infinity Legal SA — Your Rights, Reinforced. AI-powered legal protection on your phone."
+   222→                    width={600}
+   223→                    height={720}
+   224→                    className="w-full object-cover object-center"
+   225→                    priority
+   226→                  />
+   227→                  {/* Subtle bottom gradient overlay for depth */}
+   228→                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/30 via-transparent to-transparent" />
+   229→                </div>
+   230→              </div>
+   231→            </div>
+   232→          </div>
+   233→        </div>
+   234→        {/* Bottom gradient fade */}
+   235→        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
+   236→      </section>
+   237→
+   238→      {/* ===== FREE AI INTAKE ===== */}
+   239→      <section id="ai-intake" aria-labelledby="ai-intake-heading" className="py-20 sm:py-28 bg-white relative">
+   240→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   241→          {/* Section header — left-aligned, not centered */}
+   242→          <div className="max-w-xl mb-14">
+   243→            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200/60 rounded-full mb-5">
+   244→              <Sparkles className="w-3 h-3 text-emerald-600" />
+   245→              <span className="text-emerald-700 text-[11px] font-semibold uppercase tracking-wider">100% Free — No Sign-Up Required</span>
+   246→            </div>
+   247→            <h2 id="ai-intake-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight leading-tight">
+   248→              Describe your matter.<br />Get instant AI analysis.
+   249→            </h2>
+   250→            <p className="mt-4 text-slate-500 text-base leading-relaxed">
+   251→              When you sign up, our legal team already has light on what your matter is about — no repeating yourself.
+   252→            </p>
+   253→          </div>
+   254→
+   255→          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+   256→            {/* Form — 3/5 */}
+   257→            <div className="lg:col-span-3">
+   258→              <IntakeForm onSignUp={handleSignUpWithEmail} />
+   259→              {/* Official branded creative — below the form on mobile, hidden on lg where timeline is */}
+   260→              <div className="mt-6 lg:hidden relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+   261→                <Image
+   262→                  src="/images/official/creative-ai-pocket.png"
+   263→                  alt="Infinity Legal SA — Legal in Your Pocket. AI-powered intake handles the heavy lifting."
+   264→                  width={800}
+   265→                  height={500}
+   266→                  className="w-full object-cover object-center"
+   267→                />
+   268→              </div>
+   269→            </div>
+   270→
+   271→            {/* How it works + branded creative — 2/5 */}
+   272→            <div className="lg:col-span-2">
+   273→              <div className="space-y-0">
+   274→                {[
+   275→                  { step: '01', icon: FileText, title: 'Describe Your Matter', desc: 'Select your case type, set urgency, and tell us the details.' },
+   276→                  { step: '02', icon: Bot, title: 'AI Analyses Your Case', desc: 'Our AI reviews your matter and returns a structured assessment with next steps.' },
+   277→                  { step: '03', icon: Scale, title: 'Legal Team Gets Context', desc: 'When you sign up, our attorneys already understand your situation.' },
+   278→                  { step: '04', icon: CheckCircle2, title: 'Matched to a Plan', desc: 'We recommend the best legal plan for your needs — from R99/month.' },
+   279→                ].map((item, i) => (
+   280→                  <div key={item.step} className="relative flex gap-5 pb-8 last:pb-0">
+   281→                    {/* Timeline line */}
+   282→                    {i < 3 && <div className="absolute left-[23px] top-12 bottom-0 w-px bg-[#c9a84c]/20" />}
+   283→                    <div className="flex-shrink-0">
+   284→                      <div className="w-12 h-12 rounded-xl bg-[#0c1e3c] flex items-center justify-center relative z-10">
+   285→                        <item.icon className="w-5 h-5 text-[#c9a84c]" />
+   286→                      </div>
+   287→                    </div>
+   288→                    <div className="pt-1">
+   289→                      <span className="text-[10px] font-bold text-[#c9a84c] tracking-widest uppercase">Step {item.step}</span>
+   290→                      <h4 className="font-semibold text-[#0c1e3c] mt-0.5">{item.title}</h4>
+   291→                      <p className="text-sm text-slate-500 mt-1 leading-relaxed">{item.desc}</p>
+   292→                    </div>
+   293→                  </div>
+   294→                ))}
+   295→              </div>
+   296→
+   297→              <div className="mt-6 p-4 bg-[#f8f6f0] rounded-xl border border-[#e8e2d4]">
+   298→                <div className="flex items-start gap-3">
+   299→                  <Shield className="w-4 h-4 text-[#a88832] mt-0.5 flex-shrink-0" />
+   300→                  <div>
+   301→                    <p className="text-[13px] font-semibold text-[#0c1e3c]">POPIA Protected</p>
+   302→                    <p className="text-[12px] text-slate-500 mt-0.5 leading-relaxed">Your information is encrypted and only shared with our legal team if you choose to sign up.</p>
+   303→                  </div>
+   304→                </div>
+   305→              </div>
+   306→
+   307→              {/* Official branded creative — AI in your pocket */}
+   308→              <div className="mt-6 relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm hidden lg:block">
+   309→                <Image
+   310→                  src="/images/official/creative-ai-pocket.png"
+   311→                  alt="Infinity Legal SA — Legal in Your Pocket. AI-powered intake handles the heavy lifting."
+   312→                  width={600}
+   313→                  height={380}
+   314→                  className="w-full object-cover object-center"
+   315→                  loading="lazy"
+   316→                />
+   317→              </div>
+   318→            </div>
+   319→          </div>
+   320→        </div>
+   321→      </section>
+   322→
+   323→      {/* ===== ASK AI ===== */}
+   324→      <section id="ask-ai" aria-labelledby="ask-ai-heading" className="py-20 sm:py-28 bg-[#f7f8fa] relative overflow-hidden">
+   325→        {/* Subtle decorative element */}
+   326→        <div className="absolute top-0 right-0 w-96 h-96 bg-[#c9a84c]/[0.03] rounded-full blur-[80px]" />
+   327→        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   328→          <div className="max-w-xl mb-12">
+   329→            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#0c1e3c]/[0.04] border border-[#0c1e3c]/10 rounded-full mb-5">
+   330→              <Bot className="w-3 h-3 text-[#a88832]" />
+   331→              <span className="text-[#a88832] text-[11px] font-semibold uppercase tracking-wider">AI Legal Assistant</span>
+   332→            </div>
+   333→            <h2 id="ask-ai-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight leading-tight">
+   334→              Ask about any legal matter.
+   335→            </h2>
+   336→            <p className="mt-4 text-slate-500 text-base leading-relaxed">
+   337→              From family law to labour disputes. Free, instant, and confidential.
+   338→            </p>
+   339→          </div>
+   340→          <AIChatWidget />
+   341→        </div>
+   342→      </section>
+   343→
+   344→      {/* ===== CAMPAIGN — App Showcase with Real Screenshots ===== */}
+   345→      <section id="campaign" aria-labelledby="campaign-heading" className="py-20 sm:py-28 bg-white">
+   346→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   347→          <div className="max-w-xl mb-14">
+   348→            <span className="inline-block text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em] mb-4">Campaigns & Offers</span>
+   349→            <h2 id="campaign-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight leading-tight">
+   350→              Making justice accessible.
+   351→            </h2>
+   352→          </div>
+   353→
+   354→          {/* Featured campaign — full-width with official branded creative */}
+   355→          <article className="group relative overflow-hidden rounded-2xl bg-[#0c1e3c] min-h-[380px] flex flex-col lg:flex-row">
+   356→            <div className="absolute inset-0 lg:hidden">
+   357→              <div className="absolute inset-0 bg-gradient-to-t from-[#0c1e3c] via-[#0c1e3c]/70 to-transparent" />
+   358→            </div>
+   359→            {/* Image side — official contract review creative */}
+   360→            <div className="relative lg:w-1/2 min-h-[240px] lg:min-h-0 overflow-hidden">
+   361→              <Image
+   362→                src="/images/official/creative-contracts.png"
+   363→                alt="Infinity Legal SA — Read before you sign. AI reviews your contracts instantly."
+   364→                fill
+   365→                className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
+   366→                priority
+   367→              />
+   368→              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0c1e3c]/30 hidden lg:block" />
+   369→              <div className="absolute inset-0 bg-gradient-to-t from-[#0c1e3c]/80 to-transparent lg:hidden" />
+   370→            </div>
+   371→            {/* Content side */}
+   372→            <div className="relative lg:w-1/2 p-8 sm:p-10 flex flex-col justify-center">
+   373→              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full mb-5 w-fit">
+   374→                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+   375→                <span className="text-emerald-300 text-[10px] font-semibold uppercase tracking-wider">Active Campaign</span>
+   376→              </div>
+   377→              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight">Read Before You Sign</h3>
+   378→              <p className="text-[#8fa4c4] text-sm leading-relaxed max-w-md">
+   379→                Don&apos;t get trapped by the fine print. Our AI reviews your contracts instantly — highlighting risks, unfair clauses, and missing protections before you commit.
+   380→              </p>
+   381→              <div className="mt-6">
+   382→                <Button onClick={() => handleSignUpWithEmail()} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg font-semibold group/btn">
+   383→                  Try Free Analysis <ArrowUpRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+   384→                </Button>
+   385→              </div>
+   386→            </div>
+   387→          </article>
+   388→
+   389→          {/* Smaller campaign cards with official branded creatives */}
+   390→          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+   391→            {[
+   392→              { img: '/images/official/creative-tenant-rights.png', title: 'Know Your Tenant Rights', desc: 'AI-powered lease analysis that highlights unfair clauses, missing protections, and your rights as a tenant in South Africa.', tag: 'New', tagColor: 'bg-[#c9a84c]/10 text-[#a88832] border-[#c9a84c]/20' },
+   393→              { img: '/images/official/creative-subscription.png', title: 'Legal Peace of Mind from R99', desc: 'Affordable legal subscription plans for everyone. Get attorney access, document review, and AI-powered legal guidance.', tag: 'Popular', tagColor: 'bg-slate-100 text-slate-600 border-slate-200' },
+   394→            ].map((campaign) => (
+   395→              <article key={campaign.title} className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 hover:border-[#c9a84c]/30 hover:shadow-lg hover:shadow-slate-100/80 transition-all duration-300">
+   396→                <div className="relative h-56 overflow-hidden">
+   397→                  <Image
+   398→                    src={campaign.img}
+   399→                    alt={campaign.title}
+   400→                    fill
+   401→                    className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+   402→                  />
+   403→                  <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+   404→                  <div className="absolute top-3 right-3">
+   405→                    <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border backdrop-blur-sm ${campaign.tagColor}`}>{campaign.tag}</span>
+   406→                  </div>
+   407→                </div>
+   408→                <div className="p-5">
+   409→                  <h3 className="text-[15px] font-semibold text-[#0c1e3c] mb-1.5">{campaign.title}</h3>
+   410→                  <p className="text-[13px] text-slate-500 leading-relaxed">{campaign.desc}</p>
+   411→                </div>
+   412→              </article>
+   413→            ))}
+   414→          </div>
+   415→        </div>
+   416→      </section>
+   417→
+   418→      {/* ===== APP SECTION — Full Screenshot Showcase ===== */}
+   419→      <section id="app" aria-labelledby="app-heading" className="py-20 sm:py-28 bg-[#0a1628] relative overflow-hidden">
+   420→        <div className="absolute inset-0">
+   421→          <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628] via-[#0c1e3c] to-[#0a1628]" />
+   422→          <svg className="absolute inset-0 w-full h-full opacity-[0.02]" xmlns="http://www.w3.org/2000/svg">
+   423→            <defs>
+   424→              <pattern id="app-dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+   425→                <circle cx="2" cy="2" r="1" fill="#c9a84c" />
+   426→              </pattern>
+   427→            </defs>
+   428→            <rect width="100%" height="100%" fill="url(#app-dots)" />
+   429→          </svg>
+   430→        </div>
+   431→        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   432→          {/* Header */}
+   433→          <div className="text-center mb-14">
+   434→            <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Mobile & Desktop App</span>
+   435→            <h2 id="app-heading" className="text-3xl sm:text-4xl font-bold text-white tracking-tight mt-4 leading-tight">
+   436→              Your legal portal, everywhere you go.
+   437→            </h2>
+   438→            <p className="text-[#7a8fb0] text-base leading-relaxed mt-4 max-w-lg mx-auto">
+   439→              Access your cases, documents, and consultations from any device. Message your attorney, track case progress, and get AI-powered updates in real time.
+   440→            </p>
+   441→          </div>
+   442→
+   443→          {/* App features row */}
+   444→          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
+   445→            {[
+   446→              { icon: Smartphone, title: 'Mobile App', desc: 'iOS & Android' },
+   447→              { icon: Globe, title: 'Web Portal', desc: 'Full dashboard' },
+   448→              { icon: MessageSquare, title: 'Secure Messaging', desc: 'End-to-end encrypted' },
+   449→              { icon: Bell, title: 'Real-Time Alerts', desc: 'Never miss a deadline' },
+   450→            ].map((feature) => (
+   451→              <div key={feature.title} className="flex items-center gap-3 p-4 bg-[#0f2240]/60 border border-[#1a3a65]/50 rounded-xl hover:border-[#c9a84c]/20 transition-colors group">
+   452→                <div className="w-9 h-9 rounded-lg bg-[#c9a84c]/[0.08] border border-[#c9a84c]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#c9a84c]/15 transition-colors">
+   453→                  <feature.icon className="w-4 h-4 text-[#c9a84c]" />
+   454→                </div>
+   455→                <div>
+   456→                  <h4 className="font-semibold text-white text-[13px]">{feature.title}</h4>
+   457→                  <p className="text-[#5a7199] text-[10px]">{feature.desc}</p>
+   458→                </div>
+   459→              </div>
+   460→            ))}
+   461→          </div>
+   462→
+   463→          {/* Screenshot showcase — hero image + 3 thumbnails */}
+   464→          <div className="relative">
+   465→            {/* Glow behind */}
+   466→            <div className="absolute -inset-4 bg-[#c9a84c]/[0.03] rounded-3xl blur-2xl" />
+   467→
+   468→            {/* Main showcase — official app hero creative */}
+   469→            <div className="relative rounded-2xl overflow-hidden border border-[#1a3a65]/60 shadow-2xl shadow-black/30">
+   470→              <Image
+   471→                src="/images/official/creative-app-hero.png"
+   472→                alt="Infinity Legal SA — Your Rights, Reinforced. Navigate consumer disputes with AI-powered legal protection."
+   473→                width={1200}
+   474→                height={680}
+   475→                className="w-full object-cover object-center"
+   476→                priority
+   477→              />
+   478→            </div>
+   479→
+   480→            {/* Thumbnail row — official branded creatives */}
+   481→            <div className="grid grid-cols-3 gap-3 mt-4">
+   482→              {[
+   483→                { src: '/images/official/creative-contracts.png', alt: 'Read Before You Sign — AI Contract Review' },
+   484→                { src: '/images/official/creative-tenant-rights.png', alt: 'Know Your Tenant Rights — Lease Analysis' },
+   485→                { src: '/images/official/creative-subscription.png', alt: 'Legal Peace of Mind from R99/Month' },
+   486→              ].map((thumb, i) => (
+   487→                <div key={i} className="relative rounded-xl overflow-hidden border border-[#1a3a65]/40 hover:border-[#c9a84c]/30 transition-colors cursor-pointer group">
+   488→                  <Image
+   489→                    src={thumb.src}
+   490→                    alt={thumb.alt}
+   491→                    width={400}
+   492→                    height={240}
+   493→                    className="w-full object-cover object-center opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+   494→                    loading="lazy"
+   495→                  />
+   496→                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/60 to-transparent" />
+   497→                </div>
+   498→              ))}
+   499→            </div>
+   500→          </div>
+   501→
+   502→          {/* CTA */}
+   503→          <div className="mt-10 flex justify-center gap-3">
+   504→            <Button onClick={() => handleSignUpWithEmail()} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-11 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20">Start Free</Button>
+   505→            <Button variant="outline" onClick={() => handleSmoothScroll('ask-ai')} className="border-[#2a3f5f] text-[#8fa4c4] hover:bg-[#132d52] hover:text-white rounded-xl px-7 h-11 text-sm">
+   506→              <Play className="w-4 h-4 mr-2" />Try AI Intake
+   507→            </Button>
+   508→          </div>
+   509→        </div>
+   510→      </section>
+   511→
+   512→      {/* ===== MEDIA — Featured article + list ===== */}
+   513→      <section id="media" aria-labelledby="media-heading" className="py-20 sm:py-28 bg-white">
+   514→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   515→          <div className="flex items-end justify-between mb-14">
+   516→            <div>
+   517→              <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">News & Media</span>
+   518→              <h2 id="media-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight mt-3 leading-tight">In the news.</h2>
+   519→            </div>
+   520→            <Button variant="link" className="hidden sm:flex text-[#a88832] hover:text-[#8a6e28] font-semibold text-sm">
+   521→              View All <ArrowRight className="w-3.5 h-3.5 ml-1" />
+   522→            </Button>
+   523→          </div>
+   524→
+   525→          <div className="grid lg:grid-cols-3 gap-5">
+   526→            {/* Featured article — with official branded creative */}
+   527→            <div className="lg:col-span-2 group relative overflow-hidden rounded-2xl bg-[#f7f8fa] border border-slate-200 hover:border-[#c9a84c]/30 transition-all duration-300 hover:shadow-xl hover:shadow-slate-100/50">
+   528→              <div className="relative h-56 overflow-hidden">
+   529→                <Image
+   530→                  src="/images/official/creative-ai-pocket.png"
+   531→                  alt="Infinity Legal SA — Legal in Your Pocket. AI-powered intake for South Africans."
+   532→                  fill
+   533→                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+   534→                />
+   535→                <div className="absolute inset-0 bg-gradient-to-t from-[#f7f8fa] via-[#f7f8fa]/30 to-transparent" />
+   536→              </div>
+   537→              <div className="p-8 sm:p-10 pt-4">
+   538→                <div className="flex items-center gap-2 mb-5">
+   539→                  <Newspaper className="w-4 h-4 text-[#c9a84c]" />
+   540→                  <span className="text-[10px] font-semibold text-[#a88832] uppercase tracking-wider">Feature</span>
+   541→                </div>
+   542→                <h3 className="text-xl sm:text-2xl font-bold text-[#0c1e3c] mb-3 leading-tight group-hover:text-[#a88832] transition-colors">
+   543→                  AI-Powered Legal Intake for South Africans
+   544→                </h3>
+   545→                <p className="text-slate-500 text-sm leading-relaxed max-w-lg">
+   546→                  Describe your legal matter and receive instant AI analysis before consulting with an attorney — no sign-up required. Built with South African law in mind.
+   547→                </p>
+   548→                <Button variant="link" onClick={() => handleSmoothScroll('ask-ai')} className="mt-6 p-0 text-[#a88832] hover:text-[#8a6e28] font-semibold text-sm group/link">
+   549→                  Try It Now <ArrowUpRight className="w-3.5 h-3.5 ml-1 group-hover/link:translate-x-0.5 transition-transform" />
+   550→                </Button>
+   551→              </div>
+   552→            </div>
+   553→
+   554→            {/* Article list */}
+   555→            <div className="space-y-0 divide-y divide-slate-100">
+   556→              {[
+   557→                { icon: Tv, category: 'Feature', title: 'POPIA-Compliant Case Management Built for SA Law Firms' },
+   558→                { icon: BookOpen, category: 'Resource', title: 'Understanding Your Rights Under the Labour Relations Act' },
+   559→                { icon: Briefcase, category: 'Feature', title: 'Affordable Legal Plans Starting from R99/Month' },
+   560→                { icon: Zap, category: 'Feature', title: 'Secure Document Management with Attorney Oversight' },
+   561→              ].map((article) => (
+   562→                <div key={article.title} className="group flex items-start gap-4 py-4 first:pt-0 last:pb-0 hover:bg-[#f7f8fa] -mx-3 px-3 rounded-lg transition-colors cursor-pointer">
+   563→                  <div className="w-8 h-8 rounded-lg bg-[#0c1e3c]/[0.04] flex items-center justify-center flex-shrink-0 mt-0.5">
+   564→                    <article.icon className="w-3.5 h-3.5 text-[#0c1e3c]" />
+   565→                  </div>
+   566→                  <div className="flex-1 min-w-0">
+   567→                    <div className="flex items-center gap-2 mb-1">
+   568→                      <span className="text-[9px] font-semibold text-[#a88832] uppercase tracking-wider">{article.category}</span>
+   569→                    </div>
+   570→                    <h4 className="text-[13px] font-medium text-[#0c1e3c] leading-snug line-clamp-2 group-hover:text-[#a88832] transition-colors">{article.title}</h4>
+   571→                  </div>
+   572→                </div>
+   573→              ))}
+   574→            </div>
+   575→          </div>
+   576→        </div>
+   577→      </section>
+   578→
+   579→      {/* ===== LEGAL ARTICLES ===== */}
+   580→      <section id="articles" aria-labelledby="articles-heading" className="py-20 sm:py-28 bg-white">
+   581→        <LegalArticlesSection />
+   582→      </section>
+   583→
+   584→      {/* ===== PRICING ===== */}
+   585→      <section id="pricing" aria-labelledby="pricing-heading" className="py-20 sm:py-28 bg-[#f7f8fa]">
+   586→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   587→          <div className="text-center mb-16">
+   588→            <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Pricing</span>
+   589→            <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight mt-3">
+   590→              Simple, transparent pricing.
+   591→            </h2>
+   592→            <p className="mt-4 text-slate-500 text-base">All plans include POPIA compliance and AI-powered case analysis.</p>
+   593→          </div>
+   594→          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-4xl mx-auto">
+   595→            {[
+   596→              {
+   597→                name: 'Civil Legal Plan',
+   598→                price: 'R99',
+   599→                period: '/month',
+   600→                popular: false,
+   601→                description: 'For civil disputes and general legal matters.',
+   602→                features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'],
+   603→              },
+   604→              {
+   605→                name: 'Labour Legal Plan',
+   606→                price: 'R99',
+   607→                period: '/month',
+   608→                popular: false,
+   609→                description: 'For workplace and employment matters.',
+   610→                features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'],
+   611→              },
+   612→              {
+   613→                name: 'Extensive Plan',
+   614→                price: 'R139',
+   615→                period: '/month',
+   616→                popular: true,
+   617→                description: 'Complete legal coverage across all practice areas.',
+   618→                features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'],
+   619→              },
+   620→            ].map((plan) => (
+   621→              <div key={plan.name} className={`relative flex flex-col rounded-2xl transition-all duration-300 ${plan.popular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
+   622→                {plan.popular && (
+   623→                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+   624→                    <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">
+   625→                      <Star className="w-3 h-3" />Most Popular
+   626→                    </span>
+   627→                  </div>
+   628→                )}
+   629→                <div className="p-6 lg:p-8">
+   630→                  <div className="mb-6">
+   631→                    <h3 className={`text-base font-semibold ${plan.popular ? 'text-[#c9a84c]' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
+   632→                    <p className={`text-[12px] mt-1 ${plan.popular ? 'text-[#8fa4c4]' : 'text-slate-500'}`}>{plan.description}</p>
+   633→                    <div className="mt-4 flex items-baseline gap-1">
+   634→                      <span className={`text-4xl font-bold tracking-tight ${plan.popular ? 'text-white' : 'text-[#0c1e3c]'}`}>{plan.price}</span>
+   635→                      <span className={`text-sm ${plan.popular ? 'text-[#5a7199]' : 'text-slate-400'}`}>{plan.period}</span>
+   636→                    </div>
+   637→                  </div>
+   638→                  <ul className="space-y-3 mb-8 flex-1">
+   639→                    {plan.features.map((feature) => (
+   640→                      <li key={feature} className="flex items-start gap-2.5">
+   641→                        <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#c9a84c]" />
+   642→                        <span className={`text-[13px] ${plan.popular ? 'text-[#c4d3e8]' : 'text-slate-600'}`}>{feature}</span>
+   643→                      </li>
+   644→                    ))}
+   645→                  </ul>
+   646→                  <Button onClick={() => handleSignUpWithEmail()} className={`w-full rounded-xl py-4 text-sm font-semibold transition-all ${plan.popular ? 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] shadow-lg shadow-[#c9a84c]/20' : 'bg-[#0c1e3c] text-white hover:bg-[#1a3358]'}`}>
+   647→                    Choose Plan
+   648→                  </Button>
+   649→                </div>
+   650→              </div>
+   651→            ))}
+   652→          </div>
+   653→        </div>
+   654→      </section>
+   655→
+   656→      {/* ===== SECURITY ===== */}
+   657→      <section className="py-20 sm:py-24 bg-[#0a1628] relative overflow-hidden">
+   658→        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628] via-[#0c1e3c] to-[#0a1628]" />
+   659→        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   660→          <div className="text-center mb-14">
+   661→            <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Security & Compliance</span>
+   662→            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mt-3">Enterprise-grade security.</h2>
+   663→            <p className="mt-4 text-[#7a8fb0] text-base max-w-lg mx-auto">Your data is protected with the highest standards of security and South African compliance.</p>
+   664→          </div>
+   665→          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+   666→            {trustIndicators.map((item) => (
+   667→              <div key={item.label} className="flex items-center gap-4 p-6 bg-[#0f2240]/60 border border-[#1a3a65]/50 rounded-xl hover:border-[#c9a84c]/20 transition-all duration-300">
+   668→                <div className="w-12 h-12 rounded-xl bg-[#c9a84c]/[0.08] flex items-center justify-center flex-shrink-0">
+   669→                  <item.icon className="w-5 h-5 text-[#c9a84c]" />
+   670→                </div>
+   671→                <span className="text-white font-semibold text-sm">{item.label}</span>
+   672→              </div>
+   673→            ))}
+   674→          </div>
+   675→        </div>
+   676→      </section>
+   677→
+   678→      {/* ===== FOOTER ===== */}
+   679→      <footer className="bg-[#060e1a] mt-auto">
+   680→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+   681→          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+   682→            {/* Brand & Copyright */}
+   683→            <div className="flex flex-col gap-3">
+   684→              <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={100} height={28} className="object-contain" />
+   685→              <p className="text-[#3a506f] text-[11px]">&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</p>
+   686→              <p className="text-[#2a3f5f] text-[10px]">Designed and developed in South Africa</p>
+   687→            </div>
+   688→            {/* Contact Details */}
+   689→            <div className="flex flex-col gap-3">
+   690→              <h4 className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-wider">Contact Us</h4>
+   691→              <div className="flex flex-col gap-2 text-[12px]">
+   692→                <a href="tel:+27681276038" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-center gap-2">
+   693→                  <Phone className="w-3.5 h-3.5 flex-shrink-0" />
+   694→                  068 127 6038
+   695→                </a>
+   696→                <a href="https://wa.me/27681276038" target="_blank" rel="noopener noreferrer" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-center gap-2">
+   697→                  <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
+   698→                  WhatsApp: 068 127 6038
+   699→                </a>
+   700→                <a href="mailto:info@infinitylegal.org" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-center gap-2">
+   701→                  <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+   702→                  info@infinitylegal.org
+   703→                </a>
+   704→                <span className="text-[#7a8fb0] flex items-center gap-2">
+   705→                  <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+   706→                  93 Grayston Drive, Sandton
+   707→                </span>
+   708→              </div>
+   709→            </div>
+   710→            {/* Legal Links */}
+   711→            <div className="flex flex-col gap-3">
+   712→              <h4 className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-wider">Legal</h4>
+   713→              <div className="flex flex-col gap-2 text-[12px]">
+   714→                <a href="#" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors">Privacy Policy</a>
+   715→                <a href="#" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors">Terms of Service</a>
+   716→                <a href="#" className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors">POPIA Compliance</a>
+   717→              </div>
+   718→            </div>
+   719→          </div>
+   720→        </div>
+   721→      </footer>
+   722→
+   723→      {/* Floating WhatsApp Button */}
+   724→      <a
+   725→        href="https://wa.me/27681276038"
+   726→        target="_blank"
+   727→        rel="noopener noreferrer"
+   728→        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] hover:bg-[#20bd5a] rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/30 transition-all hover:scale-110"
+   729→        aria-label="Chat on WhatsApp"
+   730→      >
+   731→        <MessageSquare className="w-6 h-6 text-white" />
+   732→      </a>
+   733→    </div>
+   734→  );
+   735→}
+   736→
+   737→// ============================================
+   738→// AI INTAKE FORM
+   739→// ============================================
+   740→export function IntakeForm({ onSignUp }: { onSignUp: (email?: string, name?: string) => void }) {
+   741→  const [name, setName] = useState('');
+   742→  const [email, setEmail] = useState('');
+   743→  const [phone, setPhone] = useState('');
+   744→  const [caseType, setCaseType] = useState('');
+   745→  const [description, setDescription] = useState('');
+   746→  const [urgency, setUrgency] = useState('');
+   747→  const [consentGiven, setConsentGiven] = useState(false);
+   748→  const [popiaConsent, setPopiaConsent] = useState(false);
+   749→  const [loading, setLoading] = useState(false);
+   750→  const [result, setResult] = useState<any>(null);
+   751→  const [error, setError] = useState('');
+   752→
+   753→  const handleSubmit = async () => {
+   754→    setLoading(true);
+   755→    setError('');
+   756→    try {
+   757→      const res = await fetch('/api/ai/intake', {
+   758→        method: 'POST',
+   759→        headers: { 'Content-Type': 'application/json' },
+   760→        body: JSON.stringify({ name, email, phone, caseType, description, urgency, consent_given: consentGiven, popia_consent: popiaConsent }),
+   761→      });
+   762→      const data = await res.json();
+   763→      if (data.success) {
+   764→        setResult(data.data);
+   765→      } else {
+   766→        setError(data.error?.message || 'Submission failed');
+   767→      }
+   768→    } catch {
+   769→      setError('Network error. Please try again.');
+   770→    }
+   771→    setLoading(false);
+   772→  };
+   773→
+   774→  if (result) {
+   775→    return (
+   776→      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+   777→        <div className="flex items-center gap-3 mb-5">
+   778→          <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
+   779→            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+   780→          </div>
+   781→          <div>
+   782→            <h3 className="font-bold text-[#0c1e3c] text-[15px]">AI Analysis Complete</h3>
+   783→            <p className="text-[11px] text-slate-500">Reference: {result.reference_id}</p>
+   784→          </div>
+   785→        </div>
+   786→        <div className="text-sm text-slate-700 whitespace-pre-wrap bg-[#f7f8fa] p-5 rounded-xl border border-slate-100 max-h-80 overflow-y-auto leading-relaxed">
+   787→          {result.ai_analysis}
+   788→        </div>
+   789→        <div className="mt-5 flex gap-3">
+   790→          <Button onClick={() => setResult(null)} variant="outline" className="flex-1 rounded-xl h-11 text-sm">New Intake</Button>
+   791→          <Button onClick={() => onSignUp(email, name)} className="flex-1 bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl h-11 text-sm font-semibold">Sign Up to Continue</Button>
+   792→        </div>
+   793→      </div>
+   794→    );
+   795→  }
+   796→
+   797→  return (
+   798→    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+   799→      <div className="space-y-5">
+   800→        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   801→          <div>
+   802→            <Label htmlFor="intake-name" className="text-[12px] font-medium text-slate-700">Full Name *</Label>
+   803→            <Input id="intake-name" value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" className="mt-1.5 h-10" />
+   804→          </div>
+   805→          <div>
+   806→            <Label htmlFor="intake-email" className="text-[12px] font-medium text-slate-700">Email *</Label>
+   807→            <Input id="intake-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" className="mt-1.5 h-10" />
+   808→          </div>
+   809→        </div>
+   810→        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   811→          <div>
+   812→            <Label htmlFor="intake-phone" className="text-[12px] font-medium text-slate-700">Phone (optional)</Label>
+   813→            <Input id="intake-phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+27 82 000 0000" className="mt-1.5 h-10" />
+   814→          </div>
+   815→          <div>
+   816→            <Label htmlFor="intake-case-type" className="text-[12px] font-medium text-slate-700">Case Type *</Label>
+   817→            <div className="relative mt-1.5">
+   818→              <select id="intake-case-type" value={caseType} onChange={e => setCaseType(e.target.value)} className="w-full h-10 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus:outline-none focus:ring-1 focus:ring-ring appearance-none">
+   819→                <option value="">Select type...</option>
+   820→                {caseTypes.map(t => <option key={t} value={t}>{t}</option>)}
+   821→              </select>
+   822→              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+   823→            </div>
+   824→          </div>
+   825→        </div>
+   826→        <div>
+   827→          <Label className="text-[12px] font-medium text-slate-700">Urgency *</Label>
+   828→          <div role="radiogroup" aria-label="Urgency level" className="flex gap-2 mt-2">
+   829→            {['low', 'medium', 'high', 'critical'].map(level => (
+   830→              <button key={level} role="radio" aria-checked={urgency === level} onClick={() => setUrgency(level)} className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+   831→                urgency === level
+   832→                  ? level === 'critical' ? 'bg-red-50 border-red-200 text-red-700'
+   833→                    : level === 'high' ? 'bg-orange-50 border-orange-200 text-orange-700'
+   834→                    : level === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-700'
+   835→                    : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+   836→                  : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+   837→              }`}>
+   838→                {level.charAt(0).toUpperCase() + level.slice(1)}
+   839→              </button>
+   840→            ))}
+   841→          </div>
+   842→        </div>
+   843→        <div>
+   844→          <Label htmlFor="intake-description" className="text-[12px] font-medium text-slate-700">Describe Your Legal Matter *</Label>
+   845→          <textarea id="intake-description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Tell us about your situation. The more detail you provide, the better our AI can assess your matter..." rows={4} className="mt-1.5 w-full rounded-md border border-input bg-transparent px-3 py-2.5 text-sm shadow-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none" />
+   846→        </div>
+   847→        <div className="space-y-2.5">
+   848→          <label className="flex items-start gap-2.5 cursor-pointer">
+   849→            <input type="checkbox" checked={consentGiven} onChange={e => setConsentGiven(e.target.checked)} className="mt-0.5 rounded border-slate-300" />
+   850→            <span className="text-[11px] text-slate-600 leading-relaxed">I consent to sharing my information with Infinity Legal SA for the purpose of legal intake assessment.</span>
+   851→          </label>
+   852→          <label className="flex items-start gap-2.5 cursor-pointer">
+   853→            <input type="checkbox" checked={popiaConsent} onChange={e => setPopiaConsent(e.target.checked)} className="mt-0.5 rounded border-slate-300" />
+   854→            <span className="text-[11px] text-slate-600 leading-relaxed">I consent to the processing of my personal information in accordance with POPIA.</span>
+   855→          </label>
+   856→        </div>
+   857→        {error && <p className="text-[12px] text-red-500 flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" />{error}</p>}
+   858→        <Button onClick={handleSubmit} disabled={loading || !name || !email || !caseType || !description || !urgency || !consentGiven || !popiaConsent} className="w-full bg-[#0c1e3c] text-white hover:bg-[#1a3358] rounded-xl h-11 text-sm font-semibold transition-all">
+   859→          {loading ? <><RefreshCw className="w-4 h-4 animate-spin mr-2" />Analysing...</> : <><Sparkles className="w-4 h-4 mr-2" />Get Free AI Analysis</>}
+   860→        </Button>
+   861→      </div>
+   862→    </div>
+   863→  );
+   864→}
+   865→
+   866→// ============================================
+   867→// AI CHAT WIDGET
+   868→// ============================================
+   869→export function AIChatWidget() {
+   870→  const [messages, setMessages] = useState<ChatMessage[]>([
+   871→    { id: 'welcome', role: 'assistant', content: 'Welcome to Infinity Legal SA. I\'m your AI legal assistant — I can help you understand your rights, explain legal processes, and guide you on next steps. What legal matter can I help you with today?' },
+   872→  ]);
+   873→  const [input, setInput] = useState('');
+   874→  const [loading, setLoading] = useState(false);
+   875→  const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+   876→  const chatEndRef = useRef<HTMLDivElement>(null);
+   877→
+   878→  useEffect(() => {
+   879→    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+   880→  }, [messages]);
+   881→
+   882→  const sendMessage = async () => {
+   883→    if (!input.trim() || loading) return;
+   884→    const userMessage = input.trim();
+   885→    setInput('');
+   886→    setMessages(prev => [...prev, { id: `user-${Date.now()}`, role: 'user', content: userMessage }]);
+   887→    setLoading(true);
+   888→
+   889→    try {
+   890→      const conversationHistory = messages
+   891→        .filter(m => m.role === 'user' || m.role === 'assistant')
+   892→        .slice(-10);
+   893→
+   894→      const res = await fetch('/api/ai/chat', {
+   895→        method: 'POST',
+   896→        headers: { 'Content-Type': 'application/json' },
+   897→        body: JSON.stringify({ message: userMessage, sessionId, conversationHistory }),
+   898→      });
+   899→      const data = await res.json();
+   900→      if (data.success) {
+   901→        setMessages(prev => [...prev, { id: `ai-${Date.now()}`, role: 'assistant', content: data.data }]);
+   902→      } else {
+   903→        setMessages(prev => [...prev, { id: `ai-${Date.now()}`, role: 'assistant', content: 'I\'m having trouble connecting right now. Please try again in a moment.' }]);
+   904→      }
+   905→    } catch {
+   906→      setMessages(prev => [...prev, { id: `ai-${Date.now()}`, role: 'assistant', content: 'Network error. Please check your connection and try again.' }]);
+   907→    }
+   908→    setLoading(false);
+   909→  };
+   910→
+   911→  return (
+   912→    <div className="max-w-3xl mx-auto">
+   913→      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+   914→        {/* Chat header */}
+   915→        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-100 bg-[#f7f8fa]">
+   916→          <div className="w-8 h-8 rounded-full bg-[#0c1e3c] flex items-center justify-center">
+   917→            <Bot className="w-4 h-4 text-[#c9a84c]" />
+   918→          </div>
+   919→          <div>
+   920→            <p className="text-[13px] font-semibold text-[#0c1e3c]">Infinity Legal AI</p>
+   921→            <div className="flex items-center gap-1.5">
+   922→              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+   923→              <span className="text-[10px] text-slate-500">Online · Confidential</span>
+   924→            </div>
+   925→          </div>
+   926→        </div>
+   927→
+   928→        {/* Messages */}
+   929→        <div className="h-[400px] overflow-y-auto p-5 space-y-4">
+   930→          {messages.map((msg) => (
+   931→            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+   932→              <div className={`max-w-[80%] ${msg.role === 'user'
+   933→                ? 'bg-[#0c1e3c] text-white rounded-2xl rounded-br-md'
+   934→                : 'bg-[#f7f8fa] text-slate-700 rounded-2xl rounded-bl-md border border-slate-100'
+   935→              } px-4 py-3`}>
+   936→                <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+   937→              </div>
+   938→            </div>
+   939→          ))}
+   940→          {loading && (
+   941→            <div className="flex justify-start">
+   942→              <div className="bg-[#f7f8fa] border border-slate-100 rounded-2xl rounded-bl-md px-4 py-3">
+   943→                <div className="flex items-center gap-1.5">
+   944→                  <div className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+   945→                  <div className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+   946→                  <div className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+   947→                </div>
+   948→              </div>
+   949→            </div>
+   950→          )}
+   951→          <div ref={chatEndRef} />
+   952→        </div>
+   953→
+   954→        {/* Input */}
+   955→        <div className="px-4 py-3 border-t border-slate-100 bg-white">
+   956→          <div className="flex items-center gap-2">
+   957→            <Input
+   958→              value={input}
+   959→              onChange={e => setInput(e.target.value)}
+   960→              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+   961→              placeholder="Ask about your legal matter..."
+   962→              className="flex-1 h-10 border-slate-200 focus:border-[#c9a84c]/40 focus:ring-[#c9a84c]/20 text-sm"
+   963→              disabled={loading}
+   964→            />
+   965→            <Button onClick={sendMessage} disabled={!input.trim() || loading} className="bg-[#0c1e3c] text-white hover:bg-[#1a3358] rounded-xl h-10 w-10 p-0 flex items-center justify-center">
+   966→              <Send className="w-4 h-4" />
+   967→            </Button>
+   968→          </div>
+   969→          <p className="text-[9px] text-slate-400 mt-2 text-center">AI responses are for informational purposes only and do not constitute legal advice.</p>
+   970→        </div>
+   971→      </div>
+   972→    </div>
+   973→  );
+   974→}
+   975→
+   976→// ============================================
+   977→// LEGAL ARTICLES SECTION
+   978→// ============================================
+   979→
+   980→const CATEGORY_META: Record<string, { label: string; color: string; bg: string }> = {
+   981→  civil_litigation: { label: 'Civil Litigation', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-100' },
+   982→  labour_law: { label: 'Labour Law', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
+   983→  criminal_defence: { label: 'Criminal Defence', color: 'text-red-700', bg: 'bg-red-50 border-red-100' },
+   984→  family_law: { label: 'Family Law', color: 'text-purple-700', bg: 'bg-purple-50 border-purple-100' },
+   985→  corporate_commercial: { label: 'Corporate', color: 'text-slate-700', bg: 'bg-slate-50 border-slate-100' },
+   986→  property_conveyancing: { label: 'Property', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
+   987→  estate_planning: { label: 'Estate Planning', color: 'text-teal-700', bg: 'bg-teal-50 border-teal-100' },
+   988→  debt_recovery: { label: 'Debt Recovery', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-100' },
+   989→  consumer_rights: { label: 'Consumer Rights', color: 'text-sky-700', bg: 'bg-sky-50 border-sky-100' },
+   990→  popia_compliance: { label: 'POPIA', color: 'text-[#a88832]', bg: 'bg-[#fdf8ed] border-[#e8e2d4]' },
+   991→  immigration: { label: 'Immigration', color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-100' },
+   992→  general: { label: 'General', color: 'text-slate-600', bg: 'bg-slate-50 border-slate-100' },
+   993→};
+   994→
+   995→function LegalArticlesSection() {
+   996→  const [articles, setArticles] = useState<any[]>([]);
+   997→  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+   998→  const [loading, setLoading] = useState(true);
+   999→  const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
+  1000→
+  1001→  // Static fallback articles — shown when the database table doesn't exist yet
+  1002→  const staticArticles = [
+  1003→    {
+  1004→      id: 'static-1',
+  1005→      slug: 'understanding-your-rights-under-popia',
+  1006→      title: 'Understanding Your Rights Under POPIA',
+  1007→      subtitle: 'A comprehensive guide to South Africa\'s Protection of Personal Information Act',
+  1008→      summary: 'A comprehensive guide to South Africa\'s Protection of Personal Information Act — your 8 rights and how to exercise them.',
+  1009→      category: 'popia_compliance',
+  1010→      tags: ['POPIA', 'data protection', 'privacy rights'],
+  1011→      reading_time_min: 6,
+  1012→      is_featured: true,
+  1013→      is_published: true,
+  1014→      published_at: new Date().toISOString(),
+  1015→      content: '# Understanding Your Rights Under POPIA\n\nThe Protection of Personal Information Act (POPIA) is South Africa\'s comprehensive data protection law that gives you rights over how your personal information is collected, used, stored, and shared.\n\n## Your 8 Rights Under POPIA\n\n1. **Right to Access** — Request your personal information from any organisation\n2. **Right to Correction** — Correct inaccurate or outdated information\n3. **Right to Object** — Object to processing of your information\n4. **Right to Withdraw Consent** — Withdraw consent at any time\n5. **Right to Complain** — Lodge a complaint with the Information Regulator\n6. **Right to Not Have Data Processed** — Restrict processing beyond your consent\n7. **Right to Not Be Subject to Automated Decisions** — Not subject to purely automated decisions\n8. **Right to Data Portability** — Receive your data in a structured format\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+  1016→    },
+  1017→    {
+  1018→      id: 'static-2',
+  1019→      slug: 'what-to-do-if-you-are-unfairly-dismissed',
+  1020→      title: 'What to Do If You Are Unfairly Dismissed',
+  1021→      subtitle: 'Your step-by-step guide to CCMA referrals and labour rights in South Africa',
+  1022→      summary: 'Step-by-step guide to CCMA referrals and labour rights — including the critical 30-day deadline.',
+  1023→      category: 'labour_law',
+  1024→      tags: ['unfair dismissal', 'CCMA', 'labour law', 'LRA'],
+  1025→      reading_time_min: 8,
+  1026→      is_featured: true,
+  1027→      is_published: true,
+  1028→      published_at: new Date().toISOString(),
+  1029→      content: '# What to Do If You Are Unfairly Dismissed\n\nUnfair dismissal is one of the most common labour disputes in South Africa. The Labour Relations Act (LRA) protects employees from being fired without fair reason and proper procedure.\n\n## The 30-Day Rule\n\n**Critical:** You only have **30 days** from the date of dismissal to refer a dispute to the CCMA.\n\n## Steps to Take\n\n1. **Get Your Dismissal in Writing** — Your employer is legally required to provide this\n2. **Gather Evidence** — Employment contract, payslips, written warnings, communications\n3. **Refer to the CCMA** — Submit form LRA 7.11 within 30 days\n4. **Conciliation** — A commissioner helps both parties reach a settlement\n5. **Arbitration** — If conciliation fails, a binding decision is made\n\n## Possible Outcomes\n- **Reinstatement** — Get your job back\n- **Compensation** — Up to 12 months\' salary\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+  1030→    },
+  1031→    {
+  1032→      id: 'static-3',
+  1033→      slug: 'your-consumer-rights-in-south-africa',
+  1034→      title: 'Your Consumer Rights in South Africa',
+  1035→      subtitle: 'How the Consumer Protection Act shields you from unfair business practices',
+  1036→      summary: 'How the Consumer Protection Act shields you from unfair business practices — your 9 fundamental rights explained.',
+  1037→      category: 'consumer_rights',
+  1038→      tags: ['consumer rights', 'CPA', 'Consumer Protection Act'],
+  1039→      reading_time_min: 7,
+  1040→      is_featured: true,
+  1041→      is_published: true,
+  1042→      published_at: new Date().toISOString(),
+  1043→      content: '# Your Consumer Rights in South Africa\n\nThe Consumer Protection Act (CPA) of 2008 gives you 9 fundamental rights:\n\n1. **Right to Equality** — No discrimination\n2. **Right to Privacy** — Refuse unwanted marketing\n3. **Right to Choose** — Cancel agreements with 20 days\' notice\n4. **Right to Information** — Clear pricing and terms\n5. **Right to Fair Value** — Honest advertising and fair pricing\n6. **Right to Safety** — Safe products with warnings\n7. **Right to Fair Contract Terms** — No unfair clauses\n8. **Right to Fair Marketing** — No bait marketing or pyramid schemes\n9. **Right to Accountability** — Honour warranties\n\n**Key facts:** Return defective goods within **6 months**. Cooling-off period: **5 business days** for direct marketing.\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+  1044→    },
+  1045→    {
+  1046→      id: 'static-4',
+  1047→      slug: 'guide-to-south-african-divorce-law',
+  1048→      title: 'Guide to South African Divorce Law',
+  1049→      subtitle: 'What you need to know about divorce proceedings, maintenance, and custody',
+  1050→      summary: 'What you need to know about divorce proceedings, asset division, maintenance, and child custody in South Africa.',
+  1051→      category: 'family_law',
+  1052→      tags: ['divorce', 'family law', 'custody', 'maintenance'],
+  1053→      reading_time_min: 9,
+  1054→      is_featured: false,
+  1055→      is_published: true,
+  1056→      published_at: new Date().toISOString(),
+  1057→      content: '# Guide to South African Divorce Law\n\nSouth African law recognises one ground for divorce: the **irretrievable breakdown** of the marriage.\n\n## Division of Assets\n- **In community of property** — Split 50/50\n- **Out of community (without accrual)** — Each keeps their own\n- **Out of community (with accrual)** — Share the growth difference\n\n## The Process\n1. Summons → 2. Response → 3. Discovery → 4. Mediation → 5. Trial → 6. Decree\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+  1058→    },
+  1059→    {
+  1060→      id: 'static-5',
+  1061→      slug: 'renters-rights-under-the-rental-housing-act',
+  1062→      title: 'Your Rights as a Tenant in South Africa',
+  1063→      subtitle: 'Know what your landlord can and cannot do under the Rental Housing Act',
+  1064→      summary: 'Know what your landlord can and cannot do — unlawful eviction, deposits, and repairs.',
+  1065→      category: 'civil_litigation',
+  1066→      tags: ['tenant rights', 'rental housing', 'eviction'],
+  1067→      reading_time_min: 7,
+  1068→      is_featured: false,
+  1069→      is_published: true,
+  1070→      published_at: new Date().toISOString(),
+  1071→      content: '# Your Rights as a Tenant\n\n- **Right to a Written Lease** — Must state rent, deposit, and terms\n- **Right to a Habitable Dwelling** — Working plumbing, structural integrity\n- **Right Against Unlawful Eviction** — No eviction without a court order (PIE Act)\n- **Right to Privacy** — 24-48 hours notice before entry\n- **Right to Fair Deposit Handling** — Refunded within 7-21 days\n\n**Rental Housing Tribunal**: 0800 11 22 33\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+  1072→    },
+  1073→    {
+  1074→      id: 'static-6',
+  1075→      slug: 'debt-review-and-debt-counselling-explained',
+  1076→      title: 'Debt Review and Debt Counselling Explained',
+  1077→      subtitle: 'How the National Credit Act protects over-indebted South Africans',
+  1078→      summary: 'How the National Credit Act protects over-indebted South Africans through debt review and counselling.',
+  1079→      category: 'debt_recovery',
+  1080→      tags: ['debt review', 'NCA', 'debt counselling'],
+  1081→      reading_time_min: 6,
+  1082→      is_featured: false,
+  1083→      is_published: true,
+  1084→      published_at: new Date().toISOString(),
+  1085→      content: '# Debt Review Explained\n\nDebt review (debt counselling) is a formal legal process under the NCA where a registered counsellor negotiates with creditors for:\n- Reduced monthly payments\n- Extended payment terms\n- Lower interest rates\n\n## Key Protections\n- **No legal action** from creditors while under debt review\n- **No asset repossession** — Home and car are protected\n- **No harassment** — Creditors must communicate through your counsellor\n\n*This article is for informational purposes only and does not constitute legal advice.*',
+  1086→    },
+  1087→  ];
+  1088→
+  1089→  useEffect(() => {
+  1090→    const fetchArticles = async () => {
+  1091→      try {
+  1092→        const res = await fetch('/api/articles?limit=20');
+  1093→        const data = await res.json();
+  1094→        if (data.success && data.data?.articles?.length > 0) {
+  1095→          setArticles(data.data.articles);
+  1096→        } else {
+  1097→          // Fallback to static articles when DB table doesn't exist yet
+  1098→          setArticles(staticArticles);
+  1099→        }
+  1100→      } catch {
+  1101→        // Fallback to static articles
+  1102→        setArticles(staticArticles);
+  1103→      } finally {
+  1104→        setLoading(false);
+  1105→      }
+  1106→    };
+  1107→    fetchArticles();
+  1108→  }, []);
+  1109→
+  1110→  const featuredArticles = articles.filter(a => a.is_featured);
+  1111→  const regularArticles = articles.filter(a => !a.is_featured);
+  1112→
+  1113→  const [fullArticle, setFullArticle] = useState<any>(null);
+  1114→  const [loadingArticle, setLoadingArticle] = useState(false);
+  1115→
+  1116→  // Render markdown-ish content as HTML (skip first h1 since we display title separately)
+  1117→  const renderContent = (content: string | undefined | null) => {
+  1118→    if (!content) return '<p class="text-slate-400">Article content loading...</p>';
+  1119→    // Remove the first # heading since we display it separately in the detail view
+  1120→    const withoutFirstH1 = content.replace(/^#\s+.*\n?/, '');
+  1121→    return withoutFirstH1
+  1122→      .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-[#0c1e3c] mt-6 mb-2">$1</h3>')
+  1123→      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold text-[#0c1e3c] mt-8 mb-3">$1</h2>')
+  1124→      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-[#0c1e3c] mt-4 mb-4">$1</h1>')
+  1125→      .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-[#0c1e3c]">$1</strong>')
+  1126→      .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+  1127→      .replace(/^- (.*$)/gim, '<li class="ml-4 text-slate-600 text-sm leading-relaxed">$1</li>')
+  1128→      .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-4 text-slate-600 text-sm leading-relaxed"><span class="font-medium text-[#0c1e3c]">$1.</span> $2</li>')
+  1129→      .replace(/\n\n/g, '<div class="h-3"></div>')
+  1130→      .replace(/\n/g, '<br/>');
+  1131→  };
+  1132→
+  1133→  // Fetch full article when expanding
+  1134→  useEffect(() => {
+  1135→    if (!expandedArticle) { setFullArticle(null); return; }
+  1136→    const existing = articles.find(a => a.slug === expandedArticle);
+  1137→    if (existing?.content) { setFullArticle(existing); return; }
+  1138→    setLoadingArticle(true);
+  1139→    fetch(`/api/articles?slug=${expandedArticle}`)
+  1140→      .then(r => r.json())
+  1141→      .then(data => {
+  1142→        if (data.success && data.data) setFullArticle(data.data);
+  1143→      })
+  1144→      .catch(() => {})
+  1145→      .finally(() => setLoadingArticle(false));
+  1146→  }, [expandedArticle, articles]);
+  1147→
+  1148→  // Article detail modal
+  1149→  if (expandedArticle) {
+  1150→    const article = fullArticle || articles.find(a => a.slug === expandedArticle);
+  1151→    if (article) {
+  1152→      const catMeta = CATEGORY_META[article.category] || CATEGORY_META.general;
+  1153→      return (
+  1154→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1155→          <button
+  1156→            onClick={() => setExpandedArticle(null)}
+  1157→            className="flex items-center gap-2 text-[#a88832] hover:text-[#8a6e28] text-sm font-medium mb-8 transition-colors"
+  1158→          >
+  1159→            <ArrowRight className="w-4 h-4 rotate-180" />
+  1160→            Back to all articles
+  1161→          </button>
+  1162→          <article className="max-w-3xl mx-auto">
+  1163→            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider mb-5 ${catMeta.bg} ${catMeta.color}`}>
+  1164→              {catMeta.label}
+  1165→            </div>
+  1166→            <h1 className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight leading-tight">{article.title}</h1>
+  1167→            {article.subtitle && (
+  1168→              <p className="mt-3 text-lg text-slate-500 leading-relaxed">{article.subtitle}</p>
+  1169→            )}
+  1170→            <div className="flex items-center gap-4 mt-5 text-sm text-slate-400">
+  1171→              {article.reading_time_min && (
+  1172→                <span className="flex items-center gap-1.5">
+  1173→                  <Clock className="w-3.5 h-3.5" />
+  1174→                  {article.reading_time_min} min read
+  1175→                </span>
+  1176→              )}
+  1177→              {article.published_at && (
+  1178→                <span>{new Date(article.published_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+  1179→              )}
+  1180→            </div>
+  1181→            {article.tags?.length > 0 && (
+  1182→              <div className="flex flex-wrap gap-2 mt-4">
+  1183→                {article.tags.map((tag: string) => (
+  1184→                  <span key={tag} className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">{tag}</span>
+  1185→                ))}
+  1186→              </div>
+  1187→            )}
+  1188→            <div className="mt-8 pt-8 border-t border-slate-200">
+  1189→              <div
+  1190→                className="prose prose-slate max-w-none"
+  1191→                dangerouslySetInnerHTML={{ __html: renderContent(article.content) }}
+  1192→              />
+  1193→            </div>
+  1194→          </article>
+  1195→        </div>
+  1196→      );
+  1197→    }
+  1198→  }
+  1199→
+  1200→  return (
+  1201→    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1202→      <div className="max-w-xl mb-14">
+  1203→        <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Legal Knowledge</span>
+  1204→        <h2 id="articles-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight mt-3 leading-tight">
+  1205→          Know your rights.<br />Read the law.
+  1206→        </h2>
+  1207→        <p className="mt-4 text-slate-500 text-base leading-relaxed">
+  1208→          Free legal articles written for South Africans. Understand your rights under POPIA, the LRA, the CPA, and more.
+  1209→        </p>
+  1210→      </div>
+  1211→
+  1212→      {loading ? (
+  1213→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  1214→          {[1, 2, 3].map(i => (
+  1215→            <div key={i} className="rounded-2xl border border-slate-100 bg-white p-6 animate-pulse">
+  1216→              <div className="h-3 bg-slate-100 rounded w-20 mb-3" />
+  1217→              <div className="h-5 bg-slate-200 rounded w-3/4 mb-2" />
+  1218→              <div className="h-3 bg-slate-100 rounded w-full mb-1" />
+  1219→              <div className="h-3 bg-slate-100 rounded w-2/3" />
+  1220→            </div>
+  1221→          ))}
+  1222→        </div>
+  1223→      ) : articles.length === 0 ? (
+  1224→        <div className="text-center py-12">
+  1225→          <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+  1226→            <BookOpen className="w-7 h-7 text-slate-300" />
+  1227→          </div>
+  1228→          <p className="text-[13px] text-slate-500">Legal articles coming soon.</p>
+  1229→        </div>
+  1230→      ) : (
+  1231→        <>
+  1232→          {/* Featured articles — larger cards */}
+  1233→          {featuredArticles.length > 0 && (
+  1234→            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+  1235→              {featuredArticles.map(article => {
+  1236→                const catMeta = CATEGORY_META[article.category] || CATEGORY_META.general;
+  1237→                return (
+  1238→                  <article
+  1239→                    key={article.id}
+  1240→                    onClick={() => setExpandedArticle(article.slug)}
+  1241→                    className="group relative overflow-hidden rounded-2xl bg-[#f7f8fa] border border-slate-200 hover:border-[#c9a84c]/30 hover:shadow-xl hover:shadow-slate-100/50 transition-all duration-300 cursor-pointer"
+  1242→                  >
+  1243→                    <div className="p-6 sm:p-8">
+  1244→                      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider mb-4 ${catMeta.bg} ${catMeta.color}`}>
+  1245→                        {catMeta.label}
+  1246→                      </div>
+  1247→                      <div className="flex items-start justify-between gap-3">
+  1248→                        <h3 className="text-lg sm:text-xl font-bold text-[#0c1e3c] leading-tight group-hover:text-[#a88832] transition-colors">
+  1249→                          {article.title}
+  1250→                        </h3>
+  1251→                        <ArrowUpRight className="w-5 h-5 text-slate-300 group-hover:text-[#c9a84c] flex-shrink-0 mt-1 transition-colors" />
+  1252→                      </div>
+  1253→                      {article.subtitle && (
+  1254→                        <p className="mt-2 text-sm text-slate-500 leading-relaxed">{article.subtitle}</p>
+  1255→                      )}
+  1256→                      <div className="flex items-center gap-4 mt-4 text-[12px] text-slate-400">
+  1257→                        {article.reading_time_min && (
+  1258→                          <span className="flex items-center gap-1.5">
+  1259→                            <Clock className="w-3.5 h-3.5" />
+  1260→                            {article.reading_time_min} min read
+  1261→                          </span>
+  1262→                        )}
+  1263→                        {article.tags?.slice(0, 3).map((tag: string) => (
+  1264→                          <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{tag}</span>
+  1265→                        ))}
+  1266→                      </div>
+  1267→                    </div>
+  1268→                  </article>
+  1269→                );
+  1270→              })}
+  1271→            </div>
+  1272→          )}
+  1273→
+  1274→          {/* Regular articles — smaller cards */}
+  1275→          {regularArticles.length > 0 && (
+  1276→            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  1277→              {regularArticles.map(article => {
+  1278→                const catMeta = CATEGORY_META[article.category] || CATEGORY_META.general;
+  1279→                return (
+  1280→                  <article
+  1281→                    key={article.id}
+  1282→                    onClick={() => setExpandedArticle(article.slug)}
+  1283→                    className="group relative rounded-xl bg-white border border-slate-200 hover:border-[#c9a84c]/30 hover:shadow-lg hover:shadow-slate-100/50 p-5 transition-all duration-300 cursor-pointer"
+  1284→                  >
+  1285→                    <div className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[9px] font-semibold uppercase tracking-wider mb-3 ${catMeta.bg} ${catMeta.color}`}>
+  1286→                      {catMeta.label}
+  1287→                    </div>
+  1288→                    <h3 className="text-[15px] font-semibold text-[#0c1e3c] leading-snug group-hover:text-[#a88832] transition-colors line-clamp-2">
+  1289→                      {article.title}
+  1290→                    </h3>
+  1291→                    {article.summary && (
+  1292→                      <p className="mt-2 text-[13px] text-slate-500 leading-relaxed line-clamp-2">{article.summary}</p>
+  1293→                    )}
+  1294→                    <div className="flex items-center gap-3 mt-3 text-[11px] text-slate-400">
+  1295→                      {article.reading_time_min && (
+  1296→                        <span className="flex items-center gap-1">
+  1297→                          <Clock className="w-3 h-3" />
+  1298→                          {article.reading_time_min} min
+  1299→                        </span>
+  1300→                      )}
+  1301→                      {article.tags?.slice(0, 2).map((tag: string) => (
+  1302→                        <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{tag}</span>
+  1303→                      ))}
+  1304→                    </div>
+  1305→                  </article>
+  1306→                );
+  1307→              })}
+  1308→            </div>
+  1309→          )}
+  1310→        </>
+  1311→      )}
+  1312→    </div>
+  1313→  );
+  1314→}
+  1315→
