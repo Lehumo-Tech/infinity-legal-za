@@ -9,439 +9,403 @@ datasource db {
 }
 
 // ============================================
-// ENUMS
+// PROFILES & AUTH
 // ============================================
 
-enum UserRole {
-  managing_director
-  senior_partner
-  associate
-  paralegal
-  legal_officer
-  supervising_officer
-  senior_consultant
-  consultant
-  candidate_attorney
-  hr_manager
-  finance_manager
-  office_administrator
-  systems_admin
-  receptionist
-  client
-  guest
-}
+model Profile {
+  id             String   @id @default(uuid())
+  email          String
+  full_name      String?
+  phone          String?
+  avatar_url     String?
+  /// CHECK: client | attorney | paralegal | admin | managing_director | systems_admin
+  role           String   @default("client")
+  id_number      String?
+  company        String?
+  address        Json?
+  preferences    Json?
+  popi_consent   Boolean  @default(false)
+  email_verified Boolean  @default(false)
+  last_login_at  DateTime?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
-enum Department {
-  management
-  litigation
-  conveyancing
-  family_law
-  corporate
-  criminal_law
-  estate_planning
-  consulting
-  hr
-  finance
-  it
-  administration
-}
-
-enum CaseType {
-  family_law
-  criminal_defence
-  civil_litigation
-  conveyancing
-  estate_planning
-  corporate_commercial
-  debt_collection
-  immigration
-  labour_law
-  personal_injury
-  other
-}
-
-enum CaseUrgency {
-  low
-  medium
-  high
-  critical
-}
-
-enum CaseStatus {
-  intake
-  pending_review
-  active
-  on_hold
-  settled
-  closed
-  archived
-}
-
-enum LeadSource {
-  website
-  referral
-  walk_in
-  social_media
-  advertisement
-  cold_call
-  other
-}
-
-enum LeadStatus {
-  new
-  contacted
-  qualified
-  consultation_scheduled
-  retained
-  lost
-  disqualified
-}
-
-enum DocumentType {
-  contract
-  pleading
-  correspondence
-  court_filing
-  affidavit
-  opinion
-  memo
-  invoice
-  consent_form
-  id_document
-  other
-}
-
-enum WorkflowStatus {
-  draft
-  review
-  approved
-  signed
-  filed
-  archived
-}
-
-enum TaskPriority {
-  low
-  medium
-  high
-  urgent
-}
-
-enum TaskStatus {
-  pending
-  in_progress
-  completed
-  overdue
-  cancelled
-}
-
-enum MessageType {
-  message
-  note
-  system
-  alert
-}
-
-enum ConsentType {
-  data_processing
-  marketing
-  third_party_sharing
-  automated_decision
-  popia_general
-}
-
-enum NotificationType {
-  case_update
-  task_assigned
-  document_review
-  message
-  system
-  deadline
-  lead_assigned
-  consultation
-}
-
-enum ConsultationStatus {
-  scheduled
-  confirmed
-  completed
-  cancelled
-  no_show
-}
-
-enum MeetingType {
-  in_person
-  video_call
-  phone_call
-}
-
-enum SubscriptionStatus {
-  active
-  past_due
-  cancelled
-  expired
-  trialing
-}
-
-enum AttorneyAvailability {
-  available
-  busy
-  on_leave
-  unavailable
-}
-
-enum PrivilegedNoteVisibility {
-  officer_only
-  managing_partner_only
-  attorney_client
-}
-
-enum ErrorType {
-  runtime
-  api
-  database
-  auth
-  validation
-  network
-  unknown
-}
-
-enum BackupStatus {
-  pending
-  in_progress
-  completed
-  failed
-}
-
-// ============================================
-// MODELS
-// ============================================
-
-model User {
-  id                   String    @id @default(cuid())
-  email                String    @unique
-  password             String
-  full_name            String?
-  phone                String?
-  role                 UserRole  @default(client)
-  department           Department?
-  bar_number           String?
-  hire_date            DateTime?
-  is_active            Boolean   @default(true)
-  avatar               String?
-  password_expires_at  DateTime?
-  last_password_change DateTime?
-  email_verified       Boolean   @default(false)
-  created_at           DateTime  @default(now())
-  updated_at           DateTime  @updatedAt
-
-  supervisor_id String?
-  supervisor    User?   @relation("UserSupervisor", fields: [supervisor_id], references: [id])
-
-  supervisees  User[]   @relation("UserSupervisor")
-  profiles     Profile[]
-  client_cases Case[]   @relation("ClientCases")
-  attorney_cases Case[] @relation("AttorneyCases")
-  paralegal_cases Case[] @relation("ParalegalCases")
-  lead_paralegal_assignments Lead[] @relation("LeadParalegal")
-  lead_officer_assignments   Lead[] @relation("LeadOfficer")
-  tasks_assigned Task[] @relation("TaskAssignee")
-  tasks_created  Task[] @relation("TaskCreator")
-  messages_sent    Message[]  @relation("MessageSender")
-  messages_received Message[] @relation("MessageRecipient")
-  audit_logs       AuditLog[]
-  consent_logs     ConsentLog[]
-  notifications    Notification[]
-  consultations_as_client     Consultation[] @relation("ConsultationClient")
-  consultations_as_attorney   Consultation[] @relation("ConsultationAttorney")
-  subscriptions    UserSubscription[]
-  payment_records  PaymentRecord[]
-  attorney_profile Attorney?
-  documents_prepared Document[] @relation("DocumentPreparer")
-  documents_approved Document[] @relation("DocumentApprover")
-  documents_signed   Document[] @relation("DocumentSigner")
-  documents_supervised Document[] @relation("DocumentSupervisor")
-  privileged_notes  PrivilegedNote[]
-  api_analytics     ApiAnalytic[]
-  error_logs        ErrorLog[]
+  // Reverse relations
+  attorney                       Attorney?
+  cases_as_client                Case[]
+  leads_assigned                 Lead[]                @relation("LeadAssignedTo")
+  leads_converted                Lead[]                @relation("LeadConvertedClient")
+  intake_submissions_as_client   IntakeSubmission[]    @relation("IntakeClient")
+  intake_submissions_reviewed    IntakeSubmission[]    @relation("IntakeReviewer")
+  ai_intake_sessions             AiIntakeSession[]
+  ai_analyses_requested          AiAnalysis[]
+  documents_uploaded             Document[]
+  tasks_assigned                 Task[]                @relation("TaskAssignedTo")
+  tasks_created                  Task[]                @relation("TaskCreatedBy")
+  messages_sent                  Message[]             @relation("MessageSender")
+  messages_received              Message[]             @relation("MessageRecipient")
+  timeline_events                CaseTimeline[]
+  privileged_notes               PrivilegedNote[]
+  consultations_as_client        Consultation[]
+  consent_logs                   ConsentLog[]
+  notifications                  Notification[]
+  subscriptions                  UserSubscription[]
+  payment_records                PaymentRecord[]
+  audit_logs                     AuditLog[]
+  api_analytics                  ApiAnalytic[]
+  error_logs                     ErrorLog[]
+  workbench_config               WorkbenchConfig?
+  workbench_widgets              WorkbenchWidget[]
+  workbench_quick_actions        WorkbenchQuickAction[]
+  workbench_pinned_items         WorkbenchPinnedItem[]
+  workbench_recent_activities    WorkbenchRecentActivity[]
+  lead_pipeline_stages_auto_assigned LeadPipelineStage[]
+  lead_pipeline_transitions      LeadPipelineTransition[]
+  lead_communications_made       LeadCommunication[]
+  lead_automation_rules          LeadAutomationRule[]
+  admin_sessions                 AdminSession[]
+  admin_activity_logs            AdminActivityLog[]
+  crm_notifications              CrmNotification[]
+  crm_reports                    CrmReport[]
+  crm_system_settings_updated    CrmSystemSetting[]
+  crm_contact_messages_assigned  CrmContactMessage[]
+  crm_user_notes                 CrmUserNote[]         @relation("CrmUserNoteUser")
+  crm_user_notes_authored        CrmUserNote[]         @relation("CrmUserNoteAuthor")
+  crm_subscription_events        CrmSubscriptionEvent[]
+  legal_articles                 LegalArticle[]
 
   @@index([role])
-  @@index([department])
-  @@index([is_active])
   @@index([email])
 }
 
-model Profile {
-  id          String   @id @default(cuid())
-  user_id     String   @unique
-  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  email       String
-  full_name   String
-  phone       String?
-  role        UserRole
-  department  Department?
-  bar_number  String?
-  hire_date   DateTime?
-  is_active   Boolean  @default(true)
-  avatar      String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+// ============================================
+// ATTORNEYS
+// ============================================
 
-  @@index([role])
-  @@index([department])
-  @@index([user_id])
+model Attorney {
+  id                 String   @id @default(uuid())
+  practice_number    String?  @unique
+  specialization     String[]
+  bar_admission_date DateTime?
+  hourly_rate        Float?
+  bio                String?
+  available          Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  profile       Profile       @relation(fields: [id], references: [id])
+  cases         Case[]
+  consultations Consultation[]
+
+  @@index([practice_number])
+  @@index([available])
 }
 
-model Case {
-  id                 String      @id @default(cuid())
-  matter_number      String      @unique
-  title              String
-  description        String?
-  case_type          CaseType
-  urgency            CaseUrgency
-  status             CaseStatus  @default(intake)
-  client_id          String
-  lead_attorney_id   String?
-  support_paralegal_id String?
-  lead_id            String?
-  court_date         DateTime?
-  filing_date        DateTime?
-  closing_date       DateTime?
-  estimated_value    Float?
-  ai_analysis        String?
-  is_high_risk       Boolean     @default(false)
-  next_action        String?
-  next_action_date   DateTime?
-  created_at         DateTime    @default(now())
-  updated_at         DateTime    @updatedAt
+// ============================================
+// CASES
+// ============================================
 
-  client           User       @relation("ClientCases", fields: [client_id], references: [id], onDelete: Cascade)
-  lead_attorney    User?      @relation("AttorneyCases", fields: [lead_attorney_id], references: [id], onDelete: SetNull)
-  support_paralegal User?     @relation("ParalegalCases", fields: [support_paralegal_id], references: [id], onDelete: SetNull)
-  documents        Document[]
-  tasks            Task[]
-  messages         Message[]
-  timeline         CaseTimeline[]
-  privileged_notes PrivilegedNote[]
-  consultations    Consultation[]
+model Case {
+  id              String   @id @default(uuid())
+  /// Auto-generated case reference
+  case_ref        String   @unique
+  title           String
+  description     String?
+  /// CHECK: civil | criminal | family | corporate | property | labour | immigration | intellectual_property | tax | personal_injury | debt_recovery | other
+  case_type       String
+  /// CHECK: intake | review | active | on_hold | closed | archived
+  status          String   @default("intake")
+  client_id       String
+  attorney_id     String?
+  opposing_party  String?
+  court_name      String?
+  case_number     String?
+  jurisdiction    String?
+  estimated_value Float?
+  retainer_amount Float?
+  contingency_fee Float?
+  next_deadline   DateTime?
+  notes           String?
+  tags            String[]
+  metadata        Json?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  client              Profile           @relation(fields: [client_id], references: [id])
+  attorney            Attorney?         @relation(fields: [attorney_id], references: [id])
+  converted_leads     Lead[]
+  intake_submissions  IntakeSubmission[]
+  documents           Document[]
+  tasks               Task[]
+  messages            Message[]
+  timeline_events     CaseTimeline[]
+  privileged_notes    PrivilegedNote[]
+  consultations       Consultation[]
+  payment_records     PaymentRecord[]
+  ai_analyses         AiAnalysis[]
 
   @@index([status])
   @@index([case_type])
   @@index([client_id])
-  @@index([lead_attorney_id])
-  @@index([urgency])
+  @@index([attorney_id])
   @@index([created_at])
-  @@index([court_date])
 }
 
-model Lead {
-  id                  String     @id @default(cuid())
-  name                String
-  email               String
-  phone               String?
-  source              LeadSource
-  status              LeadStatus @default(new)
-  case_type           CaseType?
-  description         String?
-  assigned_paralegal_id String?
-  assigned_officer_id String?
-  lead_score          Int?
-  qualification_notes String?
-  estimated_value     Float?
-  first_contact_date  DateTime?
-  sla_deadline        DateTime?
-  converted_case_id   String?
-  created_at          DateTime   @default(now())
-  updated_at          DateTime   @updatedAt
+// ============================================
+// LEADS
+// ============================================
 
-  assigned_paralegal User? @relation("LeadParalegal", fields: [assigned_paralegal_id], references: [id], onDelete: SetNull)
-  assigned_officer   User? @relation("LeadOfficer", fields: [assigned_officer_id], references: [id], onDelete: SetNull)
+model Lead {
+  id                 String   @id @default(uuid())
+  first_name         String
+  last_name          String
+  email              String
+  phone              String?
+  company            String?
+  /// CHECK: website | referral | social_media | google_ads | walk_in | phone | email | partner | event | other
+  source             String
+  /// CHECK: new | contacted | qualified | consultation_scheduled | retained | lost | nurturing
+  status             String   @default("new")
+  /// CHECK: civil | criminal | family | corporate | property | labour | immigration | intellectual_property | tax | personal_injury | debt_recovery | other
+  case_type          String?
+  description        String?
+  estimated_value    Float?
+  lead_score         Int?
+  assigned_to        String?
+  converted_client_id String?
+  converted_case_id  String?
+  notes              String?
+  tags               String[]
+  utm_source         String?
+  utm_medium         String?
+  utm_campaign       String?
+  last_contacted_at  DateTime?
+  next_follow_up     DateTime?
+  metadata           Json?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  assigned_to_profile    Profile?                @relation("LeadAssignedTo", fields: [assigned_to], references: [id])
+  converted_client       Profile?                @relation("LeadConvertedClient", fields: [converted_client_id], references: [id])
+  converted_case         Case?                   @relation(fields: [converted_case_id], references: [id])
+  intake_submissions     IntakeSubmission[]
+  pipeline_transitions   LeadPipelineTransition[]
+  communications        LeadCommunication[]
+  form_submissions      LeadFormSubmission[]
+  crm_contact_messages  CrmContactMessage[]
 
   @@index([status])
   @@index([source])
   @@index([email])
-  @@index([assigned_paralegal_id])
-  @@index([sla_deadline])
+  @@index([assigned_to])
   @@index([created_at])
 }
 
-model Document {
-  id                  String         @id @default(cuid())
-  title               String
-  case_id             String
-  document_type       DocumentType
-  workflow_status     WorkflowStatus @default(draft)
-  version             Int            @default(1)
-  file_url            String?
-  file_name           String?
-  file_size           Int?
-  prepared_by         String?
-  approved_by         String?
-  signed_by           String?
-  supervising_officer String?
-  is_locked           Boolean        @default(false)
-  locked_by           String?
-  description         String?
-  created_at          DateTime       @default(now())
-  updated_at          DateTime       @updatedAt
+// ============================================
+// INTAKE SUBMISSIONS
+// ============================================
 
-  case               Case    @relation(fields: [case_id], references: [id], onDelete: Cascade)
-  prepared_by_user   User?   @relation("DocumentPreparer", fields: [prepared_by], references: [id], onDelete: SetNull)
-  approved_by_user   User?   @relation("DocumentApprover", fields: [approved_by], references: [id], onDelete: SetNull)
-  signed_by_user     User?   @relation("DocumentSigner", fields: [signed_by], references: [id], onDelete: SetNull)
-  supervisor_user    User?   @relation("DocumentSupervisor", fields: [supervising_officer], references: [id], onDelete: SetNull)
+model IntakeSubmission {
+  id                String   @id @default(uuid())
+  client_id         String?
+  case_id           String?
+  lead_id           String?
+  /// CHECK: draft | submitted | under_review | approved | rejected | additional_info_needed
+  status            String   @default("draft")
+  case_type         String?
+  case_description  String?
+  opposing_party    String?
+  estimated_value   Float?
+  urgency           String?
+  timeline          String?
+  desired_outcome   String?
+  previous_legal_help String?
+  documents_ready   Boolean?
+  personal_info     Json?
+  case_details      Json?
+  financial_info    Json?
+  ai_extracted_data Json?
+  ai_confidence     Float?
+  review_notes      String?
+  reviewed_by       String?
+  reviewed_at       DateTime?
+  submitted_at      DateTime?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  client              Profile?          @relation("IntakeClient", fields: [client_id], references: [id])
+  case                Case?             @relation(fields: [case_id], references: [id])
+  lead                Lead?             @relation(fields: [lead_id], references: [id])
+  reviewer            Profile?          @relation("IntakeReviewer", fields: [reviewed_by], references: [id])
+  ai_sessions         AiIntakeSession[]
+  ai_analyses         AiAnalysis[]
+
+  @@index([status])
+  @@index([client_id])
+  @@index([case_id])
+  @@index([lead_id])
+  @@index([created_at])
+}
+
+// ============================================
+// AI INTAKE SESSIONS
+// ============================================
+
+model AiIntakeSession {
+  id                   String   @id @default(uuid())
+  client_id            String?
+  intake_submission_id String?
+  session_token        String?  @unique
+  /// CHECK: draft | submitted | under_review | approved | rejected | additional_info_needed
+  status               String   @default("draft")
+  conversation_history Json?
+  extracted_entities   Json?
+  current_step         String?
+  steps_completed      String[]
+  steps_remaining      String[]
+  ai_model_used        String?
+  total_tokens         Int?
+  completed_at         DateTime?
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  client            Profile?          @relation(fields: [client_id], references: [id])
+  intake_submission IntakeSubmission? @relation(fields: [intake_submission_id], references: [id])
+
+  @@index([session_token])
+  @@index([client_id])
+  @@index([intake_submission_id])
+  @@index([status])
+}
+
+// ============================================
+// AI ANALYSES
+// ============================================
+
+model AiAnalysis {
+  id                 String   @id @default(uuid())
+  case_id            String?
+  intake_id          String?
+  /// CHECK: merit_assessment | risk_analysis | cost_estimate | timeline_prediction | document_review | legal_research | strategy_recommendation
+  analysis_type      String
+  /// CHECK: pending | processing | completed | failed
+  status             String   @default("pending")
+  input_data         Json?
+  result             Json?
+  summary            String?
+  recommendations    Json?
+  risk_flags         Json?
+  confidence_score   Float?
+  ai_model_used      String?
+  tokens_used        Int?
+  processing_time_ms Int?
+  error_message      String?
+  requested_by       String?
+  completed_at       DateTime?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  case          Case?             @relation(fields: [case_id], references: [id])
+  intake        IntakeSubmission? @relation(fields: [intake_id], references: [id])
+  requester     Profile?          @relation(fields: [requested_by], references: [id])
+  queue_entries AiAnalysisQueue[]
+
+  @@index([case_id])
+  @@index([intake_id])
+  @@index([analysis_type])
+  @@index([status])
+  @@index([requested_by])
+  @@index([created_at])
+}
+
+// ============================================
+// AI ANALYSIS QUEUE
+// ============================================
+
+model AiAnalysisQueue {
+  id           String    @id @default(uuid())
+  analysis_id  String
+  /// CHECK: low | medium | high | urgent
+  priority     String    @default("medium")
+  retry_count  Int       @default(0)
+  max_retries  Int       @default(3)
+  scheduled_at DateTime?
+  started_at   DateTime?
+  completed_at DateTime?
+  error_message String?
+  created_at   DateTime  @default(now())
+
+  analysis AiAnalysis @relation(fields: [analysis_id], references: [id])
+
+  @@index([analysis_id])
+  @@index([priority])
+  @@index([scheduled_at])
+}
+
+// ============================================
+// DOCUMENTS
+// ============================================
+
+model Document {
+  id                  String   @id @default(uuid())
+  case_id             String?
+  uploaded_by         String?
+  /// CHECK: id_document | contract | court_filing | correspondence | evidence | financial | medical | police_report | affidavit | other
+  document_type       String
+  /// CHECK: uploading | uploaded | reviewing | approved | rejected | archived
+  status              String   @default("uploading")
+  file_name           String
+  file_path           String
+  file_size           BigInt?
+  mime_type           String?
+  description         String?
+  tags                String[]
+  version             Int      @default(1)
+  parent_document_id  String?
+  ai_extracted_text   String?
+  ai_summary          String?
+  is_confidential     Boolean  @default(false)
+  metadata            Json?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  case            Case?     @relation(fields: [case_id], references: [id])
+  uploader       Profile?  @relation(fields: [uploaded_by], references: [id])
+  parent_document Document? @relation("DocumentHierarchy", fields: [parent_document_id], references: [id])
+  child_documents Document[] @relation("DocumentHierarchy")
 
   @@index([case_id])
   @@index([document_type])
-  @@index([workflow_status])
-  @@index([prepared_by])
-  @@index([created_at])
-}
-
-model IntakeSubmission {
-  id               String     @id @default(cuid())
-  reference_id     String     @unique
-  full_name        String
-  email            String
-  phone            String?
-  id_number        String?
-  case_type        CaseType
-  description      String
-  opposing_party   String?
-  urgency          CaseUrgency?
-  has_documents    Boolean    @default(false)
-  consent_given    Boolean
-  popia_consent    Boolean
-  ai_analysis      String?
-  converted_case_id String?
-  status           String     @default("submitted")
-  created_at       DateTime   @default(now())
-  updated_at       DateTime   @updatedAt
-
-  @@index([email])
   @@index([status])
-  @@index([case_type])
-  @@index([reference_id])
+  @@index([uploaded_by])
+  @@index([parent_document_id])
   @@index([created_at])
 }
+
+// ============================================
+// TASKS
+// ============================================
 
 model Task {
-  id             String       @id @default(cuid())
-  title          String
-  description    String?
-  case_id        String?
-  assigned_to    String
-  created_by     String
-  priority       TaskPriority
-  status         TaskStatus   @default(pending)
-  due_date       DateTime?
-  completed_date DateTime?
-  created_at     DateTime     @default(now())
-  updated_at     DateTime     @updatedAt
+  id           String   @id @default(uuid())
+  case_id      String?
+  assigned_to  String
+  created_by   String
+  title        String
+  description  String?
+  /// CHECK: pending | in_progress | completed | cancelled
+  status       String   @default("pending")
+  /// CHECK: low | medium | high | urgent
+  priority     String   @default("medium")
+  due_date     DateTime?
+  completed_at DateTime?
+  metadata     Json?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
-  case         Case? @relation(fields: [case_id], references: [id], onDelete: Cascade)
-  assignee     User @relation("TaskAssignee", fields: [assigned_to], references: [id], onDelete: Cascade)
-  creator      User @relation("TaskCreator", fields: [created_by], references: [id], onDelete: Cascade)
+  case      Case?    @relation(fields: [case_id], references: [id])
+  assignee  Profile  @relation("TaskAssignedTo", fields: [assigned_to], references: [id])
+  creator   Profile @relation("TaskCreatedBy", fields: [created_by], references: [id])
 
   @@index([status])
   @@index([assigned_to])
@@ -451,20 +415,29 @@ model Task {
   @@index([created_at])
 }
 
-model Message {
-  id           String      @id @default(cuid())
-  case_id      String
-  sender_id    String
-  recipient_id String?
-  content      String
-  is_read      Boolean     @default(false)
-  message_type MessageType @default(message)
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
+// ============================================
+// MESSAGES
+// ============================================
 
-  case      Case  @relation(fields: [case_id], references: [id], onDelete: Cascade)
-  sender    User  @relation("MessageSender", fields: [sender_id], references: [id], onDelete: Cascade)
-  recipient User? @relation("MessageRecipient", fields: [recipient_id], references: [id], onDelete: SetNull)
+model Message {
+  id                String   @id @default(uuid())
+  case_id           String?
+  sender_id         String
+  recipient_id      String?
+  /// CHECK: system | direct | group | notification
+  message_type      String   @default("direct")
+  subject           String?
+  content           String
+  is_read           Boolean  @default(false)
+  parent_message_id String?
+  metadata          Json?
+  created_at        DateTime @default(now())
+
+  case           Case?    @relation(fields: [case_id], references: [id])
+  sender         Profile  @relation("MessageSender", fields: [sender_id], references: [id])
+  recipient      Profile? @relation("MessageRecipient", fields: [recipient_id], references: [id])
+  parent_message Message? @relation("MessageThread", fields: [parent_message_id], references: [id])
+  replies        Message[] @relation("MessageThread")
 
   @@index([case_id])
   @@index([sender_id])
@@ -473,55 +446,120 @@ model Message {
   @@index([created_at])
 }
 
-model AuditLog {
-  id            String   @id @default(cuid())
-  user_id       String?
-  action        String
-  resource_type String
-  resource_id   String?
-  details       String?
-  ip_address    String?
-  user_agent    String?
-  created_at    DateTime @default(now())
+// ============================================
+// CASE TIMELINE
+// ============================================
 
-  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model CaseTimeline {
+  id               String   @id @default(uuid())
+  case_id          String
+  event_type       String
+  event_description String
+  performed_by     String?
+  metadata         Json?
+  is_system_event  Boolean  @default(false)
+  created_at       DateTime @default(now())
 
-  @@index([user_id])
-  @@index([action])
-  @@index([resource_type, resource_id])
+  case        Case     @relation(fields: [case_id], references: [id])
+  performer   Profile? @relation(fields: [performed_by], references: [id])
+
+  @@index([case_id])
+  @@index([event_type])
   @@index([created_at])
 }
 
+// ============================================
+// PRIVILEGED NOTES
+// ============================================
+
+model PrivilegedNote {
+  id            String   @id @default(uuid())
+  case_id       String
+  author_id     String
+  content       String
+  is_privileged Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  case   Case    @relation(fields: [case_id], references: [id])
+  author Profile @relation(fields: [author_id], references: [id])
+
+  @@index([case_id])
+  @@index([author_id])
+}
+
+// ============================================
+// CONSULTATIONS
+// ============================================
+
+model Consultation {
+  id                 String   @id @default(uuid())
+  case_id            String?
+  client_id          String
+  attorney_id        String
+  /// CHECK: scheduled | confirmed | in_progress | completed | cancelled | no_show
+  status             String   @default("scheduled")
+  scheduled_at       DateTime
+  duration_minutes   Int      @default(60)
+  meeting_type       String?
+  meeting_link       String?
+  location           String?
+  notes              String?
+  follow_up_required Boolean  @default(false)
+  fee                Float?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  case     Case?    @relation(fields: [case_id], references: [id])
+  client   Profile  @relation(fields: [client_id], references: [id])
+  attorney Attorney @relation(fields: [attorney_id], references: [id])
+
+  @@index([case_id])
+  @@index([client_id])
+  @@index([attorney_id])
+  @@index([scheduled_at])
+  @@index([status])
+}
+
+// ============================================
+// CONSENT LOGS
+// ============================================
+
 model ConsentLog {
-  id           String      @id @default(cuid())
+  id           String   @id @default(uuid())
   user_id      String?
-  consent_type ConsentType
-  purpose      String
+  /// CHECK: terms_of_service | privacy_policy | popi_act | marketing | data_processing
+  consent_type String
   granted      Boolean
   ip_address   String?
   user_agent   String?
-  created_at   DateTime    @default(now())
+  version      String?
+  created_at   DateTime @default(now())
 
-  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user Profile? @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
   @@index([consent_type])
   @@index([created_at])
 }
 
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
 model Notification {
-  id         String           @id @default(cuid())
+  id         String   @id @default(uuid())
   user_id    String
-  type       NotificationType
   title      String
   message    String
-  is_read    Boolean          @default(false)
+  /// Default: info
+  type       String   @default("info")
   link       String?
-  related_id String?
-  created_at DateTime         @default(now())
-  updated_at DateTime         @updatedAt
+  is_read    Boolean  @default(false)
+  metadata   Json?
+  created_at DateTime @default(now())
 
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user Profile @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
   @@index([is_read])
@@ -529,44 +567,24 @@ model Notification {
   @@index([created_at])
 }
 
-model Consultation {
-  id               String              @id @default(cuid())
-  client_id        String
-  attorney_id      String
-  case_id          String?
-  scheduled_date   DateTime
-  scheduled_time   String
-  duration_minutes Int                 @default(60)
-  status           ConsultationStatus  @default(scheduled)
-  notes            String?
-  meeting_type     MeetingType         @default(in_person)
-  created_at       DateTime            @default(now())
-  updated_at       DateTime            @updatedAt
-
-  client   User  @relation("ConsultationClient", fields: [client_id], references: [id], onDelete: Cascade)
-  attorney User  @relation("ConsultationAttorney", fields: [attorney_id], references: [id], onDelete: Cascade)
-  case     Case? @relation(fields: [case_id], references: [id], onDelete: SetNull)
-
-  @@index([client_id])
-  @@index([attorney_id])
-  @@index([scheduled_date])
-  @@index([status])
-}
+// ============================================
+// PRICING PLANS
+// ============================================
 
 model PricingPlan {
-  id           String   @id @default(cuid())
-  name         String
-  slug         String   @unique
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  description   String?
   price_monthly Float
   price_annual  Float?
-  currency     String   @default("ZAR")
-  features     String   // JSON string
-  max_cases    Int?
-  max_documents Int?
-  is_active    Boolean  @default(true)
-  sort_order   Int      @default(0)
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  currency      String   @default("ZAR")
+  features      Json?
+  is_popular    Boolean  @default(false)
+  is_active     Boolean  @default(true)
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   subscriptions UserSubscription[]
 
@@ -574,177 +592,642 @@ model PricingPlan {
   @@index([is_active])
 }
 
-model UserSubscription {
-  id                  String             @id @default(cuid())
-  user_id             String
-  plan_id             String
-  status              SubscriptionStatus @default(active)
-  current_period_start DateTime?
-  current_period_end   DateTime?
-  cancel_at_period_end Boolean           @default(false)
-  created_at          DateTime           @default(now())
-  updated_at          DateTime           @updatedAt
+// ============================================
+// USER SUBSCRIPTIONS
+// ============================================
 
-  user           User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  plan           PricingPlan     @relation(fields: [plan_id], references: [id], onDelete: Restrict)
-  payment_records PaymentRecord[]
+model UserSubscription {
+  id                    String   @id @default(uuid())
+  user_id               String
+  plan_id               String
+  /// CHECK: active | past_due | cancelled | expired | trial
+  status                String   @default("active")
+  current_period_start  DateTime?
+  current_period_end    DateTime?
+  cancel_at_period_end  Boolean  @default(false)
+  trial_ends_at         DateTime?
+  payfast_token         String?
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  user             Profile            @relation(fields: [user_id], references: [id])
+  plan             PricingPlan        @relation(fields: [plan_id], references: [id])
+  payment_records  PaymentRecord[]
+  subscription_events CrmSubscriptionEvent[]
 
   @@index([user_id])
+  @@index([plan_id])
   @@index([status])
 }
 
-model CaseTimeline {
-  id             String   @id @default(cuid())
-  case_id        String
-  user_id        String?
-  action         String
-  description    String?
-  previous_value String?
-  new_value      String?
-  created_at     DateTime @default(now())
+// ============================================
+// PAYMENT RECORDS
+// ============================================
 
-  case Case  @relation(fields: [case_id], references: [id], onDelete: Cascade)
+model PaymentRecord {
+  id                  String   @id @default(uuid())
+  subscription_id     String?
+  case_id             String?
+  user_id             String
+  amount              Float
+  currency            String?
+  /// CHECK: pending | completed | failed | refunded | partially_refunded
+  status              String   @default("pending")
+  payfast_payment_id  String?
+  payfast_token       String?
+  payment_method      String?
+  description         String?
+  metadata            Json?
+  paid_at             DateTime?
+  created_at          DateTime @default(now())
 
+  subscription UserSubscription? @relation(fields: [subscription_id], references: [id])
+  case         Case?             @relation(fields: [case_id], references: [id])
+  user         Profile           @relation(fields: [user_id], references: [id])
+
+  @@index([subscription_id])
   @@index([case_id])
+  @@index([user_id])
+  @@index([status])
   @@index([created_at])
 }
 
-model PrivilegedNote {
-  id         String                    @id @default(cuid())
-  case_id    String
-  author_id  String
-  content    String
-  visibility PrivilegedNoteVisibility  @default(officer_only)
-  created_at DateTime                  @default(now())
-  updated_at DateTime                  @updatedAt
+// ============================================
+// AUDIT LOGS
+// ============================================
 
-  case   Case @relation(fields: [case_id], references: [id], onDelete: Cascade)
-  author User @relation(fields: [author_id], references: [id], onDelete: Cascade)
+model AuditLog {
+  id            String   @id @default(uuid())
+  user_id       String?
+  action        String
+  resource_type String
+  resource_id   String?
+  details       Json?
+  ip_address    String?
+  user_agent    String?
+  created_at    DateTime @default(now())
 
-  @@index([case_id])
-  @@index([author_id])
-  @@index([visibility])
+  user Profile? @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([action])
+  @@index([resource_type, resource_id])
+  @@index([created_at])
 }
 
-model ApiAnalytic {
-  id                String   @id @default(cuid())
-  endpoint          String
-  method            String
-  status_code       Int
-  response_time_ms  Int?
-  user_id           String?
-  ip_address        String?
-  user_agent        String?
-  created_at        DateTime @default(now())
+// ============================================
+// API ANALYTICS
+// ============================================
 
-  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model ApiAnalytic {
+  id               String   @id @default(uuid())
+  endpoint         String
+  method           String
+  status_code      Int
+  response_time_ms Int?
+  user_id          String?
+  ip_address       String?
+  user_agent       String?
+  created_at       DateTime @default(now())
+
+  user Profile? @relation(fields: [user_id], references: [id])
 
   @@index([endpoint])
   @@index([status_code])
-  @@index([created_at])
   @@index([user_id])
+  @@index([created_at])
 }
 
-model ErrorLog {
-  id          String    @id @default(cuid())
-  error_type  ErrorType
-  message     String
-  stack_trace String?
-  url         String?
-  user_id     String?
-  metadata    String?
-  resolved    Boolean   @default(false)
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+// ============================================
+// ERROR LOGS
+// ============================================
 
-  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model ErrorLog {
+  id           String   @id @default(uuid())
+  error_type   String
+  message      String
+  stack_trace  String?
+  user_id      String?
+  request_path String?
+  metadata     Json?
+  resolved     Boolean  @default(false)
+  created_at   DateTime @default(now())
+
+  user Profile? @relation(fields: [user_id], references: [id])
 
   @@index([error_type])
   @@index([resolved])
+  @@index([user_id])
   @@index([created_at])
 }
 
-model Attorney {
-  id                 String               @id @default(cuid())
-  user_id            String               @unique
-  lpc_number         String?
-  firm_name          String?
-  specializations    String?
-  years_experience   Int?
-  is_verified        Boolean              @default(false)
-  hourly_rate        Float?
-  bio                String?
-  availability_status AttorneyAvailability @default(available)
-  created_at         DateTime             @default(now())
-  updated_at         DateTime             @updatedAt
-
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@index([lpc_number])
-  @@index([is_verified])
-  @@index([availability_status])
-}
+// ============================================
+// RATE LIMIT LOGS
+// ============================================
 
 model RateLimitLog {
-  id            String   @id @default(cuid())
-  ip            String
+  id            String   @id @default(uuid())
+  identifier    String
   endpoint      String
-  request_count Int      @default(1)
-  window_start  DateTime @default(now())
+  request_count Int
+  blocked       Boolean  @default(false)
   created_at    DateTime @default(now())
 
-  @@unique([ip, endpoint])
-  @@index([ip])
+  @@index([identifier])
   @@index([endpoint])
-  @@index([window_start])
+  @@index([created_at])
 }
 
+// ============================================
+// BACKUP RECORDS
+// ============================================
+
 model BackupRecord {
-  id           String       @id @default(cuid())
-  filename     String
-  size_bytes   Int?
-  backup_type  String       @default("scheduled")
-  status       BackupStatus @default(pending)
-  started_at   DateTime     @default(now())
-  completed_at DateTime?
-  error        String?
-  created_at   DateTime     @default(now())
+  id              String   @id @default(uuid())
+  backup_type     String
+  status          String
+  file_path       String?
+  file_size_bytes BigInt?
+  started_at      DateTime @default(now())
+  completed_at    DateTime?
+  error_message   String?
+  metadata        Json?
+  created_at      DateTime @default(now())
 
   @@index([status])
   @@index([backup_type])
   @@index([started_at])
 }
 
-model PaymentRecord {
-  id              String   @id @default(cuid())
-  user_id         String
-  subscription_id String?
-  m_payment_id    String   @unique
-  pf_payment_id   String?
-  amount_gross    Float
-  amount_fee      Float?
-  amount_net      Float?
-  payment_status  String   @default("pending")
-  item_name       String
-  billing_cycle   String   // monthly or annual
-  payfast_data    String?  // JSON string of full ITN data
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+// ============================================
+// WORKBENCH CONFIGS
+// ============================================
 
-  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  subscription UserSubscription? @relation(fields: [subscription_id], references: [id], onDelete: SetNull)
+model WorkbenchConfig {
+  id               String   @id @default(uuid())
+  user_id          String   @unique
+  /// CHECK: grid | list | compact
+  layout           String   @default("grid")
+  widgets          Json?
+  sidebar_collapsed Boolean  @default(false)
+  theme            String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  user Profile @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
-  @@index([m_payment_id])
-  @@index([payment_status])
+}
+
+// ============================================
+// WORKBENCH WIDGETS
+// ============================================
+
+model WorkbenchWidget {
+  id          String   @id @default(uuid())
+  user_id     String
+  /// CHECK: case_summary | task_list | upcoming_deadlines | recent_documents | billing_overview | lead_pipeline | ai_insights | quick_actions | notifications | calendar
+  widget_type String
+  title       String
+  position_x  Int      @default(0)
+  position_y  Int      @default(0)
+  width       Int      @default(1)
+  height      Int      @default(1)
+  is_visible  Boolean  @default(true)
+  config      Json?
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user Profile @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([widget_type])
+}
+
+// ============================================
+// WORKBENCH QUICK ACTIONS
+// ============================================
+
+model WorkbenchQuickAction {
+  id         String   @id @default(uuid())
+  user_id    String
+  action_type String
+  label      String
+  icon       String?
+  target_url String?
+  config     Json?
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  user Profile @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}
+
+// ============================================
+// WORKBENCH PINNED ITEMS
+// ============================================
+
+model WorkbenchPinnedItem {
+  id         String   @id @default(uuid())
+  user_id    String
+  item_type  String
+  item_id    String
+  label      String
+  metadata   Json?
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  user Profile @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([item_type])
+}
+
+// ============================================
+// WORKBENCH RECENT ACTIVITY
+// ============================================
+
+model WorkbenchRecentActivity {
+  id            String   @id @default(uuid())
+  user_id       String
+  activity_type String
+  resource_type String?
+  resource_id   String?
+  description   String?
+  metadata      Json?
+  created_at    DateTime @default(now())
+
+  user Profile @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([activity_type])
   @@index([created_at])
 }
 
-model LeadAssignment {
-  id                  String   @id @default(cuid())
-  user_id             String
-  created_at          DateTime @default(now())
-  updated_at          DateTime @updatedAt
+// ============================================
+// LEAD PIPELINE STAGES
+// ============================================
+
+model LeadPipelineStage {
+  id             String   @id @default(uuid())
+  name           String
+  slug           String   @unique
+  description    String?
+  sort_order     Int      @default(0)
+  color          String?
+  is_default     Boolean  @default(false)
+  auto_assign_to String?
+  created_at     DateTime @default(now())
+
+  auto_assignee Profile? @relation(fields: [auto_assign_to], references: [id])
+
+  @@index([slug])
+  @@index([sort_order])
+}
+
+// ============================================
+// LEAD PIPELINE TRANSITIONS
+// ============================================
+
+model LeadPipelineTransition {
+  id         String   @id @default(uuid())
+  lead_id    String
+  from_stage String?
+  to_stage   String
+  changed_by String?
+  reason     String?
+  created_at DateTime @default(now())
+
+  lead       Lead     @relation(fields: [lead_id], references: [id])
+  changer    Profile? @relation(fields: [changed_by], references: [id])
+
+  @@index([lead_id])
+  @@index([created_at])
+}
+
+// ============================================
+// LEAD COMMUNICATIONS
+// ============================================
+
+model LeadCommunication {
+  id             String    @id @default(uuid())
+  lead_id        String
+  /// Default: note
+  type           String    @default("note")
+  /// Default: outbound
+  direction      String    @default("outbound")
+  subject        String?
+  content        String
+  contacted_by   String?
+  follow_up_date DateTime?
+  metadata       Json?
+  created_at     DateTime  @default(now())
+
+  lead         Lead     @relation(fields: [lead_id], references: [id])
+  contactor    Profile? @relation(fields: [contacted_by], references: [id])
+
+  @@index([lead_id])
+  @@index([created_at])
+}
+
+// ============================================
+// LEAD AUTOMATION RULES
+// ============================================
+
+model LeadAutomationRule {
+  id               String   @id @default(uuid())
+  name             String
+  description      String?
+  trigger_event    String
+  conditions       Json?
+  actions          Json?
+  is_active        Boolean  @default(true)
+  created_by       String?
+  last_triggered_at DateTime?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  creator Profile? @relation(fields: [created_by], references: [id])
+
+  @@index([trigger_event])
+  @@index([is_active])
+}
+
+// ============================================
+// LEAD FORM SUBMISSIONS
+// ============================================
+
+model LeadFormSubmission {
+  id           String   @id @default(uuid())
+  form_slug    String
+  lead_id      String?
+  form_data    Json?
+  utm_source   String?
+  utm_medium   String?
+  utm_campaign String?
+  utm_content  String?
+  ip_address   String?
+  user_agent   String?
+  is_processed Boolean  @default(false)
+  created_at   DateTime @default(now())
+
+  lead Lead? @relation(fields: [lead_id], references: [id])
+
+  @@index([form_slug])
+  @@index([lead_id])
+  @@index([is_processed])
+  @@index([created_at])
+}
+
+// ============================================
+// ADMIN SESSIONS
+// ============================================
+
+model AdminSession {
+  id         String   @id @default(uuid())
+  user_id    String
+  token      String   @unique
+  ip_address String?
+  user_agent String?
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user Profile @relation(fields: [user_id], references: [id])
+
+  @@index([token])
+  @@index([user_id])
+  @@index([expires_at])
+}
+
+// ============================================
+// ADMIN ACTIVITY LOGS
+// ============================================
+
+model AdminActivityLog {
+  id            String   @id @default(uuid())
+  user_id       String?
+  action        String
+  resource_type String
+  resource_id   String?
+  details       Json?
+  ip_address    String?
+  /// Default: info
+  severity      String   @default("info")
+  created_at    DateTime @default(now())
+
+  user Profile? @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
+  @@index([action])
+  @@index([resource_type, resource_id])
+  @@index([severity])
+  @@index([created_at])
+}
+
+// ============================================
+// CRM DASHBOARD WIDGETS
+// ============================================
+
+model CrmDashboardWidget {
+  id          String   @id @default(uuid())
+  widget_key  String   @unique
+  title       String
+  description String?
+  /// Default: stat
+  widget_type String   @default("stat")
+  config      Json?
+  data_source String?
+  is_active   Boolean  @default(true)
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([widget_key])
+  @@index([is_active])
+  @@index([sort_order])
+}
+
+// ============================================
+// CRM REPORTS
+// ============================================
+
+model CrmReport {
+  id            String   @id @default(uuid())
+  title         String
+  /// CHECK: leads_summary | revenue | case_metrics | client_acquisition | attorney_performance | ai_usage | conversion_funnel
+  report_type   String
+  description   String?
+  parameters    Json?
+  result_data   Json?
+  generated_by  String?
+  is_scheduled  Boolean  @default(false)
+  schedule_cron String?
+  format        String?
+  status        String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  generator Profile? @relation(fields: [generated_by], references: [id])
+
+  @@index([report_type])
+  @@index([generated_by])
+  @@index([is_scheduled])
+  @@index([created_at])
+}
+
+// ============================================
+// CRM NOTIFICATIONS
+// ============================================
+
+model CrmNotification {
+  id         String   @id @default(uuid())
+  user_id    String
+  type       String
+  title      String
+  message    String
+  /// CHECK: low | medium | high | urgent
+  priority   String   @default("medium")
+  link       String?
+  is_read    Boolean  @default(false)
+  metadata   Json?
+  created_at DateTime @default(now())
+
+  user Profile @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([is_read])
+  @@index([priority])
+  @@index([created_at])
+}
+
+// ============================================
+// CRM SYSTEM SETTINGS
+// ============================================
+
+model CrmSystemSetting {
+  id            String   @id @default(uuid())
+  setting_key   String   @unique
+  setting_value Json?
+  description   String?
+  is_public     Boolean  @default(false)
+  updated_by    String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  updater Profile? @relation(fields: [updated_by], references: [id])
+
+  @@index([setting_key])
+  @@index([is_public])
+}
+
+// ============================================
+// CRM CONTACT MESSAGES
+// ============================================
+
+model CrmContactMessage {
+  id            String   @id @default(uuid())
+  name          String
+  email         String
+  phone         String?
+  subject       String?
+  message       String
+  /// CHECK: unread | read | replied | archived
+  status        String   @default("unread")
+  assigned_to   String?
+  replied_at    DateTime?
+  reply_content String?
+  lead_id       String?
+  metadata      Json?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  assignee Profile? @relation(fields: [assigned_to], references: [id])
+  lead     Lead?    @relation(fields: [lead_id], references: [id])
+
+  @@index([status])
+  @@index([assigned_to])
+  @@index([lead_id])
+  @@index([created_at])
+}
+
+// ============================================
+// CRM USER NOTES
+// ============================================
+
+model CrmUserNote {
+  id          String   @id @default(uuid())
+  user_id     String
+  author_id   String
+  content     String
+  is_pinned   Boolean  @default(false)
+  is_internal Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user   Profile @relation("CrmUserNoteUser", fields: [user_id], references: [id])
+  author Profile @relation("CrmUserNoteAuthor", fields: [author_id], references: [id])
+
+  @@index([user_id])
+  @@index([author_id])
+  @@index([is_pinned])
+  @@index([created_at])
+}
+
+// ============================================
+// CRM SUBSCRIPTION EVENTS
+// ============================================
+
+model CrmSubscriptionEvent {
+  id              String   @id @default(uuid())
+  subscription_id String
+  user_id         String
+  event_type      String
+  description     String?
+  metadata        Json?
+  created_at      DateTime @default(now())
+
+  subscription UserSubscription @relation(fields: [subscription_id], references: [id])
+  user         Profile          @relation(fields: [user_id], references: [id])
+
+  @@index([subscription_id])
+  @@index([user_id])
+  @@index([event_type])
+  @@index([created_at])
+}
+
+// ============================================
+// LEGAL ARTICLES
+// ============================================
+
+model LegalArticle {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  title           String
+  subtitle        String?
+  content         String
+  summary         String?
+  /// CHECK: civil_litigation | labour_law | criminal_defence | family_law | corporate_commercial | property_conveyancing | estate_planning | debt_recovery | consumer_rights | popia_compliance | immigration | general
+  category        String
+  tags            String[]
+  cover_image_url String?
+  author_id       String?
+  reading_time_min Int?
+  is_published    Boolean  @default(false)
+  is_featured     Boolean  @default(false)
+  published_at    DateTime?
+  sort_order      Int      @default(0)
+  metadata        Json?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  author Profile? @relation(fields: [author_id], references: [id])
+
+  @@index([slug])
+  @@index([category])
+  @@index([is_published])
+  @@index([is_featured])
+  @@index([published_at])
+  @@index([sort_order])
 }
