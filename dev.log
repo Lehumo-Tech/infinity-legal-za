@@ -1,18 +1,13 @@
-$ next dev -p 3000 --webpack
-▲ Next.js 16.1.3 (webpack)
+▲ Next.js 16.1.3 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.21.40:3000
+- Network:       http://21.0.7.223:3000
 - Environments: .env
 
 ✓ Starting...
-✓ Ready in 1051ms
-$ next dev -p 3000 --webpack
-▲ Next.js 16.1.3 (webpack)
-- Local:         http://localhost:3000
-- Network:       http://21.0.21.40:3000
-- Environments: .env
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
 
-✓ Starting...
-✓ Ready in 1088ms
+✓ Ready in 856ms
 ○ Compiling / ...
- GET / 200 in 5.1s (compile: 4.7s, proxy.ts: 139ms, render: 283ms)

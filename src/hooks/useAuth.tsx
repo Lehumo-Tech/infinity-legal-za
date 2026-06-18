@@ -9,7 +9,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { createBrowserSupabaseClient } from '@/lib/supabase/browser';
+import { createBrowserSupabaseClient, isSupabaseConfigured } from '@/lib/supabase/browser';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
 
@@ -92,6 +92,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (mountedRef.current) return;
     mountedRef.current = true;
 
+    // If Supabase isn't configured, skip auth initialization
+    if (!isSupabaseConfigured()) {
+      setAuthState({
+        supabaseUser: null,
+        user: null,
+        accessToken: null,
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
     const supabase = getSupabase();
 
     // Get initial session
@@ -169,6 +181,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign in with email and password
   const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured()) {
+      return { success: false, error: 'Supabase is not configured' };
+    }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const supabase = getSupabase();
@@ -210,6 +225,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign up with email and password
   const signUp = useCallback(async (signUpData: SignUpData): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured()) {
+      return { success: false, error: 'Supabase is not configured' };
+    }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const supabase = getSupabase();
@@ -260,6 +278,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign out
   const signOut = useCallback(async () => {
+    if (!isSupabaseConfigured()) {
+      return;
+    }
     try {
       const supabase = getSupabase();
       await supabase.auth.signOut();
@@ -287,6 +308,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       uid = user?.id;
     }
     if (!uid) return;
+    if (!isSupabaseConfigured()) return;
     const profile = await fetchProfile(uid);
     if (profile) {
       setAuthState(prev => ({ ...prev, user: profile }));
