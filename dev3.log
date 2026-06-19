@@ -46,3 +46,10 @@
   49 |       const { data: dbEntry } = await db
   50 |         .from('rate_limit_logs')
  POST /api/ai/chat 200 in 7.5s (compile: 7ms, proxy.ts: 8ms, render: 7.5s)
+ GET / 200 in 142ms (compile: 3ms, proxy.ts: 4ms, render: 135ms)
+ GET / 200 in 80ms (compile: 4ms, proxy.ts: 6ms, render: 70ms)
+ GET / 200 in 62ms (compile: 3ms, proxy.ts: 4ms, render: 55ms)
+  Reload env: .env
+✓ Compiled in 28ms
+ GET / 200 in 156ms (compile: 43ms, proxy.ts: 65ms, render: 48ms)
+[?25h

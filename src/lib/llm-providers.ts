@@ -245,7 +245,7 @@ async function groqChat(messages: LLMMessage[], options: LLMChatOptions): Promis
 async function openrouterChat(messages: LLMMessage[], options: LLMChatOptions): Promise<LLMChatResult> {
   if (!OPENROUTER_API_KEY) throw new Error('OpenRouter not configured');
   const startTime = Date.now();
-  const model = 'deepseek/deepseek-v4-flash:free';
+  const model = 'deepseek/deepseek-v4-flash';
   const body = { model, messages: messages.map(m => ({ role: m.role, content: m.content })), temperature: options.temperature ?? 0.7, max_tokens: options.maxTokens ?? 2048 };
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENROUTER_API_KEY}`, 'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org', 'X-Title': 'Infinity Legal ZA' }, body: JSON.stringify(body) });
   if (!response.ok) throw new Error(`OpenRouter ${response.status}`);
@@ -369,7 +369,7 @@ export function getProviderStatuses(): ProviderStatus[] {
     { name: 'zai', displayName: 'Z-AI (Primary)', available: true, configured: true, models: ['z-ai-default'], requestsToday: providerUsage.zai.requestsToday, lastError: providerUsage.zai.lastError, avgResponseMs: providerUsage.zai.avgResponseMs },
     { name: 'google', displayName: 'Google AI Studio (Gemini)', available: !!GOOGLE_AI_API_KEY, configured: !!GOOGLE_AI_API_KEY, models: ['gemini-2.5-flash'], requestsToday: providerUsage.google.requestsToday, lastError: providerUsage.google.lastError, avgResponseMs: providerUsage.google.avgResponseMs },
     { name: 'groq', displayName: 'Groq (Llama)', available: !!GROQ_API_KEY, configured: !!GROQ_API_KEY, models: ['llama-3.3-70b-versatile'], requestsToday: providerUsage.groq.requestsToday, lastError: providerUsage.groq.lastError, avgResponseMs: providerUsage.groq.avgResponseMs },
-    { name: 'openrouter', displayName: 'OpenRouter (DeepSeek)', available: !!OPENROUTER_API_KEY, configured: !!OPENROUTER_API_KEY, models: ['deepseek-v4-flash:free'], requestsToday: providerUsage.openrouter.requestsToday, lastError: providerUsage.openrouter.lastError, avgResponseMs: providerUsage.openrouter.avgResponseMs },
+    { name: 'openrouter', displayName: 'OpenRouter (DeepSeek)', available: !!OPENROUTER_API_KEY, configured: !!OPENROUTER_API_KEY, models: ['deepseek-v4-flash'], requestsToday: providerUsage.openrouter.requestsToday, lastError: providerUsage.openrouter.lastError, avgResponseMs: providerUsage.openrouter.avgResponseMs },
   ];
 }
 
