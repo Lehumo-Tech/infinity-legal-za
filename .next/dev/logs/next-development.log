@@ -1,8 +1,12 @@
-[00:00:01.041] Server  LOG     ✓ Ready in 856ms
-[00:00:13.003] Server  LOG     ○ Compiling / ...
-[00:00:30.533] Server  ERROR   Error: write EPIPE
-[00:00:30.537] Server  ERROR   ⨯ "uncaughtException:" Error: write EPIPE
-[00:00:30.542] Server  ERROR   ⨯ "uncaughtException: " Error: write EPIPE
-[00:00:30.908] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:31.414] Browser WARN    Image with src "/infinity_logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:31.414] Browser WARN    Image with src "/images/official/creative-contracts.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:00:01.758] Server  LOG     ✓ Ready in 1468ms
+[00:00:05.904] Server  LOG     ○ Compiling / ...
+[00:00:28.426] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:29.015] Browser WARN    Image with src "/infinity_logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:29.016] Browser WARN    Image with src "/images/official/creative-contracts.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:00:29.834] Browser WARN    Image with src "/images/official/creative-subscription.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:00:30.142] Browser WARN    Image with src "/images/official/creative-tenant-rights.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:01:10.064] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:10.698] Browser WARN    Image with src "/infinity_logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:01:10.698] Browser WARN    Image with src "/images/official/creative-contracts.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:01:10.698] Browser WARN    Image with src "/images/official/creative-tenant-rights.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:01:10.698] Browser WARN    Image with src "/images/official/creative-subscription.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
