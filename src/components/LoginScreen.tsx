@@ -120,7 +120,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
 
         {/* Branding */}
         <div className="absolute top-10 left-12 z-10">
-          <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={100} height={28} className="object-contain opacity-80" />
+          <Image src="/logo_legal.png" alt="Infinity Legal SA" width={80} height={45} className="object-contain opacity-80" />
           <p className="text-[10px] text-white/30 mt-1.5 tracking-[0.15em] uppercase" style={{ fontFamily: 'Georgia, serif' }}>Est. 2024 &middot; Sandton, SA</p>
         </div>
 
@@ -176,7 +176,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
 
           {/* Logo for mobile */}
           <div className="lg:hidden mb-8">
-            <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={120} height={34} className="object-contain" />
+            <Image src="/logo_legal.png" alt="Infinity Legal SA" width={100} height={56} className="object-contain" />
           </div>
 
           <div className="mb-8">

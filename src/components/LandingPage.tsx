@@ -90,7 +90,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             <div className="flex items-center gap-3">
-              <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={120} height={36} className="object-contain" priority />
+              <Image src="/logo_legal.png" alt="Infinity Legal SA" width={100} height={56} className="object-contain" priority />
             </div>
             <div className="hidden lg:flex items-center gap-8">
               {navLinks.map(link => (
@@ -681,7 +681,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Brand & Copyright */}
             <div className="flex flex-col gap-3">
-              <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={100} height={28} className="object-contain" />
+              <Image src="/logo_legal.png" alt="Infinity Legal SA" width={80} height={45} className="object-contain" />
               <p className="text-[#3a506f] text-[11px]">&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</p>
               <p className="text-[#2a3f5f] text-[10px]">Designed and developed in South Africa</p>
             </div>

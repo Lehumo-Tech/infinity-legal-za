@@ -421,7 +421,7 @@ export default function HomePageClient() {
           title="Visit Homepage"
         >
           <div className="relative">
-            <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={36} height={20} className="flex-shrink-0 object-contain" />
+            <Image src="/logo_legal.png" alt="Infinity Legal SA" width={48} height={27} className="flex-shrink-0 object-contain" />
             <div className="absolute -inset-2 bg-[#c9a84c]/0 group-hover:bg-[#c9a84c]/5 rounded-lg transition-all duration-300" />
           </div>
           {sidebarOpen && (

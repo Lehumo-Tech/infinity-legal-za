@@ -1,0 +1,2002 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useEffect, useCallback, useRef } from 'react';
+     4→import Image from 'next/image';
+     5→import {
+     6→  Users, FolderKanban, Target, FileText, Shield, TrendingUp,
+     7→  Bell, Search, ChevronRight, Activity, Clock, AlertTriangle, CheckCircle2,
+     8→  LogOut, DollarSign, UserPlus, FileCheck,
+     9→  ArrowUpRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
+    10→  Mail, Phone, Building, Star, Zap, Globe,
+    11→  KeyRound, ShieldCheck, Upload, Plus,
+    12→  BookOpen, Briefcase, Crown, MessageSquare, LayoutDashboard,
+    13→  Gavel, Landmark, PhoneCall, Video, MapPin,
+    14→  Clock3, FileUp, Calendar, Download,
+    15→  Send, AlertCircle, TreePine,
+    16→  Home as HomeIcon, ArrowLeft, Scale, Heart, Handshake, Sparkles
+    17→} from 'lucide-react';
+    18→import {
+    19→  Card, CardContent, CardDescription, CardHeader, CardTitle,
+    20→} from '@/components/ui/card';
+    21→import { Button } from '@/components/ui/button';
+    22→import { Input } from '@/components/ui/input';
+    23→import { Badge } from '@/components/ui/badge';
+    24→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    25→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    26→import { Progress } from '@/components/ui/progress';
+    27→import { Separator } from '@/components/ui/separator';
+    28→import { ScrollArea } from '@/components/ui/scroll-area';
+    29→import {
+    30→  Dialog, DialogContent, DialogDescription, DialogHeader,
+    31→  DialogTitle, DialogTrigger, DialogFooter, DialogClose,
+    32→} from '@/components/ui/dialog';
+    33→import {
+    34→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    35→} from '@/components/ui/select';
+    36→import { Textarea } from '@/components/ui/textarea';
+    37→import { Label } from '@/components/ui/label';
+    38→import { Switch } from '@/components/ui/switch';
+    39→import { Skeleton } from '@/components/ui/skeleton';
+    40→import { toast } from 'sonner';
+    41→import { LandingPage } from '@/components/LandingPage';
+    42→import { LoginScreen } from '@/components/LoginScreen';
+    43→import { useAuth } from '@/hooks/useAuth';
+    44→
+    45→// ============================================
+    46→// TYPES
+    47→// ============================================
+    48→type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart';
+    49→type UserRole = 'managing_director' | 'admin' | 'attorney' | 'paralegal' | 'systems_admin' | 'client';
+    50→
+    51→interface User {
+    52→  id: string;
+    53→  email: string;
+    54→  full_name: string | null;
+    55→  role: UserRole;
+    56→  avatar_url?: string | null;
+    57→  phone?: string | null;
+    58→}
+    59→
+    60→interface Stats {
+    61→  totalCases: number;
+    62→  activeCases: number;
+    63→  pendingCases: number;
+    64→  closedCases: number;
+    65→  totalLeads: number;
+    66→  newLeads: number;
+    67→  totalDocuments: number;
+    68→  pendingTasks: number;
+    69→  overdueTasks: number;
+    70→  totalClients: number;
+    71→  totalAttorneys: number;
+    72→  totalRevenue: number;
+    73→}
+    74→
+    75→interface Consultation {
+    76→  id: string;
+    77→  client_id: string;
+    78→  attorney_id: string;
+    79→  case_id?: string | null;
+    80→  scheduled_at: string;
+    81→  duration_minutes: number;
+    82→  status: string;
+    83→  notes?: string | null;
+    84→  meeting_type: string;
+    85→  client?: { full_name: string | null; email: string };
+    86→  attorney?: { full_name: string | null; email: string };
+    87→  case?: { title: string; case_ref: string } | null;
+    88→  created_at: string;
+    89→}
+    90→
+    91→interface DocumentItem {
+    92→  id: string;
+    93→  file_name: string;
+    94→  case_id: string;
+    95→  document_type: string;
+    96→  status: string;
+    97→  version: number;
+    98→  file_path: string;
+    99→  file_url?: string | null;
+   100→  file_size?: number | null;
+   101→  uploaded_by?: string | null;
+   102→  created_at: string;
+   103→  case?: { title: string; case_ref: string };
+   104→  uploaded_by_user?: { full_name: string | null };
+   105→}
+   106→
+   107→interface TaskItem {
+   108→  id: string;
+   109→  title: string;
+   110→  description?: string | null;
+   111→  case_id?: string | null;
+   112→  assigned_to: string;
+   113→  created_by: string;
+   114→  priority: string;
+   115→  status: string;
+   116→  due_date?: string | null;
+   117→  completed_at?: string | null;
+   118→  assignee?: { full_name: string | null };
+   119→  creator?: { full_name: string | null };
+   120→  case?: { title: string } | null;
+   121→  created_at: string;
+   122→}
+   123→
+   124→interface StaffMember {
+   125→  id: string;
+   126→  full_name: string | null;
+   127→  email: string;
+   128→  role: string;
+   129→  phone?: string | null;
+   130→  avatar_url?: string | null;
+   131→}
+   132→
+   133→interface Notification {
+   134→  id: string;
+   135→  type: string;
+   136→  title: string;
+   137→  message: string;
+   138→  is_read: boolean;
+   139→  created_at: string;
+   140→}
+   141→
+   142→// ============================================
+   143→// MAIN APP COMPONENT (Client-side)
+   144→// ============================================
+   145→export default function HomePageClient() {
+   146→  const { user: authUser, accessToken, loading: authLoading, signOut } = useAuth();
+   147→  const isAuthenticated = !!authUser && !!accessToken;
+   148→  const user: User | null = authUser ? {
+   149→    id: authUser.id,
+   150→    email: authUser.email,
+   151→    full_name: authUser.full_name,
+   152→    role: (authUser.role || 'client') as UserRole,
+   153→    avatar_url: authUser.avatar_url || null,
+   154→    phone: authUser.phone || null,
+   155→  } : null;
+   156→  const token = accessToken;
+   157→  const [currentView, setCurrentView] = useState<View>('workbench');
+   158→  const [sidebarOpen, setSidebarOpen] = useState(true);
+   159→  const [showLanding, setShowLanding] = useState(true);
+   160→  const [showLogin, setShowLogin] = useState(false);
+   161→  const [loading, setLoading] = useState(false);
+   162→  const [stats, setStats] = useState<Stats | null>(null);
+   163→  const [charts, setCharts] = useState<any>(null);
+   164→  const [firmHealth, setFirmHealth] = useState<Record<string, boolean>>({});
+   165→  const [pricingPlans, setPricingPlans] = useState<any[]>([]);
+   166→  const [cases, setCases] = useState<any[]>([]);
+   167→  const [leads, setLeads] = useState<any[]>([]);
+   168→  const [consultations, setConsultations] = useState<Consultation[]>([]);
+   169→  const [documents, setDocuments] = useState<DocumentItem[]>([]);
+   170→  const [tasks, setTasks] = useState<TaskItem[]>([]);
+   171→  const [staff, setStaff] = useState<StaffMember[]>([]);
+   172→  const [notifications, setNotifications] = useState<Notification[]>([]);
+   173→  const [casesPage, setCasesPage] = useState(1);
+   174→  const [leadsPage, setLeadsPage] = useState(1);
+   175→  const [casesTotal, setCasesTotal] = useState(0);
+   176→  const [leadsTotal, setLeadsTotal] = useState(0);
+   177→  const [loginError, setLoginError] = useState('');
+   178→  const [searchQuery, setSearchQuery] = useState('');
+   179→  const [showNotifications, setShowNotifications] = useState(false);
+   180→  const [showUserMenu, setShowUserMenu] = useState(false);
+   181→
+   182→  // Auth is handled by useAuth() hook - signIn/signOut are in the LoginScreen and topbar
+   183→  // The auth state (isAuthenticated, user, token) is derived from the auth context
+   184→  // No more localStorage - sessions are managed via Supabase cookies
+   185→
+   186→  const loadDashboard = async (authToken?: string) => {
+   187→    const t = authToken || token;
+   188→    if (!t) return;
+   189→    try {
+   190→      const res = await fetch('/api/dashboard', {
+   191→        headers: { Authorization: `Bearer ${t}` },
+   192→      });
+   193→      const data = await res.json();
+   194→      if (data.success) {
+   195→        setStats(data.data.stats);
+   196→        setCharts(data.data.charts || null);
+   197→        setFirmHealth(data.data.health || {});
+   198→      }
+   199→    } catch (e) {
+   200→      console.error('Dashboard load error:', e);
+   201→    }
+   202→  };
+   203→
+   204→  const loadCases = async (page = 1) => {
+   205→    if (!token) return;
+   206→    try {
+   207→      const res = await fetch(`/api/cases?page=${page}&perPage=10&search=${searchQuery}`, {
+   208→        headers: { Authorization: `Bearer ${token}` },
+   209→      });
+   210→      const data = await res.json();
+   211→      if (data.success) {
+   212→        setCases(data.data.data);
+   213→        setCasesTotal(data.data.pagination.total);
+   214→        setCasesPage(page);
+   215→      }
+   216→    } catch (e) {
+   217→      console.error('Cases load error:', e);
+   218→    }
+   219→  };
+   220→
+   221→  const loadLeads = async (page = 1) => {
+   222→    if (!token) return;
+   223→    try {
+   224→      const res = await fetch(`/api/leads?page=${page}&perPage=10`, {
+   225→        headers: { Authorization: `Bearer ${token}` },
+   226→      });
+   227→      const data = await res.json();
+   228→      if (data.success) {
+   229→        setLeads(data.data.data);
+   230→        setLeadsTotal(data.data.pagination.total);
+   231→        setLeadsPage(page);
+   232→      }
+   233→    } catch (e) {
+   234→      console.error('Leads load error:', e);
+   235→    }
+   236→  };
+   237→
+   238→  const loadConsultations = async () => {
+   239→    if (!token) return;
+   240→    try {
+   241→      const res = await fetch('/api/consultations?perPage=50', {
+   242→        headers: { Authorization: `Bearer ${token}` },
+   243→      });
+   244→      const data = await res.json();
+   245→      if (data.success) setConsultations(data.data.data || []);
+   246→    } catch (e) {
+   247→      console.error('Consultations load error:', e);
+   248→    }
+   249→  };
+   250→
+   251→  const loadDocuments = async () => {
+   252→    if (!token) return;
+   253→    try {
+   254→      const res = await fetch('/api/documents?perPage=50', {
+   255→        headers: { Authorization: `Bearer ${token}` },
+   256→      });
+   257→      const data = await res.json();
+   258→      if (data.success) setDocuments(data.data.data || []);
+   259→    } catch (e) {
+   260→      console.error('Documents load error:', e);
+   261→    }
+   262→  };
+   263→
+   264→  const loadTasks = async () => {
+   265→    if (!token) return;
+   266→    try {
+   267→      const res = await fetch('/api/tasks?perPage=50', {
+   268→        headers: { Authorization: `Bearer ${token}` },
+   269→      });
+   270→      const data = await res.json();
+   271→      if (data.success) setTasks(data.data.data || []);
+   272→    } catch (e) {
+   273→      console.error('Tasks load error:', e);
+   274→    }
+   275→  };
+   276→
+   277→  const loadStaff = async () => {
+   278→    if (!token) return;
+   279→    try {
+   280→      const res = await fetch('/api/staff?perPage=100', {
+   281→        headers: { Authorization: `Bearer ${token}` },
+   282→      });
+   283→      const data = await res.json();
+   284→      if (data.success) setStaff(data.data.data || []);
+   285→    } catch (e) {
+   286→      console.error('Staff load error:', e);
+   287→    }
+   288→  };
+   289→
+   290→  const loadPricingPlans = async () => {
+   291→    try {
+   292→      const res = await fetch('/api/pricing');
+   293→      const data = await res.json();
+   294→      if (data.success) setPricingPlans(data.data || []);
+   295→    } catch (e) {
+   296→      console.error('Pricing load error:', e);
+   297→    }
+   298→  };
+   299→
+   300→  const loadNotifications = async () => {
+   301→    if (!token) return;
+   302→    try {
+   303→      const res = await fetch('/api/notifications?perPage=20', {
+   304→        headers: { Authorization: `Bearer ${token}` },
+   305→      });
+   306→      const data = await res.json();
+   307→      if (data.success) setNotifications(data.data.data || []);
+   308→    } catch (e) {
+   309→      console.error('Notifications load error:', e);
+   310→    }
+   311→  };
+   312→
+   313→  // Session is now managed by Supabase cookies via the AuthProvider
+   314→  // No need for localStorage session restoration
+   315→
+   316→  // Load data when view changes
+   317→  useEffect(() => {
+   318→    if (!isAuthenticated) return;
+   319→    const loadData = async () => {
+   320→      if (currentView === 'workbench' || currentView === 'analytics') await loadDashboard();
+   321→      else if (currentView === 'cases') await loadCases(1);
+   322→      else if (currentView === 'leads') await loadLeads(1);
+   323→      else if (currentView === 'consultations') await loadConsultations();
+   324→      else if (currentView === 'documents') await loadDocuments();
+   325→      else if (currentView === 'tasks') await loadTasks();
+   326→      else if (currentView === 'staff' || currentView === 'org-chart') await loadStaff();
+   327→      else if (currentView === 'pricing') await loadPricingPlans();
+   328→    };
+   329→    loadData();
+   330→  }, [currentView, isAuthenticated]);
+   331→
+   332→  // Load notifications on auth (wrapped in async IIFE to avoid setState-in-effect lint)
+   333→  useEffect(() => {
+   334→    if (isAuthenticated && token) {
+   335→      void (async () => {
+   336→        try {
+   337→          await loadNotifications();
+   338→        } catch { /* ignore */ }
+   339→      })();
+   340→    }
+   341→  }, [isAuthenticated, token]);
+   342→
+   343→  // Role-based navigation
+   344→  const getNavItems = () => {
+   345→    const role = user?.role || 'client';
+   346→    const isManagement = ['managing_director', 'admin', 'systems_admin'].includes(role);
+   347→    const isLegal = role === 'attorney';
+   348→    const isParalegal = role === 'paralegal';
+   349→    const isSales = role === 'admin';
+   350→    const isFinance = false; // no finance-specific roles in schema
+   351→    const isClient = role === 'client';
+   352→
+   353→    const items: { id: View; label: string; icon: any; group: string }[] = [
+   354→      { id: 'workbench', label: 'Workbench', icon: LayoutDashboard, group: 'Main' },
+   355→    ];
+   356→
+   357→    // Cases — all roles can see (clients see their own cases, staff see all/assigned)
+   358→    items.push({ id: 'cases', label: 'Cases', icon: FolderKanban, group: 'Practice' });
+   359→    items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'Practice' });
+   360→
+   361→    // Leads — only staff who manage leads
+   362→    if (isManagement || isSales || isLegal) {
+   363→      items.push({ id: 'leads', label: 'Leads', icon: Target, group: 'Practice' });
+   364→    }
+   365→
+   366→    // Documents & Tasks — all roles (clients see own, staff see all/assigned)
+   367→    items.push({ id: 'documents', label: 'Documents', icon: FileText, group: 'Practice' });
+   368→    items.push({ id: 'tasks', label: 'Tasks', icon: CheckCircle2, group: 'Practice' });
+   369→
+   370→    // Staff & Org — internal only, not for clients
+   371→    if (isManagement || isLegal || isParalegal || isFinance) {
+   372→      items.push({ id: 'staff', label: 'Staff Portal', icon: Users, group: 'Firm' });
+   373→      items.push({ id: 'org-chart', label: 'Org Structure', icon: TreePine, group: 'Firm' });
+   374→    }
+   375→
+   376→    // Analytics — management only
+   377→    if (isManagement) {
+   378→      items.push({ id: 'analytics', label: 'Analytics', icon: TrendingUp, group: 'Firm' });
+   379→    }
+   380→
+   381→    items.push({ id: 'pricing', label: 'Pricing', icon: DollarSign, group: 'More' });
+   382→
+   383→    return items;
+   384→  };
+   385→
+   386→  if (!isAuthenticated) {
+   387→    if (showLogin) {
+   388→      return (
+   389→        <LoginScreen
+   390→          onLogin={() => {}}
+   391→          loading={false}
+   392→          error={loginError}
+   393→          onBackToHome={() => setShowLogin(false)}
+   394→        />
+   395→      );
+   396→    }
+   397→    return <LandingPage onLoginClick={() => setShowLogin(true)} />;
+   398→  }
+   399→
+   400→  if (showLanding) {
+   401→    return (
+   402→      <LandingPage
+   403→        isAuthenticated={true}
+   404→        onBackToDashboard={() => setShowLanding(false)}
+   405→        userName={user?.full_name?.split(' ')[0]}
+   406→      />
+   407→    );
+   408→  }
+   409→
+   410→  const navItems = getNavItems();
+   411→  const navGroups = [...new Set(navItems.map(i => i.group))];
+   412→
+   413→  return (
+   414→    <div className="min-h-screen flex bg-slate-50">
+   415→      {/* Sidebar */}
+   416→      <aside className={`${sidebarOpen ? 'w-[272px]' : 'w-[68px]'} bg-[#0c1e3c] text-white flex flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex-shrink-0`}>
+   417→        {/* Logo Area */}
+   418→        <div
+   419→          className="p-4 flex items-center gap-3 border-b border-[#c9a84c]/20 cursor-pointer hover:bg-[#132d52]/30 transition-all duration-200 group"
+   420→          onClick={() => setShowLanding(true)}
+   421→          title="Visit Homepage"
+   422→        >
+   423→          <div className="relative">
+   424→            <Image src="/infinity_logo.png" alt="Infinity Legal SA" width={36} height={20} className="flex-shrink-0 object-contain" />
+   425→            <div className="absolute -inset-2 bg-[#c9a84c]/0 group-hover:bg-[#c9a84c]/5 rounded-lg transition-all duration-300" />
+   426→          </div>
+   427→          {sidebarOpen && (
+   428→            <div>
+   429→              <span className="font-bold text-lg tracking-tight">Infinity Legal</span>
+   430→              <p className="text-[10px] text-[#7a8fb0] uppercase tracking-widest">Intranet Portal</p>
+   431→            </div>
+   432→          )}
+   433→        </div>
+   434→
+   435→        <ScrollArea className="flex-1">
+   436→          <nav className="p-2 space-y-0.5">
+   437→            {/* Homepage Link — card-style */}
+   438→            <button
+   439→              onClick={() => setShowLanding(true)}
+   440→              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 text-[#c9a84c] hover:bg-[#c9a84c]/10 border border-[#c9a84c]/15 hover:border-[#c9a84c]/30 mb-2 ${sidebarOpen ? '' : 'justify-center'}`}
+   441→            >
+   442→              <HomeIcon className="w-4 h-4 flex-shrink-0" />
+   443→              {sidebarOpen && <span className="font-medium">Visit Homepage</span>}
+   444→            </button>
+   445→
+   446→            {navGroups.map((group, gi) => (
+   447→              <div key={group}>
+   448→                {sidebarOpen && gi > 0 && (
+   449→                  <>
+   450→                    <div className="divider-gold my-2 mx-3" />
+   451→                    <div className="px-3 pt-2 pb-1.5">
+   452→                      <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a94b8]">
+   453→                        <span className="text-[#c9a84c]/60 mr-1.5">—</span>{group}
+   454→                      </span>
+   455→                    </div>
+   456→                  </>
+   457→                )}
+   458→                {sidebarOpen && gi === 0 && group !== 'Main' && (
+   459→                  <div className="px-3 pt-2 pb-1.5">
+   460→                    <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a94b8]">
+   461→                      <span className="text-[#c9a84c]/60 mr-1.5">—</span>{group}
+   462→                    </span>
+   463→                  </div>
+   464→                )}
+   465→                {navItems.filter(i => i.group === group).map(item => (
+   466→                  <button
+   467→                    key={item.id}
+   468→                    onClick={() => setCurrentView(item.id)}
+   469→                    aria-label={item.label}
+   470→                    className={`sidebar-nav-item ${currentView === item.id ? 'active' : ''} relative ${!sidebarOpen ? 'justify-center !px-0' : ''}`}
+   471→                  >
+   472→                    {currentView === item.id && (
+   473→                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-[#c9a84c] rounded-r-full" />
+   474→                    )}
+   475→                    <item.icon className="w-4 h-4 flex-shrink-0" />
+   476→                    {sidebarOpen && <span>{item.label}</span>}
+   477→                  </button>
+   478→                ))}
+   479→              </div>
+   480→            ))}
+   481→          </nav>
+   482→        </ScrollArea>
+   483→
+   484→        {/* User Profile Section */}
+   485→        <div className={`p-3 border-t border-[#1a3358] ${sidebarOpen ? '' : 'flex justify-center'}`}>
+   486→          <div className={`flex items-center ${sidebarOpen ? 'gap-3' : ''} p-2 rounded-lg hover:bg-[#132d52]/50 transition-all duration-200 cursor-default`}>
+   487→            <Avatar className="w-8 h-8 flex-shrink-0">
+   488→              <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold">
+   489→                {user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+   490→              </AvatarFallback>
+   491→            </Avatar>
+   492→            {sidebarOpen && (
+   493→              <div className="min-w-0">
+   494→                <div className="text-xs font-medium text-white truncate">{user?.full_name}</div>
+   495→                <div className="text-[10px] text-[#7a94b8] capitalize truncate">{user?.role?.replace(/_/g, ' ')}</div>
+   496→              </div>
+   497→            )}
+   498→          </div>
+   499→        </div>
+   500→
+   501→        {/* Collapse Button */}
+   502→        <div className="p-3 border-t border-[#1a3358]">
+   503→          <button
+   504→            onClick={() => setSidebarOpen(!sidebarOpen)}
+   505→            aria-label="Toggle sidebar"
+   506→            className="sidebar-nav-item !py-2 group/collapse"
+   507→          >
+   508→            <ChevronLeft className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${!sidebarOpen ? 'rotate-180' : ''}`} />
+   509→            {sidebarOpen && <span>Collapse</span>}
+   510→          </button>
+   511→        </div>
+   512→      </aside>
+   513→
+   514→      {/* Main content */}
+   515→      <main className="flex-1 flex flex-col min-w-0">
+   516→        {/* Top bar */}
+   517→        <header className="glass-nav h-14 flex items-center justify-between px-6 flex-shrink-0">
+   518→          <div className="flex items-center gap-3">
+   519→            {/* Breadcrumbs */}
+   520→            <nav className="flex items-center gap-1.5 text-sm">
+   521→              <button
+   522→                onClick={() => setShowLanding(true)}
+   523→                className="text-[#7a94b8] hover:text-[#0c1e3c] transition-colors duration-200 flex items-center gap-1"
+   524→                title="Visit Homepage"
+   525→              >
+   526→                <HomeIcon className="w-3.5 h-3.5" />
+   527→                <span className="hidden sm:inline">Home</span>
+   528→              </button>
+   529→              <ChevronRight className="w-3 h-3 text-slate-300" />
+   530→              <span className="font-semibold text-[#0c1e3c] capitalize">{currentView.replace('-', ' ')}</span>
+   531→            </nav>
+   532→            <Badge className="bg-[#c9a84c]/5 text-[#a88832] text-[9px] font-medium border-0 hover:bg-[#c9a84c]/10 transition-colors duration-200">
+   533→              <ShieldCheck className="w-3 h-3 mr-1" />
+   534→              POPIA
+   535→            </Badge>
+   536→          </div>
+   537→          <div className="flex items-center gap-3">
+   538→            {/* Search bar */}
+   539→            <div className="relative hidden sm:block">
+   540→              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+   541→              <Input
+   542→                placeholder="Search..."
+   543→                aria-label="Search cases and documents"
+   544→                className="pl-9 pr-16 w-64 h-8 text-sm input-premium focus:ring-0"
+   545→                value={searchQuery}
+   546→                onChange={(e) => setSearchQuery(e.target.value)}
+   547→                onKeyDown={(e) => e.key === 'Enter' && currentView === 'cases' && loadCases(1)}
+   548→              />
+   549→              <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 font-mono pointer-events-none">⌘K</kbd>
+   550→            </div>
+   551→            {/* Notifications */}
+   552→            <div className="relative">
+   553→              <button
+   554→                className={`relative p-2 hover:bg-slate-100 rounded-lg transition-all duration-200 ${notifications.filter(n => !n.is_read).length > 0 ? 'dot-notification' : ''}`}
+   555→                onClick={() => setShowNotifications(!showNotifications)}
+   556→                aria-label="Notifications"
+   557→                aria-expanded={showNotifications}
+   558→              >
+   559→                <Bell className="w-4 h-4 text-slate-600" />
+   560→              </button>
+   561→              {showNotifications && (
+   562→                <div className="absolute right-0 top-10 w-80 bg-white border shadow-xl rounded-xl z-50 max-h-96 overflow-y-auto">
+   563→                  <div className="p-3 border-b flex items-center justify-between">
+   564→                    <span className="font-semibold text-sm text-[#0c1e3c]">Notifications</span>
+   565→                    <div className="flex items-center gap-1">
+   566→                      {notifications.some(n => !n.is_read) && (
+   567→                        <Button variant="ghost" size="sm" className="h-6 text-xs text-[#a88832]" onClick={async () => {
+   568→                          try {
+   569→                            await fetch('/api/notifications', { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } });
+   570→                            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+   571→                          } catch { /* ignore */ }
+   572→                        }}>
+   573→                          Mark all read
+   574→                        </Button>
+   575→                      )}
+   576→                      <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setShowNotifications(false)}>
+   577→                        <X className="w-3 h-3" />
+   578→                      </Button>
+   579→                    </div>
+   580→                  </div>
+   581→                  {notifications.length === 0 ? (
+   582→                    <div className="p-6 text-center text-sm text-slate-400">No notifications</div>
+   583→                  ) : (
+   584→                    notifications.slice(0, 10).map(n => (
+   585→                      <div key={n.id} className={`p-3 border-b hover:bg-slate-50 cursor-pointer ${!n.is_read ? 'bg-[#c9a84c]/5' : ''}`} onClick={async () => {
+   586→                        if (!n.is_read) {
+   587→                          try {
+   588→                            await fetch('/api/notifications', { method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ notification_id: n.id }) });
+   589→                            setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, is_read: true } : item));
+   590→                          } catch { /* ignore */ }
+   591→                        }
+   592→                      }}>
+   593→                        <div className="flex items-start gap-2">
+   594→                          {!n.is_read && <div className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full mt-1.5 flex-shrink-0" />}
+   595→                          <div className="flex-1 min-w-0">
+   596→                            <p className="text-sm font-medium text-slate-900 truncate">{n.title}</p>
+   597→                            <p className="text-xs text-slate-500 line-clamp-2">{n.message}</p>
+   598→                          </div>
+   599→                        </div>
+   600→                      </div>
+   601→                    ))
+   602→                  )}
+   603→                </div>
+   604→              )}
+   605→            </div>
+   606→            {/* User Avatar Dropdown */}
+   607→            <div className="relative">
+   608→              <button
+   609→                onClick={() => { setShowUserMenu(!showUserMenu); setShowNotifications(false); }}
+   610→                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-all duration-200"
+   611→                aria-label="User menu"
+   612→                aria-expanded={showUserMenu}
+   613→              >
+   614→                <Avatar className="w-8 h-8">
+   615→                  <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-bold">
+   616→                    {user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+   617→                  </AvatarFallback>
+   618→                </Avatar>
+   619→                <div className="text-sm hidden sm:block text-left">
+   620→                  <div className="font-medium text-[#0c1e3c] text-xs leading-tight">{user?.full_name}</div>
+   621→                  <div className="text-[10px] text-slate-500 capitalize leading-tight">{user?.role?.replace(/_/g, ' ')}</div>
+   622→                </div>
+   623→                <ChevronRight className={`w-3 h-3 text-slate-400 hidden sm:block transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`} />
+   624→              </button>
+   625→              {showUserMenu && (
+   626→                <div className="absolute right-0 top-12 w-56 bg-white border shadow-xl rounded-xl z-50 overflow-hidden animate-scale-in">
+   627→                  <div className="p-3 border-b bg-slate-50/50">
+   628→                    <div className="flex items-center gap-3">
+   629→                      <Avatar className="w-9 h-9">
+   630→                        <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-xs font-bold">
+   631→                          {user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+   632→                        </AvatarFallback>
+   633→                      </Avatar>
+   634→                      <div className="min-w-0">
+   635→                        <div className="text-sm font-medium text-[#0c1e3c] truncate">{user?.full_name}</div>
+   636→                        <div className="text-[10px] text-slate-500 truncate">{user?.email}</div>
+   637→                      </div>
+   638→                    </div>
+   639→                  </div>
+   640→                  <div className="p-1">
+   641→                    <button
+   642→                      onClick={() => { signOut(); setShowUserMenu(false); }}
+   643→                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+   644→                    >
+   645→                      <LogOut className="w-4 h-4" />
+   646→                      <span>Sign Out</span>
+   647→                    </button>
+   648→                  </div>
+   649→                </div>
+   650→              )}
+   651→            </div>
+   652→          </div>
+   653→        </header>
+   654→
+   655→        {/* Page content */}
+   656→        <div className="flex-1 overflow-auto p-6">
+   657→          {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} />}
+   658→          {currentView === 'cases' && <CasesView cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} />}
+   659→          {currentView === 'leads' && <LeadsView leads={leads} page={leadsPage} total={leadsTotal} onPageChange={loadLeads} onRefresh={() => loadLeads(leadsPage)} />}
+   660→          {currentView === 'documents' && <DocumentsView token={token} documents={documents} onRefresh={loadDocuments} user={user} />}
+   661→          {currentView === 'consultations' && <ConsultationsView token={token} consultations={consultations} onRefresh={loadConsultations} user={user} staff={staff} />}
+   662→          {currentView === 'tasks' && <TasksView token={token} tasks={tasks} onRefresh={loadTasks} user={user} staff={staff} />}
+   663→          {currentView === 'staff' && <StaffPortal staff={staff} user={user} />}
+   664→          {currentView === 'org-chart' && <OrgChartView staff={staff} />}
+   665→          {currentView === 'analytics' && <AnalyticsView token={token} stats={stats} />}
+   666→          {currentView === 'pricing' && <PricingView plans={pricingPlans} />}
+   667→        </div>
+   668→
+   669→        {/* Footer */}
+   670→        <footer className="bg-[#0c1e3c] py-4 px-6 flex-shrink-0 border-t border-[#c9a84c]/15">
+   671→          <div className="flex items-center justify-between text-[10px] text-[#7a94b8]">
+   672→            <span>&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</span>
+   673→            <div className="flex items-center gap-4">
+   674→              <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> POPIA Compliant</span>
+   675→              <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> 256-bit Encryption</span>
+   676→            </div>
+   677→          </div>
+   678→        </footer>
+   679→      </main>
+   680→
+   681→      {/* Floating Ask Infinity */}
+   682→      <AskInfinityBubble />
+   683→    </div>
+   684→  );
+   685→}
+   686→
+   687→// ============================================
+   688→// WORKBENCH VIEW - Premium Legal Dashboard
+   689→// ============================================
+   690→function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth }: {
+   691→  stats: Stats | null; user: User | null; cases: any[]; consultations: Consultation[];
+   692→  tasks: TaskItem[]; token: string | null; onViewChange: (v: View) => void;
+   693→  charts: any; firmHealth: Record<string, boolean>;
+   694→}) {
+   695→  const role = user?.role || 'client';
+   696→  const isClient = role === 'client';
+   697→  const isManagement = ['managing_director', 'admin', 'systems_admin'].includes(role);
+   698→  const isLegal = role === 'attorney';
+   699→  const isParalegal = role === 'paralegal';
+   700→
+   701→  const now = new Date();
+   702→  const hour = now.getHours();
+   703→  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+   704→  const todayStr = now.toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+   705→
+   706→  const quickActions = [
+   707→    ...(isLegal || isManagement ? [{ label: 'Log Consultation', icon: BookOpen, color: 'bg-[#0c1e3c] text-[#c9a84c]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'consultations' as View }] : []),
+   708→    ...(isLegal || isParalegal || isManagement ? [{ label: 'Upload Document', icon: FileUp, color: 'bg-emerald-50 text-emerald-700', accent: 'group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)]', view: 'documents' as View }] : []),
+   709→    ...(isManagement || isLegal ? [{ label: 'New Case', icon: FolderKanban, color: 'bg-blue-50 text-blue-700', accent: 'group-hover:shadow-[0_0_12px_rgba(59,130,246,0.2)]', view: 'cases' as View }] : []),
+   710→    { label: 'My Tasks', icon: CheckCircle2, color: 'bg-amber-50 text-amber-700', accent: 'group-hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]', view: 'tasks' as View },
+   711→    ...(!isClient ? [{ label: 'View Staff', icon: Users, color: 'bg-purple-50 text-purple-700', accent: 'group-hover:shadow-[0_0_12px_rgba(147,51,234,0.2)]', view: 'staff' as View }] : []),
+   712→    ...(isManagement ? [{ label: 'View Analytics', icon: TrendingUp, color: 'bg-teal-50 text-teal-700', accent: 'group-hover:shadow-[0_0_12px_rgba(20,184,166,0.2)]', view: 'analytics' as View }] : []),
+   713→  ];
+   714→
+   715→  // Firm health items
+   716→  const healthItems = [
+   717→    { label: 'RBAC Authorization', ok: firmHealth.rbac !== undefined ? firmHealth.rbac : true },
+   718→    { label: 'POPIA Consent', ok: firmHealth.popia !== undefined ? firmHealth.popia : true },
+   719→    { label: 'Audit Logging', ok: firmHealth.auditLogging !== undefined ? firmHealth.auditLogging : true },
+   720→    { label: 'Encryption (AES-256)', ok: firmHealth.encryption !== undefined ? firmHealth.encryption : true },
+   721→    { label: 'Password Policy', ok: firmHealth.passwordPolicy !== undefined ? firmHealth.passwordPolicy : true },
+   722→    { label: 'Backup Active', ok: firmHealth.backupActive || false },
+   723→  ];
+   724→  const healthyCount = healthItems.filter(h => h.ok).length;
+   725→
+   726→  return (
+   727→    <div className="space-y-6 animate-fade-in-up">
+   728→      {/* ═══════════════════════════════════════════
+   729→          WELCOME BANNER — Premium Navy Card
+   730→          ═══════════════════════════════════════════ */}
+   731→      <div className="card-navy relative">
+   732→        {/* Diagonal gold accent stripe — top right */}
+   733→        <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden pointer-events-none">
+   734→          <div className="absolute -top-10 -right-10 w-44 h-44 bg-gradient-to-br from-[#c9a84c]/20 to-[#c9a84c]/5 rotate-45 transform origin-center" />
+   735→          <div className="absolute top-2 right-2 w-16 h-[2px] bg-gradient-to-l from-[#c9a84c]/40 to-transparent" />
+   736→          <div className="absolute top-6 right-2 w-10 h-[1px] bg-gradient-to-l from-[#c9a84c]/25 to-transparent" />
+   737→        </div>
+   738→
+   739→        <div className="relative p-6 flex items-center justify-between">
+   740→          <div>
+   741→            <p className="text-[#c9a84c] text-xs font-semibold uppercase tracking-wider mb-1">{greeting}</p>
+   742→            <h2 className="text-2xl font-bold text-white">{user?.full_name?.split(' ')[0] || 'User'}</h2>
+   743→            <div className="flex items-center gap-2 mt-1.5">
+   744→              <Clock3 className="w-3.5 h-3.5 text-[#8fa4c4]" />
+   745→              <p className="text-[#8fa4c4] text-sm">{todayStr}</p>
+   746→            </div>
+   747→            {/* Role badge with gold shimmer */}
+   748→            <Badge className="mt-3 bg-gradient-to-r from-[#c9a84c] via-[#dfc475] to-[#c9a84c] text-[#0c1e3c] text-[10px] font-semibold animate-shimmer bg-[length:200%_100%] shadow-sm">
+   749→              <Crown className="w-3 h-3 mr-1" />
+   750→              {role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+   751→            </Badge>
+   752→          </div>
+   753→          <div className="hidden md:flex gap-3">
+   754→            {stats && (
+   755→              <>
+   756→                <MiniStat label="Active Cases" value={stats.activeCases} />
+   757→                <MiniStat label="Pending Tasks" value={stats.pendingTasks} />
+   758→                {!isClient && <MiniStat label="Revenue" value={`R${(stats.totalRevenue / 1000000).toFixed(1)}M`} />}
+   759→              </>
+   760→            )}
+   761→          </div>
+   762→        </div>
+   763→      </div>
+   764→
+   765→      {/* ═══════════════════════════════════════════
+   766→          QUICK ACTIONS — Staggered Premium Cards
+   767→          ═══════════════════════════════════════════ */}
+   768→      <div>
+   769→        <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Quick Actions</h3>
+   770→        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 stagger-children">
+   771→          {quickActions.map(action => (
+   772→            <button
+   773→              key={action.label}
+   774→              onClick={() => onViewChange(action.view)}
+   775→              className="card-premium flex flex-col items-center gap-2.5 p-4 text-center group relative"
+   776→            >
+   777→              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${action.color} transition-all duration-300 group-hover:scale-110 ${action.accent}`}>
+   778→                <action.icon className="w-5 h-5" />
+   779→              </div>
+   780→              <span className="text-xs font-medium text-slate-700">{action.label}</span>
+   781→              {/* Arrow indicator on hover */}
+   782→              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+   783→                <ChevronRight className="w-3.5 h-3.5 text-[#c9a84c]" />
+   784→              </div>
+   785→            </button>
+   786→          ))}
+   787→        </div>
+   788→      </div>
+   789→
+   790→      {/* ═══════════════════════════════════════════
+   791→          STATS GRID — Premium Stat Cards
+   792→          ═══════════════════════════════════════════ */}
+   793→      {stats ? (
+   794→        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
+   795→          {[
+   796→            { label: 'Total Cases', value: stats.totalCases, icon: FolderKanban, color: 'text-blue-600 bg-blue-50', border: 'border-l-blue-500' },
+   797→            { label: 'Active Cases', value: stats.activeCases, icon: Activity, color: 'text-emerald-600 bg-emerald-50', border: 'border-l-emerald-500' },
+   798→            ...(!isClient ? [
+   799→              { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-600 bg-purple-50', border: 'border-l-purple-500' },
+   800→              { label: 'Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
+   801→            ] : []),
+   802→            { label: 'Pending Tasks', value: stats.pendingTasks, icon: Clock, color: 'text-orange-600 bg-orange-50', border: 'border-l-orange-500' },
+   803→            { label: 'Overdue', value: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600 bg-red-50', border: 'border-l-red-500' },
+   804→            ...(!isClient ? [
+   805→              { label: 'Clients', value: stats.totalClients, icon: Users, color: 'text-teal-600 bg-teal-50', border: 'border-l-teal-500' },
+   806→            ] : []),
+   807→            { label: 'Documents', value: stats.totalDocuments, icon: FileText, color: 'text-slate-600 bg-slate-100', border: 'border-l-slate-400' },
+   808→          ].map(card => (
+   809→            <div key={card.label} className={`stat-card border-l-4 ${card.border}`}>
+   810→              <div className="flex items-start justify-between">
+   811→                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
+   812→                  <card.icon className="w-4 h-4" />
+   813→                </div>
+   814→                {card.trend && (
+   815→                  <div className="flex items-center gap-0.5 text-emerald-600 text-[10px] font-semibold">
+   816→                    <ArrowUpRight className="w-3 h-3" />
+   817→                    <span>12%</span>
+   818→                  </div>
+   819→                )}
+   820→              </div>
+   821→              <div className="mt-3">
+   822→                <div className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
+   823→                <div className="text-[11px] text-slate-500 mt-0.5">{card.label}</div>
+   824→              </div>
+   825→            </div>
+   826→          ))}
+   827→        </div>
+   828→      ) : (
+   829→        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+   830→          {Array.from({ length: 8 }).map((_, i) => (
+   831→            <Card key={i}>
+   832→              <CardContent className="p-3 text-center space-y-2">
+   833→                <Skeleton className="w-8 h-8 rounded-lg mx-auto" />
+   834→                <Skeleton className="h-5 w-12 mx-auto" />
+   835→                <Skeleton className="h-3 w-10 mx-auto" />
+   836→              </CardContent>
+   837→            </Card>
+   838→          ))}
+   839→        </div>
+   840→      )}
+   841→
+   842→      {/* ═══════════════════════════════════════════
+   843→          CONSULTATIONS & TASKS — Premium Cards
+   844→          ═══════════════════════════════════════════ */}
+   845→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+   846→        {/* Upcoming Consultations */}
+   847→        <div className="card-premium">
+   848→          <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
+   849→            <div className="flex items-center gap-2">
+   850→              <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
+   851→              <h3 className="text-sm font-semibold text-[#0c1e3c]">Upcoming Consultations</h3>
+   852→            </div>
+   853→            <Button variant="ghost" size="sm" className="text-[#c9a84c] text-xs h-7" onClick={() => onViewChange('consultations')}>
+   854→              View All <ChevronRight className="w-3 h-3 ml-1" />
+   855→            </Button>
+   856→          </div>
+   857→          <div className="p-4">
+   858→            {consultations.length === 0 ? (
+   859→              <div className="text-center py-8 text-sm">
+   860→                <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+   861→                  <BookOpen className="w-7 h-7 text-slate-300" />
+   862→                </div>
+   863→                <p className="text-slate-400 font-medium">No consultations scheduled</p>
+   864→                <p className="text-[11px] text-slate-300 mt-1">Schedule your first consultation to get started</p>
+   865→                <Button variant="outline" size="sm" className="mt-3 text-xs border-[#c9a84c]/30 text-[#a88832] hover:bg-[#c9a84c]/5" onClick={() => onViewChange('consultations')}>Schedule One</Button>
+   866→              </div>
+   867→            ) : (
+   868→              <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+   869→                {consultations.slice(0, 5).map(c => {
+   870→                  const meetingColor = c.meeting_type === 'video_call' ? 'border-l-blue-400' : c.meeting_type === 'phone_call' ? 'border-l-emerald-400' : 'border-l-[#c9a84c]';
+   871→                  return (
+   872→                    <div key={c.id} className={`flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50/80 transition-colors border-l-[3px] ${meetingColor}`}>
+   873→                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+   874→                        c.meeting_type === 'video_call' ? 'bg-blue-50 text-blue-600' :
+   875→                        c.meeting_type === 'phone_call' ? 'bg-emerald-50 text-emerald-600' :
+   876→                        'bg-[#c9a84c]/10 text-[#a88832]'
+   877→                      }`}>
+   878→                        {c.meeting_type === 'video_call' ? <Video className="w-4 h-4" /> :
+   879→                         c.meeting_type === 'phone_call' ? <PhoneCall className="w-4 h-4" /> :
+   880→                         <MapPin className="w-4 h-4" />}
+   881→                      </div>
+   882→                      <div className="flex-1 min-w-0">
+   883→                        <div className="text-sm font-medium text-slate-900 truncate">{c.client?.full_name || 'Client'}</div>
+   884→                        <div className="text-[10px] text-slate-500">{c.scheduled_at ? (() => { const d = new Date(c.scheduled_at); return `${d.toLocaleDateString('en-ZA')} at ${d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}`; })() : 'TBD'} · {c.duration_minutes}min</div>
+   885→                      </div>
+   886→                      <Badge className={`text-[10px] ${
+   887→                        c.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+   888→                        c.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' :
+   889→                        c.status === 'completed' ? 'bg-slate-100 text-slate-700' :
+   890→                        'bg-red-100 text-red-700'
+   891→                      }`}>{c.status}</Badge>
+   892→                    </div>
+   893→                  );
+   894→                })}
+   895→              </div>
+   896→            )}
+   897→          </div>
+   898→        </div>
+   899→
+   900→        {/* My Tasks */}
+   901→        <div className="card-premium">
+   902→          <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
+   903→            <div className="flex items-center gap-2">
+   904→              <div className="w-1.5 h-5 rounded-full bg-emerald-500" />
+   905→              <h3 className="text-sm font-semibold text-[#0c1e3c]">My Tasks</h3>
+   906→            </div>
+   907→            <Button variant="ghost" size="sm" className="text-[#c9a84c] text-xs h-7" onClick={() => onViewChange('tasks')}>
+   908→              View All <ChevronRight className="w-3 h-3 ml-1" />
+   909→            </Button>
+   910→          </div>
+   911→          <div className="p-4">
+   912→            {tasks.length === 0 ? (
+   913→              <div className="text-center py-8 text-sm">
+   914→                <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-3 animate-float">
+   915→                  <CheckCircle2 className="w-7 h-7 text-emerald-300" />
+   916→                </div>
+   917→                <p className="text-slate-500 font-medium">All caught up!</p>
+   918→                <p className="text-[11px] text-slate-300 mt-1">No pending tasks remaining</p>
+   919→              </div>
+   920→            ) : (
+   921→              <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+   922→                {tasks.filter(t => t.status !== 'completed' && t.status !== 'cancelled').slice(0, 5).map(t => (
+   923→                  <div key={t.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50/80 transition-colors">
+   924→                    {/* Checkbox-like indicator */}
+   925→                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+   926→                      t.priority === 'urgent' ? 'border-red-400 bg-red-50' :
+   927→                      t.priority === 'high' ? 'border-orange-400 bg-orange-50' :
+   928→                      t.priority === 'medium' ? 'border-amber-400 bg-amber-50' : 'border-slate-300 bg-slate-50'
+   929→                    }`}>
+   930→                      {t.priority === 'urgent' && <div className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+   931→                      {t.priority === 'high' && <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
+   932→                      {t.priority === 'medium' && <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+   933→                    </div>
+   934→                    <div className="flex-1 min-w-0">
+   935→                      <div className="text-sm font-medium text-slate-900 truncate">{t.title}</div>
+   936→                      <div className="text-[10px] text-slate-500">
+   937→                        {t.due_date && `Due: ${new Date(t.due_date).toLocaleDateString('en-ZA')}`}
+   938→                        {t.case && ` · ${t.case.title}`}
+   939→                      </div>
+   940→                    </div>
+   941→                    <Badge className={`text-[10px] ${
+   942→                      t.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+   943→                      t.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+   944→                      'bg-red-100 text-red-700'
+   945→                    }`}>{t.status.replace(/_/g, ' ')}</Badge>
+   946→                  </div>
+   947→                ))}
+   948→              </div>
+   949→            )}
+   950→          </div>
+   951→        </div>
+   952→      </div>
+   953→
+   954→      {/* ═══════════════════════════════════════════
+   955→          CASE DISTRIBUTION + FIRM HEALTH
+   956→          ═══════════════════════════════════════════ */}
+   957→      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+   958→        {/* Case Distribution — Elegant gradient bars */}
+   959→        <div className="card-premium lg:col-span-2">
+   960→          <div className="p-4 pb-3 border-b border-slate-100/80">
+   961→            <div className="flex items-center gap-2">
+   962→              <div className="w-1.5 h-5 rounded-full bg-[#0c1e3c]" />
+   963→              <h3 className="text-sm font-semibold text-[#0c1e3c]">Case Distribution by Type</h3>
+   964→            </div>
+   965→          </div>
+   966→          <div className="p-4">
+   967→            <div className="space-y-3">
+   968→              {(() => {
+   969→                const caseTypeGradientMap: Record<string, { label: string; from: string; to: string }> = {
+   970→                  family: { label: 'Family', from: 'from-[#0c1e3c]', to: 'to-[#1a3358]' },
+   971→                  civil: { label: 'Civil', from: 'from-[#c9a84c]', to: 'to-[#dfc475]' },
+   972→                  criminal: { label: 'Criminal', from: 'from-red-500', to: 'to-red-400' },
+   973→                  corporate: { label: 'Corporate', from: 'from-emerald-600', to: 'to-emerald-400' },
+   974→                  property: { label: 'Property', from: 'from-purple-600', to: 'to-purple-400' },
+   975→                  labour: { label: 'Labour', from: 'from-teal-600', to: 'to-teal-400' },
+   976→                  immigration: { label: 'Immigration', from: 'from-cyan-600', to: 'to-cyan-400' },
+   977→                  intellectual_property: { label: 'IP', from: 'from-orange-600', to: 'to-orange-400' },
+   978→                  tax: { label: 'Tax', from: 'from-pink-600', to: 'to-pink-400' },
+   979→                  personal_injury: { label: 'Personal Injury', from: 'from-indigo-600', to: 'to-indigo-400' },
+   980→                  debt_recovery: { label: 'Debt Recovery', from: 'from-amber-600', to: 'to-amber-400' },
+   981→                  other: { label: 'Other', from: 'from-slate-500', to: 'to-slate-400' },
+   982→                };
+   983→                const data = charts?.casesByType || [];
+   984→                const total = data.reduce((s: number, d: any) => s + d.count, 0) || 1;
+   985→                if (data.length === 0) {
+   986→                  return (
+   987→                    <div className="text-center py-10 text-sm">
+   988→                      <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+   989→                        <FolderKanban className="w-7 h-7 text-slate-300" />
+   990→                      </div>
+   991→                      <p className="text-slate-400">No case data available</p>
+   992→                    </div>
+   993→                  );
+   994→                }
+   995→                return data.map((item: any) => {
+   996→                  const mapping = caseTypeGradientMap[item.case_type] || { label: item.case_type?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()), from: 'from-slate-500', to: 'to-slate-400' };
+   997→                  const pct = Math.round((item.count / total) * 100);
+   998→                  return (
+   999→                    <div key={item.case_type} className="flex items-center gap-3 group hover:bg-slate-50/50 rounded-lg px-1 py-1 -mx-1 transition-colors">
+  1000→                      <span className="text-[13px] text-slate-600 w-28 flex-shrink-0">{mapping.label}</span>
+  1001→                      <div className="flex-1 bg-slate-100/80 rounded-full h-[6px]">
+  1002→                        <div className={`bg-gradient-to-r ${mapping.from} ${mapping.to} rounded-full h-[6px] transition-all duration-500`} style={{ width: `${pct}%` }} />
+  1003→                      </div>
+  1004→                      <div className="w-20 text-right flex-shrink-0">
+  1005→                        <span className="text-[11px] font-medium text-[#0c1e3c]">{pct}%</span>
+  1006→                        <span className="text-[10px] text-slate-400 ml-1">({item.count})</span>
+  1007→                      </div>
+  1008→                    </div>
+  1009→                  );
+  1010→                });
+  1011→              })()}
+  1012→            </div>
+  1013→          </div>
+  1014→        </div>
+  1015→
+  1016→        {/* Firm Health — Status indicators */}
+  1017→        {!isClient && (
+  1018→          <div className="card-premium">
+  1019→            <div className="p-4 pb-3 border-b border-slate-100/80">
+  1020→              <div className="flex items-center justify-between">
+  1021→                <div className="flex items-center gap-2">
+  1022→                  <div className="w-1.5 h-5 rounded-full bg-emerald-500" />
+  1023→                  <h3 className="text-sm font-semibold text-[#0c1e3c]">Firm Health</h3>
+  1024→                </div>
+  1025→                <Badge className={`text-[10px] font-semibold ${healthyCount === healthItems.length ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+  1026→                  {healthyCount}/{healthItems.length} Healthy
+  1027→                </Badge>
+  1028→              </div>
+  1029→            </div>
+  1030→            <div className="p-4 space-y-3">
+  1031→              {healthItems.map(item => (
+  1032→                <div key={item.label} className="flex items-center gap-2.5">
+  1033→                  {item.ok ? (
+  1034→                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 animate-pulse-gold" style={{ animationDuration: '3s' }}>
+  1035→                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+  1036→                    </div>
+  1037→                  ) : (
+  1038→                    <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+  1039→                      <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+  1040→                    </div>
+  1041→                  )}
+  1042→                  <span className={`text-sm ${item.ok ? 'text-slate-700' : 'text-red-700 font-medium'}`}>{item.label}</span>
+  1043→                </div>
+  1044→              ))}
+  1045→            </div>
+  1046→          </div>
+  1047→        )}
+  1048→      </div>
+  1049→    </div>
+  1050→  );
+  1051→}
+  1052→
+  1053→// ============================================
+  1054→// MINI STAT COMPONENT — Premium Glass Card
+  1055→// ============================================
+  1056→function MiniStat({ label, value }: { label: string; value: string | number }) {
+  1057→  return (
+  1058→    <div className="glass-dark rounded-xl px-4 py-3 text-center min-w-[100px] border-b-2 border-[#c9a84c]/30">
+  1059→      <div className="text-lg font-bold text-[#c9a84c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{value}</div>
+  1060→      <div className="text-[10px] text-[#8fa4c4] font-medium uppercase tracking-wider mt-0.5">{label}</div>
+  1061→    </div>
+  1062→  );
+  1063→}
+  1064→
+  1065→// ============================================
+  1066→// CASES VIEW
+  1067→// ============================================
+  1068→function CasesView({ cases, page, total, onPageChange, onRefresh }: { cases: any[]; page: number; total: number; onPageChange: (p: number) => void; onRefresh: () => void }) {
+  1069→  const totalPages = Math.ceil(total / 10);
+  1070→  const [statusFilter, setStatusFilter] = useState('all');
+  1071→  const [caseSearch, setCaseSearch] = useState('');
+  1072→
+  1073→  const caseTypeColors: Record<string, string> = {
+  1074→    civil: '#3b82f6', criminal: '#ef4444', family: '#8b5cf6',
+  1075→    corporate: '#f59e0b', property: '#10b981', labour: '#6366f1',
+  1076→    immigration: '#06b6d4', intellectual_property: '#ec4899',
+  1077→    tax: '#14b8a6', personal_injury: '#f97316', debt_recovery: '#64748b', other: '#94a3b8',
+  1078→  };
+  1079→
+  1080→  const statusBadgeClass = (status: string) => {
+  1081→    switch (status) {
+  1082→      case 'active': return 'badge-active';
+  1083→      case 'intake': case 'review': case 'on_hold': return 'badge-pending';
+  1084→      case 'closed': case 'archived': return 'badge-closed';
+  1085→      default: return 'badge-pending';
+  1086→    }
+  1087→  };
+  1088→
+  1089→  const filteredCases = cases.filter(c => {
+  1090→    if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+  1091→    if (caseSearch && !c.title?.toLowerCase().includes(caseSearch.toLowerCase()) && !c.case_ref?.toLowerCase().includes(caseSearch.toLowerCase())) return false;
+  1092→    return true;
+  1093→  });
+  1094→
+  1095→  return (
+  1096→    <div className="space-y-4 animate-fade-in-up">
+  1097→      <div className="card-premium p-6">
+  1098→        {/* Header with gold accent */}
+  1099→        <div className="flex items-center justify-between mb-6">
+  1100→          <div className="flex items-center gap-3">
+  1101→            <div className="border-l-2 border-[#c9a84c] pl-4">
+  1102→              <h2 className="text-xl font-bold text-[#0c1e3c]">Cases</h2>
+  1103→              <p className="text-sm text-slate-500">{total} total cases</p>
+  1104→            </div>
+  1105→            <Badge className="bg-[#0c1e3c] text-white text-[10px] font-semibold ml-2 hover:bg-[#0c1e3c]">{total}</Badge>
+  1106→          </div>
+  1107→          <div className="flex items-center gap-2">
+  1108→            <Button size="sm" variant="ghost" onClick={onRefresh} className="text-slate-500 hover:text-[#0c1e3c]">
+  1109→              <RefreshCw className="w-4 h-4" />
+  1110→            </Button>
+  1111→            <Button size="sm" className="btn-gold px-4">
+  1112→              <Plus className="w-4 h-4 mr-1.5" /> New Case
+  1113→            </Button>
+  1114→          </div>
+  1115→        </div>
+  1116→
+  1117→        {/* Search & Filter Bar */}
+  1118→        <div className="flex items-center gap-3 mb-4">
+  1119→          <div className="relative flex-1 max-w-sm">
+  1120→            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+  1121→            <Input placeholder="Search cases..." value={caseSearch} onChange={e => setCaseSearch(e.target.value)} className="pl-9 input-premium focus:ring-0" />
+  1122→          </div>
+  1123→          <Select value={statusFilter} onValueChange={setStatusFilter}>
+  1124→            <SelectTrigger className="w-40 input-premium focus:ring-0">
+  1125→              <SelectValue placeholder="All Statuses" />
+  1126→            </SelectTrigger>
+  1127→            <SelectContent>
+  1128→              <SelectItem value="all">All Statuses</SelectItem>
+  1129→              <SelectItem value="intake">Intake</SelectItem>
+  1130→              <SelectItem value="review">Review</SelectItem>
+  1131→              <SelectItem value="active">Active</SelectItem>
+  1132→              <SelectItem value="on_hold">On Hold</SelectItem>
+  1133→              <SelectItem value="closed">Closed</SelectItem>
+  1134→              <SelectItem value="archived">Archived</SelectItem>
+  1135→            </SelectContent>
+  1136→          </Select>
+  1137→        </div>
+  1138→
+  1139→        {/* Table */}
+  1140→        <div className="overflow-x-auto -mx-6">
+  1141→          <table className="w-full table-premium">
+  1142→            <thead>
+  1143→              <tr>
+  1144→                <th className="text-left">Case Ref</th>
+  1145→                <th className="text-left">Title</th>
+  1146→                <th className="text-left">Type</th>
+  1147→                <th className="text-left">Status</th>
+  1148→                <th className="text-left">Client</th>
+  1149→                <th className="text-left">Created</th>
+  1150→              </tr>
+  1151→            </thead>
+  1152→            <tbody className="stagger-children">
+  1153→              {filteredCases.length === 0 ? (
+  1154→                <tr><td colSpan={6} className="p-12 text-center">
+  1155→                  <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+  1156→                    <FolderKanban className="w-7 h-7 text-slate-300" />
+  1157→                  </div>
+  1158→                  <p className="text-slate-400 font-medium">No cases found</p>
+  1159→                  <p className="text-[11px] text-slate-300 mt-1">Create a new case or adjust your filters</p>
+  1160→                </td></tr>
+  1161→              ) : (
+  1162→                filteredCases.map(c => (
+  1163→                  <tr key={c.id} className="group" style={{ borderLeft: `3px solid ${caseTypeColors[c.case_type] || '#94a3b8'}` }}>
+  1164→                    <td className="font-mono text-xs text-[#a88832]">{c.case_ref?.substring(0, 8) || '-'}</td>
+  1165→                    <td className="font-medium text-[#0c1e3c] max-w-xs truncate">{c.title}</td>
+  1166→                    <td>
+  1167→                      <div className="flex items-center gap-2">
+  1168→                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: caseTypeColors[c.case_type] || '#94a3b8' }} />
+  1169→                        <span className="text-xs text-slate-600 capitalize">{(c.case_type || '').replace(/_/g, ' ')}</span>
+  1170→                      </div>
+  1171→                    </td>
+  1172→                    <td><span className={`badge-status ${statusBadgeClass(c.status)}`}>{(c.status || '').replace(/_/g, ' ')}</span></td>
+  1173→                    <td className="text-slate-600">{c.client?.full_name || '-'}</td>
+  1174→                    <td className="text-slate-500 text-xs">{c.created_at ? new Date(c.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
+  1175→                  </tr>
+  1176→                ))
+  1177→              )}
+  1178→            </tbody>
+  1179→          </table>
+  1180→        </div>
+  1181→      </div>
+  1182→
+  1183→      {/* Pagination */}
+  1184→      {totalPages > 1 && (
+  1185→        <div className="flex items-center justify-between px-2">
+  1186→          <p className="text-sm text-slate-500">Page {page} of {totalPages} · {total} results</p>
+  1187→          <div className="flex gap-1">
+  1188→            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)} className="hover-lift">
+  1189→              <ChevronLeft className="w-4 h-4" />
+  1190→            </Button>
+  1191→            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+  1192→              const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i;
+  1193→              if (p > totalPages) return null;
+  1194→              return (
+  1195→                <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => onPageChange(p)}
+  1196→                  className={p === page ? 'btn-navy' : 'hover-lift'}>
+  1197→                  {p}
+  1198→                </Button>
+  1199→              );
+  1200→            })}
+  1201→            <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} className="hover-lift">
+  1202→              <ChevronRight className="w-4 h-4" />
+  1203→            </Button>
+  1204→          </div>
+  1205→        </div>
+  1206→      )}
+  1207→    </div>
+  1208→  );
+  1209→}
+  1210→
+  1211→// ============================================
+  1212→// LEADS VIEW
+  1213→// ============================================
+  1214→function LeadsView({ leads, page, total, onPageChange, onRefresh }: { leads: any[]; page: number; total: number; onPageChange: (p: number) => void; onRefresh: () => void }) {
+  1215→  const totalPages = Math.ceil(total / 10);
+  1216→
+  1217→  const sourceIcons: Record<string, any> = {
+  1218→    website: Globe, referral: Users, social_media: MessageSquare,
+  1219→    google_ads: Zap, walk_in: MapPin, phone: Phone, email: Mail,
+  1220→    partner: Handshake, event: Star, other: AlertCircle,
+  1221→  };
+  1222→
+  1223→  const statusBorderColor: Record<string, string> = {
+  1224→    new: '#3b82f6', contacted: '#f59e0b', qualified: '#10b981',
+  1225→    consultation_scheduled: '#8b5cf6', retained: '#14b8a6', lost: '#ef4444',
+  1226→    nurturing: '#94a3b8',
+  1227→  };
+  1228→
+  1229→  const statusBadgeClass = (status: string) => {
+  1230→    switch (status) {
+  1231→      case 'retained': case 'qualified': return 'badge-active';
+  1232→      case 'new': case 'contacted': case 'consultation_scheduled': return 'badge-pending';
+  1233→      case 'lost': return 'badge-closed';
+  1234→      case 'nurturing': return 'badge-pending';
+  1235→      default: return 'badge-pending';
+  1236→    }
+  1237→  };
+  1238→
+  1239→  const scoreColor = (score: number) => {
+  1240→    if (score >= 80) return 'text-emerald-600 bg-emerald-50';
+  1241→    if (score >= 60) return 'text-amber-600 bg-amber-50';
+  1242→    if (score >= 40) return 'text-orange-600 bg-orange-50';
+  1243→    return 'text-red-600 bg-red-50';
+  1244→  };
+  1245→
+  1246→  const pipelineTopColors: Record<string, string> = {
+  1247→    new: 'border-t-blue-500', contacted: 'border-t-amber-500',
+  1248→    qualified: 'border-t-emerald-500', consultation_scheduled: 'border-t-purple-500',
+  1249→    retained: 'border-t-teal-500', lost: 'border-t-red-500', nurturing: 'border-t-slate-400',
+  1250→  };
+  1251→
+  1252→  return (
+  1253→    <div className="space-y-4 animate-fade-in-up">
+  1254→      <div className="card-premium p-6">
+  1255→        {/* Header */}
+  1256→        <div className="flex items-center justify-between mb-6">
+  1257→          <div className="flex items-center gap-3">
+  1258→            <div className="border-l-2 border-[#c9a84c] pl-4">
+  1259→              <h2 className="text-xl font-bold text-[#0c1e3c]">Leads Pipeline</h2>
+  1260→              <p className="text-sm text-slate-500">{total} total leads</p>
+  1261→            </div>
+  1262→            <Badge className="bg-[#0c1e3c] text-white text-[10px] font-semibold ml-2 hover:bg-[#0c1e3c]">{total}</Badge>
+  1263→          </div>
+  1264→          <div className="flex items-center gap-2">
+  1265→            <Button size="sm" variant="ghost" onClick={onRefresh} className="text-slate-500 hover:text-[#0c1e3c]">
+  1266→              <RefreshCw className="w-4 h-4" />
+  1267→            </Button>
+  1268→            <Button size="sm" className="btn-gold px-4">
+  1269→              <Plus className="w-4 h-4 mr-1.5" /> New Lead
+  1270→            </Button>
+  1271→          </div>
+  1272→        </div>
+  1273→
+  1274→        {/* Pipeline Count Bar */}
+  1275→        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-6">
+  1276→          {['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'nurturing'].map(status => {
+  1277→            const count = leads.filter(l => l.status === status).length;
+  1278→            return (
+  1279→              <div key={status} className={`text-center p-2.5 rounded-lg bg-white border border-slate-100 border-t-2 ${pipelineTopColors[status] || 'border-t-slate-300'}`}>
+  1280→                <div className="text-lg font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{count}</div>
+  1281→                <div className="text-[10px] text-slate-500 capitalize">{status.replace(/_/g, ' ')}</div>
+  1282→              </div>
+  1283→            );
+  1284→          })}
+  1285→        </div>
+  1286→
+  1287→        {/* Lead Cards */}
+  1288→        <div className="space-y-3 stagger-children">
+  1289→          {leads.length === 0 ? (
+  1290→            <div className="text-center py-12">
+  1291→              <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+  1292→                <Target className="w-7 h-7 text-slate-300" />
+  1293→              </div>
+  1294→              <p className="text-slate-400 font-medium">No leads found</p>
+  1295→              <p className="text-[11px] text-slate-300 mt-1">Add a new lead to start tracking your pipeline</p>
+  1296→            </div>
+  1297→          ) : (
+  1298→            leads.map(l => {
+  1299→              const SourceIcon = sourceIcons[l.source] || AlertCircle;
+  1300→              const leadName = [l.first_name, l.last_name].filter(Boolean).join(' ') || l.name || '-';
+  1301→              return (
+  1302→                <div key={l.id} className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-100 hover:border-slate-200 hover:shadow-sm transition-all duration-200" style={{ borderLeft: `3px solid ${statusBorderColor[l.status] || '#94a3b8'}` }}>
+  1303→                  {/* Avatar */}
+  1304→                  <Avatar className="w-10 h-10 flex-shrink-0">
+  1305→                    <AvatarFallback className="bg-[#0c1e3c]/5 text-[#0c1e3c] text-xs font-bold">
+  1306→                      {leadName.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
+  1307→                    </AvatarFallback>
+  1308→                  </Avatar>
+  1309→                  {/* Info */}
+  1310→                  <div className="flex-1 min-w-0">
+  1311→                    <div className="flex items-center gap-2 flex-wrap">
+  1312→                      <span className="font-semibold text-[#0c1e3c] text-sm">{leadName}</span>
+  1313→                      <span className={`badge-status ${statusBadgeClass(l.status)}`}>{(l.status || '').replace(/_/g, ' ')}</span>
+  1314→                    </div>
+  1315→                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+  1316→                      {l.email && <span className="text-xs text-slate-500 flex items-center gap-1">
+  1317→                        <Mail className="w-3 h-3" />{l.email}
+  1318→                      </span>}
+  1319→                      <span className="text-xs text-slate-500 flex items-center gap-1">
+  1320→                        <SourceIcon className="w-3 h-3" />{(l.source || '').replace(/_/g, ' ')}
+  1321→                      </span>
+  1322→                      {l.case_type && <span className="text-xs text-slate-500 flex items-center gap-1">
+  1323→                        <Briefcase className="w-3 h-3" />{l.case_type.replace(/_/g, ' ')}
+  1324→                      </span>}
+  1325→                    </div>
+  1326→                  </div>
+  1327→                  {/* Score */}
+  1328→                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${scoreColor(l.lead_score || 0)}`}>
+  1329→                    <span className="text-sm font-bold">{l.lead_score || 0}</span>
+  1330→                  </div>
+  1331→                </div>
+  1332→              );
+  1333→            })
+  1334→          )}
+  1335→        </div>
+  1336→      </div>
+  1337→
+  1338→      {/* Pagination */}
+  1339→      {totalPages > 1 && (
+  1340→        <div className="flex items-center justify-between px-2">
+  1341→          <p className="text-sm text-slate-500">Page {page} of {totalPages}</p>
+  1342→          <div className="flex gap-1">
+  1343→            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)} className="hover-lift">
+  1344→              <ChevronLeft className="w-4 h-4" />
+  1345→            </Button>
+  1346→            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+  1347→              const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i;
+  1348→              if (p > totalPages) return null;
+  1349→              return (
+  1350→                <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => onPageChange(p)}
+  1351→                  className={p === page ? 'btn-navy' : 'hover-lift'}>
+  1352→                  {p}
+  1353→                </Button>
+  1354→              );
+  1355→            })}
+  1356→            <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} className="hover-lift">
+  1357→              <ChevronRight className="w-4 h-4" />
+  1358→            </Button>
+  1359→          </div>
+  1360→        </div>
+  1361→      )}
+  1362→    </div>
+  1363→  );
+  1364→}
+  1365→
+  1366→// ============================================
+  1367→// DOCUMENTS VIEW - with upload
+  1368→// ============================================
+  1369→function DocumentsView({ token, documents, onRefresh, user }: {
+  1370→  token: string | null; documents: DocumentItem[]; onRefresh: () => void; user: User | null;
+  1371→}) {
+  1372→  const [uploading, setUploading] = useState(false);
+  1373→  const [showUpload, setShowUpload] = useState(false);
+  1374→  const [uploadTitle, setUploadTitle] = useState('');
+  1375→  const [uploadType, setUploadType] = useState('contract');
+  1376→  const [uploadCaseId, setUploadCaseId] = useState('');
+  1377→  const [uploadDesc, setUploadDesc] = useState('');
+  1378→  const [docTypeFilter, setDocTypeFilter] = useState('all');
+  1379→  const [statusFilter, setStatusFilter] = useState('all');
+  1380→  const [searchFilter, setSearchFilter] = useState('');
+  1381→  const [dragActive, setDragActive] = useState(false);
+  1382→  const fileInputRef = useRef<HTMLInputElement>(null);
+  1383→
+  1384→  const handleUpload = async () => {
+  1385→    if (!token || !fileInputRef.current?.files?.[0]) return;
+  1386→    setUploading(true);
+  1387→    try {
+  1388→      const formData = new FormData();
+  1389→      formData.append('file', fileInputRef.current.files[0]);
+  1390→      formData.append('title', uploadTitle);
+  1391→      formData.append('document_type', uploadType);
+  1392→      formData.append('case_id', uploadCaseId);
+  1393→      if (uploadDesc) formData.append('description', uploadDesc);
+  1394→
+  1395→      const res = await fetch('/api/documents/upload', {
+  1396→        method: 'POST',
+  1397→        headers: { Authorization: `Bearer ${token}` },
+  1398→        body: formData,
+  1399→      });
+  1400→      const data = await res.json();
+  1401→      if (data.success) {
+  1402→        setShowUpload(false);
+  1403→        setUploadTitle('');
+  1404→        setUploadType('contract');
+  1405→        setUploadCaseId('');
+  1406→        setUploadDesc('');
+  1407→        onRefresh();
+  1408→      }
+  1409→    } catch (e) {
+  1410→      console.error('Upload error:', e);
+  1411→    }
+  1412→    setUploading(false);
+  1413→  };
+  1414→
+  1415→  // Document type visual config: icon + colors
+  1416→  const docTypeConfig: Record<string, { icon: any; color: string; bg: string }> = {
+  1417→    contract: { icon: FileCheck, color: 'text-blue-600', bg: 'bg-blue-50' },
+  1418→    court_filing: { icon: Gavel, color: 'text-red-600', bg: 'bg-red-50' },
+  1419→    affidavit: { icon: Scale, color: 'text-purple-600', bg: 'bg-purple-50' },
+  1420→    pleading: { icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
+  1421→    correspondence: { icon: Mail, color: 'text-teal-600', bg: 'bg-teal-50' },
+  1422→    opinion: { icon: MessageSquare, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  1423→    memo: { icon: FileText, color: 'text-slate-600', bg: 'bg-slate-50' },
+  1424→    invoice: { icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  1425→    consent_form: { icon: ShieldCheck, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10' },
+  1426→    id_document: { icon: KeyRound, color: 'text-orange-600', bg: 'bg-orange-50' },
+  1427→    other: { icon: FileText, color: 'text-slate-500', bg: 'bg-slate-50' },
+  1428→  };
+  1429→
+  1430→  const statusBadge: Record<string, string> = {
+  1431→    uploading: 'bg-amber-50 text-amber-700 before:bg-amber-500',
+  1432→    uploaded: 'bg-blue-50 text-blue-700 before:bg-blue-500',
+  1433→    reviewing: 'bg-purple-50 text-purple-700 before:bg-purple-500',
+  1434→    approved: 'bg-emerald-50 text-emerald-700 before:bg-emerald-500',
+  1435→    rejected: 'bg-red-50 text-red-700 before:bg-red-500',
+  1436→    archived: 'bg-slate-100 text-slate-500 before:bg-slate-400',
+  1437→  };
+  1438→
+  1439→  const formatFileSize = (bytes: number | null | undefined) => {
+  1440→    if (!bytes) return null;
+  1441→    if (bytes < 1024) return `${bytes} B`;
+  1442→    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  1443→    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  1444→  };
+  1445→
+  1446→  const filteredDocs = documents.filter(doc => {
+  1447→    if (docTypeFilter !== 'all' && doc.document_type !== docTypeFilter) return false;
+  1448→    if (statusFilter !== 'all' && doc.status !== statusFilter) return false;
+  1449→    if (searchFilter && !doc.file_name.toLowerCase().includes(searchFilter.toLowerCase())) return false;
+  1450→    return true;
+  1451→  });
+  1452→
+  1453→  return (
+  1454→    <div className="space-y-5 animate-fade-in-up">
+  1455→      {/* ═══════════════════════════════════════════
+  1456→          HEADER — Gold Left-Border Accent
+  1457→          ═══════════════════════════════════════════ */}
+  1458→      <div className="flex items-center justify-between">
+  1459→        <div className="border-l-2 border-[#c9a84c] pl-4">
+  1460→          <h2 className="text-xl font-bold text-[#0c1e3c]">Documents</h2>
+  1461→          <p className="text-sm text-slate-500">{documents.length} document{documents.length !== 1 ? 's' : ''}</p>
+  1462→        </div>
+  1463→        <div className="flex gap-2">
+  1464→          <Button size="sm" variant="outline" onClick={onRefresh} className="border-slate-200 text-slate-600 hover:border-[#0c1e3c] hover:text-[#0c1e3c] transition-all duration-200">
+  1465→            <RefreshCw className="w-4 h-4 mr-1" /> Refresh
+  1466→          </Button>
+  1467→          <Dialog open={showUpload} onOpenChange={setShowUpload}>
+  1468→            <DialogTrigger asChild>
+  1469→              <Button size="sm" className="btn-gold">
+  1470→                <Upload className="w-4 h-4 mr-1" /> Upload
+  1471→              </Button>
+  1472→            </DialogTrigger>
+  1473→            <DialogContent className="max-w-lg animate-scale-in">
+  1474→              <div className="card-premium">
+  1475→                <DialogHeader>
+  1476→                  <DialogTitle className="text-[#0c1e3c] text-lg font-semibold">Upload Document</DialogTitle>
+  1477→                  <DialogDescription className="text-slate-500">Upload a document to the case management system</DialogDescription>
+  1478→                </DialogHeader>
+  1479→                <div className="space-y-4 mt-4">
+  1480→                  {/* Drag-drop area */}
+  1481→                  <div
+  1482→                    className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${dragActive ? 'border-[#c9a84c] bg-[#c9a84c]/5' : 'border-slate-200 hover:border-[#c9a84c]/40 hover:bg-slate-50/50'}`}
+  1483→                    onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+  1484→                    onDragLeave={() => setDragActive(false)}
+  1485→                    onDrop={e => { e.preventDefault(); setDragActive(false); }}
+  1486→                    onClick={() => fileInputRef.current?.click()}
+  1487→                  >
+  1488→                    <FileUp className="w-8 h-8 mx-auto text-slate-300 mb-2" />
+  1489→                    <p className="text-sm font-medium text-slate-600">Drag & drop files here</p>
+  1490→                    <p className="text-[11px] text-slate-400 mt-1">or click to browse</p>
+  1491→                    <p className="text-[10px] text-slate-400 mt-2">Max 10MB · PDF, DOC, DOCX, TXT, JPG, PNG</p>
+  1492→                    <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.doc,.docx,.txt,.jpg,.png" />
+  1493→                  </div>
+  1494→                  <div>
+  1495→                    <Label className="text-xs font-medium text-slate-600">Title</Label>
+  1496→                    <Input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Document title" className="mt-1 input-premium" />
+  1497→                  </div>
+  1498→                  <div className="grid grid-cols-2 gap-4">
+  1499→                    <div>
+  1500→                      <Label className="text-xs font-medium text-slate-600">Document Type</Label>
+  1501→                      <Select value={uploadType} onValueChange={setUploadType}>
+  1502→                        <SelectTrigger className="mt-1 input-premium"><SelectValue /></SelectTrigger>
+  1503→                        <SelectContent>
+  1504→                          <SelectItem value="contract">Contract</SelectItem>
+  1505→                          <SelectItem value="pleading">Pleading</SelectItem>
+  1506→                          <SelectItem value="correspondence">Correspondence</SelectItem>
+  1507→                          <SelectItem value="court_filing">Court Filing</SelectItem>
+  1508→                          <SelectItem value="affidavit">Affidavit</SelectItem>
+  1509→                          <SelectItem value="opinion">Opinion</SelectItem>
+  1510→                          <SelectItem value="memo">Memo</SelectItem>
+  1511→                          <SelectItem value="invoice">Invoice</SelectItem>
+  1512→                          <SelectItem value="consent_form">Consent Form</SelectItem>
+  1513→                          <SelectItem value="id_document">ID Document</SelectItem>
+  1514→                          <SelectItem value="other">Other</SelectItem>
+  1515→                        </SelectContent>
+  1516→                      </Select>
+  1517→                    </div>
+  1518→                    <div>
+  1519→                      <Label className="text-xs font-medium text-slate-600">Case ID</Label>
+  1520→                      <Input value={uploadCaseId} onChange={e => setUploadCaseId(e.target.value)} placeholder="Enter case ID" className="mt-1 input-premium" />
+  1521→                    </div>
+  1522→                  </div>
+  1523→                  <div>
+  1524→                    <Label className="text-xs font-medium text-slate-600">Description (Optional)</Label>
+  1525→                    <Textarea value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} placeholder="Brief description..." className="mt-1 input-premium" rows={2} />
+  1526→                  </div>
+  1527→                </div>
+  1528→                <DialogFooter className="mt-4">
+  1529→                  <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+  1530→                  <Button onClick={handleUpload} disabled={uploading || !uploadTitle || !uploadCaseId} className="btn-gold">
+  1531→                    {uploading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+  1532→                    Upload
+  1533→                  </Button>
+  1534→                </DialogFooter>
+  1535→              </div>
+  1536→            </DialogContent>
+  1537→          </Dialog>
+  1538→        </div>
+  1539→      </div>
+  1540→
+  1541→      {/* ═══════════════════════════════════════════
+  1542→          FILTER BAR — Premium Inputs
+  1543→          ═══════════════════════════════════════════ */}
+  1544→      <div className="card-premium p-3">
+  1545→        <div className="flex items-center gap-3 flex-wrap">
+  1546→          <div className="relative flex-1 min-w-[200px]">
+  1547→            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+  1548→            <Input
+  1549→              placeholder="Search documents..."
+  1550→              value={searchFilter}
+  1551→              onChange={e => setSearchFilter(e.target.value)}
+  1552→              className="pl-9 h-8 text-sm input-premium"
+  1553→            />
+  1554→          </div>
+  1555→          <Select value={docTypeFilter} onValueChange={setDocTypeFilter}>
+  1556→            <SelectTrigger className="w-[160px] h-8 text-sm input-premium">
+  1557→              <SelectValue placeholder="All Types" />
+  1558→            </SelectTrigger>
+  1559→            <SelectContent>
+  1560→              <SelectItem value="all">All Types</SelectItem>
+  1561→              <SelectItem value="contract">Contract</SelectItem>
+  1562→              <SelectItem value="pleading">Pleading</SelectItem>
+  1563→              <SelectItem value="correspondence">Correspondence</SelectItem>
+  1564→              <SelectItem value="court_filing">Court Filing</SelectItem>
+  1565→              <SelectItem value="affidavit">Affidavit</SelectItem>
+  1566→              <SelectItem value="opinion">Opinion</SelectItem>
+  1567→              <SelectItem value="memo">Memo</SelectItem>
+  1568→              <SelectItem value="invoice">Invoice</SelectItem>
+  1569→              <SelectItem value="consent_form">Consent Form</SelectItem>
+  1570→              <SelectItem value="id_document">ID Document</SelectItem>
+  1571→              <SelectItem value="other">Other</SelectItem>
+  1572→            </SelectContent>
+  1573→          </Select>
+  1574→          <Select value={statusFilter} onValueChange={setStatusFilter}>
+  1575→            <SelectTrigger className="w-[140px] h-8 text-sm input-premium">
+  1576→              <SelectValue placeholder="All Statuses" />
+  1577→            </SelectTrigger>
+  1578→            <SelectContent>
+  1579→              <SelectItem value="all">All Statuses</SelectItem>
+  1580→              <SelectItem value="uploading">Uploading</SelectItem>
+  1581→              <SelectItem value="uploaded">Uploaded</SelectItem>
+  1582→              <SelectItem value="reviewing">Reviewing</SelectItem>
+  1583→              <SelectItem value="approved">Approved</SelectItem>
+  1584→              <SelectItem value="rejected">Rejected</SelectItem>
+  1585→              <SelectItem value="archived">Archived</SelectItem>
+  1586→            </SelectContent>
+  1587→          </Select>
+  1588→          {(docTypeFilter !== 'all' || statusFilter !== 'all' || searchFilter) && (
+  1589→            <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-[#0c1e3c]" onClick={() => { setDocTypeFilter('all'); setStatusFilter('all'); setSearchFilter(''); }}>
+  1590→              Clear filters
+  1591→            </Button>
+  1592→          )}
+  1593→        </div>
+  1594→      </div>
+  1595→
+  1596→      {/* ═══════════════════════════════════════════
+  1597→          DOCUMENT LIST — Refined List Format
+  1598→          ═══════════════════════════════════════════ */}
+  1599→      {filteredDocs.length === 0 ? (
+  1600→        <div className="card-premium p-12 text-center animate-fade-in">
+  1601→          <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+  1602→            <FileText className="w-8 h-8 text-slate-300" />
+  1603→          </div>
+  1604→          <p className="text-lg font-semibold text-slate-400">No documents yet</p>
+  1605→          <p className="text-sm text-slate-400 mt-1">{documents.length === 0 ? 'Upload your first document to get started' : 'No documents match your filters'}</p>
+  1606→          {documents.length === 0 && (
+  1607→            <Button className="btn-gold mt-4" onClick={() => setShowUpload(true)}>
+  1608→              <Upload className="w-4 h-4 mr-2" /> Upload Document
+  1609→            </Button>
+  1610→          )}
+  1611→        </div>
+  1612→      ) : (
+  1613→        <div className="card-premium overflow-hidden">
+  1614→          <div className="divide-y divide-slate-100/80 stagger-children">
+  1615→            {filteredDocs.map(doc => {
+  1616→              const typeConfig = docTypeConfig[doc.document_type] || docTypeConfig.other;
+  1617→              const TypeIcon = typeConfig.icon;
+  1618→              return (
+  1619→                <div key={doc.id} className="flex items-center gap-4 p-4 hover:bg-slate-50/50 transition-all duration-200 group">
+  1620→                  {/* File type icon — colored by document type */}
+  1621→                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${typeConfig.bg}`}>
+  1622→                    <TypeIcon className={`w-5 h-5 ${typeConfig.color}`} />
+  1623→                  </div>
+  1624→                  {/* File info */}
+  1625→                  <div className="flex-1 min-w-0">
+  1626→                    <div className="font-semibold text-[#0c1e3c] truncate">{doc.file_name}</div>
+  1627→                    <div className="flex items-center gap-2 mt-0.5">
+  1628→                      <span className="text-[11px] text-slate-500 capitalize">{doc.document_type?.replace(/_/g, ' ')}</span>
+  1629→                      {doc.case && (
+  1630→                        <>
+  1631→                          <span className="text-slate-300">·</span>
+  1632→                          <span className="text-[11px] text-slate-500 truncate">{doc.case.title}</span>
+  1633→                        </>
+  1634→                      )}
+  1635→                      {doc.uploaded_by_user && (
+  1636→                        <>
+  1637→                          <span className="text-slate-300">·</span>
+  1638→                          <div className="flex items-center gap-1">
+  1639→                            <Avatar className="w-4 h-4">
+  1640→                              <AvatarFallback className="text-[7px] bg-[#0c1e3c] text-white">
+  1641→                                {doc.uploaded_by_user.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+  1642→                              </AvatarFallback>
+  1643→                            </Avatar>
+  1644→                            <span className="text-[11px] text-slate-500">{doc.uploaded_by_user.full_name}</span>
+  1645→                          </div>
+  1646→                        </>
+  1647→                      )}
+  1648→                    </div>
+  1649→                  </div>
+  1650→                  {/* File size */}
+  1651→                  {doc.file_size && (
+  1652→                    <span className="text-[11px] text-slate-400 hidden sm:block">{formatFileSize(doc.file_size)}</span>
+  1653→                  )}
+  1654→                  {/* Version */}
+  1655→                  <span className="text-[11px] text-slate-400 hidden md:block">v{doc.version}</span>
+  1656→                  {/* Date */}
+  1657→                  <span className="text-[11px] text-slate-400 hidden lg:block">{new Date(doc.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+  1658→                  {/* Status badge */}
+  1659→                  <span className={`badge-status text-[10px] ${statusBadge[doc.status] || 'bg-slate-100 text-slate-500 before:bg-slate-400'}`}>
+  1660→                    {doc.status}
+  1661→                  </span>
+  1662→                  {/* Hover actions */}
+  1663→                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+  1664→                    {doc.file_name && (
+  1665→                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-slate-400 hover:text-[#0c1e3c]">
+  1666→                        <Eye className="w-3.5 h-3.5" />
+  1667→                      </Button>
+  1668→                    )}
+  1669→                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-slate-400 hover:text-[#0c1e3c]">
+  1670→                      <Download className="w-3.5 h-3.5" />
+  1671→                    </Button>
+  1672→                  </div>
+  1673→                </div>
+  1674→              );
+  1675→            })}
+  1676→          </div>
+  1677→        </div>
+  1678→      )}
+  1679→    </div>
+  1680→  );
+  1681→}
+  1682→
+  1683→// ============================================
+  1684→// CONSULTATIONS VIEW — Premium Detail View
+  1685→// ============================================
+  1686→function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
+  1687→  token: string | null; consultations: Consultation[]; onRefresh: () => void; user: User | null; staff: StaffMember[];
+  1688→}) {
+  1689→  const [showCreate, setShowCreate] = useState(false);
+  1690→  const [creating, setCreating] = useState(false);
+  1691→  const [form, setForm] = useState({
+  1692→    client_name: '', client_email: '', attorney_id: '', case_id: '',
+  1693→    scheduled_at: '', duration_minutes: 60,
+  1694→    meeting_type: 'in_person', notes: '',
+  1695→  });
+  1696→
+  1697→  const attorneys = staff.filter(s => s.role === 'attorney');
+  1698→
+  1699→  const handleCreate = async () => {
+  1700→    if (!token) return;
+  1701→    setCreating(true);
+  1702→    try {
+  1703→      const res = await fetch('/api/consultations', {
+  1704→        method: 'POST',
+  1705→        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+  1706→        body: JSON.stringify(form),
+  1707→      });
+  1708→      const data = await res.json();
+  1709→      if (data.success) {
+  1710→        setShowCreate(false);
+  1711→        setForm({ client_name: '', client_email: '', attorney_id: '', case_id: '', scheduled_at: '', duration_minutes: 60, meeting_type: 'in_person', notes: '' });
+  1712→        onRefresh();
+  1713→      }
+  1714→    } catch (e) {
+  1715→      console.error('Create consultation error:', e);
+  1716→    }
+  1717→    setCreating(false);
+  1718→  };
+  1719→
+  1720→  // Status badge colors with dot indicator
+  1721→  const statusBadge: Record<string, string> = {
+  1722→    scheduled: 'bg-blue-50 text-blue-700 before:bg-blue-500',
+  1723→    confirmed: 'bg-emerald-50 text-emerald-700 before:bg-emerald-500',
+  1724→    in_progress: 'bg-purple-50 text-purple-700 before:bg-purple-500',
+  1725→    completed: 'bg-slate-100 text-slate-600 before:bg-slate-400',
+  1726→    cancelled: 'bg-red-50 text-red-700 before:bg-red-500',
+  1727→    no_show: 'bg-orange-50 text-orange-700 before:bg-orange-500',
+  1728→  };
+  1729→
+  1730→  // Meeting type visual config
+  1731→  const meetingConfig: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+  1732→    in_person: { icon: MapPin, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10', label: 'In Person' },
+  1733→    video_call: { icon: Video, color: 'text-blue-600', bg: 'bg-blue-50', label: 'Video Call' },
+  1734→    phone_call: { icon: PhoneCall, color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Phone Call' },
+  1735→  };
+  1736→
+  1737→  const formatDate = (dateStr: string) => {
+  1738→    const d = new Date(dateStr);
+  1739→    return d.toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  1740→  };
+  1741→
+  1742→  const formatTime = (dateStr: string) => {
+  1743→    const d = new Date(dateStr);
+  1744→    return d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+  1745→  };
+  1746→
+  1747→  return (
+  1748→    <div className="space-y-5 animate-fade-in-up">
+  1749→      {/* ═══════════════════════════════════════════
+  1750→          HEADER — Gold Left-Border Accent
+  1751→          ═══════════════════════════════════════════ */}
+  1752→      <div className="flex items-center justify-between">
+  1753→        <div className="border-l-2 border-[#c9a84c] pl-4">
+  1754→          <h2 className="text-xl font-bold text-[#0c1e3c]">Consultations</h2>
+  1755→          <p className="text-sm text-slate-500">{consultations.length} consultation{consultations.length !== 1 ? 's' : ''} logged</p>
+  1756→        </div>
+  1757→        <div className="flex gap-2">
+  1758→          <Button size="sm" variant="outline" onClick={onRefresh} className="border-slate-200 text-slate-600 hover:border-[#0c1e3c] hover:text-[#0c1e3c] transition-all duration-200">
+  1759→            <RefreshCw className="w-4 h-4 mr-1" /> Refresh
+  1760→          </Button>
+  1761→          <Dialog open={showCreate} onOpenChange={setShowCreate}>
+  1762→            <DialogTrigger asChild>
+  1763→              <Button size="sm" className="btn-gold">
+  1764→                <Plus className="w-4 h-4 mr-1" /> Schedule
+  1765→              </Button>
+  1766→            </DialogTrigger>
+  1767→            <DialogContent className="max-w-lg animate-scale-in">
+  1768→              <div className="card-premium">
+  1769→                <DialogHeader>
+  1770→                  <DialogTitle className="text-[#0c1e3c] text-lg font-semibold">Schedule Consultation</DialogTitle>
+  1771→                  <DialogDescription className="text-slate-500">Schedule or log a client consultation</DialogDescription>
+  1772→                </DialogHeader>
+  1773→                <div className="space-y-4 mt-4">
+  1774→                  <div className="grid grid-cols-2 gap-4">
+  1775→                    <div>
+  1776→                      <Label className="text-xs font-medium text-slate-600">Client Name</Label>
+  1777→                      <Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Client name" className="mt-1 input-premium" />
+  1778→                    </div>
+  1779→                    <div>
+  1780→                      <Label className="text-xs font-medium text-slate-600">Client Email</Label>
+  1781→                      <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@infinitylegal.org" className="mt-1 input-premium" />
+  1782→                    </div>
+  1783→                  </div>
+  1784→                  <div className="grid grid-cols-2 gap-4">
+  1785→                    <div>
+  1786→                      <Label className="text-xs font-medium text-slate-600">Attorney</Label>
+  1787→                      <Select value={form.attorney_id} onValueChange={v => setForm(f => ({ ...f, attorney_id: v }))}>
+  1788→                        <SelectTrigger className="mt-1 input-premium"><SelectValue placeholder="Select attorney" /></SelectTrigger>
+  1789→                        <SelectContent>
+  1790→                          {attorneys.map(a => (
+  1791→                            <SelectItem key={a.id} value={a.id}>{a.full_name}</SelectItem>
+  1792→                          ))}
+  1793→                        </SelectContent>
+  1794→                      </Select>
+  1795→                    </div>
+  1796→                    <div>
+  1797→                      <Label className="text-xs font-medium text-slate-600">Meeting Type</Label>
+  1798→                      <div className="flex gap-2 mt-1">
+  1799→                        {Object.entries(meetingConfig).map(([key, cfg]) => (
+  1800→                          <button
+  1801→                            key={key}
+  1802→                            type="button"
+  1803→                            onClick={() => setForm(f => ({ ...f, meeting_type: key }))}
+  1804→                            className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg border-2 transition-all duration-200 text-xs font-medium ${form.meeting_type === key ? `${cfg.bg} ${cfg.color} border-current` : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}
+  1805→                          >
+  1806→                            <cfg.icon className="w-4 h-4" />
+  1807→                            <span className="text-[10px]">{cfg.label}</span>
+  1808→                          </button>
+  1809→                        ))}
+  1810→                      </div>
+  1811→                    </div>
+  1812→                  </div>
+  1813→                  <div className="grid grid-cols-2 gap-4">
+  1814→                    <div>
+  1815→                      <Label className="text-xs font-medium text-slate-600">Date & Time</Label>
+  1816→                      <Input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} className="mt-1 input-premium" />
+  1817→                    </div>
+  1818→                    <div>
+  1819→                      <Label className="text-xs font-medium text-slate-600">Duration</Label>
+  1820→                      <Select value={String(form.duration_minutes)} onValueChange={v => setForm(f => ({ ...f, duration_minutes: parseInt(v) }))}>
+  1821→                        <SelectTrigger className="mt-1 input-premium"><SelectValue /></SelectTrigger>
+  1822→                        <SelectContent>
+  1823→                          <SelectItem value="30">30 minutes</SelectItem>
+  1824→                          <SelectItem value="60">1 hour</SelectItem>
+  1825→                          <SelectItem value="90">1.5 hours</SelectItem>
+  1826→                          <SelectItem value="120">2 hours</SelectItem>
+  1827→                        </SelectContent>
+  1828→                      </Select>
+  1829→                    </div>
+  1830→                  </div>
+  1831→                  <div>
+  1832→                    <Label className="text-xs font-medium text-slate-600">Notes</Label>
+  1833→                    <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Consultation notes..." className="mt-1 input-premium" rows={3} />
+  1834→                  </div>
+  1835→                </div>
+  1836→                <DialogFooter className="mt-4">
+  1837→                  <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+  1838→                  <Button onClick={handleCreate} disabled={creating || !form.attorney_id || !form.scheduled_at} className="btn-gold">
+  1839→                    {creating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <BookOpen className="w-4 h-4 mr-2" />}
+  1840→                    Schedule
+  1841→                  </Button>
+  1842→                </DialogFooter>
+  1843→              </div>
+  1844→            </DialogContent>
+  1845→          </Dialog>
+  1846→        </div>
+  1847→      </div>
+  1848→
+  1849→      {/* ═══════════════════════════════════════════
+  1850→          CONSULTATION CARDS — 2-Column Premium Grid
+  1851→          ═══════════════════════════════════════════ */}
+  1852→      {consultations.length === 0 ? (
+  1853→        <div className="card-premium p-12 text-center animate-fade-in">
+  1854→          <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+  1855→            <BookOpen className="w-8 h-8 text-slate-300" />
+  1856→          </div>
+  1857→          <p className="text-lg font-semibold text-slate-400">No consultations yet</p>
+  1858→          <p className="text-sm text-slate-400 mt-1">Schedule your first consultation to get started</p>
+  1859→          <Button className="btn-gold mt-4" onClick={() => setShowCreate(true)}>
+  1860→            <Plus className="w-4 h-4 mr-2" /> Schedule Consultation
+  1861→          </Button>
+  1862→        </div>
+  1863→      ) : (
+  1864→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 stagger-children">
+  1865→          {consultations.map(c => {
+  1866→            const mConfig = meetingConfig[c.meeting_type] || meetingConfig.in_person;
+  1867→            const MIcon = mConfig.icon;
+  1868→            return (
+  1869→              <div key={c.id} className="card-premium p-5 hover-lift">
+  1870→                <div className="flex items-start gap-3">
+  1871→                  {/* Meeting type icon with colored background */}
+  1872→                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${mConfig.bg}`}>
+  1873→                    <MIcon className={`w-5 h-5 ${mConfig.color}`} />
+  1874→                  </div>
+  1875→                  <div className="flex-1 min-w-0">
+  1876→                    {/* Client name + status */}
+  1877→                    <div className="flex items-center justify-between gap-2">
+  1878→                      <div className="font-semibold text-[#0c1e3c] truncate">{c.client?.full_name || 'Client'}</div>
+  1879→                      <span className={`badge-status text-[10px] flex-shrink-0 ${statusBadge[c.status] || 'bg-slate-100 text-slate-500 before:bg-slate-400'}`}>
+  1880→                        {c.status?.replace(/_/g, ' ')}
+  1881→                      </span>
+  1882→                    </div>
+  1883→                    {/* Attorney with avatar */}
+  1884→                    <div className="flex items-center gap-2 mt-1.5">
+  1885→                      <Avatar className="w-5 h-5">
+  1886→                        <AvatarFallback className="text-[8px] bg-[#0c1e3c] text-white">
+  1887→                          {c.attorney?.profile?.full_name?.split(' ').map(n => n[0]).join('') || c.attorney?.full_name?.split(' ').map(n => n[0]).join('') || 'A'}
+  1888→                        </AvatarFallback>
+  1889→                      </Avatar>
+  1890→                      <span className="text-xs text-slate-500">{c.attorney?.profile?.full_name || c.attorney?.full_name || 'Attorney'}</span>
+  1891→                    </div>
+  1892→                    {/* Date & Time elegantly formatted */}
+  1893→                    {c.scheduled_at && (
+  1894→                      <div className="flex items-center gap-3 mt-2.5">
+  1895→                        <div className="flex items-center gap-1 text-xs text-slate-600">
+  1896→                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+  1897→                          <span>{formatDate(c.scheduled_at)}</span>
+  1898→                        </div>
+  1899→                        <div className="flex items-center gap-1 text-xs text-slate-600">
+  1900→                          <Clock3 className="w-3.5 h-3.5 text-slate-400" />
+  1901→                          <span>{formatTime(c.scheduled_at)}</span>
+  1902→                        </div>
+  1903→                      </div>
+  1904→                    )}
+  1905→                    {/* Duration badge + case reference */}
+  1906→                    <div className="flex items-center gap-2 mt-2">
+  1907→                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+  1908→                        <Clock className="w-3 h-3" />
+  1909→                        {c.duration_minutes} min
+  1910→                      </span>
+  1911→                      {c.case && (
+  1912→                        <span className="text-[10px] text-slate-400 truncate">{c.case.title}</span>
+  1913→                      )}
+  1914→                    </div>
+  1915→                    {/* Notes preview */}
+  1916→                    {c.notes && (
+  1917→                      <p className="text-[11px] text-slate-400 mt-2 line-clamp-2">{c.notes}</p>
+  1918→                    )}
+  1919→                  </div>
+  1920→                </div>
+  1921→              </div>
+  1922→            );
+  1923→          })}
+  1924→        </div>
+  1925→      )}
+  1926→    </div>
+  1927→  );
+  1928→}
+  1929→
+  1930→// ============================================
+  1931→// TASKS VIEW - with create dialog
+  1932→// ============================================
+  1933→function TasksView({ token, tasks, onRefresh, user, staff }: {
+  1934→  token: string | null; tasks: TaskItem[]; onRefresh: () => void; user: User | null; staff: StaffMember[];
+  1935→}) {
+  1936→  const [showCreate, setShowCreate] = useState(false);
+  1937→  const [creating, setCreating] = useState(false);
+  1938→  const [form, setForm] = useState({ title: '', description: '', assigned_to: '', priority: 'medium', due_date: '', case_id: '' });
+  1939→
+  1940→  const handleCreate = async () => {
+  1941→    if (!token) return;
+  1942→    setCreating(true);
+  1943→    try {
+  1944→      const res = await fetch('/api/tasks', {
+  1945→        method: 'POST',
+  1946→        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+  1947→        body: JSON.stringify(form),
+  1948→      });
+  1949→      const data = await res.json();
+  1950→      if (data.success) {
+  1951→        setShowCreate(false);
+  1952→        setForm({ title: '', description: '', assigned_to: '', priority: 'medium', due_date: '', case_id: '' });
+  1953→        onRefresh();
+  1954→      }
+  1955→    } catch (e) {
+  1956→      console.error('Create task error:', e);
+  1957→    }
+  1958→    setCreating(false);
+  1959→  };
+  1960→
+  1961→  const priorityDotClass = (priority: string) => {
+  1962→    switch (priority) {
+  1963→      case 'urgent': return 'bg-red-500 animate-pulse';
+  1964→      case 'high': return 'bg-orange-500';
+  1965→      case 'medium': return 'bg-amber-500';
+  1966→      default: return 'bg-slate-300';
+  1967→    }
+  1968→  };
+  1969→
+  1970→  const statusBadgeClass = (status: string) => {
+  1971→    switch (status) {
+  1972→      case 'completed': return 'badge-active';
+  1973→      case 'in_progress': return 'badge-pending';
+  1974→      case 'pending': return 'badge-pending';
+  1975→      case 'cancelled': return 'badge-closed';
+  1976→      default: return 'badge-pending';
+  1977→    }
+  1978→  };
+  1979→
+  1980→  const getRelativeDueDate = (dueDate: string | null | undefined) => {
+  1981→    if (!dueDate) return null;
+  1982→    const now = new Date();
+  1983→    const due = new Date(dueDate);
+  1984→    const diffMs = due.getTime() - now.getTime();
+  1985→    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  1986→
+  1987→    if (diffDays < 0) return { text: `${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''} overdue`, color: 'text-red-600 bg-red-50' };
+  1988→    if (diffDays === 0) return { text: 'Due today', color: 'text-orange-600 bg-orange-50' };
+  1989→    if (diffDays === 1) return { text: 'Due tomorrow', color: 'text-amber-600 bg-amber-50' };
+  1990→    if (diffDays <= 7) return { text: `Due in ${diffDays} days`, color: 'text-slate-600 bg-slate-50' };
+  1991→    return { text: due.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' }), color: 'text-slate-500 bg-slate-50' };
+  1992→  };
+  1993→
+  1994→  // Sort tasks by priority
+  1995→  const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+  1996→  const sortedTasks = [...tasks].sort((a, b) => (priorityOrder[a.priority] || 99) - (priorityOrder[b.priority] || 99));
+  1997→
+  1998→  return (
+  1999→    <div className="space-y-4 animate-fade-in-up">
+  2000→      <div className="card-premium p-6">
+
+[showing lines 1-2000 of 3084; use offset=2001 with limit to continue reading]

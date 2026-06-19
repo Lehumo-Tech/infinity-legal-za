@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     locale: "en_ZA",
     images: [
       {
-        url: "/infinity_logo.png",
+        url: "/logo_legal.png",
         width: 1200,
         height: 630,
         alt: "Infinity Legal – South Africa's Premier Legal Services Platform",
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     title: "Infinity Legal | South Africa's Premier Legal Services Platform",
     description:
       "POPIA-compliant case management, conveyancing, labour law, CCMA, civil litigation & AI-powered legal practice management for South Africa.",
-    images: ["/infinity_logo.png"],
+    images: ["/logo_legal.png"],
     creator: "@InfinityLegalZA",
   },
   alternates: {
@@ -100,10 +100,10 @@ export const metadata: Metadata = {
   category: "legal technology",
   icons: {
     icon: [
-      { url: "/infinity_logo.png", type: "image/png", sizes: "32x32" },
+      { url: "/logo_legal.png", type: "image/png", sizes: "32x32" },
       { url: "/logo.svg", type: "image/svg+xml" },
     ],
-    apple: "/infinity_logo.png",
+    apple: "/logo_legal.png",
   },
   manifest: "/site.webmanifest",
 };
@@ -122,8 +122,8 @@ export default function RootLayout({
     description:
       "South Africa's premier legal services platform offering POPIA-compliant case management, conveyancing, labour law, CCMA representation, civil litigation, estate planning, and AI-powered legal practice management for law firms across South Africa.",
     url: APP_URL,
-    logo: `${APP_URL}/infinity_logo.png`,
-    image: `${APP_URL}/infinity_logo.png`,
+    logo: `${APP_URL}/logo_legal.png`,
+    image: `${APP_URL}/logo_legal.png`,
     telephone: '+27 68 127 6038',
     email: 'info@infinitylegal.org',
     areaServed: [

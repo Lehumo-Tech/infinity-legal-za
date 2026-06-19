@@ -395,7 +395,7 @@ export async function GET(request: NextRequest) {
 
   <!-- ======================= COVER PAGE ======================= -->
   <div class="cover">
-    <img src="/infinity_logo.png" alt="Infinity Legal SA" style="width:140px;margin-bottom:1rem;" />
+    <img src="/logo_legal.png" alt="Infinity Legal SA" style="width:140px;margin-bottom:1rem;" />
     <div class="cover-logo">INFINITY LEGAL</div>
     <div class="cover-subtitle">South Africa</div>
     <div class="cover-title">Client Functionality Report</div>
