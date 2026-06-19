@@ -223,51 +223,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [getSupabase, fetchProfile]);
 
-  // Sign up with email and password
+  // Sign up via server-side route to avoid browser client 400 errors
   const signUp = useCallback(async (signUpData: SignUpData): Promise<{ success: boolean; error?: string }> => {
     if (!isSupabaseConfigured()) {
       return { success: false, error: 'Supabase is not configured' };
     }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
-      const supabase = getSupabase();
-      const { data, error } = await supabase.auth.signUp({
-        email: signUpData.email.toLowerCase().trim(),
-        password: signUpData.password,
-        options: {
-          data: {
-            full_name: signUpData.full_name,
-            phone: signUpData.phone || undefined,
-            popia_consent: signUpData.popia_consent,
-          },
-        },
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: signUpData.email.toLowerCase().trim(),
+          password: signUpData.password,
+          full_name: signUpData.full_name,
+          phone: signUpData.phone || undefined,
+          consent_given: signUpData.popia_consent,
+          popia_consent: signUpData.popia_consent,
+        }),
       });
 
-      if (error) {
-        setAuthState(prev => ({ ...prev, loading: false, error: error.message }));
-        return { success: false, error: error.message };
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        const errorMessage = result.error || result.message || 'Signup failed';
+        setAuthState(prev => ({ ...prev, loading: false, error: errorMessage }));
+        return { success: false, error: errorMessage };
       }
 
-      // If email confirmation is required, the user won't have a session yet
-      if (data.user && !data.session) {
+      // Server-side signup succeeded — try to sign in on the browser side
+      const supabase = getSupabase();
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: signUpData.email.toLowerCase().trim(),
+        password: signUpData.password,
+      });
+
+      if (signInError || !signInData.user) {
+        // User was created but browser sign-in failed — they can sign in manually
+        console.warn('Auto sign-in after signup failed:', signInError?.message);
         setAuthState(prev => ({ ...prev, loading: false }));
-        return { success: true, error: undefined };
+        return { success: true, error: 'Account created! Please sign in with your credentials.' };
       }
 
-      // If auto-confirmed and we have a session
-      if (data.user && data.session) {
-        const profile = await fetchProfile(data.user.id);
-        setAuthState({
-          supabaseUser: data.user,
-          user: profile,
-          accessToken: data.session.access_token,
-          loading: false,
-          error: null,
-        });
-        return { success: true };
-      }
-
-      setAuthState(prev => ({ ...prev, loading: false }));
+      // Successfully signed in on the browser side
+      const profile = await fetchProfile(signInData.user.id);
+      setAuthState({
+        supabaseUser: signInData.user,
+        user: profile,
+        accessToken: signInData.session?.access_token ?? null,
+        loading: false,
+        error: null,
+      });
       return { success: true };
     } catch (err: any) {
       const message = err?.message || 'Signup failed';

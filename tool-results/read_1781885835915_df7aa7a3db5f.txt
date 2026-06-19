@@ -1,0 +1,1455 @@
+     1→     1→-- =============================================================================
+     2→     2→-- INFINITY LEGAL — COMPLETE IDEMPOTENT SCHEMA
+     3→     3→-- Uses TEXT + CHECK constraints instead of PostgreSQL enums to avoid
+     4→     4→-- "unsafe use of new value" and "type already exists" errors.
+     5→     5→-- Safe to re-run in Supabase SQL Editor any number of times.
+     6→     6→-- ORDER: Tables -> Functions -> Triggers -> Indexes -> RLS -> Views -> Seed
+     7→     7→-- =============================================================================
+     8→     8→
+     9→     9→-- ===========================================================================
+    10→    10→-- 1. TABLES (in dependency order)
+    11→    11→-- ===========================================================================
+    12→    12→
+    13→    13→-- Core: profiles
+    14→    14→CREATE TABLE IF NOT EXISTS public.profiles (
+    15→    15→  id              UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    16→    16→  email           TEXT NOT NULL,
+    17→    17→  full_name       TEXT,
+    18→    18→  phone           TEXT,
+    19→    19→  avatar_url      TEXT,
+    20→    20→  role            TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('client','attorney','paralegal','admin','managing_director','systems_admin')),
+    21→    21→  id_number       TEXT,
+    22→    22→  company         TEXT,
+    23→    23→  address         JSONB DEFAULT '{}',
+    24→    24→  preferences     JSONB DEFAULT '{}',
+    25→    25→  popi_consent    BOOLEAN DEFAULT FALSE,
+    26→    26→  email_verified  BOOLEAN DEFAULT FALSE,
+    27→    27→  last_login_at   TIMESTAMPTZ,
+    28→    28→  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    29→    29→  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+    30→    30→);
+    31→    31→
+    32→    32→-- Attorneys
+    33→    33→CREATE TABLE IF NOT EXISTS public.attorneys (
+    34→    34→  id                  UUID PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
+    35→    35→  practice_number     TEXT UNIQUE,
+    36→    36→  specialization     TEXT[],
+    37→    37→  bar_admission_date DATE,
+    38→    38→  hourly_rate         DECIMAL(10,2) DEFAULT 0,
+    39→    39→  bio                 TEXT,
+    40→    40→  available           BOOLEAN DEFAULT TRUE,
+    41→    41→  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    42→    42→  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+    43→    43→);
+    44→    44→
+    45→    45→-- Cases
+    46→    46→CREATE TABLE IF NOT EXISTS public.cases (
+    47→    47→  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    48→    48→  case_ref        TEXT UNIQUE DEFAULT gen_random_uuid(),
+    49→    49→  title           TEXT NOT NULL,
+    50→    50→  description     TEXT,
+    51→    51→  case_type       TEXT NOT NULL DEFAULT 'other' CHECK (case_type IN ('civil','criminal','family','corporate','property','labour','immigration','intellectual_property','tax','personal_injury','debt_recovery','other')),
+    52→    52→  status          TEXT NOT NULL DEFAULT 'intake' CHECK (status IN ('intake','review','active','on_hold','closed','archived')),
+    53→    53→  client_id       UUID NOT NULL REFERENCES public.profiles(id),
+    54→    54→  attorney_id     UUID REFERENCES public.attorneys(id),
+    55→    55→  opposing_party  TEXT,
+    56→    56→  court_name      TEXT,
+    57→    57→  case_number     TEXT,
+    58→    58→  jurisdiction    TEXT,
+    59→    59→  estimated_value DECIMAL(12,2),
+    60→    60→  retainer_amount DECIMAL(12,2),
+    61→    61→  contingency_fee DECIMAL(5,2),
+    62→    62→  next_deadline   TIMESTAMPTZ,
+    63→    63→  notes           TEXT,
+    64→    64→  tags            TEXT[] DEFAULT '{}',
+    65→    65→  metadata        JSONB DEFAULT '{}',
+    66→    66→  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    67→    67→  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+    68→    68→);
+    69→    69→
+    70→    70→-- Leads
+    71→    71→CREATE TABLE IF NOT EXISTS public.leads (
+    72→    72→  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    73→    73→  first_name          TEXT NOT NULL,
+    74→    74→  last_name           TEXT NOT NULL,
+    75→    75→  email               TEXT NOT NULL,
+    76→    76→  phone               TEXT,
+    77→    77→  company             TEXT,
+    78→    78→  source              TEXT NOT NULL DEFAULT 'website' CHECK (source IN ('website','referral','social_media','google_ads','walk_in','phone','email','partner','event','other')),
+    79→    79→  status              TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new','contacted','qualified','consultation_scheduled','retained','lost','nurturing')),
+    80→    80→  case_type           TEXT CHECK (case_type IN ('civil','criminal','family','corporate','property','labour','immigration','intellectual_property','tax','personal_injury','debt_recovery','other')),
+    81→    81→  description         TEXT,
+    82→    82→  estimated_value     DECIMAL(12,2),
+    83→    83→  lead_score          INT DEFAULT 0,
+    84→    84→  assigned_to         UUID REFERENCES public.profiles(id),
+    85→    85→  converted_client_id UUID REFERENCES public.profiles(id),
+    86→    86→  converted_case_id   UUID REFERENCES public.cases(id),
+    87→    87→  notes               TEXT,
+    88→    88→  tags                TEXT[] DEFAULT '{}',
+    89→    89→  utm_source          TEXT,
+    90→    90→  utm_medium          TEXT,
+    91→    91→  utm_campaign        TEXT,
+    92→    92→  last_contacted_at   TIMESTAMPTZ,
+    93→    93→  next_follow_up      TIMESTAMPTZ,
+    94→    94→  metadata            JSONB DEFAULT '{}',
+    95→    95→  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    96→    96→  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+    97→    97→);
+    98→    98→
+    99→    99→-- Intake submissions
+   100→   100→CREATE TABLE IF NOT EXISTS public.intake_submissions (
+   101→   101→  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   102→   102→  client_id         UUID REFERENCES public.profiles(id),
+   103→   103→  case_id           UUID REFERENCES public.cases(id),
+   104→   104→  lead_id           UUID REFERENCES public.leads(id),
+   105→   105→  status            TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','submitted','under_review','approved','rejected','additional_info_needed')),
+   106→   106→  case_type         TEXT NOT NULL CHECK (case_type IN ('civil','criminal','family','corporate','property','labour','immigration','intellectual_property','tax','personal_injury','debt_recovery','other')),
+   107→   107→  case_description  TEXT NOT NULL,
+   108→   108→  opposing_party    TEXT,
+   109→   109→  estimated_value   DECIMAL(12,2),
+   110→   110→  urgency           TEXT,
+   111→   111→  timeline          TEXT,
+   112→   112→  desired_outcome   TEXT,
+   113→   113→  previous_legal_help TEXT,
+   114→   114→  documents_ready   BOOLEAN DEFAULT FALSE,
+   115→   115→  personal_info     JSONB DEFAULT '{}',
+   116→   116→  case_details      JSONB DEFAULT '{}',
+   117→   117→  financial_info    JSONB DEFAULT '{}',
+   118→   118→  ai_extracted_data JSONB DEFAULT '{}',
+   119→   119→  ai_confidence     DECIMAL(5,2) DEFAULT 0,
+   120→   120→  review_notes      TEXT,
+   121→   121→  reviewed_by       UUID REFERENCES public.profiles(id),
+   122→   122→  reviewed_at       TIMESTAMPTZ,
+   123→   123→  submitted_at      TIMESTAMPTZ,
+   124→   124→  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+   125→   125→  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+   126→   126→);
+   127→   127→
+   128→   128→-- AI intake sessions
+   129→   129→CREATE TABLE IF NOT EXISTS public.ai_intake_sessions (
+   130→   130→  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   131→   131→  client_id             UUID REFERENCES public.profiles(id),
+   132→   132→  intake_submission_id  UUID REFERENCES public.intake_submissions(id),
+   133→   133→  session_token         TEXT UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+   134→   134→  status                TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','submitted','under_review','approved','rejected','additional_info_needed')),
+   135→   135→  conversation_history  JSONB DEFAULT '[]',
+   136→   136→  extracted_entities    JSONB DEFAULT '{}',
+   137→   137→  current_step          TEXT DEFAULT 'greeting',
+   138→   138→  steps_completed       TEXT[] DEFAULT '{}',
+   139→   139→  steps_remaining       TEXT[] DEFAULT '{"personal_info","case_description","opposing_party","documents","timeline","financial","consent"}',
+   140→   140→  ai_model_used         TEXT,
+   141→   141→  total_tokens          INT DEFAULT 0,
+   142→   142→  completed_at          TIMESTAMPTZ,
+   143→   143→  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+   144→   144→  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+   145→   145→);
+   146→   146→
+   147→   147→-- AI analyses
+   148→   148→CREATE TABLE IF NOT EXISTS public.ai_analyses (
+   149→   149→  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   150→   150→  case_id           UUID REFERENCES public.cases(id),
+   151→   151→  intake_id         UUID REFERENCES public.intake_submissions(id),
+   152→   152→  analysis_type     TEXT NOT NULL CHECK (analysis_type IN ('merit_assessment','risk_analysis','cost_estimate','timeline_prediction','document_review','legal_research','strategy_recommendation')),
+   153→   153→  status            TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','processing','completed','failed')),
+   154→   154→  input_data        JSONB DEFAULT '{}',
+   155→   155→  result            JSONB DEFAULT '{}',
+   156→   156→  summary           TEXT,
+   157→   157→  recommendations   JSONB DEFAULT '[]',
+   158→   158→  risk_flags        JSONB DEFAULT '[]',
+   159→   159→  confidence_score  DECIMAL(5,2),
+   160→   160→  ai_model_used     TEXT,
+   161→   161→  tokens_used       INT DEFAULT 0,
+   162→   162→  processing_time_ms INT,
+   163→   163→  error_message     TEXT,
+   164→   164→  requested_by      UUID REFERENCES public.profiles(id),
+   165→   165→  completed_at      TIMESTAMPTZ,
+   166→   166→  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+   167→   167→  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+   168→   168→);
+   169→   169→
+   170→   170→-- AI analysis queue
+   171→   171→CREATE TABLE IF NOT EXISTS public.ai_analysis_queue (
+   172→   172→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   173→   173→  analysis_id   UUID REFERENCES public.ai_analyses(id),
+   174→   174→  priority      TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low','medium','high','urgent')),
+   175→   175→  retry_count   INT DEFAULT 0,
+   176→   176→  max_retries   INT DEFAULT 3,
+   177→   177→  scheduled_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+   178→   178→  started_at    TIMESTAMPTZ,
+   179→   179→  completed_at  TIMESTAMPTZ,
+   180→   180→  error_message TEXT,
+   181→   181→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   182→   182→);
+   183→   183→
+   184→   184→-- Documents
+   185→   185→CREATE TABLE IF NOT EXISTS public.documents (
+   186→   186→  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   187→   187→  case_id             UUID REFERENCES public.cases(id),
+   188→   188→  uploaded_by         UUID NOT NULL REFERENCES public.profiles(id),
+   189→   189→  document_type       TEXT NOT NULL DEFAULT 'other' CHECK (document_type IN ('id_document','contract','court_filing','correspondence','evidence','financial','medical','police_report','affidavit','other')),
+   190→   190→  status              TEXT NOT NULL DEFAULT 'uploaded' CHECK (status IN ('uploading','uploaded','reviewing','approved','rejected','archived')),
+   191→   191→  file_name           TEXT NOT NULL,
+   192→   192→  file_path           TEXT NOT NULL,
+   193→   193→  file_size           BIGINT DEFAULT 0,
+   194→   194→  mime_type           TEXT,
+   195→   195→  description         TEXT,
+   196→   196→  tags                TEXT[] DEFAULT '{}',
+   197→   197→  version             INT DEFAULT 1,
+   198→   198→  parent_document_id  UUID REFERENCES public.documents(id),
+   199→   199→  ai_extracted_text   TEXT,
+   200→   200→  ai_summary          TEXT,
+   201→   201→  is_confidential     BOOLEAN DEFAULT TRUE,
+   202→   202→  metadata            JSONB DEFAULT '{}',
+   203→   203→  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+   204→   204→  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+   205→   205→);
+   206→   206→
+   207→   207→-- Tasks
+   208→   208→CREATE TABLE IF NOT EXISTS public.tasks (
+   209→   209→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   210→   210→  case_id       UUID REFERENCES public.cases(id),
+   211→   211→  assigned_to   UUID NOT NULL REFERENCES public.profiles(id),
+   212→   212→  created_by    UUID NOT NULL REFERENCES public.profiles(id),
+   213→   213→  title         TEXT NOT NULL,
+   214→   214→  description   TEXT,
+   215→   215→  status        TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','in_progress','completed','cancelled')),
+   216→   216→  priority      TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low','medium','high','urgent')),
+   217→   217→  due_date      TIMESTAMPTZ,
+   218→   218→  completed_at  TIMESTAMPTZ,
+   219→   219→  metadata      JSONB DEFAULT '{}',
+   220→   220→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+   221→   221→  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   222→   222→);
+   223→   223→
+   224→   224→-- Messages
+   225→   225→CREATE TABLE IF NOT EXISTS public.messages (
+   226→   226→  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   227→   227→  case_id           UUID REFERENCES public.cases(id),
+   228→   228→  sender_id         UUID NOT NULL REFERENCES public.profiles(id),
+   229→   229→  recipient_id      UUID REFERENCES public.profiles(id),
+   230→   230→  message_type      TEXT NOT NULL DEFAULT 'direct' CHECK (message_type IN ('system','direct','group','notification')),
+   231→   231→  subject           TEXT,
+   232→   232→  content           TEXT NOT NULL,
+   233→   233→  is_read           BOOLEAN DEFAULT FALSE,
+   234→   234→  parent_message_id UUID REFERENCES public.messages(id),
+   235→   235→  metadata          JSONB DEFAULT '{}',
+   236→   236→  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+   237→   237→);
+   238→   238→
+   239→   239→-- Case timeline
+   240→   240→CREATE TABLE IF NOT EXISTS public.case_timeline (
+   241→   241→  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   242→   242→  case_id           UUID NOT NULL REFERENCES public.cases(id),
+   243→   243→  event_type        TEXT NOT NULL,
+   244→   244→  event_description TEXT NOT NULL,
+   245→   245→  performed_by      UUID REFERENCES public.profiles(id),
+   246→   246→  metadata          JSONB DEFAULT '{}',
+   247→   247→  is_system_event   BOOLEAN DEFAULT FALSE,
+   248→   248→  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+   249→   249→);
+   250→   250→
+   251→   251→-- Privileged notes
+   252→   252→CREATE TABLE IF NOT EXISTS public.privileged_notes (
+   253→   253→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   254→   254→  case_id       UUID NOT NULL REFERENCES public.cases(id),
+   255→   255→  author_id     UUID NOT NULL REFERENCES public.profiles(id),
+   256→   256→  content       TEXT NOT NULL,
+   257→   257→  is_privileged BOOLEAN DEFAULT TRUE,
+   258→   258→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+   259→   259→  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   260→   260→);
+   261→   261→
+   262→   262→-- Consultations
+   263→   263→CREATE TABLE IF NOT EXISTS public.consultations (
+   264→   264→  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   265→   265→  case_id             UUID REFERENCES public.cases(id),
+   266→   266→  client_id           UUID NOT NULL REFERENCES public.profiles(id),
+   267→   267→  attorney_id         UUID REFERENCES public.attorneys(id),
+   268→   268→  status              TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled','confirmed','in_progress','completed','cancelled','no_show')),
+   269→   269→  scheduled_at        TIMESTAMPTZ NOT NULL,
+   270→   270→  duration_minutes    INT DEFAULT 60,
+   271→   271→  meeting_type        TEXT DEFAULT 'in_person',
+   272→   272→  meeting_link        TEXT,
+   273→   273→  location            TEXT,
+   274→   274→  notes               TEXT,
+   275→   275→  follow_up_required  BOOLEAN DEFAULT FALSE,
+   276→   276→  fee                 DECIMAL(10,2),
+   277→   277→  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+   278→   278→  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+   279→   279→);
+   280→   280→
+   281→   281→-- Consent logs
+   282→   282→CREATE TABLE IF NOT EXISTS public.consent_logs (
+   283→   283→  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   284→   284→  user_id      UUID NOT NULL REFERENCES public.profiles(id),
+   285→   285→  consent_type TEXT NOT NULL CHECK (consent_type IN ('terms_of_service','privacy_policy','popi_act','marketing','data_processing')),
+   286→   286→  granted      BOOLEAN NOT NULL,
+   287→   287→  ip_address   TEXT,
+   288→   288→  user_agent   TEXT,
+   289→   289→  version      TEXT,
+   290→   290→  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+   291→   291→);
+   292→   292→
+   293→   293→-- Notifications
+   294→   294→CREATE TABLE IF NOT EXISTS public.notifications (
+   295→   295→  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   296→   296→  user_id    UUID NOT NULL REFERENCES public.profiles(id),
+   297→   297→  title      TEXT NOT NULL,
+   298→   298→  message    TEXT NOT NULL,
+   299→   299→  type       TEXT NOT NULL DEFAULT 'info',
+   300→   300→  link       TEXT,
+   301→   301→  is_read    BOOLEAN DEFAULT FALSE,
+   302→   302→  metadata   JSONB DEFAULT '{}',
+   303→   303→  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+   304→   304→);
+   305→   305→
+   306→   306→-- Pricing plans
+   307→   307→CREATE TABLE IF NOT EXISTS public.pricing_plans (
+   308→   308→  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   309→   309→  name           TEXT NOT NULL,
+   310→   310→  slug           TEXT UNIQUE NOT NULL,
+   311→   311→  description    TEXT,
+   312→   312→  price_monthly  DECIMAL(10,2) NOT NULL DEFAULT 0,
+   313→   313→  price_annual   DECIMAL(10,2),
+   314→   314→  currency       TEXT DEFAULT 'ZAR',
+   315→   315→  features       JSONB DEFAULT '[]',
+   316→   316→  is_popular     BOOLEAN DEFAULT FALSE,
+   317→   317→  is_active      BOOLEAN DEFAULT TRUE,
+   318→   318→  sort_order     INT DEFAULT 0,
+   319→   319→  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+   320→   320→  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+   321→   321→);
+   322→   322→
+   323→   323→-- User subscriptions
+   324→   324→CREATE TABLE IF NOT EXISTS public.user_subscriptions (
+   325→   325→  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   326→   326→  user_id               UUID NOT NULL REFERENCES public.profiles(id),
+   327→   327→  plan_id               UUID NOT NULL REFERENCES public.pricing_plans(id),
+   328→   328→  status                TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','past_due','cancelled','expired','trial')),
+   329→   329→  current_period_start  TIMESTAMPTZ NOT NULL DEFAULT now(),
+   330→   330→  current_period_end    TIMESTAMPTZ,
+   331→   331→  cancel_at_period_end  BOOLEAN DEFAULT FALSE,
+   332→   332→  trial_ends_at         TIMESTAMPTZ,
+   333→   333→  payfast_token         TEXT,
+   334→   334→  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+   335→   335→  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+   336→   336→);
+   337→   337→
+   338→   338→-- Payment records
+   339→   339→CREATE TABLE IF NOT EXISTS public.payment_records (
+   340→   340→  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   341→   341→  subscription_id     UUID REFERENCES public.user_subscriptions(id),
+   342→   342→  case_id             UUID REFERENCES public.cases(id),
+   343→   343→  user_id             UUID NOT NULL REFERENCES public.profiles(id),
+   344→   344→  amount              DECIMAL(12,2) NOT NULL,
+   345→   345→  currency            TEXT DEFAULT 'ZAR',
+   346→   346→  status              TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed','failed','refunded','partially_refunded')),
+   347→   347→  payfast_payment_id  TEXT,
+   348→   348→  payfast_token       TEXT,
+   349→   349→  payment_method      TEXT DEFAULT 'payfast',
+   350→   350→  description         TEXT,
+   351→   351→  metadata            JSONB DEFAULT '{}',
+   352→   352→  paid_at             TIMESTAMPTZ,
+   353→   353→  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+   354→   354→);
+   355→   355→
+   356→   356→-- Audit logs
+   357→   357→CREATE TABLE IF NOT EXISTS public.audit_logs (
+   358→   358→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   359→   359→  user_id       UUID REFERENCES public.profiles(id),
+   360→   360→  action        TEXT NOT NULL,
+   361→   361→  resource_type TEXT NOT NULL,
+   362→   362→  resource_id   UUID,
+   363→   363→  details       JSONB DEFAULT '{}',
+   364→   364→  ip_address    TEXT,
+   365→   365→  user_agent    TEXT,
+   366→   366→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   367→   367→);
+   368→   368→
+   369→   369→-- API analytics
+   370→   370→CREATE TABLE IF NOT EXISTS public.api_analytics (
+   371→   371→  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   372→   372→  endpoint         TEXT NOT NULL,
+   373→   373→  method           TEXT NOT NULL,
+   374→   374→  status_code      INT,
+   375→   375→  response_time_ms INT,
+   376→   376→  user_id          UUID REFERENCES public.profiles(id),
+   377→   377→  ip_address       TEXT,
+   378→   378→  user_agent       TEXT,
+   379→   379→  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+   380→   380→);
+   381→   381→
+   382→   382→-- Error logs
+   383→   383→CREATE TABLE IF NOT EXISTS public.error_logs (
+   384→   384→  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   385→   385→  error_type   TEXT NOT NULL,
+   386→   386→  message      TEXT NOT NULL,
+   387→   387→  stack_trace  TEXT,
+   388→   388→  user_id      UUID REFERENCES public.profiles(id),
+   389→   389→  request_path TEXT,
+   390→   390→  metadata     JSONB DEFAULT '{}',
+   391→   391→  resolved     BOOLEAN DEFAULT FALSE,
+   392→   392→  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+   393→   393→);
+   394→   394→
+   395→   395→-- Rate limit logs
+   396→   396→CREATE TABLE IF NOT EXISTS public.rate_limit_logs (
+   397→   397→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   398→   398→  identifier    TEXT NOT NULL,
+   399→   399→  endpoint      TEXT,
+   400→   400→  request_count INT DEFAULT 1,
+   401→   401→  blocked       BOOLEAN DEFAULT FALSE,
+   402→   402→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   403→   403→);
+   404→   404→
+   405→   405→-- Backup records
+   406→   406→CREATE TABLE IF NOT EXISTS public.backup_records (
+   407→   407→  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   408→   408→  backup_type     TEXT NOT NULL DEFAULT 'incremental',
+   409→   409→  status          TEXT NOT NULL DEFAULT 'pending',
+   410→   410→  file_path       TEXT,
+   411→   411→  file_size_bytes BIGINT,
+   412→   412→  started_at      TIMESTAMPTZ,
+   413→   413→  completed_at    TIMESTAMPTZ,
+   414→   414→  error_message   TEXT,
+   415→   415→  metadata        JSONB DEFAULT '{}',
+   416→   416→  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+   417→   417→);
+   418→   418→
+   419→   419→-- Workbench configs
+   420→   420→CREATE TABLE IF NOT EXISTS public.workbench_configs (
+   421→   421→  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   422→   422→  user_id           UUID NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
+   423→   423→  layout            TEXT NOT NULL DEFAULT 'grid' CHECK (layout IN ('grid','list','compact')),
+   424→   424→  widgets           JSONB DEFAULT '[]',
+   425→   425→  sidebar_collapsed BOOLEAN DEFAULT FALSE,
+   426→   426→  theme             TEXT DEFAULT 'system',
+   427→   427→  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+   428→   428→  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+   429→   429→);
+   430→   430→
+   431→   431→-- Workbench widgets
+   432→   432→CREATE TABLE IF NOT EXISTS public.workbench_widgets (
+   433→   433→  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   434→   434→  user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+   435→   435→  widget_type TEXT NOT NULL CHECK (widget_type IN ('case_summary','task_list','upcoming_deadlines','recent_documents','billing_overview','lead_pipeline','ai_insights','quick_actions','notifications','calendar')),
+   436→   436→  title       TEXT,
+   437→   437→  position_x  INT NOT NULL DEFAULT 0,
+   438→   438→  position_y  INT NOT NULL DEFAULT 0,
+   439→   439→  width       INT NOT NULL DEFAULT 1,
+   440→   440→  height      INT NOT NULL DEFAULT 1,
+   441→   441→  is_visible  BOOLEAN DEFAULT TRUE,
+   442→   442→  config      JSONB DEFAULT '{}',
+   443→   443→  sort_order  INT DEFAULT 0,
+   444→   444→  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+   445→   445→  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+   446→   446→);
+   447→   447→
+   448→   448→-- Workbench quick actions
+   449→   449→CREATE TABLE IF NOT EXISTS public.workbench_quick_actions (
+   450→   450→  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   451→   451→  user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+   452→   452→  action_type TEXT NOT NULL,
+   453→   453→  label       TEXT NOT NULL,
+   454→   454→  icon        TEXT,
+   455→   455→  target_url  TEXT,
+   456→   456→  config      JSONB DEFAULT '{}',
+   457→   457→  sort_order  INT DEFAULT 0,
+   458→   458→  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+   459→   459→);
+   460→   460→
+   461→   461→-- Workbench pinned items
+   462→   462→CREATE TABLE IF NOT EXISTS public.workbench_pinned_items (
+   463→   463→  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   464→   464→  user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+   465→   465→  item_type   TEXT NOT NULL,
+   466→   466→  item_id     UUID NOT NULL,
+   467→   467→  label       TEXT,
+   468→   468→  metadata    JSONB DEFAULT '{}',
+   469→   469→  sort_order  INT DEFAULT 0,
+   470→   470→  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+   471→   471→);
+   472→   472→
+   473→   473→-- Workbench recent activity
+   474→   474→CREATE TABLE IF NOT EXISTS public.workbench_recent_activity (
+   475→   475→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   476→   476→  user_id       UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+   477→   477→  activity_type TEXT NOT NULL,
+   478→   478→  resource_type TEXT NOT NULL,
+   479→   479→  resource_id   UUID,
+   480→   480→  description   TEXT,
+   481→   481→  metadata      JSONB DEFAULT '{}',
+   482→   482→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   483→   483→);
+   484→   484→
+   485→   485→-- Lead pipeline stages
+   486→   486→CREATE TABLE IF NOT EXISTS public.lead_pipeline_stages (
+   487→   487→  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   488→   488→  name           TEXT NOT NULL,
+   489→   489→  slug           TEXT UNIQUE NOT NULL,
+   490→   490→  description    TEXT,
+   491→   491→  sort_order     INT NOT NULL DEFAULT 0,
+   492→   492→  color          TEXT,
+   493→   493→  is_default     BOOLEAN DEFAULT FALSE,
+   494→   494→  auto_assign_to UUID REFERENCES public.profiles(id),
+   495→   495→  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+   496→   496→);
+   497→   497→
+   498→   498→-- Lead pipeline transitions
+   499→   499→CREATE TABLE IF NOT EXISTS public.lead_pipeline_transitions (
+   500→   500→  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   501→   501→  lead_id     UUID NOT NULL REFERENCES public.leads(id) ON DELETE CASCADE,
+   502→   502→  from_stage  TEXT,
+   503→   503→  to_stage    TEXT NOT NULL,
+   504→   504→  changed_by  UUID REFERENCES public.profiles(id),
+   505→   505→  reason      TEXT,
+   506→   506→  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+   507→   507→);
+   508→   508→
+   509→   509→-- Lead communications
+   510→   510→CREATE TABLE IF NOT EXISTS public.lead_communications (
+   511→   511→  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   512→   512→  lead_id        UUID NOT NULL REFERENCES public.leads(id) ON DELETE CASCADE,
+   513→   513→  type           TEXT NOT NULL DEFAULT 'note',
+   514→   514→  direction      TEXT DEFAULT 'outbound',
+   515→   515→  subject        TEXT,
+   516→   516→  content        TEXT NOT NULL,
+   517→   517→  contacted_by   UUID REFERENCES public.profiles(id),
+   518→   518→  follow_up_date TIMESTAMPTZ,
+   519→   519→  metadata       JSONB DEFAULT '{}',
+   520→   520→  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+   521→   521→);
+   522→   522→
+   523→   523→-- Lead automation rules
+   524→   524→CREATE TABLE IF NOT EXISTS public.lead_automation_rules (
+   525→   525→  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   526→   526→  name              TEXT NOT NULL,
+   527→   527→  description       TEXT,
+   528→   528→  trigger_event     TEXT NOT NULL,
+   529→   529→  conditions        JSONB DEFAULT '{}',
+   530→   530→  actions           JSONB DEFAULT '[]',
+   531→   531→  is_active         BOOLEAN DEFAULT TRUE,
+   532→   532→  created_by        UUID REFERENCES public.profiles(id),
+   533→   533→  last_triggered_at TIMESTAMPTZ,
+   534→   534→  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+   535→   535→  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+   536→   536→);
+   537→   537→
+   538→   538→-- Lead form submissions
+   539→   539→CREATE TABLE IF NOT EXISTS public.lead_form_submissions (
+   540→   540→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   541→   541→  form_slug     TEXT NOT NULL,
+   542→   542→  lead_id       UUID REFERENCES public.leads(id),
+   543→   543→  form_data     JSONB NOT NULL DEFAULT '{}',
+   544→   544→  utm_source    TEXT,
+   545→   545→  utm_medium    TEXT,
+   546→   546→  utm_campaign  TEXT,
+   547→   547→  utm_content   TEXT,
+   548→   548→  ip_address    TEXT,
+   549→   549→  user_agent    TEXT,
+   550→   550→  is_processed  BOOLEAN DEFAULT FALSE,
+   551→   551→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   552→   552→);
+   553→   553→
+   554→   554→-- Admin sessions
+   555→   555→CREATE TABLE IF NOT EXISTS public.admin_sessions (
+   556→   556→  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   557→   557→  user_id     UUID NOT NULL REFERENCES public.profiles(id),
+   558→   558→  token       TEXT UNIQUE NOT NULL,
+   559→   559→  ip_address  TEXT,
+   560→   560→  user_agent  TEXT,
+   561→   561→  expires_at  TIMESTAMPTZ NOT NULL,
+   562→   562→  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+   563→   563→);
+   564→   564→
+   565→   565→-- Admin activity logs
+   566→   566→CREATE TABLE IF NOT EXISTS public.admin_activity_logs (
+   567→   567→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   568→   568→  user_id       UUID NOT NULL REFERENCES public.profiles(id),
+   569→   569→  action        TEXT NOT NULL,
+   570→   570→  resource_type TEXT,
+   571→   571→  resource_id   UUID,
+   572→   572→  details       JSONB DEFAULT '{}',
+   573→   573→  ip_address    TEXT,
+   574→   574→  severity      TEXT DEFAULT 'info',
+   575→   575→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   576→   576→);
+   577→   577→
+   578→   578→-- CRM dashboard widgets
+   579→   579→CREATE TABLE IF NOT EXISTS public.crm_dashboard_widgets (
+   580→   580→  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   581→   581→  widget_key   TEXT UNIQUE NOT NULL,
+   582→   582→  title        TEXT NOT NULL,
+   583→   583→  description  TEXT,
+   584→   584→  widget_type  TEXT NOT NULL DEFAULT 'stat',
+   585→   585→  config       JSONB DEFAULT '{}',
+   586→   586→  data_source  TEXT,
+   587→   587→  is_active    BOOLEAN DEFAULT TRUE,
+   588→   588→  sort_order   INT DEFAULT 0,
+   589→   589→  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+   590→   590→  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+   591→   591→);
+   592→   592→
+   593→   593→-- CRM reports
+   594→   594→CREATE TABLE IF NOT EXISTS public.crm_reports (
+   595→   595→  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   596→   596→  title          TEXT NOT NULL,
+   597→   597→  report_type    TEXT NOT NULL CHECK (report_type IN ('leads_summary','revenue','case_metrics','client_acquisition','attorney_performance','ai_usage','conversion_funnel')),
+   598→   598→  description    TEXT,
+   599→   599→  parameters     JSONB DEFAULT '{}',
+   600→   600→  result_data    JSONB DEFAULT '{}',
+   601→   601→  generated_by   UUID REFERENCES public.profiles(id),
+   602→   602→  is_scheduled   BOOLEAN DEFAULT FALSE,
+   603→   603→  schedule_cron  TEXT,
+   604→   604→  format         TEXT DEFAULT 'json',
+   605→   605→  status         TEXT DEFAULT 'pending',
+   606→   606→  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+   607→   607→  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+   608→   608→);
+   609→   609→
+   610→   610→-- CRM notifications
+   611→   611→CREATE TABLE IF NOT EXISTS public.crm_notifications (
+   612→   612→  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   613→   613→  user_id    UUID NOT NULL REFERENCES public.profiles(id),
+   614→   614→  type       TEXT NOT NULL,
+   615→   615→  title      TEXT NOT NULL,
+   616→   616→  message    TEXT NOT NULL,
+   617→   617→  priority   TEXT DEFAULT 'medium' CHECK (priority IN ('low','medium','high','urgent')),
+   618→   618→  link       TEXT,
+   619→   619→  is_read    BOOLEAN DEFAULT FALSE,
+   620→   620→  metadata   JSONB DEFAULT '{}',
+   621→   621→  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+   622→   622→);
+   623→   623→
+   624→   624→-- CRM system settings
+   625→   625→CREATE TABLE IF NOT EXISTS public.crm_system_settings (
+   626→   626→  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   627→   627→  setting_key   TEXT UNIQUE NOT NULL,
+   628→   628→  setting_value JSONB NOT NULL DEFAULT '{}',
+   629→   629→  description   TEXT,
+   630→   630→  is_public     BOOLEAN DEFAULT FALSE,
+   631→   631→  updated_by    UUID REFERENCES public.profiles(id),
+   632→   632→  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+   633→   633→  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+   634→   634→);
+   635→   635→
+   636→   636→-- CRM contact messages
+   637→   637→CREATE TABLE IF NOT EXISTS public.crm_contact_messages (
+   638→   638→  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   639→   639→  name           TEXT NOT NULL,
+   640→   640→  email          TEXT NOT NULL,
+   641→   641→  phone          TEXT,
+   642→   642→  subject        TEXT,
+   643→   643→  message        TEXT NOT NULL,
+   644→   644→  status         TEXT NOT NULL DEFAULT 'unread' CHECK (status IN ('unread','read','replied','archived')),
+   645→   645→  assigned_to    UUID REFERENCES public.profiles(id),
+   646→   646→  replied_at     TIMESTAMPTZ,
+   647→   647→  reply_content  TEXT,
+   648→   648→  lead_id        UUID REFERENCES public.leads(id),
+   649→   649→  metadata       JSONB DEFAULT '{}',
+   650→   650→  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+   651→   651→  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+   652→   652→);
+   653→   653→
+   654→   654→-- CRM user notes
+   655→   655→CREATE TABLE IF NOT EXISTS public.crm_user_notes (
+   656→   656→  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   657→   657→  user_id      UUID NOT NULL REFERENCES public.profiles(id),
+   658→   658→  author_id    UUID NOT NULL REFERENCES public.profiles(id),
+   659→   659→  content      TEXT NOT NULL,
+   660→   660→  is_pinned    BOOLEAN DEFAULT FALSE,
+   661→   661→  is_internal  BOOLEAN DEFAULT TRUE,
+   662→   662→  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+   663→   663→  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+   664→   664→);
+   665→   665→
+   666→   666→-- CRM subscription events
+   667→   667→CREATE TABLE IF NOT EXISTS public.crm_subscription_events (
+   668→   668→  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   669→   669→  subscription_id  UUID REFERENCES public.user_subscriptions(id),
+   670→   670→  user_id          UUID NOT NULL REFERENCES public.profiles(id),
+   671→   671→  event_type       TEXT NOT NULL,
+   672→   672→  description      TEXT,
+   673→   673→  metadata         JSONB DEFAULT '{}',
+   674→   674→  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+   675→   675→);
+   676→   676→
+   677→   677→-- Legal articles (publicly readable, admin-managed)
+   678→   678→CREATE TABLE IF NOT EXISTS public.legal_articles (
+   679→   679→  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   680→   680→  slug            TEXT UNIQUE NOT NULL,
+   681→   681→  title           TEXT NOT NULL,
+   682→   682→  subtitle        TEXT,
+   683→   683→  content         TEXT NOT NULL,
+   684→   684→  summary         TEXT,
+   685→   685→  category        TEXT NOT NULL DEFAULT 'general' CHECK (category IN ('civil_litigation','labour_law','criminal_defence','family_law','corporate_commercial','property_conveyancing','estate_planning','debt_recovery','consumer_rights','popia_compliance','immigration','general')),
+   686→   686→  tags            TEXT[] DEFAULT '{}',
+   687→   687→  cover_image_url TEXT,
+   688→   688→  author_id       UUID REFERENCES public.profiles(id),
+   689→   689→  reading_time_min INT DEFAULT 5,
+   690→   690→  is_published    BOOLEAN DEFAULT FALSE,
+   691→   691→  is_featured     BOOLEAN DEFAULT FALSE,
+   692→   692→  published_at    TIMESTAMPTZ,
+   693→   693→  sort_order      INT DEFAULT 0,
+   694→   694→  metadata        JSONB DEFAULT '{}',
+   695→   695→  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+   696→   696→  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+   697→   697→);
+   698→   698→
+   699→   699→-- ===========================================================================
+   700→   700→-- 2. FUNCTIONS
+   701→   701→-- ===========================================================================
+   702→   702→
+   703→   703→-- Check if current user is admin
+   704→   704→CREATE OR REPLACE FUNCTION public.is_admin()
+   705→   705→RETURNS BOOLEAN
+   706→   706→LANGUAGE sql SECURITY DEFINER STABLE
+   707→   707→AS $$
+   708→   708→  SELECT EXISTS (
+   709→   709→    SELECT 1 FROM public.profiles
+   710→   710→    WHERE id = auth.uid()
+   711→   711→    AND role IN ('admin','managing_director','systems_admin')
+   712→   712→  );
+   713→   713→$$;
+   714→   714→
+   715→   715→-- Check if current user is attorney
+   716→   716→CREATE OR REPLACE FUNCTION public.is_attorney()
+   717→   717→RETURNS BOOLEAN
+   718→   718→LANGUAGE sql SECURITY DEFINER STABLE
+   719→   719→AS $$
+   720→   720→  SELECT EXISTS (
+   721→   721→    SELECT 1 FROM public.profiles
+   722→   722→    WHERE id = auth.uid()
+   723→   723→    AND role IN ('attorney','admin','managing_director','systems_admin')
+   724→   724→  );
+   725→   725→$$;
+   726→   726→
+   727→   727→-- Check if current user is client
+   728→   728→CREATE OR REPLACE FUNCTION public.is_client()
+   729→   729→RETURNS BOOLEAN
+   730→   730→LANGUAGE sql SECURITY DEFINER STABLE
+   731→   731→AS $$
+   732→   732→  SELECT EXISTS (
+   733→   733→    SELECT 1 FROM public.profiles
+   734→   734→    WHERE id = auth.uid()
+   735→   735→    AND role = 'client'
+   736→   736→  );
+   737→   737→$$;
+   738→   738→
+   739→   739→-- Auto-create profile on auth signup
+   740→   740→CREATE OR REPLACE FUNCTION public.handle_new_user()
+   741→   741→RETURNS TRIGGER
+   742→   742→LANGUAGE plpgsql SECURITY DEFINER
+   743→   743→AS $$
+   744→   744→BEGIN
+   745→   745→  INSERT INTO public.profiles (id, email, full_name, role)
+   746→   746→  VALUES (
+   747→   747→    NEW.id,
+   748→   748→    NEW.email,
+   749→   749→    COALESCE(NEW.raw_user_meta_data ->> 'full_name', NEW.raw_user_meta_data ->> 'name', split_part(NEW.email, '@', 1)),
+   750→   750→    COALESCE(NEW.raw_user_meta_data ->> 'role', 'client')
+   751→   751→  )
+   752→   752→  ON CONFLICT (id) DO NOTHING;
+   753→   753→  RETURN NEW;
+   754→   754→END;
+   755→   755→$$;
+   756→   756→
+   757→   757→-- Auto-update updated_at
+   758→   758→CREATE OR REPLACE FUNCTION public.update_updated_at()
+   759→   759→RETURNS TRIGGER
+   760→   760→LANGUAGE plpgsql
+   761→   761→AS $$
+   762→   762→BEGIN
+   763→   763→  NEW.updated_at = now();
+   764→   764→  RETURN NEW;
+   765→   765→END;
+   766→   766→$$;
+   767→   767→
+   768→   768→-- Lead score calculation
+   769→   769→CREATE OR REPLACE FUNCTION public.calculate_lead_score(lead_row public.leads)
+   770→   770→RETURNS INT
+   771→   771→LANGUAGE plpgsql
+   772→   772→AS $$
+   773→   773→DECLARE
+   774→   774→  score INT := 0;
+   775→   775→BEGIN
+   776→   776→  IF lead_row.source = 'referral' THEN score := score + 30;
+   777→   777→  ELSIF lead_row.source = 'google_ads' THEN score := score + 20;
+   778→   778→  ELSIF lead_row.source = 'website' THEN score := score + 15;
+   779→   779→  ELSIF lead_row.source = 'walk_in' THEN score := score + 25;
+   780→   780→  ELSE score := score + 10;
+   781→   781→  END IF;
+   782→   782→
+   783→   783→  IF lead_row.estimated_value IS NOT NULL THEN
+   784→   784→    IF lead_row.estimated_value >= 100000 THEN score := score + 25;
+   785→   785→    ELSIF lead_row.estimated_value >= 50000 THEN score := score + 20;
+   786→   786→    ELSIF lead_row.estimated_value >= 10000 THEN score := score + 10;
+   787→   787→    END IF;
+   788→   788→  END IF;
+   789→   789→
+   790→   790→  IF lead_row.case_type IN ('corporate','property') THEN score := score + 15;
+   791→   791→  ELSIF lead_row.case_type = 'family' THEN score := score + 10;
+   792→   792→  END IF;
+   793→   793→
+   794→   794→  IF lead_row.status = 'qualified' THEN score := score + 15;
+   795→   795→  ELSIF lead_row.status = 'consultation_scheduled' THEN score := score + 20;
+   796→   796→  END IF;
+   797→   797→
+   798→   798→  RETURN LEAST(score, 100);
+   799→   799→END;
+   800→   800→$$;
+   801→   801→
+   802→   802→-- Lead score auto-update trigger function
+   803→   803→CREATE OR REPLACE FUNCTION public.update_lead_score()
+   804→   804→RETURNS TRIGGER
+   805→   805→LANGUAGE plpgsql
+   806→   806→AS $$
+   807→   807→BEGIN
+   808→   808→  NEW.lead_score := public.calculate_lead_score(NEW);
+   809→   809→  RETURN NEW;
+   810→   810→END;
+   811→   811→$$;
+   812→   812→
+   813→   813→-- Case status change logger
+   814→   814→CREATE OR REPLACE FUNCTION public.log_case_status_change()
+   815→   815→RETURNS TRIGGER
+   816→   816→LANGUAGE plpgsql
+   817→   817→AS $$
+   818→   818→BEGIN
+   819→   819→  IF OLD.status IS DISTINCT FROM NEW.status THEN
+   820→   820→    INSERT INTO public.case_timeline (case_id, event_type, event_description, performed_by, is_system_event)
+   821→   821→    VALUES (NEW.id, 'status_change',
+   822→   822→      'Case status changed from ' || OLD.status || ' to ' || NEW.status,
+   823→   823→      auth.uid(), TRUE);
+   824→   824→  END IF;
+   825→   825→  RETURN NEW;
+   826→   826→END;
+   827→   827→$$;
+   828→   828→
+   829→   829→-- Lead pipeline transition logger
+   830→   830→CREATE OR REPLACE FUNCTION public.log_lead_transition()
+   831→   831→RETURNS TRIGGER
+   832→   832→LANGUAGE plpgsql
+   833→   833→AS $$
+   834→   834→BEGIN
+   835→   835→  IF OLD.status IS DISTINCT FROM NEW.status THEN
+   836→   836→    INSERT INTO public.lead_pipeline_transitions (lead_id, from_stage, to_stage, changed_by, reason)
+   837→   837→    VALUES (NEW.id, OLD.status, NEW.status, auth.uid(), 'Status updated');
+   838→   838→  END IF;
+   839→   839→  RETURN NEW;
+   840→   840→END;
+   841→   841→$$;
+   842→   842→
+   843→   843→-- Auto-notify admins on new lead
+   844→   844→CREATE OR REPLACE FUNCTION public.notify_new_lead()
+   845→   845→RETURNS TRIGGER
+   846→   846→LANGUAGE plpgsql
+   847→   847→AS $$
+   848→   848→BEGIN
+   849→   849→  INSERT INTO public.crm_notifications (user_id, type, title, message, priority)
+   850→   850→  SELECT p.id, 'new_lead', 'New Lead Received',
+   851→   851→    'New lead from ' || NEW.first_name || ' ' || NEW.last_name || ' (' || NEW.email || ')',
+   852→   852→    'high'
+   853→   853→  FROM public.profiles p
+   854→   854→  WHERE p.role IN ('admin','managing_director','systems_admin');
+   855→   855→  RETURN NEW;
+   856→   856→END;
+   857→   857→$$;
+   858→   858→
+   859→   859→-- Auto-notify admins on contact message
+   860→   860→CREATE OR REPLACE FUNCTION public.notify_contact_message()
+   861→   861→RETURNS TRIGGER
+   862→   862→LANGUAGE plpgsql
+   863→   863→AS $$
+   864→   864→BEGIN
+   865→   865→  INSERT INTO public.crm_notifications (user_id, type, title, message, priority)
+   866→   866→  SELECT p.id, 'contact_message', 'New Contact Message',
+   867→   867→    'Message from ' || NEW.name || ': ' || LEFT(NEW.message, 80),
+   868→   868→    'medium'
+   869→   869→  FROM public.profiles p
+   870→   870→  WHERE p.role IN ('admin','managing_director','systems_admin');
+   871→   871→  RETURN NEW;
+   872→   872→END;
+   873→   873→$$;
+   874→   874→
+   875→   875→-- Helper to create updated_at triggers
+   876→   876→CREATE OR REPLACE FUNCTION public.create_updated_at_trigger(tbl TEXT) RETURNS VOID
+   877→   877→LANGUAGE plpgsql AS $$
+   878→   878→BEGIN
+   879→   879→  EXECUTE format(
+   880→   880→    'DROP TRIGGER IF EXISTS set_updated_at ON %I; CREATE TRIGGER set_updated_at BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();',
+   881→   881→    tbl, tbl
+   882→   882→  );
+   883→   883→END;
+   884→   884→$$;
+   885→   885→
+   886→   886→-- ===========================================================================
+   887→   887→-- 3. TRIGGERS
+   888→   888→-- ===========================================================================
+   889→   889→
+   890→   890→-- Auto-create profile on auth user creation
+   891→   891→DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+   892→   892→CREATE TRIGGER on_auth_user_created
+   893→   893→  AFTER INSERT ON auth.users
+   894→   894→  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+   895→   895→
+   896→   896→-- Updated_at triggers
+   897→   897→SELECT public.create_updated_at_trigger('profiles');
+   898→   898→SELECT public.create_updated_at_trigger('attorneys');
+   899→   899→SELECT public.create_updated_at_trigger('cases');
+   900→   900→SELECT public.create_updated_at_trigger('leads');
+   901→   901→SELECT public.create_updated_at_trigger('intake_submissions');
+   902→   902→SELECT public.create_updated_at_trigger('ai_intake_sessions');
+   903→   903→SELECT public.create_updated_at_trigger('ai_analyses');
+   904→   904→SELECT public.create_updated_at_trigger('documents');
+   905→   905→SELECT public.create_updated_at_trigger('tasks');
+   906→   906→SELECT public.create_updated_at_trigger('privileged_notes');
+   907→   907→SELECT public.create_updated_at_trigger('consultations');
+   908→   908→SELECT public.create_updated_at_trigger('pricing_plans');
+   909→   909→SELECT public.create_updated_at_trigger('user_subscriptions');
+   910→   910→SELECT public.create_updated_at_trigger('workbench_configs');
+   911→   911→SELECT public.create_updated_at_trigger('workbench_widgets');
+   912→   912→SELECT public.create_updated_at_trigger('lead_automation_rules');
+   913→   913→SELECT public.create_updated_at_trigger('crm_dashboard_widgets');
+   914→   914→SELECT public.create_updated_at_trigger('crm_reports');
+   915→   915→SELECT public.create_updated_at_trigger('crm_contact_messages');
+   916→   916→SELECT public.create_updated_at_trigger('crm_user_notes');
+   917→   917→SELECT public.create_updated_at_trigger('crm_system_settings');
+   918→   918→SELECT public.create_updated_at_trigger('legal_articles');
+   919→   919→
+   920→   920→-- Lead score auto-update
+   921→   921→DROP TRIGGER IF EXISTS set_lead_score ON public.leads;
+   922→   922→CREATE TRIGGER set_lead_score
+   923→   923→  BEFORE INSERT OR UPDATE ON public.leads
+   924→   924→  FOR EACH ROW EXECUTE FUNCTION public.update_lead_score();
+   925→   925→
+   926→   926→-- Case timeline auto-log
+   927→   927→DROP TRIGGER IF EXISTS track_case_status ON public.cases;
+   928→   928→CREATE TRIGGER track_case_status
+   929→   929→  AFTER UPDATE ON public.cases
+   930→   930→  FOR EACH ROW EXECUTE FUNCTION public.log_case_status_change();
+   931→   931→
+   932→   932→-- Lead pipeline transition logging
+   933→   933→DROP TRIGGER IF EXISTS track_lead_status ON public.leads;
+   934→   934→CREATE TRIGGER track_lead_status
+   935→   935→  AFTER UPDATE ON public.leads
+   936→   936→  FOR EACH ROW EXECUTE FUNCTION public.log_lead_transition();
+   937→   937→
+   938→   938→-- Auto-notification on new lead
+   939→   939→DROP TRIGGER IF EXISTS on_new_lead ON public.leads;
+   940→   940→CREATE TRIGGER on_new_lead
+   941→   941→  AFTER INSERT ON public.leads
+   942→   942→  FOR EACH ROW EXECUTE FUNCTION public.notify_new_lead();
+   943→   943→
+   944→   944→-- Auto-notification on contact message
+   945→   945→DROP TRIGGER IF EXISTS on_contact_message ON public.crm_contact_messages;
+   946→   946→CREATE TRIGGER on_contact_message
+   947→   947→  AFTER INSERT ON public.crm_contact_messages
+   948→   948→  FOR EACH ROW EXECUTE FUNCTION public.notify_contact_message();
+   949→   949→
+   950→   950→-- ===========================================================================
+   951→   951→-- 4. INDEXES
+   952→   952→-- ===========================================================================
+   953→   953→
+   954→   954→CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+   955→   955→CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
+   956→   956→CREATE INDEX IF NOT EXISTS idx_cases_client ON public.cases(client_id);
+   957→   957→CREATE INDEX IF NOT EXISTS idx_cases_attorney ON public.cases(attorney_id);
+   958→   958→CREATE INDEX IF NOT EXISTS idx_cases_status ON public.cases(status);
+   959→   959→CREATE INDEX IF NOT EXISTS idx_cases_type ON public.cases(case_type);
+   960→   960→CREATE INDEX IF NOT EXISTS idx_cases_ref ON public.cases(case_ref);
+   961→   961→CREATE INDEX IF NOT EXISTS idx_leads_email ON public.leads(email);
+   962→   962→CREATE INDEX IF NOT EXISTS idx_leads_status ON public.leads(status);
+   963→   963→CREATE INDEX IF NOT EXISTS idx_leads_source ON public.leads(source);
+   964→   964→CREATE INDEX IF NOT EXISTS idx_leads_assigned ON public.leads(assigned_to);
+   965→   965→CREATE INDEX IF NOT EXISTS idx_leads_score ON public.leads(lead_score);
+   966→   966→CREATE INDEX IF NOT EXISTS idx_intake_client ON public.intake_submissions(client_id);
+   967→   967→CREATE INDEX IF NOT EXISTS idx_intake_status ON public.intake_submissions(status);
+   968→   968→CREATE INDEX IF NOT EXISTS idx_ai_analyses_case ON public.ai_analyses(case_id);
+   969→   969→CREATE INDEX IF NOT EXISTS idx_ai_analyses_status ON public.ai_analyses(status);
+   970→   970→CREATE INDEX IF NOT EXISTS idx_ai_analyses_type ON public.ai_analyses(analysis_type);
+   971→   971→CREATE INDEX IF NOT EXISTS idx_ai_intake_session_token ON public.ai_intake_sessions(session_token);
+   972→   972→CREATE INDEX IF NOT EXISTS idx_ai_intake_client ON public.ai_intake_sessions(client_id);
+   973→   973→CREATE INDEX IF NOT EXISTS idx_ai_queue_status ON public.ai_analysis_queue(scheduled_at);
+   974→   974→CREATE INDEX IF NOT EXISTS idx_documents_case ON public.documents(case_id);
+   975→   975→CREATE INDEX IF NOT EXISTS idx_documents_uploaded_by ON public.documents(uploaded_by);
+   976→   976→CREATE INDEX IF NOT EXISTS idx_tasks_case ON public.tasks(case_id);
+   977→   977→CREATE INDEX IF NOT EXISTS idx_tasks_assigned ON public.tasks(assigned_to);
+   978→   978→CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks(status);
+   979→   979→CREATE INDEX IF NOT EXISTS idx_messages_case ON public.messages(case_id);
+   980→   980→CREATE INDEX IF NOT EXISTS idx_messages_recipient ON public.messages(recipient_id);
+   981→   981→CREATE INDEX IF NOT EXISTS idx_messages_read ON public.messages(is_read);
+   982→   982→CREATE INDEX IF NOT EXISTS idx_timeline_case ON public.case_timeline(case_id);
+   983→   983→CREATE INDEX IF NOT EXISTS idx_notifications_user ON public.notifications(user_id);
+   984→   984→CREATE INDEX IF NOT EXISTS idx_notifications_read ON public.notifications(is_read);
+   985→   985→CREATE INDEX IF NOT EXISTS idx_payments_user ON public.payment_records(user_id);
+   986→   986→CREATE INDEX IF NOT EXISTS idx_payments_status ON public.payment_records(status);
+   987→   987→CREATE INDEX IF NOT EXISTS idx_audit_user ON public.audit_logs(user_id);
+   988→   988→CREATE INDEX IF NOT EXISTS idx_audit_action ON public.audit_logs(action);
+   989→   989→CREATE INDEX IF NOT EXISTS idx_audit_created ON public.audit_logs(created_at);
+   990→   990→CREATE INDEX IF NOT EXISTS idx_consultations_client ON public.consultations(client_id);
+   991→   991→CREATE INDEX IF NOT EXISTS idx_consultations_attorney ON public.consultations(attorney_id);
+   992→   992→CREATE INDEX IF NOT EXISTS idx_workbench_config_user ON public.workbench_configs(user_id);
+   993→   993→CREATE INDEX IF NOT EXISTS idx_workbench_widgets_user ON public.workbench_widgets(user_id);
+   994→   994→CREATE INDEX IF NOT EXISTS idx_workbench_activity_user ON public.workbench_recent_activity(user_id);
+   995→   995→CREATE INDEX IF NOT EXISTS idx_lead_comms_lead ON public.lead_communications(lead_id);
+   996→   996→CREATE INDEX IF NOT EXISTS idx_lead_transitions_lead ON public.lead_pipeline_transitions(lead_id);
+   997→   997→CREATE INDEX IF NOT EXISTS idx_lead_forms_processed ON public.lead_form_submissions(is_processed);
+   998→   998→CREATE INDEX IF NOT EXISTS idx_crm_activity_admin ON public.admin_activity_logs(user_id);
+   999→   999→CREATE INDEX IF NOT EXISTS idx_crm_notifications_user ON public.crm_notifications(user_id);
+  1000→  1000→CREATE INDEX IF NOT EXISTS idx_crm_contact_status ON public.crm_contact_messages(status);
+  1001→  1001→CREATE INDEX IF NOT EXISTS idx_articles_published ON public.legal_articles(is_published);
+  1002→  1002→CREATE INDEX IF NOT EXISTS idx_articles_category ON public.legal_articles(category);
+  1003→  1003→CREATE INDEX IF NOT EXISTS idx_articles_featured ON public.legal_articles(is_featured);
+  1004→  1004→CREATE INDEX IF NOT EXISTS idx_articles_slug ON public.legal_articles(slug);
+  1005→  1005→
+  1006→  1006→-- ===========================================================================
+  1007→  1007→-- 5. ROW LEVEL SECURITY
+  1008→  1008→-- ===========================================================================
+  1009→  1009→
+  1010→  1010→ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+  1011→  1011→ALTER TABLE public.attorneys ENABLE ROW LEVEL SECURITY;
+  1012→  1012→ALTER TABLE public.cases ENABLE ROW LEVEL SECURITY;
+  1013→  1013→ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+  1014→  1014→ALTER TABLE public.intake_submissions ENABLE ROW LEVEL SECURITY;
+  1015→  1015→ALTER TABLE public.ai_intake_sessions ENABLE ROW LEVEL SECURITY;
+  1016→  1016→ALTER TABLE public.ai_analyses ENABLE ROW LEVEL SECURITY;
+  1017→  1017→ALTER TABLE public.ai_analysis_queue ENABLE ROW LEVEL SECURITY;
+  1018→  1018→ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
+  1019→  1019→ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+  1020→  1020→ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+  1021→  1021→ALTER TABLE public.case_timeline ENABLE ROW LEVEL SECURITY;
+  1022→  1022→ALTER TABLE public.privileged_notes ENABLE ROW LEVEL SECURITY;
+  1023→  1023→ALTER TABLE public.consultations ENABLE ROW LEVEL SECURITY;
+  1024→  1024→ALTER TABLE public.consent_logs ENABLE ROW LEVEL SECURITY;
+  1025→  1025→ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+  1026→  1026→ALTER TABLE public.pricing_plans ENABLE ROW LEVEL SECURITY;
+  1027→  1027→ALTER TABLE public.user_subscriptions ENABLE ROW LEVEL SECURITY;
+  1028→  1028→ALTER TABLE public.payment_records ENABLE ROW LEVEL SECURITY;
+  1029→  1029→ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+  1030→  1030→ALTER TABLE public.api_analytics ENABLE ROW LEVEL SECURITY;
+  1031→  1031→ALTER TABLE public.error_logs ENABLE ROW LEVEL SECURITY;
+  1032→  1032→ALTER TABLE public.rate_limit_logs ENABLE ROW LEVEL SECURITY;
+  1033→  1033→ALTER TABLE public.backup_records ENABLE ROW LEVEL SECURITY;
+  1034→  1034→ALTER TABLE public.workbench_configs ENABLE ROW LEVEL SECURITY;
+  1035→  1035→ALTER TABLE public.workbench_widgets ENABLE ROW LEVEL SECURITY;
+  1036→  1036→ALTER TABLE public.workbench_quick_actions ENABLE ROW LEVEL SECURITY;
+  1037→  1037→ALTER TABLE public.workbench_pinned_items ENABLE ROW LEVEL SECURITY;
+  1038→  1038→ALTER TABLE public.workbench_recent_activity ENABLE ROW LEVEL SECURITY;
+  1039→  1039→ALTER TABLE public.lead_pipeline_stages ENABLE ROW LEVEL SECURITY;
+  1040→  1040→ALTER TABLE public.lead_pipeline_transitions ENABLE ROW LEVEL SECURITY;
+  1041→  1041→ALTER TABLE public.lead_communications ENABLE ROW LEVEL SECURITY;
+  1042→  1042→ALTER TABLE public.lead_automation_rules ENABLE ROW LEVEL SECURITY;
+  1043→  1043→ALTER TABLE public.lead_form_submissions ENABLE ROW LEVEL SECURITY;
+  1044→  1044→ALTER TABLE public.admin_sessions ENABLE ROW LEVEL SECURITY;
+  1045→  1045→ALTER TABLE public.admin_activity_logs ENABLE ROW LEVEL SECURITY;
+  1046→  1046→ALTER TABLE public.crm_dashboard_widgets ENABLE ROW LEVEL SECURITY;
+  1047→  1047→ALTER TABLE public.crm_reports ENABLE ROW LEVEL SECURITY;
+  1048→  1048→ALTER TABLE public.crm_notifications ENABLE ROW LEVEL SECURITY;
+  1049→  1049→ALTER TABLE public.crm_system_settings ENABLE ROW LEVEL SECURITY;
+  1050→  1050→ALTER TABLE public.crm_contact_messages ENABLE ROW LEVEL SECURITY;
+  1051→  1051→ALTER TABLE public.crm_user_notes ENABLE ROW LEVEL SECURITY;
+  1052→  1052→ALTER TABLE public.crm_subscription_events ENABLE ROW LEVEL SECURITY;
+  1053→  1053→ALTER TABLE public.legal_articles ENABLE ROW LEVEL SECURITY;
+  1054→  1054→
+  1055→  1055→-- Profiles
+  1056→  1056→DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+  1057→  1057→CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+  1058→  1058→DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
+  1059→  1059→CREATE POLICY "Admins can view all profiles" ON public.profiles FOR SELECT USING (public.is_admin());
+  1060→  1060→DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+  1061→  1061→CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+  1062→  1062→
+  1063→  1063→-- Attorneys
+  1064→  1064→DROP POLICY IF EXISTS "Anyone can view attorneys" ON public.attorneys;
+  1065→  1065→CREATE POLICY "Anyone can view attorneys" ON public.attorneys FOR SELECT USING (TRUE);
+  1066→  1066→DROP POLICY IF EXISTS "Admins manage attorneys" ON public.attorneys;
+  1067→  1067→CREATE POLICY "Admins manage attorneys" ON public.attorneys FOR ALL USING (public.is_admin());
+  1068→  1068→
+  1069→  1069→-- Cases
+  1070→  1070→DROP POLICY IF EXISTS "Clients see own cases" ON public.cases;
+  1071→  1071→CREATE POLICY "Clients see own cases" ON public.cases FOR SELECT USING (auth.uid() = client_id);
+  1072→  1072→DROP POLICY IF EXISTS "Attorneys see assigned cases" ON public.cases;
+  1073→  1073→CREATE POLICY "Attorneys see assigned cases" ON public.cases FOR SELECT USING (EXISTS (SELECT 1 FROM public.attorneys WHERE id = attorney_id AND id = auth.uid()));
+  1074→  1074→DROP POLICY IF EXISTS "Admins see all cases" ON public.cases;
+  1075→  1075→CREATE POLICY "Admins see all cases" ON public.cases FOR SELECT USING (public.is_admin());
+  1076→  1076→DROP POLICY IF EXISTS "Clients create cases" ON public.cases;
+  1077→  1077→CREATE POLICY "Clients create cases" ON public.cases FOR INSERT WITH CHECK (auth.uid() = client_id);
+  1078→  1078→DROP POLICY IF EXISTS "Case members update cases" ON public.cases;
+  1079→  1079→CREATE POLICY "Case members update cases" ON public.cases FOR UPDATE USING (auth.uid() = client_id OR EXISTS (SELECT 1 FROM public.attorneys WHERE id = attorney_id AND id = auth.uid()) OR public.is_admin());
+  1080→  1080→
+  1081→  1081→-- Leads
+  1082→  1082→DROP POLICY IF EXISTS "Admins manage leads" ON public.leads;
+  1083→  1083→CREATE POLICY "Admins manage leads" ON public.leads FOR ALL USING (public.is_admin() OR public.is_attorney());
+  1084→  1084→DROP POLICY IF EXISTS "Anyone can submit leads" ON public.leads;
+  1085→  1085→CREATE POLICY "Anyone can submit leads" ON public.leads FOR INSERT WITH CHECK (TRUE);
+  1086→  1086→
+  1087→  1087→-- Intake submissions
+  1088→  1088→DROP POLICY IF EXISTS "Users see own intakes" ON public.intake_submissions;
+  1089→  1089→CREATE POLICY "Users see own intakes" ON public.intake_submissions FOR SELECT USING (auth.uid() = client_id);
+  1090→  1090→DROP POLICY IF EXISTS "Admins see all intakes" ON public.intake_submissions;
+  1091→  1091→CREATE POLICY "Admins see all intakes" ON public.intake_submissions FOR SELECT USING (public.is_admin());
+  1092→  1092→DROP POLICY IF EXISTS "Users create own intakes" ON public.intake_submissions;
+  1093→  1093→CREATE POLICY "Users create own intakes" ON public.intake_submissions FOR INSERT WITH CHECK (auth.uid() = client_id);
+  1094→  1094→DROP POLICY IF EXISTS "Admins update intakes" ON public.intake_submissions;
+  1095→  1095→CREATE POLICY "Admins update intakes" ON public.intake_submissions FOR UPDATE USING (public.is_admin() OR auth.uid() = client_id);
+  1096→  1096→
+  1097→  1097→-- AI intake sessions
+  1098→  1098→DROP POLICY IF EXISTS "Users see own AI sessions" ON public.ai_intake_sessions;
+  1099→  1099→CREATE POLICY "Users see own AI sessions" ON public.ai_intake_sessions FOR SELECT USING (auth.uid() = client_id);
+  1100→  1100→DROP POLICY IF EXISTS "Admins see all AI sessions" ON public.ai_intake_sessions;
+  1101→  1101→CREATE POLICY "Admins see all AI sessions" ON public.ai_intake_sessions FOR SELECT USING (public.is_admin());
+  1102→  1102→DROP POLICY IF EXISTS "Users create own AI sessions" ON public.ai_intake_sessions;
+  1103→  1103→CREATE POLICY "Users create own AI sessions" ON public.ai_intake_sessions FOR INSERT WITH CHECK (auth.uid() = client_id OR client_id IS NULL);
+  1104→  1104→DROP POLICY IF EXISTS "Users update own AI sessions" ON public.ai_intake_sessions;
+  1105→  1105→CREATE POLICY "Users update own AI sessions" ON public.ai_intake_sessions FOR UPDATE USING (auth.uid() = client_id OR public.is_admin());
+  1106→  1106→
+  1107→  1107→-- AI analyses
+  1108→  1108→DROP POLICY IF EXISTS "Users see own case analyses" ON public.ai_analyses;
+  1109→  1109→CREATE POLICY "Users see own case analyses" ON public.ai_analyses FOR SELECT USING (EXISTS (SELECT 1 FROM public.cases WHERE id = case_id AND client_id = auth.uid()) OR public.is_admin());
+  1110→  1110→DROP POLICY IF EXISTS "Admins manage analyses" ON public.ai_analyses;
+  1111→  1111→CREATE POLICY "Admins manage analyses" ON public.ai_analyses FOR ALL USING (public.is_admin());
+  1112→  1112→
+  1113→  1113→-- AI analysis queue
+  1114→  1114→DROP POLICY IF EXISTS "System processes queue" ON public.ai_analysis_queue;
+  1115→  1115→CREATE POLICY "System processes queue" ON public.ai_analysis_queue FOR ALL USING (public.is_admin());
+  1116→  1116→
+  1117→  1117→-- Documents
+  1118→  1118→DROP POLICY IF EXISTS "Users see own case documents" ON public.documents;
+  1119→  1119→CREATE POLICY "Users see own case documents" ON public.documents FOR SELECT USING (uploaded_by = auth.uid() OR EXISTS (SELECT 1 FROM public.cases WHERE id = case_id AND (client_id = auth.uid() OR public.is_admin() OR public.is_attorney())));
+  1120→  1120→DROP POLICY IF EXISTS "Users upload documents" ON public.documents;
+  1121→  1121→CREATE POLICY "Users upload documents" ON public.documents FOR INSERT WITH CHECK (auth.uid() = uploaded_by);
+  1122→  1122→DROP POLICY IF EXISTS "Case members update documents" ON public.documents;
+  1123→  1123→CREATE POLICY "Case members update documents" ON public.documents FOR UPDATE USING (uploaded_by = auth.uid() OR public.is_admin() OR public.is_attorney());
+  1124→  1124→
+  1125→  1125→-- Tasks
+  1126→  1126→DROP POLICY IF EXISTS "Users see own tasks" ON public.tasks;
+  1127→  1127→CREATE POLICY "Users see own tasks" ON public.tasks FOR SELECT USING (auth.uid() = assigned_to OR auth.uid() = created_by OR public.is_admin());
+  1128→  1128→DROP POLICY IF EXISTS "Users create tasks" ON public.tasks;
+  1129→  1129→CREATE POLICY "Users create tasks" ON public.tasks FOR INSERT WITH CHECK (auth.uid() = created_by);
+  1130→  1130→DROP POLICY IF EXISTS "Users update assigned tasks" ON public.tasks;
+  1131→  1131→CREATE POLICY "Users update assigned tasks" ON public.tasks FOR UPDATE USING (auth.uid() = assigned_to OR auth.uid() = created_by OR public.is_admin());
+  1132→  1132→
+  1133→  1133→-- Messages
+  1134→  1134→DROP POLICY IF EXISTS "Users see own messages" ON public.messages;
+  1135→  1135→CREATE POLICY "Users see own messages" ON public.messages FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = recipient_id OR public.is_admin());
+  1136→  1136→DROP POLICY IF EXISTS "Users send messages" ON public.messages;
+  1137→  1137→CREATE POLICY "Users send messages" ON public.messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
+  1138→  1138→DROP POLICY IF EXISTS "Users update own messages" ON public.messages;
+  1139→  1139→CREATE POLICY "Users update own messages" ON public.messages FOR UPDATE USING (auth.uid() = sender_id OR auth.uid() = recipient_id);
+  1140→  1140→
+  1141→  1141→-- Case timeline
+  1142→  1142→DROP POLICY IF EXISTS "Case members see timeline" ON public.case_timeline;
+  1143→  1143→CREATE POLICY "Case members see timeline" ON public.case_timeline FOR SELECT USING (EXISTS (SELECT 1 FROM public.cases WHERE id = case_id AND (client_id = auth.uid() OR public.is_admin() OR public.is_attorney())));
+  1144→  1144→DROP POLICY IF EXISTS "System inserts timeline" ON public.case_timeline;
+  1145→  1145→CREATE POLICY "System inserts timeline" ON public.case_timeline FOR INSERT WITH CHECK (TRUE);
+  1146→  1146→
+  1147→  1147→-- Privileged notes
+  1148→  1148→DROP POLICY IF EXISTS "Attorneys see privileged notes" ON public.privileged_notes;
+  1149→  1149→CREATE POLICY "Attorneys see privileged notes" ON public.privileged_notes FOR SELECT USING (public.is_attorney() OR public.is_admin());
+  1150→  1150→DROP POLICY IF EXISTS "Attorneys create privileged notes" ON public.privileged_notes;
+  1151→  1151→CREATE POLICY "Attorneys create privileged notes" ON public.privileged_notes FOR INSERT WITH CHECK (public.is_attorney() OR public.is_admin());
+  1152→  1152→
+  1153→  1153→-- Consultations
+  1154→  1154→DROP POLICY IF EXISTS "Users see own consultations" ON public.consultations;
+  1155→  1155→CREATE POLICY "Users see own consultations" ON public.consultations FOR SELECT USING (auth.uid() = client_id OR public.is_attorney() OR public.is_admin());
+  1156→  1156→DROP POLICY IF EXISTS "Users book consultations" ON public.consultations;
+  1157→  1157→CREATE POLICY "Users book consultations" ON public.consultations FOR INSERT WITH CHECK (auth.uid() = client_id);
+  1158→  1158→DROP POLICY IF EXISTS "Attorneys update consultations" ON public.consultations;
+  1159→  1159→CREATE POLICY "Attorneys update consultations" ON public.consultations FOR UPDATE USING (public.is_attorney() OR public.is_admin() OR auth.uid() = client_id);
+  1160→  1160→
+  1161→  1161→-- Notifications
+  1162→  1162→DROP POLICY IF EXISTS "Users see own notifications" ON public.notifications;
+  1163→  1163→CREATE POLICY "Users see own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+  1164→  1164→DROP POLICY IF EXISTS "Users update own notifications" ON public.notifications;
+  1165→  1165→CREATE POLICY "Users update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
+  1166→  1166→DROP POLICY IF EXISTS "System creates notifications" ON public.notifications;
+  1167→  1167→CREATE POLICY "System creates notifications" ON public.notifications FOR INSERT WITH CHECK (TRUE);
+  1168→  1168→
+  1169→  1169→-- Pricing plans
+  1170→  1170→DROP POLICY IF EXISTS "Anyone can view pricing" ON public.pricing_plans;
+  1171→  1171→CREATE POLICY "Anyone can view pricing" ON public.pricing_plans FOR SELECT USING (is_active = TRUE);
+  1172→  1172→DROP POLICY IF EXISTS "Admins manage pricing" ON public.pricing_plans;
+  1173→  1173→CREATE POLICY "Admins manage pricing" ON public.pricing_plans FOR ALL USING (public.is_admin());
+  1174→  1174→
+  1175→  1175→-- User subscriptions
+  1176→  1176→DROP POLICY IF EXISTS "Users see own subscriptions" ON public.user_subscriptions;
+  1177→  1177→CREATE POLICY "Users see own subscriptions" ON public.user_subscriptions FOR SELECT USING (auth.uid() = user_id);
+  1178→  1178→DROP POLICY IF EXISTS "Admins manage subscriptions" ON public.user_subscriptions;
+  1179→  1179→CREATE POLICY "Admins manage subscriptions" ON public.user_subscriptions FOR ALL USING (public.is_admin());
+  1180→  1180→
+  1181→  1181→-- Payment records
+  1182→  1182→DROP POLICY IF EXISTS "Users see own payments" ON public.payment_records;
+  1183→  1183→CREATE POLICY "Users see own payments" ON public.payment_records FOR SELECT USING (auth.uid() = user_id);
+  1184→  1184→DROP POLICY IF EXISTS "Admins see all payments" ON public.payment_records;
+  1185→  1185→CREATE POLICY "Admins see all payments" ON public.payment_records FOR SELECT USING (public.is_admin());
+  1186→  1186→DROP POLICY IF EXISTS "System creates payments" ON public.payment_records;
+  1187→  1187→CREATE POLICY "System creates payments" ON public.payment_records FOR INSERT WITH CHECK (TRUE);
+  1188→  1188→
+  1189→  1189→-- Consent logs
+  1190→  1190→DROP POLICY IF EXISTS "Users see own consents" ON public.consent_logs;
+  1191→  1191→CREATE POLICY "Users see own consents" ON public.consent_logs FOR SELECT USING (auth.uid() = user_id);
+  1192→  1192→DROP POLICY IF EXISTS "System logs consents" ON public.consent_logs;
+  1193→  1193→CREATE POLICY "System logs consents" ON public.consent_logs FOR INSERT WITH CHECK (TRUE);
+  1194→  1194→
+  1195→  1195→-- Audit logs
+  1196→  1196→DROP POLICY IF EXISTS "Admins see audit logs" ON public.audit_logs;
+  1197→  1197→CREATE POLICY "Admins see audit logs" ON public.audit_logs FOR SELECT USING (public.is_admin());
+  1198→  1198→DROP POLICY IF EXISTS "System creates audit logs" ON public.audit_logs;
+  1199→  1199→CREATE POLICY "System creates audit logs" ON public.audit_logs FOR INSERT WITH CHECK (TRUE);
+  1200→  1200→
+  1201→  1201→-- API analytics
+  1202→  1202→DROP POLICY IF EXISTS "Admins see api analytics" ON public.api_analytics;
+  1203→  1203→CREATE POLICY "Admins see api analytics" ON public.api_analytics FOR SELECT USING (public.is_admin());
+  1204→  1204→DROP POLICY IF EXISTS "System logs api analytics" ON public.api_analytics;
+  1205→  1205→CREATE POLICY "System logs api analytics" ON public.api_analytics FOR INSERT WITH CHECK (TRUE);
+  1206→  1206→
+  1207→  1207→-- Error logs
+  1208→  1208→DROP POLICY IF EXISTS "Admins see error logs" ON public.error_logs;
+  1209→  1209→CREATE POLICY "Admins see error logs" ON public.error_logs FOR SELECT USING (public.is_admin());
+  1210→  1210→DROP POLICY IF EXISTS "System logs errors" ON public.error_logs;
+  1211→  1211→CREATE POLICY "System logs errors" ON public.error_logs FOR INSERT WITH CHECK (TRUE);
+  1212→  1212→
+  1213→  1213→-- Workbench
+  1214→  1214→DROP POLICY IF EXISTS "Users manage own workbench" ON public.workbench_configs;
+  1215→  1215→CREATE POLICY "Users manage own workbench" ON public.workbench_configs FOR ALL USING (auth.uid() = user_id);
+  1216→  1216→DROP POLICY IF EXISTS "Users manage own widgets" ON public.workbench_widgets;
+  1217→  1217→CREATE POLICY "Users manage own widgets" ON public.workbench_widgets FOR ALL USING (auth.uid() = user_id);
+  1218→  1218→DROP POLICY IF EXISTS "Users manage own quick actions" ON public.workbench_quick_actions;
+  1219→  1219→CREATE POLICY "Users manage own quick actions" ON public.workbench_quick_actions FOR ALL USING (auth.uid() = user_id);
+  1220→  1220→DROP POLICY IF EXISTS "Users manage own pinned items" ON public.workbench_pinned_items;
+  1221→  1221→CREATE POLICY "Users manage own pinned items" ON public.workbench_pinned_items FOR ALL USING (auth.uid() = user_id);
+  1222→  1222→DROP POLICY IF EXISTS "Users see own activity" ON public.workbench_recent_activity;
+  1223→  1223→CREATE POLICY "Users see own activity" ON public.workbench_recent_activity FOR SELECT USING (auth.uid() = user_id);
+  1224→  1224→DROP POLICY IF EXISTS "System logs activity" ON public.workbench_recent_activity;
+  1225→  1225→CREATE POLICY "System logs activity" ON public.workbench_recent_activity FOR INSERT WITH CHECK (TRUE);
+  1226→  1226→
+  1227→  1227→-- Lead pipeline
+  1228→  1228→DROP POLICY IF EXISTS "Admins manage pipeline stages" ON public.lead_pipeline_stages;
+  1229→  1229→CREATE POLICY "Admins manage pipeline stages" ON public.lead_pipeline_stages FOR ALL USING (public.is_admin());
+  1230→  1230→DROP POLICY IF EXISTS "Staff see transitions" ON public.lead_pipeline_transitions;
+  1231→  1231→CREATE POLICY "Staff see transitions" ON public.lead_pipeline_transitions FOR SELECT USING (public.is_admin() OR public.is_attorney());
+  1232→  1232→DROP POLICY IF EXISTS "Staff manage lead comms" ON public.lead_communications;
+  1233→  1233→CREATE POLICY "Staff manage lead comms" ON public.lead_communications FOR ALL USING (public.is_admin() OR public.is_attorney());
+  1234→  1234→DROP POLICY IF EXISTS "Admins manage automation" ON public.lead_automation_rules;
+  1235→  1235→CREATE POLICY "Admins manage automation" ON public.lead_automation_rules FOR ALL USING (public.is_admin());
+  1236→  1236→DROP POLICY IF EXISTS "Anyone submits forms" ON public.lead_form_submissions;
+  1237→  1237→CREATE POLICY "Anyone submits forms" ON public.lead_form_submissions FOR INSERT WITH CHECK (TRUE);
+  1238→  1238→DROP POLICY IF EXISTS "Admins manage form submissions" ON public.lead_form_submissions;
+  1239→  1239→CREATE POLICY "Admins manage form submissions" ON public.lead_form_submissions FOR SELECT USING (public.is_admin());
+  1240→  1240→
+  1241→  1241→-- CRM admin
+  1242→  1242→DROP POLICY IF EXISTS "Admins manage admin sessions" ON public.admin_sessions;
+  1243→  1243→CREATE POLICY "Admins manage admin sessions" ON public.admin_sessions FOR ALL USING (public.is_admin());
+  1244→  1244→DROP POLICY IF EXISTS "Admins see activity logs" ON public.admin_activity_logs;
+  1245→  1245→CREATE POLICY "Admins see activity logs" ON public.admin_activity_logs FOR ALL USING (public.is_admin());
+  1246→  1246→DROP POLICY IF EXISTS "Admins manage dashboard widgets" ON public.crm_dashboard_widgets;
+  1247→  1247→CREATE POLICY "Admins manage dashboard widgets" ON public.crm_dashboard_widgets FOR ALL USING (public.is_admin());
+  1248→  1248→DROP POLICY IF EXISTS "Admins manage reports" ON public.crm_reports;
+  1249→  1249→CREATE POLICY "Admins manage reports" ON public.crm_reports FOR ALL USING (public.is_admin());
+  1250→  1250→DROP POLICY IF EXISTS "Users see own CRM notifications" ON public.crm_notifications;
+  1251→  1251→CREATE POLICY "Users see own CRM notifications" ON public.crm_notifications FOR SELECT USING (auth.uid() = user_id);
+  1252→  1252→DROP POLICY IF EXISTS "Admins manage CRM notifications" ON public.crm_notifications;
+  1253→  1253→CREATE POLICY "Admins manage CRM notifications" ON public.crm_notifications FOR ALL USING (public.is_admin());
+  1254→  1254→DROP POLICY IF EXISTS "Admins manage settings" ON public.crm_system_settings;
+  1255→  1255→CREATE POLICY "Admins manage settings" ON public.crm_system_settings FOR ALL USING (public.is_admin());
+  1256→  1256→DROP POLICY IF EXISTS "Admins manage contact messages" ON public.crm_contact_messages;
+  1257→  1257→CREATE POLICY "Admins manage contact messages" ON public.crm_contact_messages FOR ALL USING (public.is_admin());
+  1258→  1258→DROP POLICY IF EXISTS "Admins manage user notes" ON public.crm_user_notes;
+  1259→  1259→CREATE POLICY "Admins manage user notes" ON public.crm_user_notes FOR ALL USING (public.is_admin());
+  1260→  1260→DROP POLICY IF EXISTS "Admins see subscription events" ON public.crm_subscription_events;
+  1261→  1261→CREATE POLICY "Admins see subscription events" ON public.crm_subscription_events FOR SELECT USING (public.is_admin());
+  1262→  1262→DROP POLICY IF EXISTS "System logs subscription events" ON public.crm_subscription_events;
+  1263→  1263→CREATE POLICY "System logs subscription events" ON public.crm_subscription_events FOR INSERT WITH CHECK (TRUE);
+  1264→  1264→
+  1265→  1265→-- Rate limit and backup
+  1266→  1266→DROP POLICY IF EXISTS "System manages rate limits" ON public.rate_limit_logs;
+  1267→  1267→CREATE POLICY "System manages rate limits" ON public.rate_limit_logs FOR ALL USING (TRUE);
+  1268→  1268→DROP POLICY IF EXISTS "Admins manage backups" ON public.backup_records;
+  1269→  1269→CREATE POLICY "Admins manage backups" ON public.backup_records FOR ALL USING (public.is_admin());
+  1270→  1270→
+  1271→  1271→-- Legal articles
+  1272→  1272→DROP POLICY IF EXISTS "Published articles are publicly readable" ON public.legal_articles;
+  1273→  1273→CREATE POLICY "Published articles are publicly readable" ON public.legal_articles FOR SELECT USING (is_published = TRUE);
+  1274→  1274→DROP POLICY IF EXISTS "Admins manage articles" ON public.legal_articles;
+  1275→  1275→CREATE POLICY "Admins manage articles" ON public.legal_articles FOR ALL USING (public.is_admin());
+  1276→  1276→
+  1277→  1277→-- ===========================================================================
+  1278→  1278→-- 6. VIEWS
+  1279→  1279→-- ===========================================================================
+  1280→  1280→
+  1281→  1281→CREATE OR REPLACE VIEW public.v_crm_dashboard AS
+  1282→  1282→SELECT
+  1283→  1283→  (SELECT count(*) FROM public.leads WHERE status = 'new') AS new_leads_count,
+  1284→  1284→  (SELECT count(*) FROM public.leads WHERE status = 'qualified') AS qualified_leads_count,
+  1285→  1285→  (SELECT count(*) FROM public.cases WHERE status = 'active') AS active_cases_count,
+  1286→  1286→  (SELECT count(*) FROM public.cases WHERE status = 'intake') AS intake_cases_count,
+  1287→  1287→  (SELECT count(*) FROM public.intake_submissions WHERE status = 'submitted') AS pending_intakes_count,
+  1288→  1288→  (SELECT count(*) FROM public.consultations WHERE status = 'scheduled') AS scheduled_consultations_count,
+  1289→  1289→  (SELECT COALESCE(sum(estimated_value), 0) FROM public.leads WHERE status IN ('new','contacted','qualified')) AS pipeline_value,
+  1290→  1290→  (SELECT COALESCE(sum(retainer_amount), 0) FROM public.cases WHERE status = 'active') AS active_case_value,
+  1291→  1291→  (SELECT count(*) FROM public.ai_analyses WHERE status = 'processing') AS ai_processing_count,
+  1292→  1292→  (SELECT count(*) FROM public.crm_contact_messages WHERE status = 'unread') AS unread_messages_count;
+  1293→  1293→
+  1294→  1294→CREATE OR REPLACE VIEW public.v_lead_pipeline AS
+  1295→  1295→SELECT
+  1296→  1296→  ls.name AS stage_name,
+  1297→  1297→  ls.slug AS stage_slug,
+  1298→  1298→  ls.sort_order,
+  1299→  1299→  ls.color,
+  1300→  1300→  count(l.id) AS lead_count,
+  1301→  1301→  COALESCE(sum(l.estimated_value), 0) AS total_value
+  1302→  1302→FROM public.lead_pipeline_stages ls
+  1303→  1303→LEFT JOIN public.leads l ON l.status = ls.slug
+  1304→  1304→GROUP BY ls.id, ls.name, ls.slug, ls.sort_order, ls.color
+  1305→  1305→ORDER BY ls.sort_order;
+  1306→  1306→
+  1307→  1307→CREATE OR REPLACE VIEW public.v_client_overview AS
+  1308→  1308→SELECT
+  1309→  1309→  p.id,
+  1310→  1310→  p.full_name,
+  1311→  1311→  p.email,
+  1312→  1312→  p.phone,
+  1313→  1313→  p.role,
+  1314→  1314→  p.created_at,
+  1315→  1315→  count(DISTINCT c.id) AS total_cases,
+  1316→  1316→  count(DISTINCT c.id) FILTER (WHERE c.status = 'active') AS active_cases,
+  1317→  1317→  count(DISTINCT us.id) AS total_subscriptions,
+  1318→  1318→  COALESCE(sum(pr.amount), 0) AS total_payments
+  1319→  1319→FROM public.profiles p
+  1320→  1320→LEFT JOIN public.cases c ON c.client_id = p.id
+  1321→  1321→LEFT JOIN public.user_subscriptions us ON us.user_id = p.id
+  1322→  1322→LEFT JOIN public.payment_records pr ON pr.user_id = p.id AND pr.status = 'completed'
+  1323→  1323→GROUP BY p.id;
+  1324→  1324→
+  1325→  1325→CREATE OR REPLACE VIEW public.v_attorney_workload AS
+  1326→  1326→SELECT
+  1327→  1327→  a.id,
+  1328→  1328→  p.full_name,
+  1329→  1329→  a.practice_number,
+  1330→  1330→  a.specialization,
+  1331→  1331→  a.available,
+  1332→  1332→  count(DISTINCT c.id) AS total_cases,
+  1333→  1333→  count(DISTINCT c.id) FILTER (WHERE c.status = 'active') AS active_cases,
+  1334→  1334→  count(DISTINCT t.id) FILTER (WHERE t.status IN ('pending','in_progress')) AS pending_tasks
+  1335→  1335→FROM public.attorneys a
+  1336→  1336→JOIN public.profiles p ON p.id = a.id
+  1337→  1337→LEFT JOIN public.cases c ON c.attorney_id = a.id
+  1338→  1338→LEFT JOIN public.tasks t ON t.assigned_to = a.id
+  1339→  1339→GROUP BY a.id, p.full_name, a.practice_number, a.specialization, a.available;
+  1340→  1340→
+  1341→  1341→CREATE OR REPLACE VIEW public.v_ai_usage_stats AS
+  1342→  1342→SELECT
+  1343→  1343→  date_trunc('day', aa.created_at) AS day,
+  1344→  1344→  aa.analysis_type,
+  1345→  1345→  count(*) AS total_analyses,
+  1346→  1346→  avg(aa.confidence_score) AS avg_confidence,
+  1347→  1347→  sum(aa.tokens_used) AS total_tokens,
+  1348→  1348→  avg(aa.processing_time_ms) AS avg_processing_time,
+  1349→  1349→  count(*) FILTER (WHERE aa.status = 'failed') AS failed_count
+  1350→  1350→FROM public.ai_analyses aa
+  1351→  1351→GROUP BY date_trunc('day', aa.created_at), aa.analysis_type
+  1352→  1352→ORDER BY day DESC;
+  1353→  1353→
+  1354→  1354→-- ===========================================================================
+  1355→  1355→-- 7. SEED DATA
+  1356→  1356→-- ===========================================================================
+  1357→  1357→
+  1358→  1358→-- Lead pipeline stages
+  1359→  1359→INSERT INTO public.lead_pipeline_stages (name, slug, description, sort_order, color, is_default)
+  1360→  1360→VALUES
+  1361→  1361→  ('New', 'new', 'Freshly received leads', 1, '#3B82F6', TRUE),
+  1362→  1362→  ('Contacted', 'contacted', 'Lead has been contacted', 2, '#F59E0B', FALSE),
+  1363→  1363→  ('Qualified', 'qualified', 'Lead has been qualified', 3, '#10B981', FALSE),
+  1364→  1364→  ('Consultation Scheduled', 'consultation_scheduled', 'Consultation booked', 4, '#8B5CF6', FALSE),
+  1365→  1365→  ('Retained', 'retained', 'Lead has become a client', 5, '#059669', FALSE),
+  1366→  1366→  ('Lost', 'lost', 'Lead was lost', 6, '#EF4444', FALSE),
+  1367→  1367→  ('Nurturing', 'nurturing', 'Lead is being nurtured', 7, '#6B7280', FALSE)
+  1368→  1368→ON CONFLICT (slug) DO NOTHING;
+  1369→  1369→
+  1370→  1370→-- Pricing plans
+  1371→  1371→INSERT INTO public.pricing_plans (name, slug, description, price_monthly, price_annual, currency, features, is_popular, is_active, sort_order)
+  1372→  1372→VALUES
+  1373→  1373→  ('Free Consultation', 'free-consultation', 'Initial 30-minute consultation at no charge', 0, 0, 'ZAR',
+  1374→  1374→    '["30-minute consultation","Basic legal guidance","Referral to specialist"]'::JSONB, FALSE, TRUE, 1),
+  1375→  1375→  ('Starter', 'starter', 'For individuals with simple legal needs', 1500, 15000, 'ZAR',
+  1376→  1376→    '["1 case management","Document review (5 docs)","Email support","Basic AI intake","48hr response time"]'::JSONB, FALSE, TRUE, 2),
+  1377→  1377→  ('Professional', 'professional', 'For ongoing legal matters', 4500, 45000, 'ZAR',
+  1378→  1378→    '["Up to 3 cases","Unlimited document review","Priority email and phone support","AI intake and analysis","24hr response time","Dedicated attorney","Monthly case review"]'::JSONB, TRUE, TRUE, 3),
+  1379→  1379→  ('Enterprise', 'enterprise', 'For businesses with complex needs', 12000, 120000, 'ZAR',
+  1380→  1380→    '["Unlimited cases","Unlimited document review","24/7 priority support","Full AI suite","4hr response time","Dedicated legal team","Weekly strategy sessions","Corporate compliance support"]'::JSONB, FALSE, TRUE, 4)
+  1381→  1381→ON CONFLICT (slug) DO NOTHING;
+  1382→  1382→
+  1383→  1383→-- CRM dashboard widgets
+  1384→  1384→INSERT INTO public.crm_dashboard_widgets (widget_key, title, description, widget_type, config, data_source, sort_order)
+  1385→  1385→VALUES
+  1386→  1386→  ('leads_overview', 'Leads Overview', 'Total leads and conversion rates', 'stat', '{"metric":"lead_count"}'::JSONB, 'leads', 1),
+  1387→  1387→  ('active_cases', 'Active Cases', 'Currently active case count', 'stat', '{"metric":"active_cases"}'::JSONB, 'cases', 2),
+  1388→  1388→  ('revenue_summary', 'Revenue Summary', 'Monthly revenue breakdown', 'chart', '{"chart_type":"bar","period":"monthly"}'::JSONB, 'payments', 3),
+  1389→  1389→  ('pipeline_funnel', 'Lead Pipeline', 'Conversion funnel visualization', 'chart', '{"chart_type":"funnel"}'::JSONB, 'leads', 4),
+  1390→  1390→  ('recent_activity', 'Recent Activity', 'Latest system events', 'list', '{"limit":10}'::JSONB, 'audit_logs', 5),
+  1391→  1391→  ('ai_usage', 'AI Usage', 'AI feature usage metrics', 'stat', '{"metric":"ai_analyses"}'::JSONB, 'ai_analyses', 6),
+  1392→  1392→  ('upcoming_consultations', 'Upcoming Consultations', 'Scheduled consultations', 'list', '{"limit":5}'::JSONB, 'consultations', 7),
+  1393→  1393→  ('unread_messages', 'Unread Messages', 'Contact form submissions', 'stat', '{"metric":"unread_messages"}'::JSONB, 'contact_messages', 8)
+  1394→  1394→ON CONFLICT (widget_key) DO NOTHING;
+  1395→  1395→
+  1396→  1396→-- CRM system settings
+  1397→  1397→INSERT INTO public.crm_system_settings (setting_key, setting_value, description, is_public)
+  1398→  1398→VALUES
+  1399→  1399→  ('company_name', '"Infinity Legal"'::JSONB, 'Company display name', TRUE),
+  1400→  1400→  ('company_tagline', '"Expert Legal Solutions for South Africa"'::JSONB, 'Company tagline', TRUE),
+  1401→  1401→  ('currency', '"ZAR"'::JSONB, 'Default currency', TRUE),
+  1402→  1402→  ('timezone', '"Africa/Johannesburg"'::JSONB, 'System timezone', TRUE),
+  1403→  1403→  ('consultation_duration', '60'::JSONB, 'Default consultation duration in minutes', FALSE),
+  1404→  1404→  ('lead_score_threshold', '50'::JSONB, 'Minimum score for hot lead classification', FALSE),
+  1405→  1405→  ('ai_max_tokens', '4096'::JSONB, 'Maximum tokens per AI request', FALSE),
+  1406→  1406→  ('payfast_merchant_id', '"10000100"'::JSONB, 'PayFast sandbox merchant ID', FALSE),
+  1407→  1407→  ('payfast_merchant_key', '"46f0cd694581a"'::JSONB, 'PayFast sandbox merchant key', FALSE),
+  1408→  1408→  ('payfast_sandbox', 'true'::JSONB, 'Use PayFast sandbox mode', FALSE),
+  1409→  1409→  ('max_file_upload_mb', '25'::JSONB, 'Maximum file upload size in MB', TRUE),
+  1410→  1410→  ('support_email', '"support@infinitylegal.org"'::JSONB, 'Support email address', TRUE)
+  1411→  1411→ON CONFLICT (setting_key) DO NOTHING;
+  1412→  1412→
+  1413→  1413→-- Legal articles seed data
+  1414→  1414→INSERT INTO public.legal_articles (slug, title, subtitle, content, summary, category, tags, is_published, is_featured, reading_time_min, published_at, sort_order)
+  1415→  1415→VALUES
+  1416→  1416→  ('understanding-your-rights-under-popia', 'Understanding Your Rights Under POPIA', 'A comprehensive guide to South Africa''s Protection of Personal Information Act', E'# Understanding Your Rights Under POPIA\n\nThe Protection of Personal Information Act (POPIA) is South Africa''s comprehensive data protection law that gives you rights over how your personal information is collected, used, stored, and shared.\n\n## What is POPIA?\n\nPOPIA (Act 4 of 2013) came into full effect on 1 July 2021. It regulates the processing of personal information by both public and private bodies in South Africa, inspired by international data protection frameworks.\n\n## Your 8 Rights Under POPIA\n\n### 1. Right to Access\nYou have the right to request access to your personal information held by any organisation. They must provide it within 30 days.\n\n### 2. Right to Correction\nIf your personal information is inaccurate, incomplete, or outdated, you can request that it be corrected or deleted.\n\n### 3. Right to Object\nYou can object to the processing of your personal information in certain circumstances, including for direct marketing purposes.\n\n### 4. Right to Withdraw Consent\nIf processing is based on your consent, you may withdraw that consent at any time.\n\n### 5. Right to Complain\nYou can lodge a complaint with the Information Regulator if you believe your personal information has been mishandled.\n\n### 6. Right to Not Have Your Data Processed\nYou can request that your personal information not be processed for purposes beyond what you consented to.\n\n### 7. Right to Not Be Subject to Automated Decisions\nYou have the right not to be subject to decisions based solely on automated processing that significantly affect you.\n\n### 8. Right to Data Portability\nIn certain circumstances, you can request your personal information in a structured, commonly used format.\n\n## What Does This Mean for You?\n\nOrganisations must:\n- Only collect information they genuinely need\n- Tell you why they need it and how they''ll use it\n- Keep it secure and up to date\n- Not keep it longer than necessary\n- Get your consent before processing (in most cases)\n\n## Filing a Complaint\n\nIf you believe your POPIA rights have been violated, you can:\n1. Contact the organisation directly\n2. Lodge a complaint with the Information Regulator\n3. Seek legal advice\n\nThe Information Regulator can be contacted at: inforeg@justice.gov.za\n\n*This article is for informational purposes only and does not constitute legal advice. Consult with an attorney for specific guidance.*',
+  1417→  1417→  'A comprehensive guide to South Africa''s Protection of Personal Information Act — your 8 rights and how to exercise them.',
+  1418→  1418→  'popia_compliance', ARRAY['POPIA','data protection','privacy rights','Information Regulator'], TRUE, TRUE, 6, now(), 1),
+  1419→  1419→
+  1420→  1420→  ('what-to-do-if-you-are-unfairly-dismissed', 'What to Do If You Are Unfairly Dismissed', 'Your step-by-step guide to CCMA referrals and labour rights in South Africa', E'# What to Do If You Are Unfairly Dismissed\n\nUnfair dismissal is one of the most common labour disputes in South Africa. The Labour Relations Act (LRA) protects employees from being fired without fair reason and proper procedure.\n\n## What Counts as Unfair Dismissal?\n\nA dismissal may be unfair if:\n- There was no fair reason (substantive fairness)\n- Proper procedure was not followed (procedural fairness)\n- It was an automatically unfair dismissal\n\n### Automatically Unfair Dismissals\nThe LRA lists dismissals that are automatically unfair, including:\n- Participation in a protected strike\n- Pregnancy-related reasons\n- Refusal to accept a demand in collective bargaining\n- Discrimination based on race, gender, religion, etc.\n- Exercising a right under the LRA\n\n## The 30-Day Rule\n\n**Critical:** You only have **30 days** from the date of dismissal to refer a dispute to the CCMA. Missing this deadline can severely affect your case.\n\n## Step-by-Step: Filing a CCMA Referral\n\n### Step 1: Get Your Dismissal in Writing\nRequest a written notice of dismissal from your employer. They are legally required to provide this.\n\n### Step 2: Gather Evidence\nCollect:\n- Employment contract\n- Payslips\n- Written warnings (if any)\n- Communication about the dismissal\n- Witness contact details\n\n### Step 3: Refer to the CCMA\nComplete form LRA 7.11 (Referral of Dispute) and submit it to your nearest CCMA office within 30 days.\n\n### Step 4: Conciliation\nThe CCMA will schedule a conciliation meeting. A commissioner will try to help you and your employer reach a settlement.\n\n### Step 5: Arbitration\nIf conciliation fails, the matter goes to arbitration. A commissioner will hear evidence from both sides and make a binding decision.\n\n## Possible Outcomes\n\nIf the CCMA finds your dismissal was unfair, they may order:\n- **Reinstatement** — you get your job back\n- **Re-employment** — you get a similar job\n- **Compensation** — up to 12 months'' salary\n- **Severance pay** — if applicable\n\n## Getting Legal Help\n\nYou don''t need an attorney for CCMA proceedings, but legal representation can significantly improve your chances — especially at arbitration.\n\n*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*',
+  1421→  1421→  'Step-by-step guide to CCMA referrals and labour rights in South Africa — including the critical 30-day deadline.',
+  1422→  1422→  'labour_law', ARRAY['unfair dismissal','CCMA','labour law','LRA','employment rights'], TRUE, TRUE, 8, now(), 2),
+  1423→  1423→
+  1424→  1424→  ('your-consumer-rights-in-south-africa', 'Your Consumer Rights in South Africa', 'How the Consumer Protection Act shields you from unfair business practices', E'# Your Consumer Rights in South Africa\n\nThe Consumer Protection Act (CPA) of 2008 is one of the most powerful pieces of legislation protecting South African consumers. Understanding your rights can save you money and prevent exploitation.\n\n## Your 9 Fundamental Consumer Rights\n\n### 1. Right to Equality\nNo supplier may discriminate against you based on race, gender, age, or disability when providing goods or services.\n\n### 2. Right to Privacy\nYou have the right to:\n- Refuse unwanted direct marketing\n- Opt out of marketing communications\n- Not be required to buy something as a condition of buying something else\n\n### 3. Right to Choose\nYou can:\n- Cancel a fixed-term agreement with 20 business days'' notice\n- Return defective goods within 6 months\n- Cancel advance bookings with reasonable notice\n\n### 4. Right to Information\nSuppliers must provide:\n- Clear pricing in ZAR\n- Product labels in plain language\n- Full terms and conditions before you sign\n- Right to cancel cooling-off period (5 business days for direct marketing)\n\n### 5. Right to Fair Value\nYou''re entitled to:\n- Fair pricing\n- Honest advertising\n- Quality goods that last a reasonable time\n\n### 6. Right to Safety\nProducts must be safe and carry appropriate warnings. You can sue for harm caused by unsafe products.\n\n### 7. Right to Fair Contract Terms\nNo unfair, unreasonable, or unjust contract terms. One-sided clauses may be struck down.\n\n### 8. Right to Fair Marketing\n- No bait marketing\n- No negative option marketing (sending stuff you didn''t order and billing you)\n- No pyramid schemes\n\n### 9. Right to Accountability\nSuppliers are accountable for:\n- Honouring warranties\n- Providing after-sales service\n- Handling complaints promptly\n\n## Common Scenarios\n\n### Returning a Defective Product\nUnder the CPA, you can return defective goods within **6 months** for your choice of repair, replacement, or refund.\n\n### Cancelling a Gym Contract\nFixed-term agreements can be cancelled with **20 business days'' notice**. You may owe a reasonable cancellation penalty (typically 10-15% of remaining value).\n\n### Cooling-Off Period\nIf you bought something through direct marketing (phone call, door-to-door), you have **5 business days** to cancel without penalty.\n\n## Where to Complain\n\n1. The supplier directly\n2. National Consumer Commission (NCC): 012 394 2000\n3. Provincial Consumer Affairs offices\n4. Legal consultation for complex matters\n\n*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*',
+  1425→  1425→  'How the Consumer Protection Act shields you from unfair business practices — your 9 fundamental rights explained.',
+  1426→  1426→  'consumer_rights', ARRAY['consumer rights','CPA','Consumer Protection Act','returns','cooling-off period'], TRUE, TRUE, 7, now(), 3),
+  1427→  1427→
+  1428→  1428→  ('guide-to-south-african-divorce-law', 'Guide to South African Divorce Law', 'What you need to know about divorce proceedings, maintenance, and custody', E'# Guide to South African Divorce Law\n\nGoing through a divorce is one of life''s most stressful experiences. Understanding the legal process can help you make informed decisions and protect your interests.\n\n## Grounds for Divorce\n\nSouth African law recognises one ground for divorce: the **irretrievable breakdown** of the marriage. This can be demonstrated by:\n- Not living together for 12+ months\n- Adultery\n- Habitual criminality\n- Drug or alcohol addiction\n- Abuse or desertion\n\n## Types of Divorce\n\n### Uncontested Divorce\nBoth spouses agree on all terms — property division, maintenance, custody. This is faster and more affordable, typically taking 4-8 weeks.\n\n### Contested Divorce\nSpouses disagree on one or more issues. This can take months or even years, requiring court proceedings.\n\n## Key Issues in Divorce\n\n### Division of Assets\nThis depends on your marital regime:\n- **In community of property** — all assets and debts are split 50/50\n- **Out of community of property (without accrual)** — each keeps their own\n- **Out of community of property (with accrual)** — the estate that grew more shares the difference\n\n### Maintenance\n- **Spousal maintenance** — may be awarded based on need and ability to pay\n- **Child maintenance** — both parents must contribute proportionally to their income\n\n### Child Custody\nThe Children''s Act prioritises the **best interests of the child**:\n- Primary residence (where the child lives)\n- Contact (visitation rights)\n- Guardianship (decision-making)\n\n## The Process\n\n1. **Summons** — One spouse issues a divorce summons\n2. **Response** — The other spouse responds within 10-30 days\n3. **Discovery** — Both disclose financial information\n4. **Mediation** — Often required before trial\n5. **Trial** (if contested) — A judge decides disputed issues\n6. **Decree** — The court grants the divorce order\n\n## Getting Help\n\nDivorce involves significant financial and emotional stakes. A family law attorney can help protect your rights and your children''s welfare.\n\n*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*',
+  1429→  1429→  'What you need to know about divorce proceedings, asset division, maintenance, and child custody in South Africa.',
+  1430→  1430→  'family_law', ARRAY['divorce','family law','custody','maintenance','marital regime'], TRUE, FALSE, 9, now(), 4),
+  1431→  1431→
+  1432→  1432→  ('renters-rights-under-the-rental-housing-act', 'Your Rights as a Tenant in South Africa', 'Know what your landlord can and cannot do under the Rental Housing Act', E'# Your Rights as a Tenant in South Africa\n\nThe Rental Housing Act and the Consumer Protection Act provide strong protections for tenants in South Africa. Knowing your rights can prevent exploitation and unlawful eviction.\n\n## Key Tenant Rights\n\n### Right to a Written Lease\nYour landlord must provide a written lease agreement that clearly states:\n- Rent amount and due date\n- Deposit amount and conditions for refund\n- Lease duration and renewal terms\n- Responsibilities of both parties\n- House rules (if applicable)\n\n### Right to a Habitable Dwelling\nYour landlord must maintain the property in a habitable condition, including:\n- Working plumbing and sanitation\n- Structural integrity\n- Weatherproofing\n- Reasonable security measures\n\n### Right Against Unlawful Eviction\n**No one may be evicted without a court order.** The Prevention of Illegal Eviction Act (PIE) protects against:\n- Lockouts\n- Cutting utilities\n- Removing belongings\n- Intimidation or threats\n\n### Right to Privacy\nYour landlord may not:\n- Enter without reasonable notice (usually 24-48 hours)\n- Conduct unnecessary inspections\n- Interfere with your peaceful occupation\n\n### Right to Fair Deposit Handling\n- Deposit must be held in an interest-bearing account\n- Must be refunded within 7-21 days of moving out\n- Deductions must be itemised and justified\n- You are entitled to a joint inspection before and after occupation\n\n### Right to Fair Rent Increases\n- Rent increases must be reasonable\n- Must be stipulated in the lease or agreed upon\n- Cannot be used as a tool for harassment\n\n## Common Problems & Solutions\n\n### Landlord Won''t Fix Things\n1. Report in writing with a deadline\n2. If no response, you may arrange repairs and deduct from rent (with proper notice)\n3. Report to the Rental Housing Tribunal\n\n### Unlawful Eviction Threats\n1. Do not leave voluntarily without a court order\n2. Contact the Rental Housing Tribunal\n3. Seek urgent legal assistance\n\n### Deposit Not Returned\n1. Request in writing with bank details\n2. Lodge a complaint with the Rental Housing Tribunal\n3. Consider small claims court (claims under R15,000)\n\n## Useful Contacts\n\n- **Rental Housing Tribunal**: 0800 11 22 33\n- **Legal Aid South Africa**: 0800 110 110\n- **Infinity Legal**: 068 127 6038\n\n*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*',
+  1433→  1433→  'Know what your landlord can and cannot do under the Rental Housing Act — unlawful eviction, deposits, and repairs.',
+  1434→  1434→  'civil_litigation', ARRAY['tenant rights','rental housing','eviction','deposit','landlord'], TRUE, FALSE, 7, now(), 5),
+  1435→  1435→
+  1436→  1436→  ('debt-review-and-debt-counselling-explained', 'Debt Review and Debt Counselling Explained', 'How the National Credit Act protects over-indebted South Africans', E'# Debt Review and Debt Counselling Explained\n\nIf you''re struggling with debt, the National Credit Act (NCA) provides a powerful legal protection: **debt review**. This process can help you restructure your debts and protect you from legal action by creditors.\n\n## What is Debt Review?\n\nDebt review (also called debt counselling) is a formal legal process where a registered debt counsellor assesses your financial situation and negotiates with your creditors for:\n- Reduced monthly payments\n- Extended payment terms\n- Lower interest rates\n- Waived fees\n\n## Who Qualifies?\n\nYou may qualify for debt review if:\n- You are over-indebted (unable to meet all debt obligations on time)\n- You earn a regular income\n- You have not yet been placed under administration or declared bankrupt\n\n## The Process\n\n1. **Application** — Contact a registered debt counsellor\n2. **Assessment** — The counsellor reviews your income, expenses, and debts\n3. **Determination** — They determine if you are over-indebted\n4. **Proposal** — A repayment plan is sent to all creditors\n5. **Court Order** — If creditors don''t consent, the counsellor applies to court\n6. **Repayment** — You make one affordable monthly payment distributed to creditors\n\n## Important Protections\n\n- **No legal action** — Creditors cannot take legal action against you while under debt review\n- **No asset repossession** — Your home and car are protected\n- **No more harassment** — Creditors must communicate through your counsellor\n\n## What Debt Review Does NOT Cover\n\n- Monthly living expenses\n- New debt incurred after entering debt review\n- Debt where legal action has already commenced\n\n## Exiting Debt Review\n\nYou can exit by:\n- Paying off all debts\n- Proving you are no longer over-indebted\n- Applying to court to be declared no longer over-indebted\n\n## Getting Help\n\nIf you''re struggling with debt, don''t wait until creditors take legal action. Contact a registered debt counsellor or speak to an attorney about your options.\n\n*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*',
+  1437→  1437→  'How the National Credit Act protects over-indebted South Africans through debt review and counselling.',
+  1438→  1438→  'debt_recovery', ARRAY['debt review','debt counselling','NCA','National Credit Act','over-indebted'], TRUE, FALSE, 6, now(), 6)
+  1439→  1439→
+  1440→  1440→ON CONFLICT (slug) DO NOTHING;
+  1441→  1441→
+  1442→  1442→-- ===========================================================================
+  1443→  1443→-- 8. GRANTS
+  1444→  1444→-- ===========================================================================
+  1445→  1445→
+  1446→  1446→GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+  1447→  1447→GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+  1448→  1448→GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+  1449→  1449→ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+  1450→  1450→
+  1451→  1451→-- =============================================================================
+  1452→  1452→-- DONE. No enums, no transaction issues. TEXT + CHECK constraints for all
+  1453→  1453→-- constrained columns. Fully idempotent. Safe to re-run any number of times.
+  1454→  1454→-- =============================================================================
+  1455→  1455→

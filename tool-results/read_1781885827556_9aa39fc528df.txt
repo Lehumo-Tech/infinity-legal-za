@@ -1,0 +1,776 @@
+     1→-- ============================================
+     2→-- Infinity Legal ZA - Supabase Database Schema
+     3→-- ============================================
+     4→
+     5→-- Enable UUID extension
+     6→CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+     7→
+     8→-- ============================================
+     9→-- ENUMS (as PostgreSQL enums)
+    10→-- ============================================
+    11→
+    12→CREATE TYPE public.user_role AS ENUM (
+    13→  'managing_director', 'senior_partner', 'associate', 'paralegal',
+    14→  'legal_officer', 'supervising_officer', 'senior_consultant', 'consultant',
+    15→  'candidate_attorney', 'hr_manager', 'finance_manager', 'office_administrator',
+    16→  'systems_admin', 'receptionist', 'client', 'guest'
+    17→);
+    18→
+    19→CREATE TYPE public.case_type AS ENUM (
+    20→  'family_law', 'criminal_defence', 'civil_litigation', 'conveyancing',
+    21→  'estate_planning', 'corporate_commercial', 'debt_collection',
+    22→  'immigration', 'labour_law', 'personal_injury', 'other'
+    23→);
+    24→
+    25→CREATE TYPE public.case_urgency AS ENUM ('low', 'medium', 'high', 'critical');
+    26→CREATE TYPE public.case_status AS ENUM ('intake', 'pending_review', 'active', 'on_hold', 'settled', 'closed', 'archived');
+    27→CREATE TYPE public.lead_source AS ENUM ('website', 'referral', 'walk_in', 'social_media', 'advertisement', 'cold_call', 'other');
+    28→CREATE TYPE public.lead_status AS ENUM ('new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'disqualified');
+    29→CREATE TYPE public.document_type AS ENUM ('contract', 'pleading', 'correspondence', 'court_filing', 'affidavit', 'opinion', 'memo', 'invoice', 'consent_form', 'id_document', 'other');
+    30→CREATE TYPE public.workflow_status AS ENUM ('draft', 'review', 'approved', 'signed', 'filed', 'archived');
+    31→CREATE TYPE public.task_priority AS ENUM ('low', 'medium', 'high', 'urgent');
+    32→CREATE TYPE public.task_status AS ENUM ('pending', 'in_progress', 'completed', 'overdue', 'cancelled');
+    33→CREATE TYPE public.message_type AS ENUM ('message', 'note', 'system', 'alert');
+    34→CREATE TYPE public.consent_type AS ENUM ('data_processing', 'marketing', 'third_party_sharing', 'automated_decision', 'popia_general');
+    35→CREATE TYPE public.notification_type AS ENUM ('case_update', 'task_assigned', 'document_review', 'message', 'system', 'deadline', 'lead_assigned', 'consultation');
+    36→CREATE TYPE public.consultation_status AS ENUM ('scheduled', 'confirmed', 'completed', 'cancelled', 'no_show');
+    37→CREATE TYPE public.meeting_type AS ENUM ('in_person', 'video_call', 'phone_call');
+    38→CREATE TYPE public.subscription_status AS ENUM ('active', 'past_due', 'cancelled', 'expired', 'trialing');
+    39→CREATE TYPE public.attorney_availability AS ENUM ('available', 'busy', 'on_leave', 'unavailable');
+    40→CREATE TYPE public.privileged_note_visibility AS ENUM ('officer_only', 'managing_partner_only', 'attorney_client');
+    41→CREATE TYPE public.error_type AS ENUM ('runtime', 'api', 'database', 'auth', 'validation', 'network', 'unknown');
+    42→CREATE TYPE public.backup_status AS ENUM ('pending', 'in_progress', 'completed', 'failed');
+    43→
+    44→-- ============================================
+    45→-- PROFILES TABLE (extends Supabase Auth users)
+    46→-- ============================================
+    47→
+    48→CREATE TABLE public.profiles (
+    49→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    50→  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
+    51→  email TEXT NOT NULL,
+    52→  full_name TEXT,
+    53→  phone TEXT,
+    54→  role public.user_role DEFAULT 'client' NOT NULL,
+    55→  department TEXT,
+    56→  bar_number TEXT,
+    57→  hire_date TIMESTAMPTZ,
+    58→  is_active BOOLEAN DEFAULT true NOT NULL,
+    59→  avatar TEXT,
+    60→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+    61→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+    62→);
+    63→
+    64→CREATE INDEX idx_profiles_role ON public.profiles(role);
+    65→CREATE INDEX idx_profiles_department ON public.profiles(department);
+    66→CREATE INDEX idx_profiles_is_active ON public.profiles(is_active);
+    67→CREATE INDEX idx_profiles_user_id ON public.profiles(user_id);
+    68→
+    69→-- Auto-update updated_at
+    70→CREATE OR REPLACE FUNCTION public.handle_updated_at()
+    71→RETURNS TRIGGER AS $$
+    72→BEGIN
+    73→  NEW.updated_at = now();
+    74→  RETURN NEW;
+    75→END;
+    76→$$ LANGUAGE plpgsql;
+    77→
+    78→CREATE TRIGGER set_profiles_updated_at
+    79→  BEFORE UPDATE ON public.profiles
+    80→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+    81→
+    82→-- ============================================
+    83→-- CASES TABLE
+    84→-- ============================================
+    85→
+    86→CREATE TABLE public.cases (
+    87→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    88→  matter_number TEXT UNIQUE NOT NULL,
+    89→  title TEXT NOT NULL,
+    90→  description TEXT,
+    91→  case_type public.case_type NOT NULL,
+    92→  urgency public.case_urgency NOT NULL,
+    93→  status public.case_status DEFAULT 'intake' NOT NULL,
+    94→  client_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+    95→  lead_attorney_id UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+    96→  support_paralegal_id UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+    97→  lead_id UUID,
+    98→  court_date TIMESTAMPTZ,
+    99→  filing_date TIMESTAMPTZ,
+   100→  closing_date TIMESTAMPTZ,
+   101→  estimated_value FLOAT,
+   102→  ai_analysis TEXT,
+   103→  is_high_risk BOOLEAN DEFAULT false NOT NULL,
+   104→  next_action TEXT,
+   105→  next_action_date TIMESTAMPTZ,
+   106→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   107→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   108→);
+   109→
+   110→CREATE INDEX idx_cases_status ON public.cases(status);
+   111→CREATE INDEX idx_cases_case_type ON public.cases(case_type);
+   112→CREATE INDEX idx_cases_client_id ON public.cases(client_id);
+   113→CREATE INDEX idx_cases_lead_attorney_id ON public.cases(lead_attorney_id);
+   114→CREATE INDEX idx_cases_urgency ON public.cases(urgency);
+   115→CREATE INDEX idx_cases_created_at ON public.cases(created_at);
+   116→CREATE INDEX idx_cases_court_date ON public.cases(court_date);
+   117→
+   118→CREATE TRIGGER set_cases_updated_at
+   119→  BEFORE UPDATE ON public.cases
+   120→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   121→
+   122→-- ============================================
+   123→-- LEADS TABLE
+   124→-- ============================================
+   125→
+   126→CREATE TABLE public.leads (
+   127→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   128→  name TEXT NOT NULL,
+   129→  email TEXT NOT NULL,
+   130→  phone TEXT,
+   131→  source public.lead_source NOT NULL,
+   132→  status public.lead_status DEFAULT 'new' NOT NULL,
+   133→  case_type public.case_type,
+   134→  description TEXT,
+   135→  assigned_paralegal_id UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+   136→  assigned_officer_id UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+   137→  lead_score INT,
+   138→  qualification_notes TEXT,
+   139→  estimated_value FLOAT,
+   140→  first_contact_date TIMESTAMPTZ,
+   141→  sla_deadline TIMESTAMPTZ,
+   142→  converted_case_id UUID,
+   143→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   144→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   145→);
+   146→
+   147→CREATE INDEX idx_leads_status ON public.leads(status);
+   148→CREATE INDEX idx_leads_source ON public.leads(source);
+   149→CREATE INDEX idx_leads_email ON public.leads(email);
+   150→CREATE INDEX idx_leads_assigned_paralegal ON public.leads(assigned_paralegal_id);
+   151→CREATE INDEX idx_leads_sla_deadline ON public.leads(sla_deadline);
+   152→CREATE INDEX idx_leads_created_at ON public.leads(created_at);
+   153→
+   154→CREATE TRIGGER set_leads_updated_at
+   155→  BEFORE UPDATE ON public.leads
+   156→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   157→
+   158→-- ============================================
+   159→-- DOCUMENTS TABLE
+   160→-- ============================================
+   161→
+   162→CREATE TABLE public.documents (
+   163→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   164→  title TEXT NOT NULL,
+   165→  case_id UUID REFERENCES public.cases(id) ON DELETE CASCADE NOT NULL,
+   166→  document_type public.document_type NOT NULL,
+   167→  workflow_status public.workflow_status DEFAULT 'draft' NOT NULL,
+   168→  version INT DEFAULT 1 NOT NULL,
+   169→  file_url TEXT,
+   170→  file_name TEXT,
+   171→  file_size INT,
+   172→  prepared_by UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+   173→  approved_by UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+   174→  signed_by UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+   175→  supervising_officer UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+   176→  is_locked BOOLEAN DEFAULT false NOT NULL,
+   177→  locked_by UUID,
+   178→  description TEXT,
+   179→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   180→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   181→);
+   182→
+   183→CREATE INDEX idx_documents_case_id ON public.documents(case_id);
+   184→CREATE INDEX idx_documents_document_type ON public.documents(document_type);
+   185→CREATE INDEX idx_documents_workflow_status ON public.documents(workflow_status);
+   186→CREATE INDEX idx_documents_prepared_by ON public.documents(prepared_by);
+   187→CREATE INDEX idx_documents_created_at ON public.documents(created_at);
+   188→
+   189→CREATE TRIGGER set_documents_updated_at
+   190→  BEFORE UPDATE ON public.documents
+   191→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   192→
+   193→-- ============================================
+   194→-- INTAKE SUBMISSIONS TABLE
+   195→-- ============================================
+   196→
+   197→CREATE TABLE public.intake_submissions (
+   198→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   199→  reference_id TEXT UNIQUE NOT NULL,
+   200→  full_name TEXT NOT NULL,
+   201→  email TEXT NOT NULL,
+   202→  phone TEXT,
+   203→  id_number TEXT,
+   204→  case_type public.case_type NOT NULL,
+   205→  description TEXT NOT NULL,
+   206→  opposing_party TEXT,
+   207→  urgency public.case_urgency,
+   208→  has_documents BOOLEAN DEFAULT false NOT NULL,
+   209→  consent_given BOOLEAN NOT NULL,
+   210→  popia_consent BOOLEAN NOT NULL,
+   211→  ai_analysis TEXT,
+   212→  converted_case_id UUID,
+   213→  status TEXT DEFAULT 'submitted' NOT NULL,
+   214→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   215→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   216→);
+   217→
+   218→CREATE INDEX idx_intake_email ON public.intake_submissions(email);
+   219→CREATE INDEX idx_intake_status ON public.intake_submissions(status);
+   220→CREATE INDEX idx_intake_case_type ON public.intake_submissions(case_type);
+   221→CREATE INDEX idx_intake_reference_id ON public.intake_submissions(reference_id);
+   222→CREATE INDEX idx_intake_created_at ON public.intake_submissions(created_at);
+   223→
+   224→CREATE TRIGGER set_intake_submissions_updated_at
+   225→  BEFORE UPDATE ON public.intake_submissions
+   226→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   227→
+   228→-- ============================================
+   229→-- TASKS TABLE
+   230→-- ============================================
+   231→
+   232→CREATE TABLE public.tasks (
+   233→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   234→  title TEXT NOT NULL,
+   235→  description TEXT,
+   236→  case_id UUID REFERENCES public.cases(id) ON DELETE CASCADE,
+   237→  assigned_to UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   238→  created_by UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   239→  priority public.task_priority NOT NULL,
+   240→  status public.task_status DEFAULT 'pending' NOT NULL,
+   241→  due_date TIMESTAMPTZ,
+   242→  completed_date TIMESTAMPTZ,
+   243→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   244→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   245→);
+   246→
+   247→CREATE INDEX idx_tasks_status ON public.tasks(status);
+   248→CREATE INDEX idx_tasks_assigned_to ON public.tasks(assigned_to);
+   249→CREATE INDEX idx_tasks_case_id ON public.tasks(case_id);
+   250→CREATE INDEX idx_tasks_due_date ON public.tasks(due_date);
+   251→CREATE INDEX idx_tasks_priority ON public.tasks(priority);
+   252→CREATE INDEX idx_tasks_created_at ON public.tasks(created_at);
+   253→
+   254→CREATE TRIGGER set_tasks_updated_at
+   255→  BEFORE UPDATE ON public.tasks
+   256→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   257→
+   258→-- ============================================
+   259→-- MESSAGES TABLE
+   260→-- ============================================
+   261→
+   262→CREATE TABLE public.messages (
+   263→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   264→  case_id UUID REFERENCES public.cases(id) ON DELETE CASCADE NOT NULL,
+   265→  sender_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   266→  recipient_id UUID REFERENCES public.profiles(user_id) ON DELETE SET NULL,
+   267→  content TEXT NOT NULL,
+   268→  is_read BOOLEAN DEFAULT false NOT NULL,
+   269→  message_type public.message_type DEFAULT 'message' NOT NULL,
+   270→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   271→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   272→);
+   273→
+   274→CREATE INDEX idx_messages_case_id ON public.messages(case_id);
+   275→CREATE INDEX idx_messages_sender_id ON public.messages(sender_id);
+   276→CREATE INDEX idx_messages_recipient_id ON public.messages(recipient_id);
+   277→CREATE INDEX idx_messages_is_read ON public.messages(is_read);
+   278→CREATE INDEX idx_messages_created_at ON public.messages(created_at);
+   279→
+   280→CREATE TRIGGER set_messages_updated_at
+   281→  BEFORE UPDATE ON public.messages
+   282→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   283→
+   284→-- ============================================
+   285→-- AUDIT LOGS TABLE
+   286→-- ============================================
+   287→
+   288→CREATE TABLE public.audit_logs (
+   289→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   290→  user_id UUID,
+   291→  action TEXT NOT NULL,
+   292→  resource_type TEXT NOT NULL,
+   293→  resource_id UUID,
+   294→  details TEXT,
+   295→  ip_address TEXT,
+   296→  user_agent TEXT,
+   297→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   298→);
+   299→
+   300→CREATE INDEX idx_audit_logs_user_id ON public.audit_logs(user_id);
+   301→CREATE INDEX idx_audit_logs_action ON public.audit_logs(action);
+   302→CREATE INDEX idx_audit_logs_resource ON public.audit_logs(resource_type, resource_id);
+   303→CREATE INDEX idx_audit_logs_created_at ON public.audit_logs(created_at);
+   304→
+   305→-- ============================================
+   306→-- CONSENT LOGS TABLE
+   307→-- ============================================
+   308→
+   309→CREATE TABLE public.consent_logs (
+   310→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   311→  user_id UUID,
+   312→  consent_type public.consent_type NOT NULL,
+   313→  purpose TEXT NOT NULL,
+   314→  granted BOOLEAN NOT NULL,
+   315→  ip_address TEXT,
+   316→  user_agent TEXT,
+   317→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   318→);
+   319→
+   320→CREATE INDEX idx_consent_logs_user_id ON public.consent_logs(user_id);
+   321→CREATE INDEX idx_consent_logs_consent_type ON public.consent_logs(consent_type);
+   322→CREATE INDEX idx_consent_logs_created_at ON public.consent_logs(created_at);
+   323→
+   324→-- ============================================
+   325→-- NOTIFICATIONS TABLE
+   326→-- ============================================
+   327→
+   328→CREATE TABLE public.notifications (
+   329→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   330→  user_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   331→  type public.notification_type NOT NULL,
+   332→  title TEXT NOT NULL,
+   333→  message TEXT NOT NULL,
+   334→  is_read BOOLEAN DEFAULT false NOT NULL,
+   335→  link TEXT,
+   336→  related_id UUID,
+   337→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   338→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   339→);
+   340→
+   341→CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);
+   342→CREATE INDEX idx_notifications_is_read ON public.notifications(is_read);
+   343→CREATE INDEX idx_notifications_type ON public.notifications(type);
+   344→CREATE INDEX idx_notifications_created_at ON public.notifications(created_at);
+   345→
+   346→CREATE TRIGGER set_notifications_updated_at
+   347→  BEFORE UPDATE ON public.notifications
+   348→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   349→
+   350→-- ============================================
+   351→-- CONSULTATIONS TABLE
+   352→-- ============================================
+   353→
+   354→CREATE TABLE public.consultations (
+   355→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   356→  client_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   357→  attorney_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   358→  case_id UUID REFERENCES public.cases(id) ON DELETE SET NULL,
+   359→  scheduled_date TIMESTAMPTZ NOT NULL,
+   360→  scheduled_time TEXT NOT NULL,
+   361→  duration_minutes INT DEFAULT 60 NOT NULL,
+   362→  status public.consultation_status DEFAULT 'scheduled' NOT NULL,
+   363→  notes TEXT,
+   364→  meeting_type public.meeting_type DEFAULT 'in_person' NOT NULL,
+   365→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   366→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   367→);
+   368→
+   369→CREATE INDEX idx_consultations_client_id ON public.consultations(client_id);
+   370→CREATE INDEX idx_consultations_attorney_id ON public.consultations(attorney_id);
+   371→CREATE INDEX idx_consultations_scheduled_date ON public.consultations(scheduled_date);
+   372→CREATE INDEX idx_consultations_status ON public.consultations(status);
+   373→
+   374→CREATE TRIGGER set_consultations_updated_at
+   375→  BEFORE UPDATE ON public.consultations
+   376→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   377→
+   378→-- ============================================
+   379→-- PRICING PLANS TABLE
+   380→-- ============================================
+   381→
+   382→CREATE TABLE public.pricing_plans (
+   383→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   384→  name TEXT NOT NULL,
+   385→  slug TEXT UNIQUE NOT NULL,
+   386→  price_monthly FLOAT NOT NULL,
+   387→  price_annual FLOAT,
+   388→  currency TEXT DEFAULT 'ZAR' NOT NULL,
+   389→  features TEXT NOT NULL,
+   390→  max_cases INT,
+   391→  max_documents INT,
+   392→  is_active BOOLEAN DEFAULT true NOT NULL,
+   393→  sort_order INT DEFAULT 0 NOT NULL,
+   394→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   395→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   396→);
+   397→
+   398→CREATE INDEX idx_pricing_plans_slug ON public.pricing_plans(slug);
+   399→CREATE INDEX idx_pricing_plans_is_active ON public.pricing_plans(is_active);
+   400→
+   401→CREATE TRIGGER set_pricing_plans_updated_at
+   402→  BEFORE UPDATE ON public.pricing_plans
+   403→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   404→
+   405→-- ============================================
+   406→-- USER SUBSCRIPTIONS TABLE
+   407→-- ============================================
+   408→
+   409→CREATE TABLE public.user_subscriptions (
+   410→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   411→  user_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   412→  plan_id UUID REFERENCES public.pricing_plans(id) ON DELETE RESTRICT NOT NULL,
+   413→  status public.subscription_status DEFAULT 'active' NOT NULL,
+   414→  current_period_start TIMESTAMPTZ,
+   415→  current_period_end TIMESTAMPTZ,
+   416→  cancel_at_period_end BOOLEAN DEFAULT false NOT NULL,
+   417→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   418→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   419→);
+   420→
+   421→CREATE INDEX idx_user_subscriptions_user_id ON public.user_subscriptions(user_id);
+   422→CREATE INDEX idx_user_subscriptions_status ON public.user_subscriptions(status);
+   423→
+   424→CREATE TRIGGER set_user_subscriptions_updated_at
+   425→  BEFORE UPDATE ON public.user_subscriptions
+   426→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   427→
+   428→-- ============================================
+   429→-- PAYMENT RECORDS TABLE
+   430→-- ============================================
+   431→
+   432→CREATE TABLE public.payment_records (
+   433→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   434→  user_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   435→  subscription_id UUID REFERENCES public.user_subscriptions(id) ON DELETE SET NULL,
+   436→  m_payment_id TEXT UNIQUE NOT NULL,
+   437→  pf_payment_id TEXT,
+   438→  amount_gross FLOAT NOT NULL,
+   439→  amount_fee FLOAT,
+   440→  amount_net FLOAT,
+   441→  payment_status TEXT DEFAULT 'pending' NOT NULL,
+   442→  item_name TEXT NOT NULL,
+   443→  billing_cycle TEXT NOT NULL,
+   444→  payfast_data TEXT,
+   445→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   446→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   447→);
+   448→
+   449→CREATE INDEX idx_payment_records_user_id ON public.payment_records(user_id);
+   450→CREATE INDEX idx_payment_records_m_payment_id ON public.payment_records(m_payment_id);
+   451→CREATE INDEX idx_payment_records_payment_status ON public.payment_records(payment_status);
+   452→CREATE INDEX idx_payment_records_created_at ON public.payment_records(created_at);
+   453→
+   454→CREATE TRIGGER set_payment_records_updated_at
+   455→  BEFORE UPDATE ON public.payment_records
+   456→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   457→
+   458→-- ============================================
+   459→-- CASE TIMELINE TABLE
+   460→-- ============================================
+   461→
+   462→CREATE TABLE public.case_timeline (
+   463→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   464→  case_id UUID REFERENCES public.cases(id) ON DELETE CASCADE NOT NULL,
+   465→  user_id UUID,
+   466→  action TEXT NOT NULL,
+   467→  description TEXT,
+   468→  previous_value TEXT,
+   469→  new_value TEXT,
+   470→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   471→);
+   472→
+   473→CREATE INDEX idx_case_timeline_case_id ON public.case_timeline(case_id);
+   474→CREATE INDEX idx_case_timeline_created_at ON public.case_timeline(created_at);
+   475→
+   476→-- ============================================
+   477→-- PRIVILEGED NOTES TABLE
+   478→-- ============================================
+   479→
+   480→CREATE TABLE public.privileged_notes (
+   481→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   482→  case_id UUID REFERENCES public.cases(id) ON DELETE CASCADE NOT NULL,
+   483→  author_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE NOT NULL,
+   484→  content TEXT NOT NULL,
+   485→  visibility public.privileged_note_visibility DEFAULT 'officer_only' NOT NULL,
+   486→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   487→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   488→);
+   489→
+   490→CREATE INDEX idx_privileged_notes_case_id ON public.privileged_notes(case_id);
+   491→CREATE INDEX idx_privileged_notes_author_id ON public.privileged_notes(author_id);
+   492→CREATE INDEX idx_privileged_notes_visibility ON public.privileged_notes(visibility);
+   493→
+   494→CREATE TRIGGER set_privileged_notes_updated_at
+   495→  BEFORE UPDATE ON public.privileged_notes
+   496→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   497→
+   498→-- ============================================
+   499→-- API ANALYTICS TABLE
+   500→-- ============================================
+   501→
+   502→CREATE TABLE public.api_analytics (
+   503→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   504→  endpoint TEXT NOT NULL,
+   505→  method TEXT NOT NULL,
+   506→  status_code INT NOT NULL,
+   507→  response_time_ms INT,
+   508→  user_id UUID,
+   509→  ip_address TEXT,
+   510→  user_agent TEXT,
+   511→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   512→);
+   513→
+   514→CREATE INDEX idx_api_analytics_endpoint ON public.api_analytics(endpoint);
+   515→CREATE INDEX idx_api_analytics_status_code ON public.api_analytics(status_code);
+   516→CREATE INDEX idx_api_analytics_created_at ON public.api_analytics(created_at);
+   517→CREATE INDEX idx_api_analytics_user_id ON public.api_analytics(user_id);
+   518→
+   519→-- ============================================
+   520→-- ERROR LOGS TABLE
+   521→-- ============================================
+   522→
+   523→CREATE TABLE public.error_logs (
+   524→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   525→  error_type public.error_type NOT NULL,
+   526→  message TEXT NOT NULL,
+   527→  stack_trace TEXT,
+   528→  url TEXT,
+   529→  user_id UUID,
+   530→  metadata TEXT,
+   531→  resolved BOOLEAN DEFAULT false NOT NULL,
+   532→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   533→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   534→);
+   535→
+   536→CREATE INDEX idx_error_logs_error_type ON public.error_logs(error_type);
+   537→CREATE INDEX idx_error_logs_resolved ON public.error_logs(resolved);
+   538→CREATE INDEX idx_error_logs_created_at ON public.error_logs(created_at);
+   539→
+   540→CREATE TRIGGER set_error_logs_updated_at
+   541→  BEFORE UPDATE ON public.error_logs
+   542→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   543→
+   544→-- ============================================
+   545→-- ATTORNEYS TABLE
+   546→-- ============================================
+   547→
+   548→CREATE TABLE public.attorneys (
+   549→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   550→  user_id UUID REFERENCES public.profiles(user_id) ON DELETE CASCADE UNIQUE NOT NULL,
+   551→  lpc_number TEXT,
+   552→  firm_name TEXT,
+   553→  specializations TEXT,
+   554→  years_experience INT,
+   555→  is_verified BOOLEAN DEFAULT false NOT NULL,
+   556→  hourly_rate FLOAT,
+   557→  bio TEXT,
+   558→  availability_status public.attorney_availability DEFAULT 'available' NOT NULL,
+   559→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   560→  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   561→);
+   562→
+   563→CREATE INDEX idx_attorneys_lpc_number ON public.attorneys(lpc_number);
+   564→CREATE INDEX idx_attorneys_is_verified ON public.attorneys(is_verified);
+   565→CREATE INDEX idx_attorneys_availability_status ON public.attorneys(availability_status);
+   566→
+   567→CREATE TRIGGER set_attorneys_updated_at
+   568→  BEFORE UPDATE ON public.attorneys
+   569→  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+   570→
+   571→-- ============================================
+   572→-- RATE LIMIT LOGS TABLE
+   573→-- ============================================
+   574→
+   575→CREATE TABLE public.rate_limit_logs (
+   576→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   577→  ip TEXT NOT NULL,
+   578→  endpoint TEXT NOT NULL,
+   579→  request_count INT DEFAULT 1 NOT NULL,
+   580→  window_start TIMESTAMPTZ DEFAULT now() NOT NULL,
+   581→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   582→  UNIQUE(ip, endpoint)
+   583→);
+   584→
+   585→CREATE INDEX idx_rate_limit_logs_ip ON public.rate_limit_logs(ip);
+   586→CREATE INDEX idx_rate_limit_logs_endpoint ON public.rate_limit_logs(endpoint);
+   587→CREATE INDEX idx_rate_limit_logs_window_start ON public.rate_limit_logs(window_start);
+   588→
+   589→-- ============================================
+   590→-- BACKUP RECORDS TABLE
+   591→-- ============================================
+   592→
+   593→CREATE TABLE public.backup_records (
+   594→  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+   595→  filename TEXT NOT NULL,
+   596→  size_bytes INT,
+   597→  backup_type TEXT DEFAULT 'scheduled' NOT NULL,
+   598→  status public.backup_status DEFAULT 'pending' NOT NULL,
+   599→  started_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+   600→  completed_at TIMESTAMPTZ,
+   601→  error TEXT,
+   602→  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+   603→);
+   604→
+   605→CREATE INDEX idx_backup_records_status ON public.backup_records(status);
+   606→CREATE INDEX idx_backup_records_backup_type ON public.backup_records(backup_type);
+   607→CREATE INDEX idx_backup_records_started_at ON public.backup_records(started_at);
+   608→
+   609→-- ============================================
+   610→-- ROW LEVEL SECURITY (RLS)
+   611→-- ============================================
+   612→
+   613→-- Enable RLS on all tables
+   614→ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+   615→ALTER TABLE public.cases ENABLE ROW LEVEL SECURITY;
+   616→ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+   617→ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
+   618→ALTER TABLE public.intake_submissions ENABLE ROW LEVEL SECURITY;
+   619→ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+   620→ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+   621→ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+   622→ALTER TABLE public.consent_logs ENABLE ROW LEVEL SECURITY;
+   623→ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+   624→ALTER TABLE public.consultations ENABLE ROW LEVEL SECURITY;
+   625→ALTER TABLE public.pricing_plans ENABLE ROW LEVEL SECURITY;
+   626→ALTER TABLE public.user_subscriptions ENABLE ROW LEVEL SECURITY;
+   627→ALTER TABLE public.payment_records ENABLE ROW LEVEL SECURITY;
+   628→ALTER TABLE public.case_timeline ENABLE ROW LEVEL SECURITY;
+   629→ALTER TABLE public.privileged_notes ENABLE ROW LEVEL SECURITY;
+   630→ALTER TABLE public.api_analytics ENABLE ROW LEVEL SECURITY;
+   631→ALTER TABLE public.error_logs ENABLE ROW LEVEL SECURITY;
+   632→ALTER TABLE public.attorneys ENABLE ROW LEVEL SECURITY;
+   633→ALTER TABLE public.rate_limit_logs ENABLE ROW LEVEL SECURITY;
+   634→ALTER TABLE public.backup_records ENABLE ROW LEVEL SECURITY;
+   635→
+   636→-- Public read for pricing plans (no auth needed)
+   637→CREATE POLICY "Pricing plans are publicly readable"
+   638→  ON public.pricing_plans FOR SELECT
+   639→  USING (is_active = true);
+   640→
+   641→-- Intake submissions: allow anonymous insert
+   642→CREATE POLICY "Anyone can submit intake"
+   643→  ON public.intake_submissions FOR INSERT
+   644→  WITH CHECK (true);
+   645→
+   646→-- Rate limit logs: allow service role full access
+   647→CREATE POLICY "Service role can manage rate limits"
+   648→  ON public.rate_limit_logs FOR ALL
+   649→  USING (auth.role() = 'service_role');
+   650→
+   651→-- General policy: users can read their own profile
+   652→CREATE POLICY "Users can view own profile"
+   653→  ON public.profiles FOR SELECT
+   654→  USING (auth.uid() = user_id);
+   655→
+   656→-- Users can update their own profile
+   657→CREATE POLICY "Users can update own profile"
+   658→  ON public.profiles FOR UPDATE
+   659→  USING (auth.uid() = user_id);
+   660→
+   661→-- Service role has full access to all tables
+   662→CREATE POLICY "Service role full access on profiles"
+   663→  ON public.profiles FOR ALL
+   664→  USING (auth.role() = 'service_role');
+   665→
+   666→CREATE POLICY "Service role full access on cases"
+   667→  ON public.cases FOR ALL
+   668→  USING (auth.role() = 'service_role');
+   669→
+   670→CREATE POLICY "Service role full access on leads"
+   671→  ON public.leads FOR ALL
+   672→  USING (auth.role() = 'service_role');
+   673→
+   674→CREATE POLICY "Service role full access on documents"
+   675→  ON public.documents FOR ALL
+   676→  USING (auth.role() = 'service_role');
+   677→
+   678→CREATE POLICY "Service role full access on intake_submissions"
+   679→  ON public.intake_submissions FOR ALL
+   680→  USING (auth.role() = 'service_role');
+   681→
+   682→CREATE POLICY "Service role full access on tasks"
+   683→  ON public.tasks FOR ALL
+   684→  USING (auth.role() = 'service_role');
+   685→
+   686→CREATE POLICY "Service role full access on messages"
+   687→  ON public.messages FOR ALL
+   688→  USING (auth.role() = 'service_role');
+   689→
+   690→CREATE POLICY "Service role full access on audit_logs"
+   691→  ON public.audit_logs FOR ALL
+   692→  USING (auth.role() = 'service_role');
+   693→
+   694→CREATE POLICY "Service role full access on consent_logs"
+   695→  ON public.consent_logs FOR ALL
+   696→  USING (auth.role() = 'service_role');
+   697→
+   698→CREATE POLICY "Service role full access on notifications"
+   699→  ON public.notifications FOR ALL
+   700→  USING (auth.role() = 'service_role');
+   701→
+   702→CREATE POLICY "Service role full access on consultations"
+   703→  ON public.consultations FOR ALL
+   704→  USING (auth.role() = 'service_role');
+   705→
+   706→CREATE POLICY "Service role full access on user_subscriptions"
+   707→  ON public.user_subscriptions FOR ALL
+   708→  USING (auth.role() = 'service_role');
+   709→
+   710→CREATE POLICY "Service role full access on payment_records"
+   711→  ON public.payment_records FOR ALL
+   712→  USING (auth.role() = 'service_role');
+   713→
+   714→CREATE POLICY "Service role full access on case_timeline"
+   715→  ON public.case_timeline FOR ALL
+   716→  USING (auth.role() = 'service_role');
+   717→
+   718→CREATE POLICY "Service role full access on privileged_notes"
+   719→  ON public.privileged_notes FOR ALL
+   720→  USING (auth.role() = 'service_role');
+   721→
+   722→CREATE POLICY "Service role full access on api_analytics"
+   723→  ON public.api_analytics FOR ALL
+   724→  USING (auth.role() = 'service_role');
+   725→
+   726→CREATE POLICY "Service role full access on error_logs"
+   727→  ON public.error_logs FOR ALL
+   728→  USING (auth.role() = 'service_role');
+   729→
+   730→CREATE POLICY "Service role full access on attorneys"
+   731→  ON public.attorneys FOR ALL
+   732→  USING (auth.role() = 'service_role');
+   733→
+   734→CREATE POLICY "Service role full access on backup_records"
+   735→  ON public.backup_records FOR ALL
+   736→  USING (auth.role() = 'service_role');
+   737→
+   738→-- ============================================
+   739→-- SEED: PRICING PLANS
+   740→-- ============================================
+   741→
+   742→INSERT INTO public.pricing_plans (name, slug, price_monthly, price_annual, features, max_cases, max_documents, is_active, sort_order) VALUES
+   743→  ('Civil Legal Plan', 'civil-legal', 99.00, 990.00, '["Civil litigation support","Debt collection assistance","Consumer protection claims","Conveyancing queries","AI-powered case analysis","Secure document storage","Email support"]', 5, 25, true, 1),
+   744→  ('Labour Legal Plan', 'labour-legal', 99.00, 990.00, '["CCMA representation","Unfair dismissal claims","Workplace dispute resolution","Employment contract review","AI-powered case analysis","Secure document storage","Email support"]', 5, 25, true, 2),
+   745→  ('Extensive Legal Plan', 'extensive-legal', 139.00, 1390.00, '["All Civil Legal Plan features","All Labour Legal Plan features","Family law & divorce","Criminal defence consultation","Corporate & commercial law","Estate planning & wills","Priority support","Unlimited AI analysis","Dedicated attorney"]', 999, 999, true, 3);
+   746→
+   747→-- ============================================
+   748→-- SEED: ADMIN PROFILE (will be linked after first signup)
+   749→-- ============================================
+   750→
+   751→-- Note: The admin user will be created via Supabase Auth signup,
+   752→-- then their profile will be updated to managing_director role via service role.
+   753→
+   754→-- ============================================
+   755→-- FUNCTION: Auto-create profile on user signup
+   756→-- ============================================
+   757→
+   758→CREATE OR REPLACE FUNCTION public.handle_new_user()
+   759→RETURNS TRIGGER AS $$
+   760→BEGIN
+   761→  INSERT INTO public.profiles (user_id, email, full_name, role)
+   762→  VALUES (
+   763→    NEW.id,
+   764→    NEW.email,
+   765→    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+   766→    COALESCE((NEW.raw_user_meta_data->>'role')::public.user_role, 'client')
+   767→  );
+   768→  RETURN NEW;
+   769→END;
+   770→$$ LANGUAGE plpgsql SECURITY DEFINER;
+   771→
+   772→-- Trigger to auto-create profile when a user signs up
+   773→CREATE TRIGGER on_auth_user_created
+   774→  AFTER INSERT ON auth.users
+   775→  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+   776→

@@ -96,7 +96,6 @@ interface DocumentItem {
   status: string;
   version: number;
   file_path: string;
-  file_url?: string | null;
   file_size?: number | null;
   uploaded_by?: string | null;
   created_at: string;
@@ -156,7 +155,7 @@ export default function HomePageClient() {
   const token = accessToken;
   const [currentView, setCurrentView] = useState<View>('workbench');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showLanding, setShowLanding] = useState(true);
+  const [showLanding, setShowLanding] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -655,7 +654,7 @@ export default function HomePageClient() {
         {/* Page content */}
         <div className="flex-1 overflow-auto p-6">
           {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} />}
-          {currentView === 'cases' && <CasesView cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} />}
+          {currentView === 'cases' && <CasesView cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} token={token} user={user} staff={staff} />}
           {currentView === 'leads' && <LeadsView leads={leads} page={leadsPage} total={leadsTotal} onPageChange={loadLeads} onRefresh={() => loadLeads(leadsPage)} />}
           {currentView === 'documents' && <DocumentsView token={token} documents={documents} onRefresh={loadDocuments} user={user} />}
           {currentView === 'consultations' && <ConsultationsView token={token} consultations={consultations} onRefresh={loadConsultations} user={user} staff={staff} />}
@@ -1065,10 +1064,68 @@ function MiniStat({ label, value }: { label: string; value: string | number }) {
 // ============================================
 // CASES VIEW
 // ============================================
-function CasesView({ cases, page, total, onPageChange, onRefresh }: { cases: any[]; page: number; total: number; onPageChange: (p: number) => void; onRefresh: () => void }) {
+function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, staff }: { cases: any[]; page: number; total: number; onPageChange: (p: number) => void; onRefresh: () => void; token: string | null; user: User | null; staff: StaffMember[] }) {
   const totalPages = Math.ceil(total / 10);
   const [statusFilter, setStatusFilter] = useState('all');
   const [caseSearch, setCaseSearch] = useState('');
+  const [showNewCase, setShowNewCase] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [caseForm, setCaseForm] = useState({
+    title: '', case_type: 'civil', description: '', urgency: 'medium',
+    opposing_party: '', court_name: '',
+  });
+
+  const CASE_TYPES = [
+    { value: 'civil', label: 'Civil' },
+    { value: 'criminal', label: 'Criminal' },
+    { value: 'family', label: 'Family' },
+    { value: 'corporate', label: 'Corporate' },
+    { value: 'property', label: 'Property' },
+    { value: 'labour', label: 'Labour' },
+    { value: 'immigration', label: 'Immigration' },
+    { value: 'intellectual_property', label: 'Intellectual Property' },
+    { value: 'tax', label: 'Tax' },
+    { value: 'personal_injury', label: 'Personal Injury' },
+    { value: 'debt_recovery', label: 'Debt Recovery' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  const handleCreateCase = async () => {
+    if (!token || !user) return;
+    if (!caseForm.title.trim()) {
+      toast.error('Title is required');
+      return;
+    }
+    setCreating(true);
+    try {
+      const res = await fetch('/api/cases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          title: caseForm.title,
+          case_type: caseForm.case_type,
+          description: caseForm.description || undefined,
+          client_id: user.id,
+          opposing_party: caseForm.opposing_party || undefined,
+          court_name: caseForm.court_name || undefined,
+          notes: caseForm.urgency !== 'medium' ? `Urgency: ${caseForm.urgency}` : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Case created successfully');
+        setShowNewCase(false);
+        setCaseForm({ title: '', case_type: 'civil', description: '', urgency: 'medium', opposing_party: '', court_name: '' });
+        onRefresh();
+      } else {
+        toast.error(data.error?.message || 'Failed to create case');
+      }
+    } catch (e) {
+      console.error('Create case error:', e);
+      toast.error('Failed to create case');
+    }
+    setCreating(false);
+  };
 
   const caseTypeColors: Record<string, string> = {
     civil: '#3b82f6', criminal: '#ef4444', family: '#8b5cf6',
@@ -1108,7 +1165,7 @@ function CasesView({ cases, page, total, onPageChange, onRefresh }: { cases: any
             <Button size="sm" variant="ghost" onClick={onRefresh} className="text-slate-500 hover:text-[#0c1e3c]">
               <RefreshCw className="w-4 h-4" />
             </Button>
-            <Button size="sm" className="btn-gold px-4">
+            <Button size="sm" className="btn-gold px-4" onClick={() => setShowNewCase(true)}>
               <Plus className="w-4 h-4 mr-1.5" /> New Case
             </Button>
           </div>
@@ -1204,6 +1261,89 @@ function CasesView({ cases, page, total, onPageChange, onRefresh }: { cases: any
           </div>
         </div>
       )}
+
+      {/* New Case Dialog */}
+      <Dialog open={showNewCase} onOpenChange={setShowNewCase}>
+        <DialogContent className="max-w-lg animate-scale-in">
+          <DialogHeader>
+            <DialogTitle className="text-[#0c1e3c] border-l-2 border-[#c9a84c] pl-3">New Case</DialogTitle>
+            <DialogDescription>Create a new legal case</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs font-medium text-slate-600">Title <span className="text-red-500">*</span></Label>
+              <Input
+                value={caseForm.title}
+                onChange={e => setCaseForm(f => ({ ...f, title: e.target.value }))}
+                placeholder="e.g. Smith v. Johnson Property Dispute"
+                className="mt-1 input-premium focus:ring-0"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs font-medium text-slate-600">Case Type <span className="text-red-500">*</span></Label>
+                <Select value={caseForm.case_type} onValueChange={v => setCaseForm(f => ({ ...f, case_type: v }))}>
+                  <SelectTrigger className="mt-1 input-premium focus:ring-0"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {CASE_TYPES.map(ct => (
+                      <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs font-medium text-slate-600">Urgency</Label>
+                <Select value={caseForm.urgency} onValueChange={v => setCaseForm(f => ({ ...f, urgency: v }))}>
+                  <SelectTrigger className="mt-1 input-premium focus:ring-0"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-600">Description</Label>
+              <Textarea
+                value={caseForm.description}
+                onChange={e => setCaseForm(f => ({ ...f, description: e.target.value }))}
+                placeholder="Brief description of the case..."
+                className="mt-1 input-premium focus:ring-0"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs font-medium text-slate-600">Opposing Party</Label>
+                <Input
+                  value={caseForm.opposing_party}
+                  onChange={e => setCaseForm(f => ({ ...f, opposing_party: e.target.value }))}
+                  placeholder="e.g. Johnson & Associates"
+                  className="mt-1 input-premium focus:ring-0"
+                />
+              </div>
+              <div>
+                <Label className="text-xs font-medium text-slate-600">Court Name</Label>
+                <Input
+                  value={caseForm.court_name}
+                  onChange={e => setCaseForm(f => ({ ...f, court_name: e.target.value }))}
+                  placeholder="e.g. High Court of SA"
+                  className="mt-1 input-premium focus:ring-0"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+            <Button onClick={handleCreateCase} disabled={creating || !caseForm.title.trim()} className="btn-gold">
+              {creating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+              Create Case
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1417,12 +1557,11 @@ function DocumentsView({ token, documents, onRefresh, user }: {
     contract: { icon: FileCheck, color: 'text-blue-600', bg: 'bg-blue-50' },
     court_filing: { icon: Gavel, color: 'text-red-600', bg: 'bg-red-50' },
     affidavit: { icon: Scale, color: 'text-purple-600', bg: 'bg-purple-50' },
-    pleading: { icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
     correspondence: { icon: Mail, color: 'text-teal-600', bg: 'bg-teal-50' },
-    opinion: { icon: MessageSquare, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    memo: { icon: FileText, color: 'text-slate-600', bg: 'bg-slate-50' },
-    invoice: { icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    consent_form: { icon: ShieldCheck, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10' },
+    evidence: { icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
+    financial: { icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    medical: { icon: ShieldCheck, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10' },
+    police_report: { icon: Shield, color: 'text-slate-600', bg: 'bg-slate-50' },
     id_document: { icon: KeyRound, color: 'text-orange-600', bg: 'bg-orange-50' },
     other: { icon: FileText, color: 'text-slate-500', bg: 'bg-slate-50' },
   };
@@ -1501,16 +1640,15 @@ function DocumentsView({ token, documents, onRefresh, user }: {
                       <Select value={uploadType} onValueChange={setUploadType}>
                         <SelectTrigger className="mt-1 input-premium"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="contract">Contract</SelectItem>
-                          <SelectItem value="pleading">Pleading</SelectItem>
-                          <SelectItem value="correspondence">Correspondence</SelectItem>
-                          <SelectItem value="court_filing">Court Filing</SelectItem>
-                          <SelectItem value="affidavit">Affidavit</SelectItem>
-                          <SelectItem value="opinion">Opinion</SelectItem>
-                          <SelectItem value="memo">Memo</SelectItem>
-                          <SelectItem value="invoice">Invoice</SelectItem>
-                          <SelectItem value="consent_form">Consent Form</SelectItem>
                           <SelectItem value="id_document">ID Document</SelectItem>
+                          <SelectItem value="contract">Contract</SelectItem>
+                          <SelectItem value="court_filing">Court Filing</SelectItem>
+                          <SelectItem value="correspondence">Correspondence</SelectItem>
+                          <SelectItem value="evidence">Evidence</SelectItem>
+                          <SelectItem value="financial">Financial</SelectItem>
+                          <SelectItem value="medical">Medical Record</SelectItem>
+                          <SelectItem value="police_report">Police Report</SelectItem>
+                          <SelectItem value="affidavit">Affidavit</SelectItem>
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1558,16 +1696,15 @@ function DocumentsView({ token, documents, onRefresh, user }: {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="contract">Contract</SelectItem>
-              <SelectItem value="pleading">Pleading</SelectItem>
-              <SelectItem value="correspondence">Correspondence</SelectItem>
-              <SelectItem value="court_filing">Court Filing</SelectItem>
-              <SelectItem value="affidavit">Affidavit</SelectItem>
-              <SelectItem value="opinion">Opinion</SelectItem>
-              <SelectItem value="memo">Memo</SelectItem>
-              <SelectItem value="invoice">Invoice</SelectItem>
-              <SelectItem value="consent_form">Consent Form</SelectItem>
               <SelectItem value="id_document">ID Document</SelectItem>
+              <SelectItem value="contract">Contract</SelectItem>
+              <SelectItem value="court_filing">Court Filing</SelectItem>
+              <SelectItem value="correspondence">Correspondence</SelectItem>
+              <SelectItem value="evidence">Evidence</SelectItem>
+              <SelectItem value="financial">Financial</SelectItem>
+              <SelectItem value="medical">Medical Record</SelectItem>
+              <SelectItem value="police_report">Police Report</SelectItem>
+              <SelectItem value="affidavit">Affidavit</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>

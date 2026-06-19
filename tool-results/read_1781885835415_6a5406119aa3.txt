@@ -1,0 +1,1234 @@
+     1→     1→     1→generator client {
+     2→     2→     2→  provider = "prisma-client-js"
+     3→     3→     3→}
+     4→     4→     4→
+     5→     5→     5→datasource db {
+     6→     6→     6→  provider  = "postgresql"
+     7→     7→     7→  url       = env("DATABASE_URL")
+     8→     8→     8→  directUrl = env("DATABASE_URL_UNPOOLED")
+     9→     9→     9→}
+    10→    10→    10→
+    11→    11→    11→// ============================================
+    12→    12→    12→// PROFILES & AUTH
+    13→    13→    13→// ============================================
+    14→    14→    14→
+    15→    15→    15→model Profile {
+    16→    16→    16→  id             String   @id @default(uuid())
+    17→    17→    17→  email          String
+    18→    18→    18→  full_name      String?
+    19→    19→    19→  phone          String?
+    20→    20→    20→  avatar_url     String?
+    21→    21→    21→  /// CHECK: client | attorney | paralegal | admin | managing_director | systems_admin
+    22→    22→    22→  role           String   @default("client")
+    23→    23→    23→  id_number      String?
+    24→    24→    24→  company        String?
+    25→    25→    25→  address        Json?
+    26→    26→    26→  preferences    Json?
+    27→    27→    27→  popi_consent   Boolean  @default(false)
+    28→    28→    28→  email_verified Boolean  @default(false)
+    29→    29→    29→  last_login_at  DateTime?
+    30→    30→    30→  created_at     DateTime @default(now())
+    31→    31→    31→  updated_at     DateTime @updatedAt
+    32→    32→    32→
+    33→    33→    33→  // Reverse relations
+    34→    34→    34→  attorney                       Attorney?
+    35→    35→    35→  cases_as_client                Case[]
+    36→    36→    36→  leads_assigned                 Lead[]                @relation("LeadAssignedTo")
+    37→    37→    37→  leads_converted                Lead[]                @relation("LeadConvertedClient")
+    38→    38→    38→  intake_submissions_as_client   IntakeSubmission[]    @relation("IntakeClient")
+    39→    39→    39→  intake_submissions_reviewed    IntakeSubmission[]    @relation("IntakeReviewer")
+    40→    40→    40→  ai_intake_sessions             AiIntakeSession[]
+    41→    41→    41→  ai_analyses_requested          AiAnalysis[]
+    42→    42→    42→  documents_uploaded             Document[]
+    43→    43→    43→  tasks_assigned                 Task[]                @relation("TaskAssignedTo")
+    44→    44→    44→  tasks_created                  Task[]                @relation("TaskCreatedBy")
+    45→    45→    45→  messages_sent                  Message[]             @relation("MessageSender")
+    46→    46→    46→  messages_received              Message[]             @relation("MessageRecipient")
+    47→    47→    47→  timeline_events                CaseTimeline[]
+    48→    48→    48→  privileged_notes               PrivilegedNote[]
+    49→    49→    49→  consultations_as_client        Consultation[]
+    50→    50→    50→  consent_logs                   ConsentLog[]
+    51→    51→    51→  notifications                  Notification[]
+    52→    52→    52→  subscriptions                  UserSubscription[]
+    53→    53→    53→  payment_records                PaymentRecord[]
+    54→    54→    54→  audit_logs                     AuditLog[]
+    55→    55→    55→  api_analytics                  ApiAnalytic[]
+    56→    56→    56→  error_logs                     ErrorLog[]
+    57→    57→    57→  workbench_config               WorkbenchConfig?
+    58→    58→    58→  workbench_widgets              WorkbenchWidget[]
+    59→    59→    59→  workbench_quick_actions        WorkbenchQuickAction[]
+    60→    60→    60→  workbench_pinned_items         WorkbenchPinnedItem[]
+    61→    61→    61→  workbench_recent_activities    WorkbenchRecentActivity[]
+    62→    62→    62→  lead_pipeline_stages_auto_assigned LeadPipelineStage[]
+    63→    63→    63→  lead_pipeline_transitions      LeadPipelineTransition[]
+    64→    64→    64→  lead_communications_made       LeadCommunication[]
+    65→    65→    65→  lead_automation_rules          LeadAutomationRule[]
+    66→    66→    66→  admin_sessions                 AdminSession[]
+    67→    67→    67→  admin_activity_logs            AdminActivityLog[]
+    68→    68→    68→  crm_notifications              CrmNotification[]
+    69→    69→    69→  crm_reports                    CrmReport[]
+    70→    70→    70→  crm_system_settings_updated    CrmSystemSetting[]
+    71→    71→    71→  crm_contact_messages_assigned  CrmContactMessage[]
+    72→    72→    72→  crm_user_notes                 CrmUserNote[]         @relation("CrmUserNoteUser")
+    73→    73→    73→  crm_user_notes_authored        CrmUserNote[]         @relation("CrmUserNoteAuthor")
+    74→    74→    74→  crm_subscription_events        CrmSubscriptionEvent[]
+    75→    75→    75→  legal_articles                 LegalArticle[]
+    76→    76→    76→
+    77→    77→    77→  @@index([role])
+    78→    78→    78→  @@index([email])
+    79→    79→    79→}
+    80→    80→    80→
+    81→    81→    81→// ============================================
+    82→    82→    82→// ATTORNEYS
+    83→    83→    83→// ============================================
+    84→    84→    84→
+    85→    85→    85→model Attorney {
+    86→    86→    86→  id                 String   @id @default(uuid())
+    87→    87→    87→  practice_number    String?  @unique
+    88→    88→    88→  specialization     String[]
+    89→    89→    89→  bar_admission_date DateTime?
+    90→    90→    90→  hourly_rate        Float?
+    91→    91→    91→  bio                String?
+    92→    92→    92→  available          Boolean  @default(true)
+    93→    93→    93→  created_at         DateTime @default(now())
+    94→    94→    94→  updated_at         DateTime @updatedAt
+    95→    95→    95→
+    96→    96→    96→  profile       Profile       @relation(fields: [id], references: [id])
+    97→    97→    97→  cases         Case[]
+    98→    98→    98→  consultations Consultation[]
+    99→    99→    99→
+   100→   100→   100→  @@index([practice_number])
+   101→   101→   101→  @@index([available])
+   102→   102→   102→}
+   103→   103→   103→
+   104→   104→   104→// ============================================
+   105→   105→   105→// CASES
+   106→   106→   106→// ============================================
+   107→   107→   107→
+   108→   108→   108→model Case {
+   109→   109→   109→  id              String   @id @default(uuid())
+   110→   110→   110→  /// Auto-generated case reference
+   111→   111→   111→  case_ref        String   @unique
+   112→   112→   112→  title           String
+   113→   113→   113→  description     String?
+   114→   114→   114→  /// CHECK: civil | criminal | family | corporate | property | labour | immigration | intellectual_property | tax | personal_injury | debt_recovery | other
+   115→   115→   115→  case_type       String
+   116→   116→   116→  /// CHECK: intake | review | active | on_hold | closed | archived
+   117→   117→   117→  status          String   @default("intake")
+   118→   118→   118→  client_id       String
+   119→   119→   119→  attorney_id     String?
+   120→   120→   120→  opposing_party  String?
+   121→   121→   121→  court_name      String?
+   122→   122→   122→  case_number     String?
+   123→   123→   123→  jurisdiction    String?
+   124→   124→   124→  estimated_value Float?
+   125→   125→   125→  retainer_amount Float?
+   126→   126→   126→  contingency_fee Float?
+   127→   127→   127→  next_deadline   DateTime?
+   128→   128→   128→  notes           String?
+   129→   129→   129→  tags            String[]
+   130→   130→   130→  metadata        Json?
+   131→   131→   131→  created_at      DateTime @default(now())
+   132→   132→   132→  updated_at      DateTime @updatedAt
+   133→   133→   133→
+   134→   134→   134→  client              Profile           @relation(fields: [client_id], references: [id])
+   135→   135→   135→  attorney            Attorney?         @relation(fields: [attorney_id], references: [id])
+   136→   136→   136→  converted_leads     Lead[]
+   137→   137→   137→  intake_submissions  IntakeSubmission[]
+   138→   138→   138→  documents           Document[]
+   139→   139→   139→  tasks               Task[]
+   140→   140→   140→  messages            Message[]
+   141→   141→   141→  timeline_events     CaseTimeline[]
+   142→   142→   142→  privileged_notes    PrivilegedNote[]
+   143→   143→   143→  consultations       Consultation[]
+   144→   144→   144→  payment_records     PaymentRecord[]
+   145→   145→   145→  ai_analyses         AiAnalysis[]
+   146→   146→   146→
+   147→   147→   147→  @@index([status])
+   148→   148→   148→  @@index([case_type])
+   149→   149→   149→  @@index([client_id])
+   150→   150→   150→  @@index([attorney_id])
+   151→   151→   151→  @@index([created_at])
+   152→   152→   152→}
+   153→   153→   153→
+   154→   154→   154→// ============================================
+   155→   155→   155→// LEADS
+   156→   156→   156→// ============================================
+   157→   157→   157→
+   158→   158→   158→model Lead {
+   159→   159→   159→  id                 String   @id @default(uuid())
+   160→   160→   160→  first_name         String
+   161→   161→   161→  last_name          String
+   162→   162→   162→  email              String
+   163→   163→   163→  phone              String?
+   164→   164→   164→  company            String?
+   165→   165→   165→  /// CHECK: website | referral | social_media | google_ads | walk_in | phone | email | partner | event | other
+   166→   166→   166→  source             String
+   167→   167→   167→  /// CHECK: new | contacted | qualified | consultation_scheduled | retained | lost | nurturing
+   168→   168→   168→  status             String   @default("new")
+   169→   169→   169→  /// CHECK: civil | criminal | family | corporate | property | labour | immigration | intellectual_property | tax | personal_injury | debt_recovery | other
+   170→   170→   170→  case_type          String?
+   171→   171→   171→  description        String?
+   172→   172→   172→  estimated_value    Float?
+   173→   173→   173→  lead_score         Int?
+   174→   174→   174→  assigned_to        String?
+   175→   175→   175→  converted_client_id String?
+   176→   176→   176→  converted_case_id  String?
+   177→   177→   177→  notes              String?
+   178→   178→   178→  tags               String[]
+   179→   179→   179→  utm_source         String?
+   180→   180→   180→  utm_medium         String?
+   181→   181→   181→  utm_campaign       String?
+   182→   182→   182→  last_contacted_at  DateTime?
+   183→   183→   183→  next_follow_up     DateTime?
+   184→   184→   184→  metadata           Json?
+   185→   185→   185→  created_at         DateTime @default(now())
+   186→   186→   186→  updated_at         DateTime @updatedAt
+   187→   187→   187→
+   188→   188→   188→  assigned_to_profile    Profile?                @relation("LeadAssignedTo", fields: [assigned_to], references: [id])
+   189→   189→   189→  converted_client       Profile?                @relation("LeadConvertedClient", fields: [converted_client_id], references: [id])
+   190→   190→   190→  converted_case         Case?                   @relation(fields: [converted_case_id], references: [id])
+   191→   191→   191→  intake_submissions     IntakeSubmission[]
+   192→   192→   192→  pipeline_transitions   LeadPipelineTransition[]
+   193→   193→   193→  communications        LeadCommunication[]
+   194→   194→   194→  form_submissions      LeadFormSubmission[]
+   195→   195→   195→  crm_contact_messages  CrmContactMessage[]
+   196→   196→   196→
+   197→   197→   197→  @@index([status])
+   198→   198→   198→  @@index([source])
+   199→   199→   199→  @@index([email])
+   200→   200→   200→  @@index([assigned_to])
+   201→   201→   201→  @@index([created_at])
+   202→   202→   202→}
+   203→   203→   203→
+   204→   204→   204→// ============================================
+   205→   205→   205→// INTAKE SUBMISSIONS
+   206→   206→   206→// ============================================
+   207→   207→   207→
+   208→   208→   208→model IntakeSubmission {
+   209→   209→   209→  id                String   @id @default(uuid())
+   210→   210→   210→  client_id         String?
+   211→   211→   211→  case_id           String?
+   212→   212→   212→  lead_id           String?
+   213→   213→   213→  /// CHECK: draft | submitted | under_review | approved | rejected | additional_info_needed
+   214→   214→   214→  status            String   @default("draft")
+   215→   215→   215→  case_type         String?
+   216→   216→   216→  case_description  String?
+   217→   217→   217→  opposing_party    String?
+   218→   218→   218→  estimated_value   Float?
+   219→   219→   219→  urgency           String?
+   220→   220→   220→  timeline          String?
+   221→   221→   221→  desired_outcome   String?
+   222→   222→   222→  previous_legal_help String?
+   223→   223→   223→  documents_ready   Boolean?
+   224→   224→   224→  personal_info     Json?
+   225→   225→   225→  case_details      Json?
+   226→   226→   226→  financial_info    Json?
+   227→   227→   227→  ai_extracted_data Json?
+   228→   228→   228→  ai_confidence     Float?
+   229→   229→   229→  review_notes      String?
+   230→   230→   230→  reviewed_by       String?
+   231→   231→   231→  reviewed_at       DateTime?
+   232→   232→   232→  submitted_at      DateTime?
+   233→   233→   233→  created_at        DateTime @default(now())
+   234→   234→   234→  updated_at        DateTime @updatedAt
+   235→   235→   235→
+   236→   236→   236→  client              Profile?          @relation("IntakeClient", fields: [client_id], references: [id])
+   237→   237→   237→  case                Case?             @relation(fields: [case_id], references: [id])
+   238→   238→   238→  lead                Lead?             @relation(fields: [lead_id], references: [id])
+   239→   239→   239→  reviewer            Profile?          @relation("IntakeReviewer", fields: [reviewed_by], references: [id])
+   240→   240→   240→  ai_sessions         AiIntakeSession[]
+   241→   241→   241→  ai_analyses         AiAnalysis[]
+   242→   242→   242→
+   243→   243→   243→  @@index([status])
+   244→   244→   244→  @@index([client_id])
+   245→   245→   245→  @@index([case_id])
+   246→   246→   246→  @@index([lead_id])
+   247→   247→   247→  @@index([created_at])
+   248→   248→   248→}
+   249→   249→   249→
+   250→   250→   250→// ============================================
+   251→   251→   251→// AI INTAKE SESSIONS
+   252→   252→   252→// ============================================
+   253→   253→   253→
+   254→   254→   254→model AiIntakeSession {
+   255→   255→   255→  id                   String   @id @default(uuid())
+   256→   256→   256→  client_id            String?
+   257→   257→   257→  intake_submission_id String?
+   258→   258→   258→  session_token        String?  @unique
+   259→   259→   259→  /// CHECK: draft | submitted | under_review | approved | rejected | additional_info_needed
+   260→   260→   260→  status               String   @default("draft")
+   261→   261→   261→  conversation_history Json?
+   262→   262→   262→  extracted_entities   Json?
+   263→   263→   263→  current_step         String?
+   264→   264→   264→  steps_completed      String[]
+   265→   265→   265→  steps_remaining      String[]
+   266→   266→   266→  ai_model_used        String?
+   267→   267→   267→  total_tokens         Int?
+   268→   268→   268→  completed_at         DateTime?
+   269→   269→   269→  created_at           DateTime @default(now())
+   270→   270→   270→  updated_at           DateTime @updatedAt
+   271→   271→   271→
+   272→   272→   272→  client            Profile?          @relation(fields: [client_id], references: [id])
+   273→   273→   273→  intake_submission IntakeSubmission? @relation(fields: [intake_submission_id], references: [id])
+   274→   274→   274→
+   275→   275→   275→  @@index([session_token])
+   276→   276→   276→  @@index([client_id])
+   277→   277→   277→  @@index([intake_submission_id])
+   278→   278→   278→  @@index([status])
+   279→   279→   279→}
+   280→   280→   280→
+   281→   281→   281→// ============================================
+   282→   282→   282→// AI ANALYSES
+   283→   283→   283→// ============================================
+   284→   284→   284→
+   285→   285→   285→model AiAnalysis {
+   286→   286→   286→  id                 String   @id @default(uuid())
+   287→   287→   287→  case_id            String?
+   288→   288→   288→  intake_id          String?
+   289→   289→   289→  /// CHECK: merit_assessment | risk_analysis | cost_estimate | timeline_prediction | document_review | legal_research | strategy_recommendation
+   290→   290→   290→  analysis_type      String
+   291→   291→   291→  /// CHECK: pending | processing | completed | failed
+   292→   292→   292→  status             String   @default("pending")
+   293→   293→   293→  input_data         Json?
+   294→   294→   294→  result             Json?
+   295→   295→   295→  summary            String?
+   296→   296→   296→  recommendations    Json?
+   297→   297→   297→  risk_flags         Json?
+   298→   298→   298→  confidence_score   Float?
+   299→   299→   299→  ai_model_used      String?
+   300→   300→   300→  tokens_used        Int?
+   301→   301→   301→  processing_time_ms Int?
+   302→   302→   302→  error_message      String?
+   303→   303→   303→  requested_by       String?
+   304→   304→   304→  completed_at       DateTime?
+   305→   305→   305→  created_at         DateTime @default(now())
+   306→   306→   306→  updated_at         DateTime @updatedAt
+   307→   307→   307→
+   308→   308→   308→  case          Case?             @relation(fields: [case_id], references: [id])
+   309→   309→   309→  intake        IntakeSubmission? @relation(fields: [intake_id], references: [id])
+   310→   310→   310→  requester     Profile?          @relation(fields: [requested_by], references: [id])
+   311→   311→   311→  queue_entries AiAnalysisQueue[]
+   312→   312→   312→
+   313→   313→   313→  @@index([case_id])
+   314→   314→   314→  @@index([intake_id])
+   315→   315→   315→  @@index([analysis_type])
+   316→   316→   316→  @@index([status])
+   317→   317→   317→  @@index([requested_by])
+   318→   318→   318→  @@index([created_at])
+   319→   319→   319→}
+   320→   320→   320→
+   321→   321→   321→// ============================================
+   322→   322→   322→// AI ANALYSIS QUEUE
+   323→   323→   323→// ============================================
+   324→   324→   324→
+   325→   325→   325→model AiAnalysisQueue {
+   326→   326→   326→  id           String    @id @default(uuid())
+   327→   327→   327→  analysis_id  String
+   328→   328→   328→  /// CHECK: low | medium | high | urgent
+   329→   329→   329→  priority     String    @default("medium")
+   330→   330→   330→  retry_count  Int       @default(0)
+   331→   331→   331→  max_retries  Int       @default(3)
+   332→   332→   332→  scheduled_at DateTime?
+   333→   333→   333→  started_at   DateTime?
+   334→   334→   334→  completed_at DateTime?
+   335→   335→   335→  error_message String?
+   336→   336→   336→  created_at   DateTime  @default(now())
+   337→   337→   337→
+   338→   338→   338→  analysis AiAnalysis @relation(fields: [analysis_id], references: [id])
+   339→   339→   339→
+   340→   340→   340→  @@index([analysis_id])
+   341→   341→   341→  @@index([priority])
+   342→   342→   342→  @@index([scheduled_at])
+   343→   343→   343→}
+   344→   344→   344→
+   345→   345→   345→// ============================================
+   346→   346→   346→// DOCUMENTS
+   347→   347→   347→// ============================================
+   348→   348→   348→
+   349→   349→   349→model Document {
+   350→   350→   350→  id                  String   @id @default(uuid())
+   351→   351→   351→  case_id             String?
+   352→   352→   352→  uploaded_by         String?
+   353→   353→   353→  /// CHECK: id_document | contract | court_filing | correspondence | evidence | financial | medical | police_report | affidavit | other
+   354→   354→   354→  document_type       String
+   355→   355→   355→  /// CHECK: uploading | uploaded | reviewing | approved | rejected | archived
+   356→   356→   356→  status              String   @default("uploading")
+   357→   357→   357→  file_name           String
+   358→   358→   358→  file_path           String
+   359→   359→   359→  file_size           BigInt?
+   360→   360→   360→  mime_type           String?
+   361→   361→   361→  description         String?
+   362→   362→   362→  tags                String[]
+   363→   363→   363→  version             Int      @default(1)
+   364→   364→   364→  parent_document_id  String?
+   365→   365→   365→  ai_extracted_text   String?
+   366→   366→   366→  ai_summary          String?
+   367→   367→   367→  is_confidential     Boolean  @default(false)
+   368→   368→   368→  metadata            Json?
+   369→   369→   369→  created_at          DateTime @default(now())
+   370→   370→   370→  updated_at          DateTime @updatedAt
+   371→   371→   371→
+   372→   372→   372→  case            Case?     @relation(fields: [case_id], references: [id])
+   373→   373→   373→  uploader       Profile?  @relation(fields: [uploaded_by], references: [id])
+   374→   374→   374→  parent_document Document? @relation("DocumentHierarchy", fields: [parent_document_id], references: [id])
+   375→   375→   375→  child_documents Document[] @relation("DocumentHierarchy")
+   376→   376→   376→
+   377→   377→   377→  @@index([case_id])
+   378→   378→   378→  @@index([document_type])
+   379→   379→   379→  @@index([status])
+   380→   380→   380→  @@index([uploaded_by])
+   381→   381→   381→  @@index([parent_document_id])
+   382→   382→   382→  @@index([created_at])
+   383→   383→   383→}
+   384→   384→   384→
+   385→   385→   385→// ============================================
+   386→   386→   386→// TASKS
+   387→   387→   387→// ============================================
+   388→   388→   388→
+   389→   389→   389→model Task {
+   390→   390→   390→  id           String   @id @default(uuid())
+   391→   391→   391→  case_id      String?
+   392→   392→   392→  assigned_to  String
+   393→   393→   393→  created_by   String
+   394→   394→   394→  title        String
+   395→   395→   395→  description  String?
+   396→   396→   396→  /// CHECK: pending | in_progress | completed | cancelled
+   397→   397→   397→  status       String   @default("pending")
+   398→   398→   398→  /// CHECK: low | medium | high | urgent
+   399→   399→   399→  priority     String   @default("medium")
+   400→   400→   400→  due_date     DateTime?
+   401→   401→   401→  completed_at DateTime?
+   402→   402→   402→  metadata     Json?
+   403→   403→   403→  created_at   DateTime @default(now())
+   404→   404→   404→  updated_at   DateTime @updatedAt
+   405→   405→   405→
+   406→   406→   406→  case      Case?    @relation(fields: [case_id], references: [id])
+   407→   407→   407→  assignee  Profile  @relation("TaskAssignedTo", fields: [assigned_to], references: [id])
+   408→   408→   408→  creator   Profile @relation("TaskCreatedBy", fields: [created_by], references: [id])
+   409→   409→   409→
+   410→   410→   410→  @@index([status])
+   411→   411→   411→  @@index([assigned_to])
+   412→   412→   412→  @@index([case_id])
+   413→   413→   413→  @@index([due_date])
+   414→   414→   414→  @@index([priority])
+   415→   415→   415→  @@index([created_at])
+   416→   416→   416→}
+   417→   417→   417→
+   418→   418→   418→// ============================================
+   419→   419→   419→// MESSAGES
+   420→   420→   420→// ============================================
+   421→   421→   421→
+   422→   422→   422→model Message {
+   423→   423→   423→  id                String   @id @default(uuid())
+   424→   424→   424→  case_id           String?
+   425→   425→   425→  sender_id         String
+   426→   426→   426→  recipient_id      String?
+   427→   427→   427→  /// CHECK: system | direct | group | notification
+   428→   428→   428→  message_type      String   @default("direct")
+   429→   429→   429→  subject           String?
+   430→   430→   430→  content           String
+   431→   431→   431→  is_read           Boolean  @default(false)
+   432→   432→   432→  parent_message_id String?
+   433→   433→   433→  metadata          Json?
+   434→   434→   434→  created_at        DateTime @default(now())
+   435→   435→   435→
+   436→   436→   436→  case           Case?    @relation(fields: [case_id], references: [id])
+   437→   437→   437→  sender         Profile  @relation("MessageSender", fields: [sender_id], references: [id])
+   438→   438→   438→  recipient      Profile? @relation("MessageRecipient", fields: [recipient_id], references: [id])
+   439→   439→   439→  parent_message Message? @relation("MessageThread", fields: [parent_message_id], references: [id])
+   440→   440→   440→  replies        Message[] @relation("MessageThread")
+   441→   441→   441→
+   442→   442→   442→  @@index([case_id])
+   443→   443→   443→  @@index([sender_id])
+   444→   444→   444→  @@index([recipient_id])
+   445→   445→   445→  @@index([is_read])
+   446→   446→   446→  @@index([created_at])
+   447→   447→   447→}
+   448→   448→   448→
+   449→   449→   449→// ============================================
+   450→   450→   450→// CASE TIMELINE
+   451→   451→   451→// ============================================
+   452→   452→   452→
+   453→   453→   453→model CaseTimeline {
+   454→   454→   454→  id               String   @id @default(uuid())
+   455→   455→   455→  case_id          String
+   456→   456→   456→  event_type       String
+   457→   457→   457→  event_description String
+   458→   458→   458→  performed_by     String?
+   459→   459→   459→  metadata         Json?
+   460→   460→   460→  is_system_event  Boolean  @default(false)
+   461→   461→   461→  created_at       DateTime @default(now())
+   462→   462→   462→
+   463→   463→   463→  case        Case     @relation(fields: [case_id], references: [id])
+   464→   464→   464→  performer   Profile? @relation(fields: [performed_by], references: [id])
+   465→   465→   465→
+   466→   466→   466→  @@index([case_id])
+   467→   467→   467→  @@index([event_type])
+   468→   468→   468→  @@index([created_at])
+   469→   469→   469→}
+   470→   470→   470→
+   471→   471→   471→// ============================================
+   472→   472→   472→// PRIVILEGED NOTES
+   473→   473→   473→// ============================================
+   474→   474→   474→
+   475→   475→   475→model PrivilegedNote {
+   476→   476→   476→  id            String   @id @default(uuid())
+   477→   477→   477→  case_id       String
+   478→   478→   478→  author_id     String
+   479→   479→   479→  content       String
+   480→   480→   480→  is_privileged Boolean  @default(true)
+   481→   481→   481→  created_at    DateTime @default(now())
+   482→   482→   482→  updated_at    DateTime @updatedAt
+   483→   483→   483→
+   484→   484→   484→  case   Case    @relation(fields: [case_id], references: [id])
+   485→   485→   485→  author Profile @relation(fields: [author_id], references: [id])
+   486→   486→   486→
+   487→   487→   487→  @@index([case_id])
+   488→   488→   488→  @@index([author_id])
+   489→   489→   489→}
+   490→   490→   490→
+   491→   491→   491→// ============================================
+   492→   492→   492→// CONSULTATIONS
+   493→   493→   493→// ============================================
+   494→   494→   494→
+   495→   495→   495→model Consultation {
+   496→   496→   496→  id                 String   @id @default(uuid())
+   497→   497→   497→  case_id            String?
+   498→   498→   498→  client_id          String
+   499→   499→   499→  attorney_id        String
+   500→   500→   500→  /// CHECK: scheduled | confirmed | in_progress | completed | cancelled | no_show
+   501→   501→   501→  status             String   @default("scheduled")
+   502→   502→   502→  scheduled_at       DateTime
+   503→   503→   503→  duration_minutes   Int      @default(60)
+   504→   504→   504→  meeting_type       String?
+   505→   505→   505→  meeting_link       String?
+   506→   506→   506→  location           String?
+   507→   507→   507→  notes              String?
+   508→   508→   508→  follow_up_required Boolean  @default(false)
+   509→   509→   509→  fee                Float?
+   510→   510→   510→  created_at         DateTime @default(now())
+   511→   511→   511→  updated_at         DateTime @updatedAt
+   512→   512→   512→
+   513→   513→   513→  case     Case?    @relation(fields: [case_id], references: [id])
+   514→   514→   514→  client   Profile  @relation(fields: [client_id], references: [id])
+   515→   515→   515→  attorney Attorney @relation(fields: [attorney_id], references: [id])
+   516→   516→   516→
+   517→   517→   517→  @@index([case_id])
+   518→   518→   518→  @@index([client_id])
+   519→   519→   519→  @@index([attorney_id])
+   520→   520→   520→  @@index([scheduled_at])
+   521→   521→   521→  @@index([status])
+   522→   522→   522→}
+   523→   523→   523→
+   524→   524→   524→// ============================================
+   525→   525→   525→// CONSENT LOGS
+   526→   526→   526→// ============================================
+   527→   527→   527→
+   528→   528→   528→model ConsentLog {
+   529→   529→   529→  id           String   @id @default(uuid())
+   530→   530→   530→  user_id      String?
+   531→   531→   531→  /// CHECK: terms_of_service | privacy_policy | popi_act | marketing | data_processing
+   532→   532→   532→  consent_type String
+   533→   533→   533→  granted      Boolean
+   534→   534→   534→  ip_address   String?
+   535→   535→   535→  user_agent   String?
+   536→   536→   536→  version      String?
+   537→   537→   537→  created_at   DateTime @default(now())
+   538→   538→   538→
+   539→   539→   539→  user Profile? @relation(fields: [user_id], references: [id])
+   540→   540→   540→
+   541→   541→   541→  @@index([user_id])
+   542→   542→   542→  @@index([consent_type])
+   543→   543→   543→  @@index([created_at])
+   544→   544→   544→}
+   545→   545→   545→
+   546→   546→   546→// ============================================
+   547→   547→   547→// NOTIFICATIONS
+   548→   548→   548→// ============================================
+   549→   549→   549→
+   550→   550→   550→model Notification {
+   551→   551→   551→  id         String   @id @default(uuid())
+   552→   552→   552→  user_id    String
+   553→   553→   553→  title      String
+   554→   554→   554→  message    String
+   555→   555→   555→  /// Default: info
+   556→   556→   556→  type       String   @default("info")
+   557→   557→   557→  link       String?
+   558→   558→   558→  is_read    Boolean  @default(false)
+   559→   559→   559→  metadata   Json?
+   560→   560→   560→  created_at DateTime @default(now())
+   561→   561→   561→
+   562→   562→   562→  user Profile @relation(fields: [user_id], references: [id])
+   563→   563→   563→
+   564→   564→   564→  @@index([user_id])
+   565→   565→   565→  @@index([is_read])
+   566→   566→   566→  @@index([type])
+   567→   567→   567→  @@index([created_at])
+   568→   568→   568→}
+   569→   569→   569→
+   570→   570→   570→// ============================================
+   571→   571→   571→// PRICING PLANS
+   572→   572→   572→// ============================================
+   573→   573→   573→
+   574→   574→   574→model PricingPlan {
+   575→   575→   575→  id            String   @id @default(uuid())
+   576→   576→   576→  name          String
+   577→   577→   577→  slug          String   @unique
+   578→   578→   578→  description   String?
+   579→   579→   579→  price_monthly Float
+   580→   580→   580→  price_annual  Float?
+   581→   581→   581→  currency      String   @default("ZAR")
+   582→   582→   582→  features      Json?
+   583→   583→   583→  is_popular    Boolean  @default(false)
+   584→   584→   584→  is_active     Boolean  @default(true)
+   585→   585→   585→  sort_order    Int      @default(0)
+   586→   586→   586→  created_at    DateTime @default(now())
+   587→   587→   587→  updated_at    DateTime @updatedAt
+   588→   588→   588→
+   589→   589→   589→  subscriptions UserSubscription[]
+   590→   590→   590→
+   591→   591→   591→  @@index([slug])
+   592→   592→   592→  @@index([is_active])
+   593→   593→   593→}
+   594→   594→   594→
+   595→   595→   595→// ============================================
+   596→   596→   596→// USER SUBSCRIPTIONS
+   597→   597→   597→// ============================================
+   598→   598→   598→
+   599→   599→   599→model UserSubscription {
+   600→   600→   600→  id                    String   @id @default(uuid())
+   601→   601→   601→  user_id               String
+   602→   602→   602→  plan_id               String
+   603→   603→   603→  /// CHECK: active | past_due | cancelled | expired | trial
+   604→   604→   604→  status                String   @default("active")
+   605→   605→   605→  current_period_start  DateTime?
+   606→   606→   606→  current_period_end    DateTime?
+   607→   607→   607→  cancel_at_period_end  Boolean  @default(false)
+   608→   608→   608→  trial_ends_at         DateTime?
+   609→   609→   609→  payfast_token         String?
+   610→   610→   610→  created_at            DateTime @default(now())
+   611→   611→   611→  updated_at            DateTime @updatedAt
+   612→   612→   612→
+   613→   613→   613→  user             Profile            @relation(fields: [user_id], references: [id])
+   614→   614→   614→  plan             PricingPlan        @relation(fields: [plan_id], references: [id])
+   615→   615→   615→  payment_records  PaymentRecord[]
+   616→   616→   616→  subscription_events CrmSubscriptionEvent[]
+   617→   617→   617→
+   618→   618→   618→  @@index([user_id])
+   619→   619→   619→  @@index([plan_id])
+   620→   620→   620→  @@index([status])
+   621→   621→   621→}
+   622→   622→   622→
+   623→   623→   623→// ============================================
+   624→   624→   624→// PAYMENT RECORDS
+   625→   625→   625→// ============================================
+   626→   626→   626→
+   627→   627→   627→model PaymentRecord {
+   628→   628→   628→  id                  String   @id @default(uuid())
+   629→   629→   629→  subscription_id     String?
+   630→   630→   630→  case_id             String?
+   631→   631→   631→  user_id             String
+   632→   632→   632→  amount              Float
+   633→   633→   633→  currency            String?
+   634→   634→   634→  /// CHECK: pending | completed | failed | refunded | partially_refunded
+   635→   635→   635→  status              String   @default("pending")
+   636→   636→   636→  payfast_payment_id  String?
+   637→   637→   637→  payfast_token       String?
+   638→   638→   638→  payment_method      String?
+   639→   639→   639→  description         String?
+   640→   640→   640→  metadata            Json?
+   641→   641→   641→  paid_at             DateTime?
+   642→   642→   642→  created_at          DateTime @default(now())
+   643→   643→   643→
+   644→   644→   644→  subscription UserSubscription? @relation(fields: [subscription_id], references: [id])
+   645→   645→   645→  case         Case?             @relation(fields: [case_id], references: [id])
+   646→   646→   646→  user         Profile           @relation(fields: [user_id], references: [id])
+   647→   647→   647→
+   648→   648→   648→  @@index([subscription_id])
+   649→   649→   649→  @@index([case_id])
+   650→   650→   650→  @@index([user_id])
+   651→   651→   651→  @@index([status])
+   652→   652→   652→  @@index([created_at])
+   653→   653→   653→}
+   654→   654→   654→
+   655→   655→   655→// ============================================
+   656→   656→   656→// AUDIT LOGS
+   657→   657→   657→// ============================================
+   658→   658→   658→
+   659→   659→   659→model AuditLog {
+   660→   660→   660→  id            String   @id @default(uuid())
+   661→   661→   661→  user_id       String?
+   662→   662→   662→  action        String
+   663→   663→   663→  resource_type String
+   664→   664→   664→  resource_id   String?
+   665→   665→   665→  details       Json?
+   666→   666→   666→  ip_address    String?
+   667→   667→   667→  user_agent    String?
+   668→   668→   668→  created_at    DateTime @default(now())
+   669→   669→   669→
+   670→   670→   670→  user Profile? @relation(fields: [user_id], references: [id])
+   671→   671→   671→
+   672→   672→   672→  @@index([user_id])
+   673→   673→   673→  @@index([action])
+   674→   674→   674→  @@index([resource_type, resource_id])
+   675→   675→   675→  @@index([created_at])
+   676→   676→   676→}
+   677→   677→   677→
+   678→   678→   678→// ============================================
+   679→   679→   679→// API ANALYTICS
+   680→   680→   680→// ============================================
+   681→   681→   681→
+   682→   682→   682→model ApiAnalytic {
+   683→   683→   683→  id               String   @id @default(uuid())
+   684→   684→   684→  endpoint         String
+   685→   685→   685→  method           String
+   686→   686→   686→  status_code      Int
+   687→   687→   687→  response_time_ms Int?
+   688→   688→   688→  user_id          String?
+   689→   689→   689→  ip_address       String?
+   690→   690→   690→  user_agent       String?
+   691→   691→   691→  created_at       DateTime @default(now())
+   692→   692→   692→
+   693→   693→   693→  user Profile? @relation(fields: [user_id], references: [id])
+   694→   694→   694→
+   695→   695→   695→  @@index([endpoint])
+   696→   696→   696→  @@index([status_code])
+   697→   697→   697→  @@index([user_id])
+   698→   698→   698→  @@index([created_at])
+   699→   699→   699→}
+   700→   700→   700→
+   701→   701→   701→// ============================================
+   702→   702→   702→// ERROR LOGS
+   703→   703→   703→// ============================================
+   704→   704→   704→
+   705→   705→   705→model ErrorLog {
+   706→   706→   706→  id           String   @id @default(uuid())
+   707→   707→   707→  error_type   String
+   708→   708→   708→  message      String
+   709→   709→   709→  stack_trace  String?
+   710→   710→   710→  user_id      String?
+   711→   711→   711→  request_path String?
+   712→   712→   712→  metadata     Json?
+   713→   713→   713→  resolved     Boolean  @default(false)
+   714→   714→   714→  created_at   DateTime @default(now())
+   715→   715→   715→
+   716→   716→   716→  user Profile? @relation(fields: [user_id], references: [id])
+   717→   717→   717→
+   718→   718→   718→  @@index([error_type])
+   719→   719→   719→  @@index([resolved])
+   720→   720→   720→  @@index([user_id])
+   721→   721→   721→  @@index([created_at])
+   722→   722→   722→}
+   723→   723→   723→
+   724→   724→   724→// ============================================
+   725→   725→   725→// RATE LIMIT LOGS
+   726→   726→   726→// ============================================
+   727→   727→   727→
+   728→   728→   728→model RateLimitLog {
+   729→   729→   729→  id            String   @id @default(uuid())
+   730→   730→   730→  identifier    String
+   731→   731→   731→  endpoint      String
+   732→   732→   732→  request_count Int
+   733→   733→   733→  blocked       Boolean  @default(false)
+   734→   734→   734→  created_at    DateTime @default(now())
+   735→   735→   735→
+   736→   736→   736→  @@index([identifier])
+   737→   737→   737→  @@index([endpoint])
+   738→   738→   738→  @@index([created_at])
+   739→   739→   739→}
+   740→   740→   740→
+   741→   741→   741→// ============================================
+   742→   742→   742→// BACKUP RECORDS
+   743→   743→   743→// ============================================
+   744→   744→   744→
+   745→   745→   745→model BackupRecord {
+   746→   746→   746→  id              String   @id @default(uuid())
+   747→   747→   747→  backup_type     String
+   748→   748→   748→  status          String
+   749→   749→   749→  file_path       String?
+   750→   750→   750→  file_size_bytes BigInt?
+   751→   751→   751→  started_at      DateTime @default(now())
+   752→   752→   752→  completed_at    DateTime?
+   753→   753→   753→  error_message   String?
+   754→   754→   754→  metadata        Json?
+   755→   755→   755→  created_at      DateTime @default(now())
+   756→   756→   756→
+   757→   757→   757→  @@index([status])
+   758→   758→   758→  @@index([backup_type])
+   759→   759→   759→  @@index([started_at])
+   760→   760→   760→}
+   761→   761→   761→
+   762→   762→   762→// ============================================
+   763→   763→   763→// WORKBENCH CONFIGS
+   764→   764→   764→// ============================================
+   765→   765→   765→
+   766→   766→   766→model WorkbenchConfig {
+   767→   767→   767→  id               String   @id @default(uuid())
+   768→   768→   768→  user_id          String   @unique
+   769→   769→   769→  /// CHECK: grid | list | compact
+   770→   770→   770→  layout           String   @default("grid")
+   771→   771→   771→  widgets          Json?
+   772→   772→   772→  sidebar_collapsed Boolean  @default(false)
+   773→   773→   773→  theme            String?
+   774→   774→   774→  created_at       DateTime @default(now())
+   775→   775→   775→  updated_at       DateTime @updatedAt
+   776→   776→   776→
+   777→   777→   777→  user Profile @relation(fields: [user_id], references: [id])
+   778→   778→   778→
+   779→   779→   779→  @@index([user_id])
+   780→   780→   780→}
+   781→   781→   781→
+   782→   782→   782→// ============================================
+   783→   783→   783→// WORKBENCH WIDGETS
+   784→   784→   784→// ============================================
+   785→   785→   785→
+   786→   786→   786→model WorkbenchWidget {
+   787→   787→   787→  id          String   @id @default(uuid())
+   788→   788→   788→  user_id     String
+   789→   789→   789→  /// CHECK: case_summary | task_list | upcoming_deadlines | recent_documents | billing_overview | lead_pipeline | ai_insights | quick_actions | notifications | calendar
+   790→   790→   790→  widget_type String
+   791→   791→   791→  title       String
+   792→   792→   792→  position_x  Int      @default(0)
+   793→   793→   793→  position_y  Int      @default(0)
+   794→   794→   794→  width       Int      @default(1)
+   795→   795→   795→  height      Int      @default(1)
+   796→   796→   796→  is_visible  Boolean  @default(true)
+   797→   797→   797→  config      Json?
+   798→   798→   798→  sort_order  Int      @default(0)
+   799→   799→   799→  created_at  DateTime @default(now())
+   800→   800→   800→  updated_at  DateTime @updatedAt
+   801→   801→   801→
+   802→   802→   802→  user Profile @relation(fields: [user_id], references: [id])
+   803→   803→   803→
+   804→   804→   804→  @@index([user_id])
+   805→   805→   805→  @@index([widget_type])
+   806→   806→   806→}
+   807→   807→   807→
+   808→   808→   808→// ============================================
+   809→   809→   809→// WORKBENCH QUICK ACTIONS
+   810→   810→   810→// ============================================
+   811→   811→   811→
+   812→   812→   812→model WorkbenchQuickAction {
+   813→   813→   813→  id         String   @id @default(uuid())
+   814→   814→   814→  user_id    String
+   815→   815→   815→  action_type String
+   816→   816→   816→  label      String
+   817→   817→   817→  icon       String?
+   818→   818→   818→  target_url String?
+   819→   819→   819→  config     Json?
+   820→   820→   820→  sort_order Int      @default(0)
+   821→   821→   821→  created_at DateTime @default(now())
+   822→   822→   822→
+   823→   823→   823→  user Profile @relation(fields: [user_id], references: [id])
+   824→   824→   824→
+   825→   825→   825→  @@index([user_id])
+   826→   826→   826→}
+   827→   827→   827→
+   828→   828→   828→// ============================================
+   829→   829→   829→// WORKBENCH PINNED ITEMS
+   830→   830→   830→// ============================================
+   831→   831→   831→
+   832→   832→   832→model WorkbenchPinnedItem {
+   833→   833→   833→  id         String   @id @default(uuid())
+   834→   834→   834→  user_id    String
+   835→   835→   835→  item_type  String
+   836→   836→   836→  item_id    String
+   837→   837→   837→  label      String
+   838→   838→   838→  metadata   Json?
+   839→   839→   839→  sort_order Int      @default(0)
+   840→   840→   840→  created_at DateTime @default(now())
+   841→   841→   841→
+   842→   842→   842→  user Profile @relation(fields: [user_id], references: [id])
+   843→   843→   843→
+   844→   844→   844→  @@index([user_id])
+   845→   845→   845→  @@index([item_type])
+   846→   846→   846→}
+   847→   847→   847→
+   848→   848→   848→// ============================================
+   849→   849→   849→// WORKBENCH RECENT ACTIVITY
+   850→   850→   850→// ============================================
+   851→   851→   851→
+   852→   852→   852→model WorkbenchRecentActivity {
+   853→   853→   853→  id            String   @id @default(uuid())
+   854→   854→   854→  user_id       String
+   855→   855→   855→  activity_type String
+   856→   856→   856→  resource_type String?
+   857→   857→   857→  resource_id   String?
+   858→   858→   858→  description   String?
+   859→   859→   859→  metadata      Json?
+   860→   860→   860→  created_at    DateTime @default(now())
+   861→   861→   861→
+   862→   862→   862→  user Profile @relation(fields: [user_id], references: [id])
+   863→   863→   863→
+   864→   864→   864→  @@index([user_id])
+   865→   865→   865→  @@index([activity_type])
+   866→   866→   866→  @@index([created_at])
+   867→   867→   867→}
+   868→   868→   868→
+   869→   869→   869→// ============================================
+   870→   870→   870→// LEAD PIPELINE STAGES
+   871→   871→   871→// ============================================
+   872→   872→   872→
+   873→   873→   873→model LeadPipelineStage {
+   874→   874→   874→  id             String   @id @default(uuid())
+   875→   875→   875→  name           String
+   876→   876→   876→  slug           String   @unique
+   877→   877→   877→  description    String?
+   878→   878→   878→  sort_order     Int      @default(0)
+   879→   879→   879→  color          String?
+   880→   880→   880→  is_default     Boolean  @default(false)
+   881→   881→   881→  auto_assign_to String?
+   882→   882→   882→  created_at     DateTime @default(now())
+   883→   883→   883→
+   884→   884→   884→  auto_assignee Profile? @relation(fields: [auto_assign_to], references: [id])
+   885→   885→   885→
+   886→   886→   886→  @@index([slug])
+   887→   887→   887→  @@index([sort_order])
+   888→   888→   888→}
+   889→   889→   889→
+   890→   890→   890→// ============================================
+   891→   891→   891→// LEAD PIPELINE TRANSITIONS
+   892→   892→   892→// ============================================
+   893→   893→   893→
+   894→   894→   894→model LeadPipelineTransition {
+   895→   895→   895→  id         String   @id @default(uuid())
+   896→   896→   896→  lead_id    String
+   897→   897→   897→  from_stage String?
+   898→   898→   898→  to_stage   String
+   899→   899→   899→  changed_by String?
+   900→   900→   900→  reason     String?
+   901→   901→   901→  created_at DateTime @default(now())
+   902→   902→   902→
+   903→   903→   903→  lead       Lead     @relation(fields: [lead_id], references: [id])
+   904→   904→   904→  changer    Profile? @relation(fields: [changed_by], references: [id])
+   905→   905→   905→
+   906→   906→   906→  @@index([lead_id])
+   907→   907→   907→  @@index([created_at])
+   908→   908→   908→}
+   909→   909→   909→
+   910→   910→   910→// ============================================
+   911→   911→   911→// LEAD COMMUNICATIONS
+   912→   912→   912→// ============================================
+   913→   913→   913→
+   914→   914→   914→model LeadCommunication {
+   915→   915→   915→  id             String    @id @default(uuid())
+   916→   916→   916→  lead_id        String
+   917→   917→   917→  /// Default: note
+   918→   918→   918→  type           String    @default("note")
+   919→   919→   919→  /// Default: outbound
+   920→   920→   920→  direction      String    @default("outbound")
+   921→   921→   921→  subject        String?
+   922→   922→   922→  content        String
+   923→   923→   923→  contacted_by   String?
+   924→   924→   924→  follow_up_date DateTime?
+   925→   925→   925→  metadata       Json?
+   926→   926→   926→  created_at     DateTime  @default(now())
+   927→   927→   927→
+   928→   928→   928→  lead         Lead     @relation(fields: [lead_id], references: [id])
+   929→   929→   929→  contactor    Profile? @relation(fields: [contacted_by], references: [id])
+   930→   930→   930→
+   931→   931→   931→  @@index([lead_id])
+   932→   932→   932→  @@index([created_at])
+   933→   933→   933→}
+   934→   934→   934→
+   935→   935→   935→// ============================================
+   936→   936→   936→// LEAD AUTOMATION RULES
+   937→   937→   937→// ============================================
+   938→   938→   938→
+   939→   939→   939→model LeadAutomationRule {
+   940→   940→   940→  id               String   @id @default(uuid())
+   941→   941→   941→  name             String
+   942→   942→   942→  description      String?
+   943→   943→   943→  trigger_event    String
+   944→   944→   944→  conditions       Json?
+   945→   945→   945→  actions          Json?
+   946→   946→   946→  is_active        Boolean  @default(true)
+   947→   947→   947→  created_by       String?
+   948→   948→   948→  last_triggered_at DateTime?
+   949→   949→   949→  created_at       DateTime @default(now())
+   950→   950→   950→  updated_at       DateTime @updatedAt
+   951→   951→   951→
+   952→   952→   952→  creator Profile? @relation(fields: [created_by], references: [id])
+   953→   953→   953→
+   954→   954→   954→  @@index([trigger_event])
+   955→   955→   955→  @@index([is_active])
+   956→   956→   956→}
+   957→   957→   957→
+   958→   958→   958→// ============================================
+   959→   959→   959→// LEAD FORM SUBMISSIONS
+   960→   960→   960→// ============================================
+   961→   961→   961→
+   962→   962→   962→model LeadFormSubmission {
+   963→   963→   963→  id           String   @id @default(uuid())
+   964→   964→   964→  form_slug    String
+   965→   965→   965→  lead_id      String?
+   966→   966→   966→  form_data    Json?
+   967→   967→   967→  utm_source   String?
+   968→   968→   968→  utm_medium   String?
+   969→   969→   969→  utm_campaign String?
+   970→   970→   970→  utm_content  String?
+   971→   971→   971→  ip_address   String?
+   972→   972→   972→  user_agent   String?
+   973→   973→   973→  is_processed Boolean  @default(false)
+   974→   974→   974→  created_at   DateTime @default(now())
+   975→   975→   975→
+   976→   976→   976→  lead Lead? @relation(fields: [lead_id], references: [id])
+   977→   977→   977→
+   978→   978→   978→  @@index([form_slug])
+   979→   979→   979→  @@index([lead_id])
+   980→   980→   980→  @@index([is_processed])
+   981→   981→   981→  @@index([created_at])
+   982→   982→   982→}
+   983→   983→   983→
+   984→   984→   984→// ============================================
+   985→   985→   985→// ADMIN SESSIONS
+   986→   986→   986→// ============================================
+   987→   987→   987→
+   988→   988→   988→model AdminSession {
+   989→   989→   989→  id         String   @id @default(uuid())
+   990→   990→   990→  user_id    String
+   991→   991→   991→  token      String   @unique
+   992→   992→   992→  ip_address String?
+   993→   993→   993→  user_agent String?
+   994→   994→   994→  expires_at DateTime
+   995→   995→   995→  created_at DateTime @default(now())
+   996→   996→   996→
+   997→   997→   997→  user Profile @relation(fields: [user_id], references: [id])
+   998→   998→   998→
+   999→   999→   999→  @@index([token])
+  1000→  1000→  1000→  @@index([user_id])
+  1001→  1001→  1001→  @@index([expires_at])
+  1002→  1002→  1002→}
+  1003→  1003→  1003→
+  1004→  1004→  1004→// ============================================
+  1005→  1005→  1005→// ADMIN ACTIVITY LOGS
+  1006→  1006→  1006→// ============================================
+  1007→  1007→  1007→
+  1008→  1008→  1008→model AdminActivityLog {
+  1009→  1009→  1009→  id            String   @id @default(uuid())
+  1010→  1010→  1010→  user_id       String?
+  1011→  1011→  1011→  action        String
+  1012→  1012→  1012→  resource_type String
+  1013→  1013→  1013→  resource_id   String?
+  1014→  1014→  1014→  details       Json?
+  1015→  1015→  1015→  ip_address    String?
+  1016→  1016→  1016→  /// Default: info
+  1017→  1017→  1017→  severity      String   @default("info")
+  1018→  1018→  1018→  created_at    DateTime @default(now())
+  1019→  1019→  1019→
+  1020→  1020→  1020→  user Profile? @relation(fields: [user_id], references: [id])
+  1021→  1021→  1021→
+  1022→  1022→  1022→  @@index([user_id])
+  1023→  1023→  1023→  @@index([action])
+  1024→  1024→  1024→  @@index([resource_type, resource_id])
+  1025→  1025→  1025→  @@index([severity])
+  1026→  1026→  1026→  @@index([created_at])
+  1027→  1027→  1027→}
+  1028→  1028→  1028→
+  1029→  1029→  1029→// ============================================
+  1030→  1030→  1030→// CRM DASHBOARD WIDGETS
+  1031→  1031→  1031→// ============================================
+  1032→  1032→  1032→
+  1033→  1033→  1033→model CrmDashboardWidget {
+  1034→  1034→  1034→  id          String   @id @default(uuid())
+  1035→  1035→  1035→  widget_key  String   @unique
+  1036→  1036→  1036→  title       String
+  1037→  1037→  1037→  description String?
+  1038→  1038→  1038→  /// Default: stat
+  1039→  1039→  1039→  widget_type String   @default("stat")
+  1040→  1040→  1040→  config      Json?
+  1041→  1041→  1041→  data_source String?
+  1042→  1042→  1042→  is_active   Boolean  @default(true)
+  1043→  1043→  1043→  sort_order  Int      @default(0)
+  1044→  1044→  1044→  created_at  DateTime @default(now())
+  1045→  1045→  1045→  updated_at  DateTime @updatedAt
+  1046→  1046→  1046→
+  1047→  1047→  1047→  @@index([widget_key])
+  1048→  1048→  1048→  @@index([is_active])
+  1049→  1049→  1049→  @@index([sort_order])
+  1050→  1050→  1050→}
+  1051→  1051→  1051→
+  1052→  1052→  1052→// ============================================
+  1053→  1053→  1053→// CRM REPORTS
+  1054→  1054→  1054→// ============================================
+  1055→  1055→  1055→
+  1056→  1056→  1056→model CrmReport {
+  1057→  1057→  1057→  id            String   @id @default(uuid())
+  1058→  1058→  1058→  title         String
+  1059→  1059→  1059→  /// CHECK: leads_summary | revenue | case_metrics | client_acquisition | attorney_performance | ai_usage | conversion_funnel
+  1060→  1060→  1060→  report_type   String
+  1061→  1061→  1061→  description   String?
+  1062→  1062→  1062→  parameters    Json?
+  1063→  1063→  1063→  result_data   Json?
+  1064→  1064→  1064→  generated_by  String?
+  1065→  1065→  1065→  is_scheduled  Boolean  @default(false)
+  1066→  1066→  1066→  schedule_cron String?
+  1067→  1067→  1067→  format        String?
+  1068→  1068→  1068→  status        String?
+  1069→  1069→  1069→  created_at    DateTime @default(now())
+  1070→  1070→  1070→  updated_at    DateTime @updatedAt
+  1071→  1071→  1071→
+  1072→  1072→  1072→  generator Profile? @relation(fields: [generated_by], references: [id])
+  1073→  1073→  1073→
+  1074→  1074→  1074→  @@index([report_type])
+  1075→  1075→  1075→  @@index([generated_by])
+  1076→  1076→  1076→  @@index([is_scheduled])
+  1077→  1077→  1077→  @@index([created_at])
+  1078→  1078→  1078→}
+  1079→  1079→  1079→
+  1080→  1080→  1080→// ============================================
+  1081→  1081→  1081→// CRM NOTIFICATIONS
+  1082→  1082→  1082→// ============================================
+  1083→  1083→  1083→
+  1084→  1084→  1084→model CrmNotification {
+  1085→  1085→  1085→  id         String   @id @default(uuid())
+  1086→  1086→  1086→  user_id    String
+  1087→  1087→  1087→  type       String
+  1088→  1088→  1088→  title      String
+  1089→  1089→  1089→  message    String
+  1090→  1090→  1090→  /// CHECK: low | medium | high | urgent
+  1091→  1091→  1091→  priority   String   @default("medium")
+  1092→  1092→  1092→  link       String?
+  1093→  1093→  1093→  is_read    Boolean  @default(false)
+  1094→  1094→  1094→  metadata   Json?
+  1095→  1095→  1095→  created_at DateTime @default(now())
+  1096→  1096→  1096→
+  1097→  1097→  1097→  user Profile @relation(fields: [user_id], references: [id])
+  1098→  1098→  1098→
+  1099→  1099→  1099→  @@index([user_id])
+  1100→  1100→  1100→  @@index([is_read])
+  1101→  1101→  1101→  @@index([priority])
+  1102→  1102→  1102→  @@index([created_at])
+  1103→  1103→  1103→}
+  1104→  1104→  1104→
+  1105→  1105→  1105→// ============================================
+  1106→  1106→  1106→// CRM SYSTEM SETTINGS
+  1107→  1107→  1107→// ============================================
+  1108→  1108→  1108→
+  1109→  1109→  1109→model CrmSystemSetting {
+  1110→  1110→  1110→  id            String   @id @default(uuid())
+  1111→  1111→  1111→  setting_key   String   @unique
+  1112→  1112→  1112→  setting_value Json?
+  1113→  1113→  1113→  description   String?
+  1114→  1114→  1114→  is_public     Boolean  @default(false)
+  1115→  1115→  1115→  updated_by    String?
+  1116→  1116→  1116→  created_at    DateTime @default(now())
+  1117→  1117→  1117→  updated_at    DateTime @updatedAt
+  1118→  1118→  1118→
+  1119→  1119→  1119→  updater Profile? @relation(fields: [updated_by], references: [id])
+  1120→  1120→  1120→
+  1121→  1121→  1121→  @@index([setting_key])
+  1122→  1122→  1122→  @@index([is_public])
+  1123→  1123→  1123→}
+  1124→  1124→  1124→
+  1125→  1125→  1125→// ============================================
+  1126→  1126→  1126→// CRM CONTACT MESSAGES
+  1127→  1127→  1127→// ============================================
+  1128→  1128→  1128→
+  1129→  1129→  1129→model CrmContactMessage {
+  1130→  1130→  1130→  id            String   @id @default(uuid())
+  1131→  1131→  1131→  name          String
+  1132→  1132→  1132→  email         String
+  1133→  1133→  1133→  phone         String?
+  1134→  1134→  1134→  subject       String?
+  1135→  1135→  1135→  message       String
+  1136→  1136→  1136→  /// CHECK: unread | read | replied | archived
+  1137→  1137→  1137→  status        String   @default("unread")
+  1138→  1138→  1138→  assigned_to   String?
+  1139→  1139→  1139→  replied_at    DateTime?
+  1140→  1140→  1140→  reply_content String?
+  1141→  1141→  1141→  lead_id       String?
+  1142→  1142→  1142→  metadata      Json?
+  1143→  1143→  1143→  created_at    DateTime @default(now())
+  1144→  1144→  1144→  updated_at    DateTime @updatedAt
+  1145→  1145→  1145→
+  1146→  1146→  1146→  assignee Profile? @relation(fields: [assigned_to], references: [id])
+  1147→  1147→  1147→  lead     Lead?    @relation(fields: [lead_id], references: [id])
+  1148→  1148→  1148→
+  1149→  1149→  1149→  @@index([status])
+  1150→  1150→  1150→  @@index([assigned_to])
+  1151→  1151→  1151→  @@index([lead_id])
+  1152→  1152→  1152→  @@index([created_at])
+  1153→  1153→  1153→}
+  1154→  1154→  1154→
+  1155→  1155→  1155→// ============================================
+  1156→  1156→  1156→// CRM USER NOTES
+  1157→  1157→  1157→// ============================================
+  1158→  1158→  1158→
+  1159→  1159→  1159→model CrmUserNote {
+  1160→  1160→  1160→  id          String   @id @default(uuid())
+  1161→  1161→  1161→  user_id     String
+  1162→  1162→  1162→  author_id   String
+  1163→  1163→  1163→  content     String
+  1164→  1164→  1164→  is_pinned   Boolean  @default(false)
+  1165→  1165→  1165→  is_internal Boolean  @default(false)
+  1166→  1166→  1166→  created_at  DateTime @default(now())
+  1167→  1167→  1167→  updated_at  DateTime @updatedAt
+  1168→  1168→  1168→
+  1169→  1169→  1169→  user   Profile @relation("CrmUserNoteUser", fields: [user_id], references: [id])
+  1170→  1170→  1170→  author Profile @relation("CrmUserNoteAuthor", fields: [author_id], references: [id])
+  1171→  1171→  1171→
+  1172→  1172→  1172→  @@index([user_id])
+  1173→  1173→  1173→  @@index([author_id])
+  1174→  1174→  1174→  @@index([is_pinned])
+  1175→  1175→  1175→  @@index([created_at])
+  1176→  1176→  1176→}
+  1177→  1177→  1177→
+  1178→  1178→  1178→// ============================================
+  1179→  1179→  1179→// CRM SUBSCRIPTION EVENTS
+  1180→  1180→  1180→// ============================================
+  1181→  1181→  1181→
+  1182→  1182→  1182→model CrmSubscriptionEvent {
+  1183→  1183→  1183→  id              String   @id @default(uuid())
+  1184→  1184→  1184→  subscription_id String
+  1185→  1185→  1185→  user_id         String
+  1186→  1186→  1186→  event_type      String
+  1187→  1187→  1187→  description     String?
+  1188→  1188→  1188→  metadata        Json?
+  1189→  1189→  1189→  created_at      DateTime @default(now())
+  1190→  1190→  1190→
+  1191→  1191→  1191→  subscription UserSubscription @relation(fields: [subscription_id], references: [id])
+  1192→  1192→  1192→  user         Profile          @relation(fields: [user_id], references: [id])
+  1193→  1193→  1193→
+  1194→  1194→  1194→  @@index([subscription_id])
+  1195→  1195→  1195→  @@index([user_id])
+  1196→  1196→  1196→  @@index([event_type])
+  1197→  1197→  1197→  @@index([created_at])
+  1198→  1198→  1198→}
+  1199→  1199→  1199→
+  1200→  1200→  1200→// ============================================
+  1201→  1201→  1201→// LEGAL ARTICLES
+  1202→  1202→  1202→// ============================================
+  1203→  1203→  1203→
+  1204→  1204→  1204→model LegalArticle {
+  1205→  1205→  1205→  id              String   @id @default(uuid())
+  1206→  1206→  1206→  slug            String   @unique
+  1207→  1207→  1207→  title           String
+  1208→  1208→  1208→  subtitle        String?
+  1209→  1209→  1209→  content         String
+  1210→  1210→  1210→  summary         String?
+  1211→  1211→  1211→  /// CHECK: civil_litigation | labour_law | criminal_defence | family_law | corporate_commercial | property_conveyancing | estate_planning | debt_recovery | consumer_rights | popia_compliance | immigration | general
+  1212→  1212→  1212→  category        String
+  1213→  1213→  1213→  tags            String[]
+  1214→  1214→  1214→  cover_image_url String?
+  1215→  1215→  1215→  author_id       String?
+  1216→  1216→  1216→  reading_time_min Int?
+  1217→  1217→  1217→  is_published    Boolean  @default(false)
+  1218→  1218→  1218→  is_featured     Boolean  @default(false)
+  1219→  1219→  1219→  published_at    DateTime?
+  1220→  1220→  1220→  sort_order      Int      @default(0)
+  1221→  1221→  1221→  metadata        Json?
+  1222→  1222→  1222→  created_at      DateTime @default(now())
+  1223→  1223→  1223→  updated_at      DateTime @updatedAt
+  1224→  1224→  1224→
+  1225→  1225→  1225→  author Profile? @relation(fields: [author_id], references: [id])
+  1226→  1226→  1226→
+  1227→  1227→  1227→  @@index([slug])
+  1228→  1228→  1228→  @@index([category])
+  1229→  1229→  1229→  @@index([is_published])
+  1230→  1230→  1230→  @@index([is_featured])
+  1231→  1231→  1231→  @@index([published_at])
+  1232→  1232→  1232→  @@index([sort_order])
+  1233→  1233→  1233→}
+  1234→  1234→  1234→

@@ -780,7 +780,7 @@ export function IntakeForm({ onSignUp }: { onSignUp: (email?: string, name?: str
           </div>
           <div>
             <h3 className="font-bold text-[#0c1e3c] text-[15px]">AI Analysis Complete</h3>
-            <p className="text-[11px] text-slate-500">Reference: {result.reference_id}</p>
+            <p className="text-[11px] text-slate-500">Reference: {result.id}</p>
           </div>
         </div>
         <div className="text-sm text-slate-700 whitespace-pre-wrap bg-[#f7f8fa] p-5 rounded-xl border border-slate-100 max-h-80 overflow-y-auto leading-relaxed">

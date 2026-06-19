@@ -209,7 +209,12 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
                   <Label htmlFor="login-password" className="text-[12px] font-medium text-slate-700">Password</Label>
                   <Input id="login-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" className="mt-1.5 h-10 input-premium transition-all duration-200" onKeyDown={e => e.key === 'Enter' && handleSignIn()} />
                 </div>
-                {loginError && <p className="text-[12px] text-red-500 flex items-center gap-1.5 animate-fade-in"><AlertTriangle className="w-3.5 h-3.5" />{loginError}</p>}
+                {loginError && (
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[13px] flex items-start gap-2.5 animate-scale-in">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{loginError}</span>
+                  </div>
+                )}
                 <Button className="w-full btn-gold h-10 rounded-xl text-sm" onClick={handleSignIn} disabled={isLoading}>
                   {isLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
                   {isLoading ? 'Signing in...' : 'Sign In'}
@@ -276,7 +281,12 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
                   </label>
                 </div>
 
-                {signupError && <p className="text-[12px] text-red-500 flex items-center gap-1.5 animate-fade-in"><AlertTriangle className="w-3.5 h-3.5" />{signupError}</p>}
+                {signupError && (
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[13px] flex items-start gap-2.5 animate-scale-in">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{signupError}</span>
+                  </div>
+                )}
                 <Button className="w-full btn-gold h-10 rounded-xl text-sm" onClick={handleSignup} disabled={signupLoading || !popiaConsent || !signupName || !signupEmail || !signupPassword}>
                   {signupLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
                   {signupLoading ? 'Creating account...' : 'Create Account'}

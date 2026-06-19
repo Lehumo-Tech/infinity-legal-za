@@ -87,8 +87,10 @@ export async function POST(request: NextRequest) {
     if (!auth.authenticated) return auth.error!;
 
     const body = await request.json();
-    const {
+    let {
       client_id,
+      client_email,
+      client_name,
       attorney_id,
       scheduled_at,
       case_id,
@@ -100,10 +102,41 @@ export async function POST(request: NextRequest) {
       meeting_link,
     } = body;
 
+    // Resolve client_id: accept either client_id directly, or client_email+client_name
+    if (!client_id && client_email) {
+      // Look up existing profile by email
+      const { data: existingProfile } = await db
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('email', client_email)
+        .maybeSingle();
+
+      if (existingProfile) {
+        client_id = existingProfile.id;
+      } else {
+        // Create a new client profile
+        const { data: newProfile, error: profileError } = await db
+          .from('profiles')
+          .insert({
+            email: client_email,
+            full_name: client_name || client_email.split('@')[0],
+            role: 'client',
+          })
+          .select('id, full_name, email')
+          .single();
+
+        if (profileError || !newProfile) {
+          console.error('Create client profile error:', profileError);
+          return apiError('Failed to create client profile', 500, 'CREATE_CLIENT_ERROR');
+        }
+        client_id = newProfile.id;
+      }
+    }
+
     // Validate required fields — schema has scheduled_at (not scheduled_date + scheduled_time)
     if (!client_id || !scheduled_at) {
       return apiError(
-        'client_id and scheduled_at are required',
+        'client_id (or client_email) and scheduled_at are required',
         400,
         'MISSING_FIELDS'
       );
@@ -141,6 +174,7 @@ export async function POST(request: NextRequest) {
     if (!client) {
       return apiError('Client not found', 404, 'CLIENT_NOT_FOUND');
     }
+
 
     // Validate case exists if provided
     if (case_id) {
