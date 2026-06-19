@@ -46,3 +46,15 @@ skills/
 
 # Logs
 dev.log
+
+# Tool results (internal)
+tool-results/
+
+# Database
+db/
+
+# Mini services
+mini-services/
+
+# Worklog
+worklog.md
