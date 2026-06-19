@@ -10,3 +10,514 @@
 [00:01:10.698] Browser WARN    Image with src "/images/official/creative-contracts.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
 [00:01:10.698] Browser WARN    Image with src "/images/official/creative-tenant-rights.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
 [00:01:10.698] Browser WARN    Image with src "/images/official/creative-subscription.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:06:08.412] Server  WARN    ⚠ Blocked cross-origin request from preview-chat-ef25ef42-5616-496d-9b3b-1fd0dbbba81f.space-z.ai to /_next/* resource. To allow this, configure "allowedDevOrigins" in next.config
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[00:06:09.773] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:06:09.773] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <ErrorBoundaryHandler pathname="/" errorComponent={function Error} errorStyles={<SegmentViewNode>} ...>
+      <LoadingBoundary name="/" loading={[...]}>
+        <Suspense name="/" fallback={<Fragment>}>
+          <HTTPAccessFallbackBoundary notFound={<SegmentViewNode>} forbidden={undefined} unauthorized={undefined}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<SegmentViewNode>} forbidden={undefined} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <InnerLayoutRouter url="/" tree={[...]} params={{}} cacheNode={{rsc:<Fragment>, ...}} ...>
+                    <SegmentViewNode type="page" pagePath="page.tsx">
+                      <SegmentTrieNode>
+                      <Home>
+                        <HomePageClient>
+                          <LandingPage onLoginClick={function onLoginClick}>
+                            <div className="min-h-scre...">
+                              <a
+                                href="#main-content"
+                                className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100..."
+-                               rtrvr-ls="38~lc,39~lc"
+-                               rtrvr-ro="50"
+                              >
++                               Skip to main content
+                              <nav aria-label="Main navig..." className="sticky top...">
+                                <div className="max-w-7xl ...">
+                                  <div className="flex items...">
+                                    <div>
+                                    <div className="hidden lg:...">
+                                      <button
+                                        onClick={function onClick}
+                                        className="text-[#8fa4c4] hover:text-white text-[13px] font-medium transition-..."
+-                                       rtrvr-ro="38"
+                                      >
+                                      <button
+                                        onClick={function onClick}
+                                        className="text-[#8fa4c4] hover:text-white text-[13px] font-medium transition-..."
+-                                       rtrvr-ro="38"
+                                      >
+                                      <button
+                                        onClick={function onClick}
+                                        className="text-[#8fa4c4] hover:text-white text-[13px] font-medium transition-..."
+-                                       rtrvr-ro="38"
+                                      >
+                                      <button
+                                        onClick={function onClick}
+                                        className="text-[#8fa4c4] hover:text-white text-[13px] font-medium transition-..."
+-                                       rtrvr-ro="38"
+                                      >
+                                      <button
+                                        onClick={function onClick}
+                                        className="text-[#8fa4c4] hover:text-white text-[13px] font-medium transition-..."
+-                                       rtrvr-ro="38"
+                                      >
+                                      <button
+                                        onClick={function onClick}
+                                        className="text-[#8fa4c4] hover:text-white text-[13px] font-medium transition-..."
+-                                       rtrvr-ro="38"
+                                      >
+                                    <div className="hidden lg:...">
+                                      <Button variant="ghost" onClick={function onLoginClick} className="text-[#8fa...">
+                                        <button
+                                          data-slot="button"
+                                          className={"inline-flex items-center justify-center gap-2 whitespace-nowrap..."}
+                                          onClick={function onLoginClick}
+-                                         rtrvr-ro="38"
+                                        >
++                                         Sign In
+                                      <Button onClick={function onClick} className="bg-[#c9a84...">
+                                        <button
+                                          data-slot="button"
+                                          className={"inline-flex items-center justify-center gap-2 whitespace-nowrap..."}
+                                          onClick={function onClick}
+-                                         rtrvr-ro="38"
+                                        >
++                                         Get Started
+                                    <button
+                                      onClick={function onClick}
+                                      className="lg:hidden p-2 text-white"
+                                      aria-label="Toggle menu"
+                                      aria-expanded={false}
+-                                     rtrvr-ro="38"
+                                    >
+                                <div className="lg:hidden ...">
+                                  <div className="px-4 pb-4 ...">
+                                    <button
+                                      onClick={function onClick}
+                                      className="block w-full text-left text-[#8fa4c4] hover:text-white px-3 py-2.5 te..."
+-                                     rtrvr-ro="38"
+                                    >
++                                     Free AI Intake
+                                    <button
+                                      onClick={function onClick}
+                                      className="block w-full text-left text-[#8fa4c4] hover:text-white px-3 py-2.5 te..."
+-                                     rtrvr-ro="38"
+                                    >
++                                     Ask AI
+                                    <button
+                                      onClick={function onClick}
+                                      className="block w-full text-left text-[#8fa4c4] hover:text-white px-3 py-2.5 te..."
+-                                     rtrvr-ro="38"
+                                    >
++                                     Campaign
+                                    <button
+                                      onClick={function onClick}
+                                      className="block w-full text-left text-[#8fa4c4] hover:text-white px-3 py-2.5 te..."
+-                                     rtrvr-ro="38"
+                                    >
++                                     App
+                                    <button
+                                      onClick={function onClick}
+                                      className="block w-full text-left text-[#8fa4c4] hover:text-white px-3 py-2.5 te..."
+-                                     rtrvr-ro="38"
+                                    >
++                                     Legal Articles
+                                    <button
+                                      onClick={function onClick}
+                                      className="block w-full text-left text-[#8fa4c4] hover:text-white px-3 py-2.5 te..."
+-                                     rtrvr-ro="38"
+                                    >
++                                     Pricing
+                                    <div className="flex gap-3...">
+                                      <Button variant="outline" onClick={function onClick} className="flex-1 bor...">
+                                        <button
+                                          data-slot="button"
+                                          className={"inline-flex items-center justify-center gap-2 whitespace-nowrap..."}
+                                          onClick={function onClick}
+-                                         rtrvr-ro="38"
+                                        >
++                                         Sign In
+                                      <Button onClick={function onClick} className="flex-1 bg-...">
+                                        <button
+                                          data-slot="button"
+                                          className={"inline-flex items-center justify-center gap-2 whitespace-nowrap..."}
+                                          onClick={function onClick}
+-                                         rtrvr-ro="38"
+                                        >
++                                         Get Started
+                              ...
+                                <div className="lg:col-spa...">
+                                  <div>
+                                  <h1>
+                                  <p>
+                                  <div className="mt-10 flex...">
+                                    <Button onClick={function onClick} size="lg" className="bg-[#c9a84...">
+                                      <button
+                                        data-slot="button"
+                                        className={"inline-flex items-center justify-center gap-2 whitespace-nowrap t..."}
+                                        onClick={function onClick}
+-                                       rtrvr-ro="38"
+                                      >
+                                    <Button onClick={function onClick} variant="outline" size="lg" ...>
+                                      <button
+                                        data-slot="button"
+                                        className={"inline-flex items-center justify-center gap-2 whitespace-nowrap t..."}
+                                        onClick={function onClick}
+-                                       rtrvr-ro="38"
+                                      >
+                                    <Button onClick={function onClick} size="lg" className="bg-[#1a335...">
+                                      <button
+                                        data-slot="button"
+                                        className={"inline-flex items-center justify-center gap-2 whitespace-nowrap d..."}
+                                        onClick={function onClick}
+-                                       rtrvr-ro="38"
+                                      >
++                                       Explore Practice Areas
+                                  ...
+                              ...
+                                <div className="bg-white b...">
+                                  <div className="space-y-5">
+                                    <div className="grid grid-...">
+                                      <div>
+                                        <Label>
+                                        <Input id="intake-name" value="" onChange={function onChange} ...>
+                                          <input
+                                            type={undefined}
+                                            data-slot="input"
+                                            className="file:text-foreground placeholder:text-muted-foreground selectio..."
+                                            id="intake-name"
+                                            value=""
+                                            onChange={function onChange}
+                                            placeholder="John Doe"
+-                                           rtrvr-ls="12~lc,13~lc,15~lc,47~lc"
+-                                           rtrvr-ro="42"
+                                          >
+                                      <div>
+                                        <Label>
+                                        <Input id="intake-email" type="email" value="" onChange={function onChange} ...>
+                                          <input
+                                            type="email"
+                                            data-slot="input"
+                                            className="file:text-foreground placeholder:text-muted-foreground selectio..."
+                                            id="intake-email"
+                                            value=""
+                                            onChange={function onChange}
+                                            placeholder="you@email.com"
+-                                           rtrvr-ls="12~lc,13~lc,15~lc,47~lc"
+-                                           rtrvr-ro="42"
+                                          >
+                                    <div className="grid grid-...">
+                                      <div>
+                                        <Label>
+                                        <Input id="intake-phone" value="" onChange={function onChange} ...>
+                                          <input
+                                            type={undefined}
+                                            data-slot="input"
+                                            className="file:text-foreground placeholder:text-muted-foreground selectio..."
+                                            id="intake-phone"
+                                            value=""
+                                            onChange={function onChange}
+                                            placeholder="+27 82 000 0000"
+-                                           rtrvr-ls="12~lc,13~lc,15~lc,47~lc"
+-                                           rtrvr-ro="42"
+                                          >
+                                      <div>
+                                        <Label>
+                                        <div className="relative m...">
+                                          <select
+                                            id="intake-case-type"
+                                            value=""
+                                            onChange={function onChange}
+                                            className="w-full h-10 rounded-md border border-input bg-transparent px-3 ..."
+-                                           rtrvr-ro="64"
+                                          >
+                                          ...
+                                    <div>
+                                      <Label>
+                                      <div
+                                        role="radiogroup"
+                                        aria-label="Urgency level"
+                                        className="flex gap-2 mt-2"
+-                                       rtrvr-ro="14"
+                                      >
+                                        <button
+                                          role="radio"
+                                          aria-checked={false}
+                                          onClick={function onClick}
+                                          className="px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-..."
+-                                         rtrvr-ro="43"
+                                        >
++                                         Low
+                                        <button
+                                          role="radio"
+                                          aria-checked={false}
+                                          onClick={function onClick}
+                                          className="px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-..."
+-                                         rtrvr-ro="43"
+                                        >
++                                         Medium
+                                        <button
+                                          role="radio"
+                                          aria-checked={false}
+                                          onClick={function onClick}
+                                          className="px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-..."
+-                                         rtrvr-ro="43"
+                                        >
++                                         High
+                                        <button
+                                          role="radio"
+                                          aria-checked={false}
+                                          onClick={function onClick}
+                                          className="px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-..."
+-                                         rtrvr-ro="43"
+                                        >
++                                         Critical
+                                    <div>
+                                      <Label>
+                                      <textarea
+                                        id="intake-description"
+                                        value=""
+                                        onChange={function onChange}
+                                        placeholder="Tell us about your situation. The more detail you provide, the be..."
+                                        rows={4}
+                                        className="mt-1.5 w-full rounded-md border border-input bg-transparent px-3 py..."
+-                                       rtrvr-ls="12~lc,13~lc,15~lc,47~lc"
+-                                       rtrvr-ro="42"
+                                      >
+                                    <div className="space-y-2.5">
+                                      <label className="flex items...">
+                                        <input
+                                          type="checkbox"
+                                          checked={false}
+                                          onChange={function onChange}
+                                          className="mt-0.5 rounded border-slate-300"
+-                                         rtrvr-ro="28"
+                                        >
+                                        ...
+                                      <label className="flex items...">
+                                        <input
+                                          type="checkbox"
+                                          checked={false}
+                                          onChange={function onChange}
+                                          className="mt-0.5 rounded border-slate-300"
+-                                         rtrvr-ro="28"
+                                        >
+                                        ...
+                                    <Button onClick={function handleSubmit} disabled={true} className="w-full bg-...">
+                                      <button
+                                        data-slot="button"
+                                        className={"inline-flex items-center justify-center gap-2 whitespace-nowrap d..."}
+                                        onClick={function handleSubmit}
+                                        disabled={true}
+-                                       rtrvr-ro="38"
+                                      >
+                              ...
+                                <div className="px-4 py-3 ...">
+                                  <div className="flex items...">
+                                    <Input value="" onChange={function onChange} onKeyDown={function onKeyDown} ...>
+                                      <input
+                                        type={undefined}
+                                        data-slot="input"
+                                        className="file:text-foreground placeholder:text-muted-foreground selection:bg..."
+                                        value=""
+                                        onChange={function onChange}
+                                        onKeyDown={function onKeyDown}
+                                        placeholder="Ask about your legal matter..."
+                                        disabled={false}
+-                                       rtrvr-ls="12~lc,13~lc,15~lc,47~lc"
+-                                       rtrvr-ro="42"
+                                      >
+                                    <Button onClick={function sendMessage} disabled={true} className="bg-[#0c1e3...">
+                                      <button
+                                        data-slot="button"
+                                        className={"gap-2 whitespace-nowrap text-sm font-medium transition-all disabl..."}
+                                        onClick={function sendMessage}
+                                        disabled={true}
+-                                       rtrvr-ro="38"
+                                      >
+                                  ...
+                              ...
+                                <div className="relative l...">
+                                  <div>
+                                  <h3>
+                                  <p>
+                                  <div className="mt-6">
+                                    <Button onClick={function onClick} className="bg-[#c9a84...">
+                                      <button
+                                        data-slot="button"
+                                        className={"inline-flex items-center justify-center gap-2 whitespace-nowrap t..."}
+                                        onClick={function onClick}
+-                                       rtrvr-ro="38"
+                                      >
+                              <section id="app" aria-labelledby="app-heading" className="py-20 sm:p...">
+                                <div>
+                                <div className="relative m...">
+                                  <div>
+                                  <div>
+                                  <div>
+                                  <div className="mt-10 flex...">
+                                    <Button onClick={function onClick} className="bg-[#c9a84...">
+                                      <button
+                                        data-slot="button"
+                                        className={"inline-flex items-center justify-center gap-2 whitespace-nowrap t..."}
+                                        onClick={function onClick}
+-                                       rtrvr-ro="38"
+                                      >
++                                       Start Free
+                                    <Button variant="outline" onClick={function onClick} className="border-[#2...">
+                                      <button
+                                        data-slot="button"
+                                        className={"inline-flex items-center justify-center gap-2 whitespace-nowrap f..."}
+                                        onClick={function onClick}
+-                                       rtrvr-ro="38"
+                                      >
+                              <section id="media" aria-labelledby="media-heading" className="py-20 sm:p...">
+                                <div className="max-w-7xl ...">
+                                  <div className="flex items...">
+                                    <div>
+                                    <Button variant="link" className="hidden sm:...">
+                                      <button
+                                        data-slot="button"
+                                        className={"items-center justify-center gap-2 whitespace-nowrap rounded-md tr..."}
+-                                       rtrvr-ro="38"
+                                      >
+                                  <div className="grid lg:gr...">
+                                    <div className="lg:col-spa...">
+                                      <div>
+                                      <div className="p-8 sm:p-1...">
+                                        <div>
+                                        <h3>
+                                        <p>
+                                        <Button variant="link" onClick={function onClick} className="mt-6 p-0 t...">
+                                          <button
+                                            data-slot="button"
+                                            className={"inline-flex items-center justify-center gap-2 whitespace-nowr..."}
+                                            onClick={function onClick}
+-                                           rtrvr-ro="38"
+                                          >
+                                    ...
+                              <section>
+                              ...
+                                <div className="grid grid-...">
+                                  <div className="relative f...">
+                                    <div className="p-6 lg:p-8">
+                                      <div>
+                                      <ul>
+                                      <Button onClick={function onClick} className="w-full rou...">
+                                        <button
+                                          data-slot="button"
+                                          className={"inline-flex items-center justify-center gap-2 whitespace-nowrap..."}
+                                          onClick={function onClick}
+-                                         rtrvr-ro="38"
+                                        >
++                                         Choose Plan
+                                  <div className="relative f...">
+                                    <div className="p-6 lg:p-8">
+                                      <div>
+                                      <ul>
+                                      <Button onClick={function onClick} className="w-full rou...">
+                                        <button
+                                          data-slot="button"
+                                          className={"inline-flex items-center justify-center gap-2 whitespace-nowrap..."}
+                                          onClick={function onClick}
+-                                         rtrvr-ro="38"
+                                        >
++                                         Choose Plan
+                                  <div className="relative f...">
+                                    <div>
+                                    <div className="p-6 lg:p-8">
+                                      <div>
+                                      <ul>
+                                      <Button onClick={function onClick} className="w-full rou...">
+                                        <button
+                                          data-slot="button"
+                                          className={"inline-flex items-center justify-center gap-2 whitespace-nowrap..."}
+                                          onClick={function onClick}
+-                                         rtrvr-ro="38"
+                                        >
++                                         Choose Plan
+                              <section>
+                              ...
+                                <div className="grid grid-...">
+                                  <div>
+                                  <div className="flex flex-...">
+                                    <h4>
+                                    <div className="flex flex-...">
+                                      <a
+                                        href="tel:+27681276038"
+                                        className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-ce..."
+-                                       rtrvr-ls="38~lc,39~lc"
+-                                       rtrvr-ro="50"
+                                      >
+                                      <a
+                                        href="https://wa.me/27681276038"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-ce..."
+-                                       rtrvr-ls="38~lc,39~lc"
+-                                       rtrvr-ro="50"
+                                      >
+                                      <a
+                                        href="mailto:info@infinitylegal.org"
+                                        className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors flex items-ce..."
+-                                       rtrvr-ls="38~lc,39~lc"
+-                                       rtrvr-ro="50"
+                                      >
+                                      ...
+                                  <div className="flex flex-...">
+                                    <h4>
+                                    <div className="flex flex-...">
+                                      <a
+                                        href="#"
+                                        className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors"
+-                                       rtrvr-ls="38~lc,39~lc"
+-                                       rtrvr-ro="50"
+                                      >
++                                       Privacy Policy
+                                      <a
+                                        href="#"
+                                        className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors"
+-                                       rtrvr-ls="38~lc,39~lc"
+-                                       rtrvr-ro="50"
+                                      >
++                                       Terms of Service
+                                      <a
+                                        href="#"
+                                        className="text-[#7a8fb0] hover:text-[#c9a84c] transition-colors"
+-                                       rtrvr-ls="38~lc,39~lc"
+-                                       rtrvr-ro="50"
+                                      >
++                                       POPIA Compliance
+                              <a
+                                href="https://wa.me/27681276038"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] hover:bg-[#20bd5a] round..."
+                                aria-label="Chat on WhatsApp"
+-                               rtrvr-ls="38~lc,39~lc"
+-                               rtrvr-ro="50"
+                              >
+                    ...
+                  ...
+
+[00:06:09.773] Browser WARN    Image with src "/infinity_logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:06:09.773] Browser WARN    Image with src "/images/official/creative-contracts.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:06:09.773] Browser WARN    Image with src "/images/official/creative-tenant-rights.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:06:09.773] Browser WARN    Image with src "/images/official/creative-subscription.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:06:35.965] Browser WARN    Image with src "/images/official/creative-ai-pocket.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
