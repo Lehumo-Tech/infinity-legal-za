@@ -1,13 +1,7 @@
-[00:00:01.612] Server  LOG     ✓ Ready in 1326ms
-[00:00:09.124] Server  LOG     ○ Compiling / ...
-[00:00:14.680] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:15.052] Browser WARN    Image with src "/logo_legal.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:15.052] Browser WARN    Image with src "/images/official/creative-contracts.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
-[00:00:15.052] Browser WARN    Image with src "/images/official/creative-tenant-rights.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
-[00:00:15.052] Browser WARN    Image with src "/images/official/creative-subscription.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
-[00:00:23.275] Server  WARN    [RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
-[00:03:06.137] Server  WARN    [RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
-[00:03:12.186] Server  WARN    [Intake] Database not configured — AI analysis only, submission not saved
-[00:04:51.887] Server  WARN    [RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
-[00:04:57.169] Server  WARN    [Intake] Database not configured — AI analysis only, submission not saved
-[00:05:39.118] Server  WARN    [Intake] Database not configured — AI analysis only, submission not saved
+[00:00:01.677] Server  LOG     ✓ Ready in 1382ms
+[00:00:05.874] Server  LOG     ○ Compiling / ...
+[00:00:11.053] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:11.333] Browser WARN    Image with src "/logo_legal.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:11.334] Browser WARN    Image with src "/images/official/creative-contracts.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:00:11.334] Browser WARN    Image with src "/images/official/creative-tenant-rights.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:00:11.334] Browser WARN    Image with src "/images/official/creative-subscription.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
