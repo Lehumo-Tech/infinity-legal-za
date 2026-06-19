@@ -7,6 +7,8 @@ import { NextRequest } from 'next/server';
 import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireAuth(request);

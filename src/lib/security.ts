@@ -196,21 +196,25 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
 // ENCRYPTION (AES-256-GCM)
 // ============================================
 
-// SECURITY: No default encryption key — must be set via environment variable
-// If not set, encryption/decryption will throw an error in production
-const ENCRYPTION_KEY = (() => {
+// SECURITY: Encryption key — must be set via ENCRYPTION_KEY environment variable
+// Lazy initialization to avoid throwing during build/static generation
+let _encryptionKey: string | null = null;
+
+function getEncryptionKey(): string {
+  if (_encryptionKey) return _encryptionKey;
   const key = process.env.ENCRYPTION_KEY;
   if (!key && process.env.NODE_ENV === 'production') {
     throw new Error('ENCRYPTION_KEY environment variable is required in production');
   }
   // Dev-only fallback (NOT for production use)
-  return key || 'dev-only-encryption-key-32ch!!';
-})();
+  _encryptionKey = key || 'dev-only-encryption-key-32ch!!';
+  return _encryptionKey;
+}
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 
 export function encrypt(text: string): string {
-  const key = Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').substring(0, 32));
+  const key = Buffer.from(getEncryptionKey().padEnd(32, '0').substring(0, 32));
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv);
   let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -220,7 +224,7 @@ export function encrypt(text: string): string {
 }
 
 export function decrypt(encryptedData: string): string {
-  const key = Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').substring(0, 32));
+  const key = Buffer.from(getEncryptionKey().padEnd(32, '0').substring(0, 32));
   const [ivHex, tagHex, encrypted] = encryptedData.split(':');
   const iv = Buffer.from(ivHex, 'hex');
   const tag = Buffer.from(tagHex, 'hex');
