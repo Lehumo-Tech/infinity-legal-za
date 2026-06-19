@@ -16,7 +16,7 @@
  * RLS provides a second layer of protection at the database level.
  */
 
-import { createClient as createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { Database } from '@/lib/supabase/types';

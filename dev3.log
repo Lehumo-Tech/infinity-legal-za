@@ -1,0 +1,48 @@
+▲ Next.js 16.1.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.2.167:3000
+- Environments: .env
+
+✓ Starting...
+✓ Ready in 788ms
+✓ Compiled in 17ms
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:154:32)
+    at POST (src/app/api/ai/chat/route.ts:29:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/ai/chat 200 in 7.0s (compile: 532ms, proxy.ts: 53ms, render: 6.4s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:154:32)
+    at POST (src/app/api/ai/intake/route.ts:75:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+[Intake] Database not configured — AI analysis only, submission not saved
+ POST /api/ai/intake 200 in 3.8s (compile: 160ms, proxy.ts: 8ms, render: 3.6s)
+○ Compiling / ...
+ GET / 200 in 4.4s (compile: 4.0s, proxy.ts: 7ms, render: 405ms)
+ GET /api/articles?limit=20 503 in 208ms (compile: 195ms, proxy.ts: 6ms, render: 7ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:154:32)
+    at POST (src/app/api/ai/chat/route.ts:29:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/ai/chat 200 in 7.5s (compile: 7ms, proxy.ts: 8ms, render: 7.5s)

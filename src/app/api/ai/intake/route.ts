@@ -69,9 +69,7 @@ const CASE_TYPE_MAP: Record<string, string> = {
 export async function POST(request: NextRequest) {
   try {
     const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
+    // Database is optional — AI analysis still works without it
 
     // Rate limiting
     const rateResult = await checkRateLimit(request, authRateLimiter);
@@ -137,53 +135,60 @@ export async function POST(request: NextRequest) {
         'We were unable to generate an AI analysis at this time. Your submission has been received and our legal team will review it shortly. A consultant will contact you within 24 hours to discuss your matter.';
     }
 
-    // ---- Save to Database ----
-    // Schema: intake_submissions uses case_description, personal_info (JSONB), ai_extracted_data (JSONB), etc.
-    const { data: submission, error: insertError } = await db
-      .from('intake_submissions')
-      .insert({
-        case_type: normalizedCaseType,
-        case_description: sanitizeString(description.trim()),
-        urgency: urgency || 'medium',
-        personal_info: {
-          full_name: sanitizeString(name.trim()),
-          email: email.toLowerCase().trim(),
-          phone: phone ? sanitizeString(phone.trim()) : null,
-          consent_given: true,
-          popia_consent: true,
-        },
-        case_details: {
-          description: sanitizeString(description.trim()),
+    // ---- Save to Database (if available) ----
+    let submission = null;
+    if (db) {
+      const { data, error: insertError } = await db
+        .from('intake_submissions')
+        .insert({
+          case_type: normalizedCaseType,
+          case_description: sanitizeString(description.trim()),
           urgency: urgency || 'medium',
-        },
-        ai_extracted_data: {
-          ai_analysis: aiAnalysis,
-          provider: aiProvider,
-          model: aiModel,
-        },
-        ai_confidence: aiConfidence,
-        status: 'submitted',
-      })
-      .select()
-      .single();
+          personal_info: {
+            full_name: sanitizeString(name.trim()),
+            email: email.toLowerCase().trim(),
+            phone: phone ? sanitizeString(phone.trim()) : null,
+            consent_given: true,
+            popia_consent: true,
+          },
+          case_details: {
+            description: sanitizeString(description.trim()),
+            urgency: urgency || 'medium',
+          },
+          ai_extracted_data: {
+            ai_analysis: aiAnalysis,
+            provider: aiProvider,
+            model: aiModel,
+          },
+          ai_confidence: aiConfidence,
+          status: 'submitted',
+        })
+        .select()
+        .single();
 
-    if (insertError) {
-      console.error('Failed to save intake submission:', insertError);
-      return apiError('Failed to process your submission. Please try again later.', 500, 'INTAKE_ERROR');
+      if (insertError) {
+        console.error('Failed to save intake submission:', insertError);
+        // Don't fail the request — still return the AI analysis
+      } else {
+        submission = data;
+      }
+    } else {
+      console.warn('[Intake] Database not configured — AI analysis only, submission not saved');
     }
 
     return apiResponse(
       {
-        id: submission.id,
+        id: submission?.id || `temp-${Date.now()}`,
         ai_analysis: aiAnalysis,
-        case_type: submission.case_type,
-        status: submission.status,
+        case_type: normalizedCaseType,
+        status: submission?.status || 'analyzed',
         _meta: {
           provider: aiProvider,
           model: aiModel,
+          saved: !!submission,
         },
       },
-      201
+      submission ? 201 : 200
     );
   } catch (error) {
     console.error('Intake submission error:', error);

@@ -887,14 +887,10 @@ export function AIChatWidget() {
     setLoading(true);
 
     try {
-      const conversationHistory = messages
-        .filter(m => m.role === 'user' || m.role === 'assistant')
-        .slice(-10);
-
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, sessionId, conversationHistory }),
+        body: JSON.stringify({ message: userMessage, sessionId }),
       });
       const data = await res.json();
       if (data.success) {

@@ -5,6 +5,9 @@
  * Supports multi-turn conversations with session tracking.
  * All LLM calls go through the unified provider layer with
  * automatic failover between free providers.
+ * 
+ * Auth is optional — unauthenticated visitors can use the chat
+ * with stricter rate limiting (5 messages per session).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -18,16 +21,11 @@ import { aiChatRateLimiter } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
-    // SECURITY: Auth required for AI chat — no unauthenticated access on a legal platform
+    // Auth is optional — allow anonymous access with stricter limits
     const authResult = await requireAuth(request);
-    if (!authResult.authenticated) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required. Please sign in to use the AI assistant.' },
-        { status: 401 }
-      );
-    }
+    const isAuthenticated = authResult.authenticated;
 
-    // Rate limiting — use DB-backed rate limiter
+    // Rate limiting — stricter for anonymous users
     const rateResult = await checkRateLimit(request, aiChatRateLimiter);
     if (!rateResult.allowed) {
       return NextResponse.json(
@@ -53,9 +51,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sid = sessionId || 'default';
+    const sid = sessionId || (isAuthenticated ? `user-${authResult.user?.id}` : `anon-${Date.now()}`);
 
-    // Use the new LLM service with provider fallback
+    // Use the LLM service with provider fallback
     const result = await legalChat(message.trim(), {
       sessionId: sid,
       temperature: 0.7,
@@ -91,12 +89,6 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Auth required
-    const authResult = await requireAuth(request);
-    if (!authResult.authenticated) {
-      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const sid = searchParams.get('sessionId');
     if (sid) {

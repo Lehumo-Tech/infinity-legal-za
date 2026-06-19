@@ -1,4 +1,6 @@
 {
+  "/api/ai/chat/route": "app/api/ai/chat/route.js",
+  "/api/ai/intake/route": "app/api/ai/intake/route.js",
   "/api/articles/route": "app/api/articles/route.js",
   "/page": "app/page.js"
 }

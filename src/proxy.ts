@@ -27,6 +27,7 @@ const PUBLIC_API_ROUTES = [
   '/api/report',         // Public report
   '/api/pricing',        // Public pricing info
   '/api/ai/intake',      // Public AI intake form on landing page
+  '/api/ai/chat',        // Public AI chat (rate-limited for anonymous users)
   '/api/articles',       // Public legal articles
 ];
 
