@@ -94,12 +94,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // If Supabase isn't configured, skip auth initialization
     if (!isSupabaseConfigured()) {
-      setAuthState({
-        supabaseUser: null,
-        user: null,
-        accessToken: null,
-        loading: false,
-        error: null,
+      // Use microtask to avoid synchronous setState in effect
+      queueMicrotask(() => {
+        setAuthState({
+          supabaseUser: null,
+          user: null,
+          accessToken: null,
+          loading: false,
+          error: null,
+        });
       });
       return;
     }

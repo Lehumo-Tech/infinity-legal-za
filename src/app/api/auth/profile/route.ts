@@ -3,63 +3,44 @@
  * Uses Supabase Auth (cookie-based) to identify the user.
  */
 
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { getUserFromSession } from '@/lib/auth';
+import { NextRequest } from 'next/server';
+import { getAuthenticatedClient, getAdminClient } from '@/lib/supabase/api-client';
+import { apiResponse, apiError } from '@/lib/middleware';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const payload = await getUserFromSession();
+    // Try authenticated (cookie-based) client first
+    const authResult = await getAuthenticatedClient();
 
-    if (!payload) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Not authenticated', code: 'AUTH_REQUIRED' } },
-        { status: 401 }
-      );
+    if (!authResult) {
+      return apiError('Not authenticated', 401, 'AUTH_REQUIRED');
     }
+
+    const { client, userId } = authResult;
 
     // Get profile from Supabase
-    if (!db) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          id: payload.userId,
-          email: payload.email,
-          full_name: payload.fullName,
-          role: payload.role,
-          department: payload.department || null,
-          is_active: true,
-        },
-      });
-    }
-
-    const { data: profile, error } = await db
+    const { data: profile, error } = await client
       .from('profiles')
       .select('*')
-      .eq('id', payload.userId)
+      .eq('id', userId)
       .single();
 
     if (error || !profile) {
-      // Return session data as fallback
-      return NextResponse.json({
-        success: true,
-        data: {
-          id: payload.userId,
-          email: payload.email,
-          full_name: payload.fullName,
-          role: payload.role,
-          department: payload.department || null,
-          is_active: true,
-        },
+      // Get user info from auth as fallback
+      const { data: { user } } = await client.auth.getUser();
+      return apiResponse({
+        id: userId,
+        email: user?.email || '',
+        full_name: user?.user_metadata?.full_name || '',
+        role: user?.user_metadata?.role || 'client',
+        department: null,
+        is_active: true,
       });
     }
 
-    return NextResponse.json({ success: true, data: profile });
+    return apiResponse(profile);
   } catch (err) {
     console.error('Profile fetch error:', err);
-    return NextResponse.json(
-      { success: false, error: { message: 'Internal server error', code: 'SERVER_ERROR' } },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500, 'SERVER_ERROR');
   }
 }

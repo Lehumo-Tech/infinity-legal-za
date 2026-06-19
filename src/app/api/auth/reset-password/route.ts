@@ -13,7 +13,8 @@ import { getAdminClient } from '@/lib/supabase/api-client';
 import { validatePasswordStrength } from '@/lib/auth';
 import { apiResponse, apiError, validateBodySize, validateCSRF } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
-import { authRateLimiter, checkRateLimit } from '@/lib/middleware';
+import { authRateLimiter } from '@/lib/security';
+import { checkRateLimit } from '@/lib/middleware';
 
 export async function POST(request: NextRequest) {
   try {
