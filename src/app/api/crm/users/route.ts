@@ -11,16 +11,16 @@ import { createAuditLog } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const adminRoles = ['managing_director', 'admin', 'systems_admin'];
     if (!adminRoles.includes(auth.user.role)) {
       return apiError('Insufficient privileges', 403, 'ROLE_FORBIDDEN');
+    }
+
+    if (!db) {
+      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
     }
 
     const url = new URL(request.url);
@@ -89,16 +89,16 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const adminRoles = ['managing_director', 'admin', 'systems_admin'];
     if (!adminRoles.includes(auth.user.role)) {
       return apiError('Insufficient privileges', 403, 'ROLE_FORBIDDEN');
+    }
+
+    if (!db) {
+      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
     }
 
     const body = await request.json();
@@ -152,16 +152,16 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const adminRoles = ['managing_director', 'admin', 'systems_admin'];
     if (!adminRoles.includes(auth.user.role)) {
       return apiError('Insufficient privileges', 403, 'ROLE_FORBIDDEN');
+    }
+
+    if (!db) {
+      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
     }
 
     const body = await request.json();

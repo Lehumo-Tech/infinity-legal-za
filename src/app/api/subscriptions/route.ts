@@ -15,17 +15,17 @@ import { createAuditLog } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     // Authenticate user (async for Supabase)
     const authResult = await requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
     }
     const user = authResult.user;
+
+    const db = getAdminClient();
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
 
     // Find active or trialing subscription
     const { data: subscriptions, error: subError } = await db
@@ -114,17 +114,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     // Authenticate user (async for Supabase)
     const authResult = await requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
     }
     const user = authResult.user;
+
+    const db = getAdminClient();
+    if (!db) {
+      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
+    }
 
     // Find active subscription
     const { data: subscriptions } = await db

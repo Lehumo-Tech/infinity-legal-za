@@ -8,17 +8,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+function sanitizeRedirectPath(path: string): string {
+  // Only allow relative paths that start with / and don't start with //
+  if (!path.startsWith('/') || path.startsWith('//')) {
+    return '/';
+  }
+  // Block any path with protocol-like patterns
+  if (path.includes('://') || path.includes('\\')) {
+    return '/';
+  }
+  return path;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const next = sanitizeRedirectPath(searchParams.get('next') ?? '/');
   const error = searchParams.get('error');
-  const errorDescription = searchParams.get('error_description');
 
-  // Handle error from Supabase
+  // Handle error from Supabase — use generic message to avoid information leakage
   if (error) {
-    console.error('Auth callback error:', error, errorDescription);
-    return NextResponse.redirect(`${origin}/?auth_error=${encodeURIComponent(errorDescription || error)}`);
+    console.error('Auth callback error:', error);
+    return NextResponse.redirect(`${origin}/?auth_error=${encodeURIComponent('Authentication failed. Please try again.')}`);
   }
 
   if (code) {
@@ -45,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     if (exchangeError) {
       console.error('Code exchange error:', exchangeError.message);
-      return NextResponse.redirect(`${origin}/?auth_error=${encodeURIComponent(exchangeError.message)}`);
+      return NextResponse.redirect(`${origin}/?auth_error=${encodeURIComponent('Authentication failed. Please try again.')}`);
     }
 
     return response;

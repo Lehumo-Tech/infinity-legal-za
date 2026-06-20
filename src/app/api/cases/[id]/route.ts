@@ -19,13 +19,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Check auth FIRST (defense in depth)
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_OWN_CASES)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
@@ -95,13 +96,14 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Check auth FIRST (defense in depth)
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.EDIT_CASE)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
@@ -218,13 +220,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Check auth FIRST (defense in depth)
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.ARCHIVE_CASE)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');

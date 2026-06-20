@@ -9,10 +9,6 @@ import { requireAuth, apiResponse, apiError } from '@/lib/middleware';
 
 export async function GET(request: NextRequest) {
   try {
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -20,6 +16,10 @@ export async function GET(request: NextRequest) {
     const adminRoles = ['managing_director', 'admin', 'systems_admin'];
     if (!adminRoles.includes(auth.user.role)) {
       return apiError('Insufficient privileges', 403, 'ROLE_FORBIDDEN');
+    }
+
+    if (!db) {
+      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
     }
 
     // Fetch metrics in parallel

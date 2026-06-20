@@ -37,7 +37,7 @@ const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal
 // Content Security Policy (updated for PayFast + Supabase)
 const CSP_HEADER = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.payfast.co.za https://sandbox.payfast.co.za",
+  "script-src 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: https: blob:",
   "font-src 'self' https://fonts.gstatic.com",

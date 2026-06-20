@@ -12,13 +12,13 @@ import { createAuditLog } from '@/lib/audit';
 // GET - List notifications for current user
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     const { page, perPage, from, to } = getPaginationParams(request);
     const url = new URL(request.url);
@@ -70,13 +70,13 @@ export async function GET(request: NextRequest) {
 // PATCH - Mark all notifications as read for current user
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     const { count, error } = await db
       .from('notifications')
@@ -105,13 +105,13 @@ export async function PATCH(request: NextRequest) {
 // PUT - Mark notification as read
 export async function PUT(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     const body = await request.json();
     const { notification_id } = body;

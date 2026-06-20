@@ -9,13 +9,13 @@ import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ANALYTICS)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');

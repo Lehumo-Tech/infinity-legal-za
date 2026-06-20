@@ -15,13 +15,13 @@ const VALID_STATUSES = ['scheduled', 'confirmed', 'in_progress', 'completed', 'c
 // GET - List consultations with pagination and filters
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     const { page, perPage, from, to } = getPaginationParams(request);
     const url = new URL(request.url);
@@ -78,13 +78,13 @@ export async function GET(request: NextRequest) {
 // POST - Create a new consultation
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     const body = await request.json();
     let {

@@ -18,13 +18,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
@@ -37,6 +37,11 @@ export async function GET(
       .single();
 
     if (error || !consultation) {
+      return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
+    }
+
+    // Ownership check: clients can only see their own consultations
+    if (auth.user.role === 'client' && consultation.client_id !== auth.user.userId) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
@@ -53,13 +58,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
@@ -71,6 +76,11 @@ export async function PUT(
       .single();
 
     if (fetchError || !existingConsultation) {
+      return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
+    }
+
+    // Ownership check: clients can only update their own consultations
+    if (auth.user.role === 'client' && existingConsultation.client_id !== auth.user.userId) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
@@ -138,24 +148,29 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
-
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
     // Verify consultation exists
     const { data: existingConsultation, error: fetchError } = await db
       .from('consultations')
-      .select('id')
+      .select('id, client_id')
       .eq('id', id)
       .single();
 
     if (fetchError || !existingConsultation) {
+      return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
+    }
+
+    // Ownership check: clients can only cancel their own consultations
+    if (auth.user.role === 'client' && existingConsultation.client_id !== auth.user.userId) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 

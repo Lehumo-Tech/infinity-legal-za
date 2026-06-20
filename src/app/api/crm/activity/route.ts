@@ -8,16 +8,16 @@ import { requireAuth, apiError, getPaginationParams, createPaginationResult } fr
 
 export async function GET(request: NextRequest) {
   try {
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const adminRoles = ['managing_director', 'admin', 'systems_admin'];
     if (!adminRoles.includes(auth.user.role)) {
       return apiError('Insufficient privileges', 403, 'ROLE_FORBIDDEN');
+    }
+
+    if (!db) {
+      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
     }
 
     const { page, perPage, from, to } = getPaginationParams(request);

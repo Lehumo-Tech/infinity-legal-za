@@ -147,7 +147,11 @@ export function requireRoles(role: string, allowedRoles: RoleKey[]) {
 // ============================================
 
 export async function checkRateLimit(request: NextRequest, limiter = apiRateLimiter) {
-  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  // Use only the FIRST IP in x-forwarded-for (set by trusted reverse proxy)
+  // to prevent IP spoofing for rate limit bypass
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const firstIp = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
+  const ip = firstIp || request.headers.get('x-real-ip') || 'unknown';
   const endpoint = new URL(request.url).pathname;
   const key = `${ip}:${endpoint}`;
 

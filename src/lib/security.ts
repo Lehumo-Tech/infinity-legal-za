@@ -203,11 +203,15 @@ let _encryptionKey: string | null = null;
 function getEncryptionKey(): string {
   if (_encryptionKey) return _encryptionKey;
   const key = process.env.ENCRYPTION_KEY;
-  if (!key && process.env.NODE_ENV === 'production') {
-    throw new Error('ENCRYPTION_KEY environment variable is required in production');
+  if (!key) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('ENCRYPTION_KEY environment variable is required in production');
+    }
+    console.warn('[SECURITY] ENCRYPTION_KEY not set — using insecure dev-only key. DO NOT use with real data!');
+    _encryptionKey = 'dev-only-encryption-key-32ch!!';
+  } else {
+    _encryptionKey = key;
   }
-  // Dev-only fallback (NOT for production use)
-  _encryptionKey = key || 'dev-only-encryption-key-32ch!!';
   return _encryptionKey;
 }
 const ALGORITHM = 'aes-256-gcm';
@@ -305,4 +309,20 @@ export function sanitizeFilename(filename: string): string {
     .replace(/[^a-zA-Z0-9._-]/g, '_')
     .replace(/\.{2,}/g, '.')
     .substring(0, 255);
+}
+
+// ============================================
+// POSTGREST FILTER SANITIZATION
+// ============================================
+
+/**
+ * Sanitize a search string for use in Supabase/PostgREST filter queries.
+ * Removes characters that could be used for filter injection: , ( ) . 
+ */
+export function sanitizeSearchQuery(input: string): string {
+  return input
+    .replace(/[,().]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 200); // Limit length
 }
