@@ -86,10 +86,8 @@ export async function POST(request: NextRequest) {
       return apiError('Account setup incomplete. Please contact support.', 403, 'PROFILE_NOT_FOUND');
     }
 
-    // Check if user has POPIA consent (required for SA law)
-    if (!profile.popi_consent) {
-      return apiError('Account requires POPIA consent. Please contact support.', 403, 'POPIA_CONSENT_REQUIRED');
-    }
+    // Note: POPIA consent check removed from login — consent is collected at signup.
+    // Existing users without consent can still sign in but will be prompted on the dashboard.
 
     // Audit log — successful login
     await createAuditLog({

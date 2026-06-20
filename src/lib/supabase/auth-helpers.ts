@@ -40,10 +40,10 @@ export async function getAuthUser(): Promise<AuthUser | null> {
       return null;
     }
 
-    // Get the user's profile
+    // Get the user's profile — explicit field selection for security
     const { data: profile } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, email, full_name, phone, avatar_url, role, id_number, company, popi_consent, email_verified, last_login_at, created_at, updated_at')
       .eq('id', user.id)
       .single();
 

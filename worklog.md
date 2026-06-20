@@ -1353,3 +1353,96 @@ Stage Summary:
 - Article click -> detail view works (fetches full article from API)
 - No console errors after clean rebuild
 - Project is Vercel-deployable with documented env vars
+
+---
+Task ID: 2-b
+Agent: db-queries-fixer
+
+Work Log:
+- Rewrote `src/lib/db-queries.ts` entirely — converted all Prisma-style queries to Supabase client queries
+  - Removed `import type { Prisma } from '@prisma/client'` (no longer applicable)
+  - Added `import type { Database } from '@/lib/supabase/types'` and type aliases for table rows
+  - Replaced `db.case.findMany()` → `db.from('cases').select(fields).range(from, to)`
+  - Replaced `db.case.count()` → `db.from('cases').select('*', { count: 'exact', head: true })`
+  - Replaced `db.case.findUnique({ where: { id } })` → `db.from('cases').select(...).eq('id', id).single()`
+  - Replaced `db.lead.count()` / `db.lead.findMany()` → Supabase `.from('leads')` equivalents
+  - Replaced `db.task.findMany()` → `db.from('tasks').select(...).eq(...)` with `.in()` for status filters
+  - Replaced `db.document.findMany()` → `db.from('documents').select(...).eq('case_id', caseId)`
+  - Replaced `db.user.findUnique()` → `db.from('profiles').select(...).eq('id', id).single()`
+  - Replaced `db.notification.count()` → `db.from('notifications').select('*', { count: 'exact', head: true }).eq(...)`
+  - Replaced `db.notification.updateMany()` → `db.from('notifications').update({ is_read: true }).eq(...).eq(...)`
+  - Replaced `db.$transaction()` → marked `executeInTransaction` as @deprecated with error message suggesting Supabase RPC
+  - All functions now handle null `db` client via `getClient()` helper that throws with clear message
+  - Added proper Supabase foreign-key joins in getCaseById using `!fk_name` syntax
+  - Updated `paginate()` and `cursorPaginate()` to use Supabase `.from(table).select(fields).range()` with `.eq()` filters
+- Fixed `src/lib/supabase/auth-helpers.ts` line 46 — replaced `select('*')` with explicit field list:
+  `select('id, email, full_name, phone, avatar_url, role, id_number, company, popi_consent, email_verified, last_login_at, created_at, updated_at')`
+  This matches the AuthUser interface fields and follows the same pattern as useAuth.tsx hook.
+- Lint passes cleanly with no errors
+- Dev server running without issues
+
+Stage Summary:
+- db-queries.ts is now fully compatible with the Supabase client — no more Prisma-style calls that would crash at runtime
+- All query helpers properly handle null db client and throw descriptive errors
+- Auth helpers no longer use select('*'), improving security posture
+
+---
+Task ID: 2
+Agent: prisma-schema-rewriter
+Task: Rewrite Prisma schema for SQLite compatibility
+
+Work Log:
+- Read the full prisma/schema.prisma (1233 lines, 43 models)
+- Changed `provider` from "postgresql" to "sqlite"
+- Replaced all `@default(uuid())` with `@default(cuid())` across all 43 models
+- Converted `String[]` array fields to `String` with "Comma-separated values" comments:
+  - Attorney.specialization
+  - Case.tags
+  - AiIntakeSession.steps_completed
+  - AiIntakeSession.steps_remaining
+  - Lead.tags
+  - Document.tags
+  - LegalArticle.tags
+- Converted all `Json?` fields to `String?` with "JSON stored as String" comments (28 fields total):
+  - Profile.address, Profile.preferences
+  - Case.metadata
+  - IntakeSubmission.personal_info, case_details, financial_info, ai_extracted_data
+  - AiIntakeSession.conversation_history, extracted_entities
+  - AiAnalysis.input_data, result, recommendations, risk_flags
+  - Document.metadata
+  - Task.metadata
+  - Message.metadata
+  - CaseTimeline.metadata
+  - Notification.metadata
+  - PricingPlan.features
+  - PaymentRecord.metadata
+  - AuditLog.details
+  - ErrorLog.metadata
+  - BackupRecord.metadata
+  - WorkbenchConfig.widgets
+  - WorkbenchWidget.config
+  - WorkbenchQuickAction.config
+  - WorkbenchPinnedItem.metadata
+  - WorkbenchRecentActivity.metadata
+  - LeadCommunication.metadata
+  - LeadAutomationRule.conditions, actions
+  - LeadFormSubmission.form_data
+  - AdminActivityLog.details
+  - CrmDashboardWidget.config
+  - CrmReport.parameters, result_data
+  - CrmNotification.metadata
+  - CrmSystemSetting.setting_value
+  - CrmContactMessage.metadata
+  - CrmSubscriptionEvent.metadata
+  - LegalArticle.metadata
+- Converted `BigInt?` to `Int?` for:
+  - Document.file_size
+  - BackupRecord.file_size_bytes
+- No `@relation(onDelete: Cascade)` was found in the original schema (already safe)
+- Ran `bun run db:push` — schema pushed successfully to SQLite database at `file:/home/z/my-project/db/custom.db`
+- Prisma Client regenerated successfully (v6.19.2)
+
+Stage Summary:
+- All 43 models preserved with identical fields and relations
+- Schema is fully SQLite-compatible with no PostgreSQL-specific features
+- Database is in sync; Prisma Client generated

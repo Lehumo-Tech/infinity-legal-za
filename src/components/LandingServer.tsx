@@ -7,9 +7,11 @@ import {
   Phone, Mail, MapPin, Star, Clock, Play, ArrowUpRight,
 } from 'lucide-react';
 
-// Client components imported directly — they create client boundaries in the server component
+// Client components — imported directly to create client boundaries
+// (Next.js App Router handles code-splitting automatically for 'use client' components)
 import LandingIntakeForm from '@/components/LandingIntakeForm';
-import { AIChatWidget, LegalArticlesSection } from '@/components/LandingPage';
+import AIChatWidget from '@/components/AIChatWidget';
+import LegalArticlesSection from '@/components/LegalArticlesSection';
 
 // ============================================
 // SKELETON LOADING COMPONENTS

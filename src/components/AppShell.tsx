@@ -62,8 +62,14 @@ export default function AppShell() {
   const effectiveShowSignup = isAuthenticated ? false : showSignup;
   const effectiveShowDashboard = isAuthenticated ? true : showDashboard;
 
-  // If still loading auth, don't render anything yet
-  if (authLoading) return null;
+  // If still loading auth, show a minimal loading indicator
+  if (authLoading) {
+    return (
+      <div className="fixed bottom-4 right-4 z-[55]">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#c9a84c]" />
+      </div>
+    );
+  }
 
   // ===== NOT AUTHENTICATED =====
   if (!isAuthenticated) {
