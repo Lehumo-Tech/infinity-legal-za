@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
-import HomePageClient from '@/components/HomePageClient';
+import { Suspense } from 'react';
+import LandingServer from '@/components/LandingServer';
+import LandingHydration from '@/components/LandingHydration';
+import AppShell from '@/components/AppShell';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
 
@@ -64,5 +67,20 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <HomePageClient />;
+  return (
+    <main>
+      {/* SSR landing page — renders immediately as HTML */}
+      <LandingServer />
+
+      {/* Client-side interactivity layered on top (smooth scroll, mobile menu, etc.) */}
+      <Suspense fallback={null}>
+        <LandingHydration />
+      </Suspense>
+
+      {/* Client-side app shell — auth checking, login modal, dashboard */}
+      <Suspense fallback={null}>
+        <AppShell />
+      </Suspense>
+    </main>
+  );
 }

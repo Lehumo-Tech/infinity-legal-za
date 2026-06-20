@@ -14,7 +14,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' https://vercel.live https://vercel-insights.com https://www.payfast.co.za https://sandbox.payfast.co.za",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://vercel-insights.com https://www.payfast.co.za https://sandbox.payfast.co.za",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https: blob:",
       "font-src 'self' https://fonts.gstatic.com",

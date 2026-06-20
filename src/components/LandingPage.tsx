@@ -988,7 +988,7 @@ const CATEGORY_META: Record<string, { label: string; color: string; bg: string }
   general: { label: 'General', color: 'text-slate-600', bg: 'bg-slate-50 border-slate-100' },
 };
 
-function LegalArticlesSection() {
+export function LegalArticlesSection() {
   const [articles, setArticles] = useState<any[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
