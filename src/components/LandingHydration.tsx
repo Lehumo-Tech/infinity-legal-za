@@ -11,6 +11,9 @@ import { useEffect, useRef } from 'react';
  * 2. Scroll-based navbar styling (transparent → solid)
  * 3. Mobile menu toggle
  * 4. Sign-in / sign-up button → dispatch custom events for AppShell
+ *
+ * ROBUSTNESS: Also sets up direct onclick handlers on auth buttons
+ * as a fallback in case document-level event delegation fails.
  */
 export default function LandingHydration() {
   const navRef = useRef<HTMLElement | null>(null);
@@ -80,6 +83,7 @@ export default function LandingHydration() {
     mobileToggle?.addEventListener('click', toggleMobileMenu);
 
     // ---- 4. Sign-in / sign-up button handlers ----
+    // Uses document-level event delegation for reliability
     const handleAuthClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const button = target.closest('[data-action]') as HTMLElement | null;
@@ -88,15 +92,39 @@ export default function LandingHydration() {
       const action = button.getAttribute('data-action');
       if (action === 'sign-in') {
         e.preventDefault();
+        e.stopPropagation();
         closeMobileMenu();
         window.dispatchEvent(new CustomEvent('il-show-login'));
       } else if (action === 'sign-up') {
         e.preventDefault();
+        e.stopPropagation();
         closeMobileMenu();
         window.dispatchEvent(new CustomEvent('il-show-signup'));
       }
     };
     document.addEventListener('click', handleAuthClick);
+
+    // ---- 5. Direct onclick fallback for auth buttons ----
+    // Some browsers may not bubble clicks correctly for certain elements.
+    // This adds direct onclick handlers to all data-action buttons as a safety net.
+    const authButtons = document.querySelectorAll('[data-action]');
+    const directHandlers: Map<HTMLElement, () => void> = new Map();
+
+    authButtons.forEach((btn) => {
+      const action = btn.getAttribute('data-action');
+      if (action === 'sign-in' || action === 'sign-up') {
+        const handler = () => {
+          closeMobileMenu();
+          if (action === 'sign-in') {
+            window.dispatchEvent(new CustomEvent('il-show-login'));
+          } else {
+            window.dispatchEvent(new CustomEvent('il-show-signup'));
+          }
+        };
+        btn.addEventListener('click', handler);
+        directHandlers.set(btn as HTMLElement, handler);
+      }
+    });
 
     // ---- Cleanup ----
     return () => {
@@ -104,6 +132,10 @@ export default function LandingHydration() {
       document.removeEventListener('click', handleClick);
       mobileToggle?.removeEventListener('click', toggleMobileMenu);
       document.removeEventListener('click', handleAuthClick);
+      // Clean up direct handlers
+      directHandlers.forEach((handler, btn) => {
+        btn.removeEventListener('click', handler);
+      });
     };
   }, []);
 

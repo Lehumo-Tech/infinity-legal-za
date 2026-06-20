@@ -21,6 +21,10 @@ const DashboardShell = dynamic(() => import('@/components/DashboardShell'), {
  * 2. Login/signup modal overlay
  * 3. Dashboard rendering when authenticated
  * 4. "Back to Dashboard" floating button when viewing landing page while authenticated
+ *
+ * IMPORTANT: LoginScreen must be shown IMMEDIATELY when user clicks Sign In / Get Started,
+ * even while auth is still loading. The previous early-return on authLoading blocked
+ * the login modal from appearing, making buttons appear non-functional.
  */
 export default function AppShell() {
   const { user: authUser, accessToken, loading: authLoading, signOut } = useAuth();
@@ -57,12 +61,57 @@ export default function AppShell() {
   }, []);
 
   // When auth state changes, handle visibility via derived state approach
-  // Instead of useEffect, we compute these from isAuthenticated
   const effectiveShowLogin = isAuthenticated ? false : showLogin;
   const effectiveShowSignup = isAuthenticated ? false : showSignup;
   const effectiveShowDashboard = isAuthenticated ? true : showDashboard;
 
-  // If still loading auth, show a minimal loading indicator
+  // ===== PRIORITY: Show LoginScreen immediately if user clicked Sign In / Get Started =====
+  // This must be checked BEFORE the authLoading guard.
+  // The login screen should appear instantly when clicked, not wait for auth to finish loading.
+  if (!isAuthenticated && (effectiveShowLogin || effectiveShowSignup)) {
+    return (
+      <div className="fixed inset-0 z-[60]">
+        <LoginScreen
+          onLogin={() => {}}
+          loading={false}
+          error={loginError}
+          initialSignup={effectiveShowSignup}
+          onBackToHome={() => { setShowLogin(false); setShowSignup(false); }}
+        />
+      </div>
+    );
+  }
+
+  // ===== AUTHENTICATED =====
+  if (isAuthenticated) {
+    // If user wants to view the landing page instead of dashboard
+    if (!effectiveShowDashboard) {
+      return (
+        <>
+          {/* Floating "Back to Dashboard" button */}
+          <button
+            onClick={() => setShowDashboard(true)}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[55] bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-full px-6 py-2.5 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 transition-all hover:shadow-[#c9a84c]/30 inline-flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            Back to Dashboard
+          </button>
+        </>
+      );
+    }
+
+    // Show dashboard as a full-screen overlay
+    return (
+      <div className="fixed inset-0 z-[60]">
+        <DashboardShell
+          onShowLanding={() => setShowDashboard(false)}
+        />
+      </div>
+    );
+  }
+
+  // ===== NOT AUTHENTICATED, no modal triggered =====
+  // Show a minimal auth loading indicator while session is being checked
   if (authLoading) {
     return (
       <div className="fixed bottom-4 right-4 z-[55]">
@@ -71,50 +120,6 @@ export default function AppShell() {
     );
   }
 
-  // ===== NOT AUTHENTICATED =====
-  if (!isAuthenticated) {
-    // Show login modal overlay if triggered
-    if (effectiveShowLogin || effectiveShowSignup) {
-      return (
-        <div className="fixed inset-0 z-[60]">
-          <LoginScreen
-            onLogin={() => {}}
-            loading={false}
-            error={loginError}
-            initialSignup={effectiveShowSignup}
-            onBackToHome={() => { setShowLogin(false); setShowSignup(false); }}
-          />
-        </div>
-      );
-    }
-    // Not authenticated, no modal — landing page is visible (server-rendered)
-    return null;
-  }
-
-  // ===== AUTHENTICATED =====
-
-  // If user wants to view the landing page instead of dashboard
-  if (!effectiveShowDashboard) {
-    return (
-      <>
-        {/* Floating "Back to Dashboard" button */}
-        <button
-          onClick={() => setShowDashboard(true)}
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[55] bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-full px-6 py-2.5 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 transition-all hover:shadow-[#c9a84c]/30 inline-flex items-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-          Back to Dashboard
-        </button>
-      </>
-    );
-  }
-
-  // Show dashboard as a full-screen overlay
-  return (
-    <div className="fixed inset-0 z-[60]">
-      <DashboardShell
-        onShowLanding={() => setShowDashboard(false)}
-      />
-    </div>
-  );
+  // Not authenticated, no modal — landing page is visible (server-rendered)
+  return null;
 }

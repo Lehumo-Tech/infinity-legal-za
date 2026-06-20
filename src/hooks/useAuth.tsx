@@ -4,6 +4,9 @@
  * Provides reactive auth state management using Supabase browser client.
  * Replaces the old localStorage-based token approach with proper
  * cookie-based SSR auth.
+ *
+ * IMPORTANT: Includes a 5-second timeout on auth initialization to prevent
+ * the UI from being blocked forever if Supabase is unreachable.
  */
 
 'use client';
@@ -40,6 +43,9 @@ interface SignUpData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Maximum time to wait for auth initialization before giving up
+const AUTH_INIT_TIMEOUT_MS = 5000;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -60,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Fetch the user's profile from the profiles table
+  // If the profile doesn't exist (e.g., handle_new_user trigger missing),
+  // auto-create it from the auth user metadata.
   const fetchProfile = useCallback(async (userId: string): Promise<(Profile & { email_verified: boolean }) | null> => {
     const supabase = getSupabase();
     try {
@@ -70,7 +78,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error || !profile) {
-        console.error('Profile fetch error:', error);
+        // Profile might not exist yet — try to auto-create it
+        console.warn('Profile not found, attempting auto-create for:', userId);
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const meta = authUser.user_metadata || {};
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: authUser.id,
+              email: authUser.email || '',
+              full_name: meta.full_name || authUser.email?.split('@')[0] || 'User',
+              role: meta.role || 'client',
+              phone: meta.phone || null,
+              popi_consent: true,
+              email_verified: !!authUser.email_confirmed_at,
+            }, { onConflict: 'id' })
+            .select('id, email, full_name, role, phone, popi_consent, email_verified, avatar_url, company, created_at, updated_at')
+            .single();
+
+          if (createError) {
+            console.error('Auto-create profile error:', createError);
+            return null;
+          }
+
+          if (newProfile) {
+            return {
+              ...newProfile,
+              email_verified: authUser.email_confirmed_at ? true : false,
+            };
+          }
+        }
         return null;
       }
 
@@ -108,14 +146,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const supabase = getSupabase();
+    let timedOut = false;
+
+    // Safety timeout: if auth init takes too long, force loading to false
+    // so the UI isn't blocked forever. This can happen if Supabase is unreachable.
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      setAuthState(prev => {
+        // Only force if still loading (user hasn't already been resolved)
+        if (prev.loading) {
+          console.warn('[Auth] Initialization timed out after 5s — forcing loading=false');
+          return {
+            supabaseUser: null,
+            user: null,
+            accessToken: null,
+            loading: false,
+            error: null,
+          };
+        }
+        return prev;
+      });
+    }, AUTH_INIT_TIMEOUT_MS);
 
     // Get initial session
     const initAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
 
+        // Check if we already timed out before this resolved
+        if (timedOut) return;
+        clearTimeout(timeoutId);
+
         if (session?.user) {
           const profile = await fetchProfile(session.user.id);
+          if (timedOut) return;
+
           setAuthState({
             supabaseUser: session.user,
             user: profile,
@@ -133,12 +198,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (err) {
+        if (timedOut) return;
+        clearTimeout(timeoutId);
         console.error('Auth init error:', err);
         setAuthState({
           supabaseUser: null,
           user: null,
           loading: false,
-          error: 'Failed to initialize auth',
+          error: null, // Don't show error — just let user try to sign in
         });
       }
     };
@@ -148,6 +215,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        clearTimeout(timeoutId);
+
         if (event === 'SIGNED_IN' && session?.user) {
           const profile = await fetchProfile(session.user.id);
           setAuthState({
@@ -178,6 +247,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => {
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, [getSupabase, fetchProfile]);
@@ -185,7 +255,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Sign in with email and password
   const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     if (!isSupabaseConfigured()) {
-      return { success: false, error: 'Supabase is not configured' };
+      return { success: false, error: 'Authentication service is not available. Please try again later.' };
     }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
@@ -197,14 +267,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         setAuthState(prev => ({ ...prev, loading: false, error: error.message }));
+        // Return user-friendly error messages
+        if (error.message.includes('Invalid login credentials')) {
+          return { success: false, error: 'Invalid email or password. Please check your credentials and try again.' };
+        }
         return { success: false, error: error.message };
       }
 
       if (data.user) {
         const profile = await fetchProfile(data.user.id);
         if (!profile) {
-          setAuthState(prev => ({ ...prev, loading: false, error: 'Profile not found' }));
-          return { success: false, error: 'Profile not found. Please contact support.' };
+          // Profile might not exist yet — create one or let user know
+          setAuthState(prev => ({ ...prev, loading: false }));
+          return { success: false, error: 'Your profile could not be loaded. Please contact support or try again.' };
         }
 
         setAuthState({
@@ -217,10 +292,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true };
       }
 
-      setAuthState(prev => ({ ...prev, loading: false, error: 'No user returned' }));
-      return { success: false, error: 'Login failed - no user returned' };
+      setAuthState(prev => ({ ...prev, loading: false }));
+      return { success: false, error: 'Sign in failed. Please try again.' };
     } catch (err: any) {
-      const message = err?.message || 'Login failed';
+      const message = err?.message || 'Sign in failed. Please check your connection and try again.';
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
@@ -229,7 +304,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Sign up via server-side route to avoid browser client 400 errors
   const signUp = useCallback(async (signUpData: SignUpData): Promise<{ success: boolean; error?: string }> => {
     if (!isSupabaseConfigured()) {
-      return { success: false, error: 'Supabase is not configured' };
+      return { success: false, error: 'Authentication service is not available. Please try again later.' };
     }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
@@ -249,7 +324,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const result = await response.json();
 
       if (!response.ok || result.error) {
-        const errorMessage = result.error || result.message || 'Signup failed';
+        const errorMessage = result.error?.message || result.error || result.message || 'Signup failed';
         setAuthState(prev => ({ ...prev, loading: false, error: errorMessage }));
         return { success: false, error: errorMessage };
       }
@@ -279,7 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       return { success: true };
     } catch (err: any) {
-      const message = err?.message || 'Signup failed';
+      const message = err?.message || 'Signup failed. Please check your connection and try again.';
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
