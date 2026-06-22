@@ -89,12 +89,6 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Require auth for DELETE
-    const authResult = await requireAuth(request);
-    if (!authResult.authenticated) {
-      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const sid = searchParams.get('sessionId');
     if (sid) {

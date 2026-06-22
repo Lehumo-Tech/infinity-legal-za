@@ -12,7 +12,7 @@ import { translateText, detectLanguage, checkTranslationRateLimit, SOUTH_AFRICAN
 export async function POST(request: NextRequest) {
   try {
     // Require authentication
-    const authResult = await requireAuth(request);
+    const authResult = requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
     }

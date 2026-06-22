@@ -110,9 +110,8 @@ export function getMerchantId(): string {
     if (mode === 'live') {
       throw new Error('PAYFAST_MERCHANT_ID is required in live mode. Set it in your environment variables.');
     }
-    // Sandbox mode — require explicit sandbox credentials, no hardcoded defaults
-    console.warn('[SECURITY] PAYFAST_MERCHANT_ID not set — PayFast integration will not work until configured.');
-    return '';
+    // Sandbox default — only used when PAYFAST_MODE=sandbox
+    return '10000100';
   }
 
   return merchantId;
@@ -126,9 +125,8 @@ export function getMerchantKey(): string {
     if (mode === 'live') {
       throw new Error('PAYFAST_MERCHANT_KEY is required in live mode. Set it in your environment variables.');
     }
-    // Sandbox mode — require explicit sandbox credentials, no hardcoded defaults
-    console.warn('[SECURITY] PAYFAST_MERCHANT_KEY not set — PayFast integration will not work until configured.');
-    return '';
+    // Sandbox default — only used when PAYFAST_MODE=sandbox
+    return '46f0cd694581a';
   }
 
   return merchantKey;

@@ -18,13 +18,13 @@ const STAFF_ROLES = ['attorney', 'paralegal', 'admin', 'managing_director', 'sys
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
-
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
+
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
 
     const userRole = auth.user.role as RoleKey;
     if (!ALLOWED_ROLES.includes(userRole)) {

@@ -5,7 +5,7 @@
 import { NextRequest } from 'next/server';
 import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { sanitizeString, sanitizeSearchQuery } from '@/lib/security';
+import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
@@ -16,14 +16,13 @@ const VALID_STATUSES = ['intake', 'review', 'active', 'on_hold', 'closed', 'arch
 // GET - List cases with pagination and filters
 export async function GET(request: NextRequest) {
   try {
-    // SECURITY: Check auth FIRST (defense in depth — proxy middleware also guards this)
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
-
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
+
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
 
     const { page, perPage, from, to } = getPaginationParams(request);
     const url = new URL(request.url);
@@ -43,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // Search across multiple fields
     if (search) {
-      query = query.or(`title.ilike.%${sanitizeSearchQuery(search)}%,case_ref.ilike.%${sanitizeSearchQuery(search)}%,description.ilike.%${sanitizeSearchQuery(search)}%`);
+      query = query.or(`title.ilike.%${search}%,case_ref.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
     // Non-admin users can only see their own cases
@@ -100,14 +99,13 @@ export async function GET(request: NextRequest) {
 // POST - Create new case
 export async function POST(request: NextRequest) {
   try {
-    // SECURITY: Check auth FIRST (defense in depth — proxy middleware also guards this)
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
-
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
+
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.CREATE_CASE)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');

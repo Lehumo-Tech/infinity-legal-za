@@ -5,7 +5,7 @@
 import { NextRequest } from 'next/server';
 import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { sanitizeString, sanitizeSearchQuery } from '@/lib/security';
+import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
@@ -16,13 +16,13 @@ const VALID_PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 // GET - List tasks with pagination and filters
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
-
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
+
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_TASKS)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     if (case_id) query = query.eq('case_id', case_id);
     if (status) query = query.eq('status', status);
     if (priority) query = query.eq('priority', priority);
-    if (search) query = query.or(`title.ilike.%${sanitizeSearchQuery(search)}%,description.ilike.%${sanitizeSearchQuery(search)}%`);
+    if (search) query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
 
     const { data: tasks, count, error } = await query
       .order('created_at', { ascending: false })
@@ -70,13 +70,13 @@ export async function GET(request: NextRequest) {
 // POST - Create a new task
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
-
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
+
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
 
     const body = await request.json();
     const {

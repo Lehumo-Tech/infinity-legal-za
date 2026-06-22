@@ -10,19 +10,13 @@ import { getDashboardStats } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
-
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
 
-    // Dashboard is staff-only — clients should not see firm-wide operational data
-    const STAFF_ROLES = ['managing_director', 'systems_admin', 'attorney', 'paralegal', 'admin', 'senior_partner'];
-    if (!STAFF_ROLES.includes(auth.user.role)) {
-      return apiError('Access denied', 403, 'FORBIDDEN');
-    }
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
 
     // Get core stats from the audit helper
     const stats = await getDashboardStats();

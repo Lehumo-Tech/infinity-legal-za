@@ -116,26 +116,21 @@ export async function POST(request: NextRequest) {
       return apiError('Failed to create account', 500, 'SIGNUP_ERROR');
     }
 
-    // ---- Create or Update Profile ----
-    // Use upsert because handle_new_user trigger may not exist yet.
-    // If the trigger created a profile row, this updates it.
-    // If no profile row exists, this creates one.
+    // ---- Update Profile ----
+    // (auto-created by handle_new_user() trigger)
 
     const { error: profileError } = await db
       .from('profiles')
-      .upsert({
-        id: authData.user.id,
-        email: email.toLowerCase().trim(),
+      .update({
         full_name: sanitizedName,
         phone: phone ? sanitizeString(phone.trim()) : null,
-        role,
         popi_consent: true,
-        email_verified: true,
-      }, { onConflict: 'id' });
+      })
+      .eq('id', authData.user.id);
 
     if (profileError) {
-      console.error('Profile upsert error:', profileError);
-      // Non-fatal — user was created in auth, profile may be incomplete
+      console.error('Profile update error:', profileError);
+      // Non-fatal — profile exists but may lack some data
     }
 
     // ---- Log Consent ----

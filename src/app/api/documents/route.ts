@@ -5,7 +5,6 @@
 import { NextRequest } from 'next/server';
 import { getAdminClient } from '@/lib/supabase/api-client';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { sanitizeSearchQuery } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 
 // Valid enum values per Supabase schema
@@ -15,13 +14,13 @@ const VALID_STATUSES = ['uploading', 'uploaded', 'reviewing', 'approved', 'rejec
 // GET - List documents with pagination and filters
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (!auth.authenticated) return auth.error!;
-
     const db = getAdminClient();
     if (!db) {
       return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
     }
+
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
 
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_DOCUMENTS)) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
@@ -45,7 +44,7 @@ export async function GET(request: NextRequest) {
     if (document_type) query = query.eq('document_type', document_type);
     if (status) query = query.eq('status', status);
     if (uploaded_by) query = query.eq('uploaded_by', uploaded_by);
-    if (search) query = query.or(`file_name.ilike.%${sanitizeSearchQuery(search)}%,description.ilike.%${sanitizeSearchQuery(search)}%`);
+    if (search) query = query.or(`file_name.ilike.%${search}%,description.ilike.%${search}%`);
 
     const { data: documents, count, error } = await query
       .order('created_at', { ascending: false })

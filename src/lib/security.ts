@@ -45,26 +45,26 @@ class RateLimiter {
     // Cache miss or expired — check DB
     try {
       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
-      const [identifier, endpoint] = key.split(':');
+      const [ip, endpoint] = key.split(':');
       const { data: dbEntry } = await db
         .from('rate_limit_logs')
         .select('*')
-        .eq('identifier', identifier)
+        .eq('ip', ip)
         .eq('endpoint', endpoint)
         .single();
 
       if (dbEntry) {
-        const windowStart = new Date(dbEntry.created_at).getTime();
+        const windowStart = new Date(dbEntry.window_start).getTime();
         if (now - windowStart > this.windowMs) {
           // Window expired — reset
           await db
             .from('rate_limit_logs')
             .upsert({
-              identifier,
+              ip,
               endpoint,
               request_count: 1,
-              blocked: false,
-            }, { onConflict: 'identifier,endpoint' });
+              window_start: new Date(now).toISOString(),
+            }, { onConflict: 'ip,endpoint' });
           const entry: RateLimitEntry = { count: 1, windowStart: now };
           this.cache.set(key, entry);
           return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
@@ -88,7 +88,7 @@ class RateLimiter {
       }
 
       // No DB entry — create one
-      await db.from('rate_limit_logs').insert({ identifier, endpoint, request_count: 1, blocked: false });
+      await db.from('rate_limit_logs').insert({ ip, endpoint, request_count: 1 });
       const entry: RateLimitEntry = { count: 1, windowStart: now };
       this.cache.set(key, entry);
       return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
@@ -103,15 +103,15 @@ class RateLimiter {
 
   private async syncToDb(key: string, entry: RateLimitEntry): Promise<void> {
     try {
-      const [identifier, endpoint] = key.split(':');
+      const [ip, endpoint] = key.split(':');
       await db
         .from('rate_limit_logs')
         .upsert({
-          identifier,
+          ip,
           endpoint,
           request_count: entry.count,
-          blocked: entry.count >= this.maxRequests,
-        }, { onConflict: 'identifier,endpoint' });
+          window_start: new Date(entry.windowStart).toISOString(),
+        }, { onConflict: 'ip,endpoint' });
     } catch {
       // Silently fail
     }
@@ -119,8 +119,8 @@ class RateLimiter {
 
   reset(key: string): void {
     this.cache.delete(key);
-    const [identifier, endpoint] = key.split(':');
-    db.from('rate_limit_logs').delete().eq('identifier', identifier).eq('endpoint', endpoint).catch(() => {});
+    const [ip, endpoint] = key.split(':');
+    db.from('rate_limit_logs').delete().eq('ip', ip).eq('endpoint', endpoint).catch(() => {});
   }
 
   cleanup(): void {
@@ -203,15 +203,11 @@ let _encryptionKey: string | null = null;
 function getEncryptionKey(): string {
   if (_encryptionKey) return _encryptionKey;
   const key = process.env.ENCRYPTION_KEY;
-  if (!key) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('ENCRYPTION_KEY environment variable is required in production');
-    }
-    console.warn('[SECURITY] ENCRYPTION_KEY not set — using insecure dev-only key. DO NOT use with real data!');
-    _encryptionKey = 'dev-only-encryption-key-32ch!!';
-  } else {
-    _encryptionKey = key;
+  if (!key && process.env.NODE_ENV === 'production') {
+    throw new Error('ENCRYPTION_KEY environment variable is required in production');
   }
+  // Dev-only fallback (NOT for production use)
+  _encryptionKey = key || 'dev-only-encryption-key-32ch!!';
   return _encryptionKey;
 }
 const ALGORITHM = 'aes-256-gcm';
@@ -309,20 +305,4 @@ export function sanitizeFilename(filename: string): string {
     .replace(/[^a-zA-Z0-9._-]/g, '_')
     .replace(/\.{2,}/g, '.')
     .substring(0, 255);
-}
-
-// ============================================
-// POSTGREST FILTER SANITIZATION
-// ============================================
-
-/**
- * Sanitize a search string for use in Supabase/PostgREST filter queries.
- * Removes characters that could be used for filter injection: , ( ) . 
- */
-export function sanitizeSearchQuery(input: string): string {
-  return input
-    .replace(/[,().]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .substring(0, 200); // Limit length
 }

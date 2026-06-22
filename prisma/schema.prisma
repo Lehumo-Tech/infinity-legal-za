@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "sqlite"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // ============================================
@@ -12,7 +13,7 @@ datasource db {
 // ============================================
 
 model Profile {
-  id             String   @id @default(cuid())
+  id             String   @id @default(uuid())
   email          String
   full_name      String?
   phone          String?
@@ -21,10 +22,8 @@ model Profile {
   role           String   @default("client")
   id_number      String?
   company        String?
-  /// JSON stored as String (SQLite compatibility)
-  address        String?
-  /// JSON stored as String (SQLite compatibility)
-  preferences    String?
+  address        Json?
+  preferences    Json?
   popi_consent   Boolean  @default(false)
   email_verified Boolean  @default(false)
   last_login_at  DateTime?
@@ -84,10 +83,9 @@ model Profile {
 // ============================================
 
 model Attorney {
-  id                 String   @id @default(cuid())
+  id                 String   @id @default(uuid())
   practice_number    String?  @unique
-  /// Comma-separated values (SQLite compatibility — was String[])
-  specialization     String
+  specialization     String[]
   bar_admission_date DateTime?
   hourly_rate        Float?
   bio                String?
@@ -108,7 +106,7 @@ model Attorney {
 // ============================================
 
 model Case {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid())
   /// Auto-generated case reference
   case_ref        String   @unique
   title           String
@@ -128,10 +126,8 @@ model Case {
   contingency_fee Float?
   next_deadline   DateTime?
   notes           String?
-  /// Comma-separated values (SQLite compatibility — was String[])
-  tags            String
-  /// JSON stored as String (SQLite compatibility)
-  metadata        String?
+  tags            String[]
+  metadata        Json?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
@@ -160,7 +156,7 @@ model Case {
 // ============================================
 
 model Lead {
-  id                 String   @id @default(cuid())
+  id                 String   @id @default(uuid())
   first_name         String
   last_name          String
   email              String
@@ -179,15 +175,13 @@ model Lead {
   converted_client_id String?
   converted_case_id  String?
   notes              String?
-  /// Comma-separated values (SQLite compatibility — was String[])
-  tags               String
+  tags               String[]
   utm_source         String?
   utm_medium         String?
   utm_campaign       String?
   last_contacted_at  DateTime?
   next_follow_up     DateTime?
-  /// JSON stored as String (SQLite compatibility)
-  metadata           String?
+  metadata           Json?
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt
 
@@ -212,7 +206,7 @@ model Lead {
 // ============================================
 
 model IntakeSubmission {
-  id                String   @id @default(cuid())
+  id                String   @id @default(uuid())
   client_id         String?
   case_id           String?
   lead_id           String?
@@ -227,14 +221,10 @@ model IntakeSubmission {
   desired_outcome   String?
   previous_legal_help String?
   documents_ready   Boolean?
-  /// JSON stored as String (SQLite compatibility)
-  personal_info     String?
-  /// JSON stored as String (SQLite compatibility)
-  case_details      String?
-  /// JSON stored as String (SQLite compatibility)
-  financial_info    String?
-  /// JSON stored as String (SQLite compatibility)
-  ai_extracted_data String?
+  personal_info     Json?
+  case_details      Json?
+  financial_info    Json?
+  ai_extracted_data Json?
   ai_confidence     Float?
   review_notes      String?
   reviewed_by       String?
@@ -262,21 +252,17 @@ model IntakeSubmission {
 // ============================================
 
 model AiIntakeSession {
-  id                   String   @id @default(cuid())
+  id                   String   @id @default(uuid())
   client_id            String?
   intake_submission_id String?
   session_token        String?  @unique
   /// CHECK: draft | submitted | under_review | approved | rejected | additional_info_needed
   status               String   @default("draft")
-  /// JSON stored as String (SQLite compatibility)
-  conversation_history String?
-  /// JSON stored as String (SQLite compatibility)
-  extracted_entities   String?
+  conversation_history Json?
+  extracted_entities   Json?
   current_step         String?
-  /// Comma-separated values (SQLite compatibility — was String[])
-  steps_completed      String
-  /// Comma-separated values (SQLite compatibility — was String[])
-  steps_remaining      String
+  steps_completed      String[]
+  steps_remaining      String[]
   ai_model_used        String?
   total_tokens         Int?
   completed_at         DateTime?
@@ -297,22 +283,18 @@ model AiIntakeSession {
 // ============================================
 
 model AiAnalysis {
-  id                 String   @id @default(cuid())
+  id                 String   @id @default(uuid())
   case_id            String?
   intake_id          String?
   /// CHECK: merit_assessment | risk_analysis | cost_estimate | timeline_prediction | document_review | legal_research | strategy_recommendation
   analysis_type      String
   /// CHECK: pending | processing | completed | failed
   status             String   @default("pending")
-  /// JSON stored as String (SQLite compatibility)
-  input_data         String?
-  /// JSON stored as String (SQLite compatibility)
-  result             String?
+  input_data         Json?
+  result             Json?
   summary            String?
-  /// JSON stored as String (SQLite compatibility)
-  recommendations    String?
-  /// JSON stored as String (SQLite compatibility)
-  risk_flags         String?
+  recommendations    Json?
+  risk_flags         Json?
   confidence_score   Float?
   ai_model_used      String?
   tokens_used        Int?
@@ -341,7 +323,7 @@ model AiAnalysis {
 // ============================================
 
 model AiAnalysisQueue {
-  id           String    @id @default(cuid())
+  id           String    @id @default(uuid())
   analysis_id  String
   /// CHECK: low | medium | high | urgent
   priority     String    @default("medium")
@@ -365,7 +347,7 @@ model AiAnalysisQueue {
 // ============================================
 
 model Document {
-  id                  String   @id @default(cuid())
+  id                  String   @id @default(uuid())
   case_id             String?
   uploaded_by         String?
   /// CHECK: id_document | contract | court_filing | correspondence | evidence | financial | medical | police_report | affidavit | other
@@ -374,19 +356,16 @@ model Document {
   status              String   @default("uploading")
   file_name           String
   file_path           String
-  /// SQLite uses Int instead of BigInt
-  file_size           Int?
+  file_size           BigInt?
   mime_type           String?
   description         String?
-  /// Comma-separated values (SQLite compatibility — was String[])
-  tags                String
+  tags                String[]
   version             Int      @default(1)
   parent_document_id  String?
   ai_extracted_text   String?
   ai_summary          String?
   is_confidential     Boolean  @default(false)
-  /// JSON stored as String (SQLite compatibility)
-  metadata            String?
+  metadata            Json?
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
@@ -408,7 +387,7 @@ model Document {
 // ============================================
 
 model Task {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   case_id      String?
   assigned_to  String
   created_by   String
@@ -420,8 +399,7 @@ model Task {
   priority     String   @default("medium")
   due_date     DateTime?
   completed_at DateTime?
-  /// JSON stored as String (SQLite compatibility)
-  metadata     String?
+  metadata     Json?
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 
@@ -442,7 +420,7 @@ model Task {
 // ============================================
 
 model Message {
-  id                String   @id @default(cuid())
+  id                String   @id @default(uuid())
   case_id           String?
   sender_id         String
   recipient_id      String?
@@ -452,8 +430,7 @@ model Message {
   content           String
   is_read           Boolean  @default(false)
   parent_message_id String?
-  /// JSON stored as String (SQLite compatibility)
-  metadata          String?
+  metadata          Json?
   created_at        DateTime @default(now())
 
   case           Case?    @relation(fields: [case_id], references: [id])
@@ -474,13 +451,12 @@ model Message {
 // ============================================
 
 model CaseTimeline {
-  id               String   @id @default(cuid())
+  id               String   @id @default(uuid())
   case_id          String
   event_type       String
   event_description String
   performed_by     String?
-  /// JSON stored as String (SQLite compatibility)
-  metadata         String?
+  metadata         Json?
   is_system_event  Boolean  @default(false)
   created_at       DateTime @default(now())
 
@@ -497,7 +473,7 @@ model CaseTimeline {
 // ============================================
 
 model PrivilegedNote {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   case_id       String
   author_id     String
   content       String
@@ -517,7 +493,7 @@ model PrivilegedNote {
 // ============================================
 
 model Consultation {
-  id                 String   @id @default(cuid())
+  id                 String   @id @default(uuid())
   case_id            String?
   client_id          String
   attorney_id        String
@@ -550,7 +526,7 @@ model Consultation {
 // ============================================
 
 model ConsentLog {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   user_id      String?
   /// CHECK: terms_of_service | privacy_policy | popi_act | marketing | data_processing
   consent_type String
@@ -572,7 +548,7 @@ model ConsentLog {
 // ============================================
 
 model Notification {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   user_id    String
   title      String
   message    String
@@ -580,8 +556,7 @@ model Notification {
   type       String   @default("info")
   link       String?
   is_read    Boolean  @default(false)
-  /// JSON stored as String (SQLite compatibility)
-  metadata   String?
+  metadata   Json?
   created_at DateTime @default(now())
 
   user Profile @relation(fields: [user_id], references: [id])
@@ -597,15 +572,14 @@ model Notification {
 // ============================================
 
 model PricingPlan {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   name          String
   slug          String   @unique
   description   String?
   price_monthly Float
   price_annual  Float?
   currency      String   @default("ZAR")
-  /// JSON stored as String (SQLite compatibility)
-  features      String?
+  features      Json?
   is_popular    Boolean  @default(false)
   is_active     Boolean  @default(true)
   sort_order    Int      @default(0)
@@ -623,7 +597,7 @@ model PricingPlan {
 // ============================================
 
 model UserSubscription {
-  id                    String   @id @default(cuid())
+  id                    String   @id @default(uuid())
   user_id               String
   plan_id               String
   /// CHECK: active | past_due | cancelled | expired | trial
@@ -651,7 +625,7 @@ model UserSubscription {
 // ============================================
 
 model PaymentRecord {
-  id                  String   @id @default(cuid())
+  id                  String   @id @default(uuid())
   subscription_id     String?
   case_id             String?
   user_id             String
@@ -663,8 +637,7 @@ model PaymentRecord {
   payfast_token       String?
   payment_method      String?
   description         String?
-  /// JSON stored as String (SQLite compatibility)
-  metadata            String?
+  metadata            Json?
   paid_at             DateTime?
   created_at          DateTime @default(now())
 
@@ -684,13 +657,12 @@ model PaymentRecord {
 // ============================================
 
 model AuditLog {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   user_id       String?
   action        String
   resource_type String
   resource_id   String?
-  /// JSON stored as String (SQLite compatibility)
-  details       String?
+  details       Json?
   ip_address    String?
   user_agent    String?
   created_at    DateTime @default(now())
@@ -708,7 +680,7 @@ model AuditLog {
 // ============================================
 
 model ApiAnalytic {
-  id               String   @id @default(cuid())
+  id               String   @id @default(uuid())
   endpoint         String
   method           String
   status_code      Int
@@ -731,14 +703,13 @@ model ApiAnalytic {
 // ============================================
 
 model ErrorLog {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   error_type   String
   message      String
   stack_trace  String?
   user_id      String?
   request_path String?
-  /// JSON stored as String (SQLite compatibility)
-  metadata     String?
+  metadata     Json?
   resolved     Boolean  @default(false)
   created_at   DateTime @default(now())
 
@@ -755,7 +726,7 @@ model ErrorLog {
 // ============================================
 
 model RateLimitLog {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   identifier    String
   endpoint      String
   request_count Int
@@ -772,17 +743,15 @@ model RateLimitLog {
 // ============================================
 
 model BackupRecord {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid())
   backup_type     String
   status          String
   file_path       String?
-  /// SQLite uses Int instead of BigInt
-  file_size_bytes Int?
+  file_size_bytes BigInt?
   started_at      DateTime @default(now())
   completed_at    DateTime?
   error_message   String?
-  /// JSON stored as String (SQLite compatibility)
-  metadata        String?
+  metadata        Json?
   created_at      DateTime @default(now())
 
   @@index([status])
@@ -795,12 +764,11 @@ model BackupRecord {
 // ============================================
 
 model WorkbenchConfig {
-  id               String   @id @default(cuid())
+  id               String   @id @default(uuid())
   user_id          String   @unique
   /// CHECK: grid | list | compact
   layout           String   @default("grid")
-  /// JSON stored as String (SQLite compatibility)
-  widgets          String?
+  widgets          Json?
   sidebar_collapsed Boolean  @default(false)
   theme            String?
   created_at       DateTime @default(now())
@@ -816,7 +784,7 @@ model WorkbenchConfig {
 // ============================================
 
 model WorkbenchWidget {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   user_id     String
   /// CHECK: case_summary | task_list | upcoming_deadlines | recent_documents | billing_overview | lead_pipeline | ai_insights | quick_actions | notifications | calendar
   widget_type String
@@ -826,8 +794,7 @@ model WorkbenchWidget {
   width       Int      @default(1)
   height      Int      @default(1)
   is_visible  Boolean  @default(true)
-  /// JSON stored as String (SQLite compatibility)
-  config      String?
+  config      Json?
   sort_order  Int      @default(0)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
@@ -843,14 +810,13 @@ model WorkbenchWidget {
 // ============================================
 
 model WorkbenchQuickAction {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   user_id    String
   action_type String
   label      String
   icon       String?
   target_url String?
-  /// JSON stored as String (SQLite compatibility)
-  config     String?
+  config     Json?
   sort_order Int      @default(0)
   created_at DateTime @default(now())
 
@@ -864,13 +830,12 @@ model WorkbenchQuickAction {
 // ============================================
 
 model WorkbenchPinnedItem {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   user_id    String
   item_type  String
   item_id    String
   label      String
-  /// JSON stored as String (SQLite compatibility)
-  metadata   String?
+  metadata   Json?
   sort_order Int      @default(0)
   created_at DateTime @default(now())
 
@@ -885,14 +850,13 @@ model WorkbenchPinnedItem {
 // ============================================
 
 model WorkbenchRecentActivity {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   user_id       String
   activity_type String
   resource_type String?
   resource_id   String?
   description   String?
-  /// JSON stored as String (SQLite compatibility)
-  metadata      String?
+  metadata      Json?
   created_at    DateTime @default(now())
 
   user Profile @relation(fields: [user_id], references: [id])
@@ -907,7 +871,7 @@ model WorkbenchRecentActivity {
 // ============================================
 
 model LeadPipelineStage {
-  id             String   @id @default(cuid())
+  id             String   @id @default(uuid())
   name           String
   slug           String   @unique
   description    String?
@@ -928,7 +892,7 @@ model LeadPipelineStage {
 // ============================================
 
 model LeadPipelineTransition {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   lead_id    String
   from_stage String?
   to_stage   String
@@ -948,7 +912,7 @@ model LeadPipelineTransition {
 // ============================================
 
 model LeadCommunication {
-  id             String    @id @default(cuid())
+  id             String    @id @default(uuid())
   lead_id        String
   /// Default: note
   type           String    @default("note")
@@ -958,8 +922,7 @@ model LeadCommunication {
   content        String
   contacted_by   String?
   follow_up_date DateTime?
-  /// JSON stored as String (SQLite compatibility)
-  metadata       String?
+  metadata       Json?
   created_at     DateTime  @default(now())
 
   lead         Lead     @relation(fields: [lead_id], references: [id])
@@ -974,14 +937,12 @@ model LeadCommunication {
 // ============================================
 
 model LeadAutomationRule {
-  id               String   @id @default(cuid())
+  id               String   @id @default(uuid())
   name             String
   description      String?
   trigger_event    String
-  /// JSON stored as String (SQLite compatibility)
-  conditions       String?
-  /// JSON stored as String (SQLite compatibility)
-  actions          String?
+  conditions       Json?
+  actions          Json?
   is_active        Boolean  @default(true)
   created_by       String?
   last_triggered_at DateTime?
@@ -999,11 +960,10 @@ model LeadAutomationRule {
 // ============================================
 
 model LeadFormSubmission {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   form_slug    String
   lead_id      String?
-  /// JSON stored as String (SQLite compatibility)
-  form_data    String?
+  form_data    Json?
   utm_source   String?
   utm_medium   String?
   utm_campaign String?
@@ -1026,7 +986,7 @@ model LeadFormSubmission {
 // ============================================
 
 model AdminSession {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   user_id    String
   token      String   @unique
   ip_address String?
@@ -1046,13 +1006,12 @@ model AdminSession {
 // ============================================
 
 model AdminActivityLog {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   user_id       String?
   action        String
   resource_type String
   resource_id   String?
-  /// JSON stored as String (SQLite compatibility)
-  details       String?
+  details       Json?
   ip_address    String?
   /// Default: info
   severity      String   @default("info")
@@ -1072,14 +1031,13 @@ model AdminActivityLog {
 // ============================================
 
 model CrmDashboardWidget {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   widget_key  String   @unique
   title       String
   description String?
   /// Default: stat
   widget_type String   @default("stat")
-  /// JSON stored as String (SQLite compatibility)
-  config      String?
+  config      Json?
   data_source String?
   is_active   Boolean  @default(true)
   sort_order  Int      @default(0)
@@ -1096,15 +1054,13 @@ model CrmDashboardWidget {
 // ============================================
 
 model CrmReport {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   title         String
   /// CHECK: leads_summary | revenue | case_metrics | client_acquisition | attorney_performance | ai_usage | conversion_funnel
   report_type   String
   description   String?
-  /// JSON stored as String (SQLite compatibility)
-  parameters    String?
-  /// JSON stored as String (SQLite compatibility)
-  result_data   String?
+  parameters    Json?
+  result_data   Json?
   generated_by  String?
   is_scheduled  Boolean  @default(false)
   schedule_cron String?
@@ -1126,7 +1082,7 @@ model CrmReport {
 // ============================================
 
 model CrmNotification {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   user_id    String
   type       String
   title      String
@@ -1135,8 +1091,7 @@ model CrmNotification {
   priority   String   @default("medium")
   link       String?
   is_read    Boolean  @default(false)
-  /// JSON stored as String (SQLite compatibility)
-  metadata   String?
+  metadata   Json?
   created_at DateTime @default(now())
 
   user Profile @relation(fields: [user_id], references: [id])
@@ -1152,10 +1107,9 @@ model CrmNotification {
 // ============================================
 
 model CrmSystemSetting {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   setting_key   String   @unique
-  /// JSON stored as String (SQLite compatibility)
-  setting_value String?
+  setting_value Json?
   description   String?
   is_public     Boolean  @default(false)
   updated_by    String?
@@ -1173,7 +1127,7 @@ model CrmSystemSetting {
 // ============================================
 
 model CrmContactMessage {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   name          String
   email         String
   phone         String?
@@ -1185,8 +1139,7 @@ model CrmContactMessage {
   replied_at    DateTime?
   reply_content String?
   lead_id       String?
-  /// JSON stored as String (SQLite compatibility)
-  metadata      String?
+  metadata      Json?
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
@@ -1204,7 +1157,7 @@ model CrmContactMessage {
 // ============================================
 
 model CrmUserNote {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   user_id     String
   author_id   String
   content     String
@@ -1227,13 +1180,12 @@ model CrmUserNote {
 // ============================================
 
 model CrmSubscriptionEvent {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid())
   subscription_id String
   user_id         String
   event_type      String
   description     String?
-  /// JSON stored as String (SQLite compatibility)
-  metadata        String?
+  metadata        Json?
   created_at      DateTime @default(now())
 
   subscription UserSubscription @relation(fields: [subscription_id], references: [id])
@@ -1250,7 +1202,7 @@ model CrmSubscriptionEvent {
 // ============================================
 
 model LegalArticle {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid())
   slug            String   @unique
   title           String
   subtitle        String?
@@ -1258,8 +1210,7 @@ model LegalArticle {
   summary         String?
   /// CHECK: civil_litigation | labour_law | criminal_defence | family_law | corporate_commercial | property_conveyancing | estate_planning | debt_recovery | consumer_rights | popia_compliance | immigration | general
   category        String
-  /// Comma-separated values (SQLite compatibility — was String[])
-  tags            String
+  tags            String[]
   cover_image_url String?
   author_id       String?
   reading_time_min Int?
@@ -1267,8 +1218,7 @@ model LegalArticle {
   is_featured     Boolean  @default(false)
   published_at    DateTime?
   sort_order      Int      @default(0)
-  /// JSON stored as String (SQLite compatibility)
-  metadata        String?
+  metadata        Json?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 

@@ -1,14 +1,11 @@
 /**
  * Infinity Legal ZA - Database Query Helpers
- * Optimized query functions using Supabase client.
- *
- * NOTE: This module uses the Supabase admin client from @/lib/db.
- * The `db` export can be null when Supabase is not configured,
- * so every function must handle that case gracefully.
+ * Optimized query functions with cursor-based pagination, select/include,
+ * transaction wrappers, and query timing/analytics.
  */
 
-import { db, type SupabaseClient } from '@/lib/db'
-import type { Database } from '@/lib/supabase/types'
+import { db } from '@/lib/db'
+import type { Prisma } from '@prisma/client'
 
 // ============================================================
 // Types
@@ -40,80 +37,56 @@ export interface CursorPaginatedResult<T> {
   hasMore: boolean
 }
 
-// Convenience type aliases from the generated Supabase types
-type CaseRow = Database['public']['Tables']['cases']['Row']
-type LeadRow = Database['public']['Tables']['leads']['Row']
-type TaskRow = Database['public']['Tables']['tasks']['Row']
-type DocumentRow = Database['public']['Tables']['documents']['Row']
-type ProfileRow = Database['public']['Tables']['profiles']['Row']
-type NotificationRow = Database['public']['Tables']['notifications']['Row']
-type AttorneyRow = Database['public']['Tables']['attorneys']['Row']
-type ConsultationRow = Database['public']['Tables']['consultations']['Row']
-type CaseTimelineRow = Database['public']['Tables']['case_timeline']['Row']
-
 // ============================================================
-// Helper: get the Supabase client or throw
-// ============================================================
-
-function getClient(): SupabaseClient {
-  if (!db) {
-    throw new Error('Database not configured. Please set Supabase environment variables.')
-  }
-  return db
-}
-
-// ============================================================
-// Offset-based Pagination Helper (Supabase)
+// Offset-based Pagination Helper
 // ============================================================
 
 /**
- * Generic paginate function for any Supabase table.
+ * Generic paginate function for any Prisma model.
  * Uses offset-based pagination with count query.
- * Always uses explicit field selection - no SELECT *.
+ * Always uses select to limit fields - no SELECT *.
  */
-export async function paginate<T extends Record<string, unknown>>(
-  table: string,
-  selectFields: string,
-  filters: Record<string, unknown> = {},
+export async function paginate<
+  T extends Record<string, unknown>,
+  M extends {
+    findMany: (args: any) => Promise<T[]>
+    count: (args: any) => Promise<number>
+  }
+>(
+  model: M,
+  where: Record<string, unknown> = {},
   page: number = 1,
   perPage: number = 20,
-  orderBy: string = 'created_at.desc'
+  orderBy: Record<string, unknown> = { created_at: 'desc' as const },
+  select?: Record<string, unknown>
 ): Promise<PaginatedResult<T>> {
   const startTime = performance.now()
-  const client = getClient()
 
   const safePage = Math.max(1, page)
   const safePerPage = Math.min(Math.max(1, perPage), 100) // Cap at 100
-  const from = (safePage - 1) * safePerPage
-  const to = from + safePerPage - 1
+  const skip = (safePage - 1) * safePerPage
 
-  // Build the query with filters
-  let query = client
-    .from(table)
-    .select(selectFields, { count: 'exact' })
-    .range(from, to)
-    .order(orderBy.split('.')[0], { ascending: orderBy.endsWith('.asc') })
-
-  // Apply equality filters
-  for (const [key, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== null) {
-      query = query.eq(key, value as string | number | boolean)
-    }
+  const findManyArgs: Record<string, unknown> = {
+    where,
+    orderBy,
+    skip,
+    take: safePerPage,
   }
 
-  const { data, count, error } = await query
-
-  if (error) {
-    throw new Error(`Paginate query failed for ${table}: ${error.message}`)
+  if (select) {
+    findManyArgs.select = select
   }
 
-  const total = count ?? 0
+  const [data, total] = await Promise.all([
+    model.findMany(findManyArgs),
+    model.count({ where }),
+  ])
 
   const duration = performance.now() - startTime
   logQueryTime('paginate', duration)
 
   return {
-    data: (data ?? []) as unknown as T[],
+    data,
     pagination: {
       page: safePage,
       perPage: safePerPage,
@@ -124,64 +97,51 @@ export async function paginate<T extends Record<string, unknown>>(
 }
 
 // ============================================================
-// Cursor-based Pagination Helper (Supabase)
+// Cursor-based Pagination Helper
 // ============================================================
 
 /**
  * Generic cursor-based pagination for efficient large dataset traversal.
  * Better performance for infinite scroll / real-time feeds.
  */
-export async function cursorPaginate<T extends Record<string, unknown> & { id: string }>(
-  table: string,
-  selectFields: string,
-  filters: Record<string, unknown> = {},
+export async function cursorPaginate<
+  T extends Record<string, unknown> & { id: string },
+  M extends {
+    findMany: (args: any) => Promise<T[]>
+  }
+>(
+  model: M,
+  where: Record<string, unknown> = {},
   { cursor, limit }: CursorPaginationParams,
-  orderBy: string = 'created_at.desc'
+  orderBy: Record<string, unknown> = { created_at: 'desc' as const },
+  select?: Record<string, unknown>
 ): Promise<CursorPaginatedResult<T>> {
   const startTime = performance.now()
-  const client = getClient()
 
   const safeLimit = Math.min(Math.max(1, limit), 100)
 
-  let query = client
-    .from(table)
-    .select(selectFields)
-    .limit(safeLimit + 1) // Fetch one extra to check for more
-    .order(orderBy.split('.')[0], { ascending: orderBy.endsWith('.asc') })
-
-  // Apply equality filters
-  for (const [key, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== null) {
-      query = query.eq(key, value as string | number | boolean)
-    }
+  const findManyArgs: Record<string, unknown> = {
+    where,
+    orderBy,
+    take: safeLimit + 1, // Fetch one extra to check for more
+    ...(select ? { select } : {}),
   }
 
-  // Cursor: get rows with id > cursor (for desc) or id < cursor (for asc)
   if (cursor) {
-    const ascending = orderBy.endsWith('.asc')
-    if (ascending) {
-      query = query.gt('id', cursor)
-    } else {
-      query = query.lt('id', cursor)
-    }
+    findManyArgs.cursor = { id: cursor }
+    findManyArgs.skip = 1
   }
 
-  const { data, error } = await query
-
-  if (error) {
-    throw new Error(`Cursor paginate query failed for ${table}: ${error.message}`)
-  }
-
-  const results = (data ?? []) as unknown as T[]
+  const results = await model.findMany(findManyArgs)
   const hasMore = results.length > safeLimit
-  const slicedData = hasMore ? results.slice(0, safeLimit) : results
-  const nextCursor = hasMore && slicedData.length > 0 ? slicedData[slicedData.length - 1].id : null
+  const data = hasMore ? results.slice(0, safeLimit) : results
+  const nextCursor = hasMore && data.length > 0 ? data[data.length - 1].id : null
 
   const duration = performance.now() - startTime
   logQueryTime('cursorPaginate', duration)
 
   return {
-    data: slicedData,
+    data: data as T[],
     nextCursor,
     hasMore,
   }
@@ -192,19 +152,17 @@ export async function cursorPaginate<T extends Record<string, unknown> & { id: s
 // ============================================================
 
 /**
- * @deprecated Not supported with Supabase client - use Supabase RPC instead.
- * Supabase does not support client-side transactions. To perform atomic
- * multi-step operations, create a Postgres function (RPC) and call it
- * via `db.rpc('function_name', params)`.
+ * Execute multiple operations in a transaction.
+ * Automatically rolls back on error.
  */
 export async function executeInTransaction<T>(
-  _fn: (tx: unknown) => Promise<T>,
-  _options?: { maxWait?: number; timeout?: number }
+  fn: (tx: Prisma.TransactionClient) => Promise<T>,
+  options?: { maxWait?: number; timeout?: number }
 ): Promise<T> {
-  throw new Error(
-    'executeInTransaction is not supported with the Supabase client. ' +
-    'Use Supabase RPC (db.rpc) for atomic multi-step operations.'
-  )
+  return db.$transaction(fn, {
+    maxWait: options?.maxWait ?? 5000,
+    timeout: options?.timeout ?? 10000,
+  })
 }
 
 /**
@@ -277,47 +235,52 @@ export const CaseQueries = {
     page: number = 1,
     perPage: number = 20
   ) {
-    return paginate<CaseRow>(
-      'cases',
-      'id, case_ref, title, case_type, status, client_id, attorney_id, court_name, estimated_value, next_deadline, tags, created_at, updated_at',
+    return paginate(
+      db.case,
       where,
       page,
       perPage,
-      'created_at.desc'
+      { created_at: 'desc' },
+      {
+        id: true,
+        matter_number: true,
+        title: true,
+        case_type: true,
+        urgency: true,
+        status: true,
+        client_id: true,
+        lead_attorney_id: true,
+        court_date: true,
+        is_high_risk: true,
+        next_action: true,
+        next_action_date: true,
+        created_at: true,
+        updated_at: true,
+        client: { select: { id: true, full_name: true, email: true } },
+        lead_attorney: { select: { id: true, full_name: true } },
+      }
     )
   },
 
   /**
    * Get full case details with related data.
-   * Supabase supports joining via foreign keys in select().
    */
   async getCaseById(id: string) {
     const startTime = performance.now()
-    const client = getClient()
-
-    const { data, error } = await client
-      .from('cases')
-      .select(`
-        *,
-        client:profiles!cases_client_id_fkey (id, email, full_name, phone),
-        attorney:profiles!cases_attorney_id_fkey (id, full_name, email),
-        attorney_profile:attorneys!cases_attorney_id_fkey (id, practice_number, specialization, available),
-        documents (id, file_name, document_type, status, version, created_at),
-        tasks (id, title, status, priority, due_date, assigned_to),
-        case_timeline (id, event_type, event_description, performed_by, created_at),
-        consultations (id, scheduled_at, status, meeting_type)
-      `)
-      .eq('id', id)
-      .single()
-
+    const result = await db.case.findUnique({
+      where: { id },
+      include: {
+        client: { select: { id: true, full_name: true, email: true, phone: true } },
+        lead_attorney: { select: { id: true, full_name: true, email: true } },
+        support_paralegal: { select: { id: true, full_name: true } },
+        documents: { select: { id: true, title: true, document_type: true, workflow_status: true, created_at: true } },
+        tasks: { select: { id: true, title: true, status: true, priority: true, due_date: true, assignee: { select: { full_name: true } } } },
+        timeline: { select: { id: true, action: true, description: true, created_at: true }, orderBy: { created_at: 'desc' } },
+        consultations: { select: { id: true, scheduled_date: true, status: true, meeting_type: true } },
+      },
+    })
     logQueryTime('getCaseById', performance.now() - startTime)
-
-    if (error) {
-      if (error.code === 'PGRST116') return null // No rows found
-      throw new Error(`getCaseById failed: ${error.message}`)
-    }
-
-    return data
+    return result
   },
 
   /**
@@ -325,25 +288,14 @@ export const CaseQueries = {
    */
   async getCaseStats() {
     const startTime = performance.now()
-    const client = getClient()
-
-    const [totalResult, activeResult, urgentResult, highRiskResult] = await Promise.all([
-      client.from('cases').select('*', { count: 'exact', head: true }),
-      client.from('cases').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-      // Urgent = high or critical priority — need separate queries or use .in()
-      client.from('cases').select('*', { count: 'exact', head: true }).in('case_type', ['criminal_defense', 'urgent_civil']),
-      // High risk — using tags array contains (not directly supported in count, so approximate)
-      client.from('cases').select('*', { count: 'exact', head: true }).contains('tags', ['high_risk']),
+    const [total, active, urgent, highRisk] = await Promise.all([
+      db.case.count(),
+      db.case.count({ where: { status: 'active' } }),
+      db.case.count({ where: { urgency: { in: ['high', 'critical'] } } }),
+      db.case.count({ where: { is_high_risk: true } }),
     ])
-
     logQueryTime('getCaseStats', performance.now() - startTime)
-
-    return {
-      total: totalResult.count ?? 0,
-      active: activeResult.count ?? 0,
-      urgent: urgentResult.count ?? 0,
-      highRisk: highRiskResult.count ?? 0,
-    }
+    return { total, active, urgent, highRisk }
   },
 }
 
@@ -357,40 +309,38 @@ export const LeadQueries = {
     page: number = 1,
     perPage: number = 20
   ) {
-    return paginate<LeadRow>(
-      'leads',
-      'id, first_name, last_name, email, phone, company, source, status, case_type, estimated_value, lead_score, assigned_to, next_follow_up, created_at, updated_at',
+    return paginate(
+      db.lead,
       where,
       page,
       perPage,
-      'created_at.desc'
+      { created_at: 'desc' },
+      {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        source: true,
+        status: true,
+        case_type: true,
+        estimated_value: true,
+        sla_deadline: true,
+        created_at: true,
+        assigned_paralegal: { select: { id: true, full_name: true } },
+      }
     )
   },
 
   async getLeadStats() {
     const startTime = performance.now()
-    const client = getClient()
-
-    const [totalResult, newResult, retainedResult, overdueResult] = await Promise.all([
-      client.from('leads').select('*', { count: 'exact', head: true }),
-      client.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'new'),
-      client.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'retained'),
-      // Overdue: next_follow_up is in the past and status is not terminal
-      client
-        .from('leads')
-        .select('*', { count: 'exact', head: true })
-        .lt('next_follow_up', new Date().toISOString())
-        .not('status', 'in', '("retained","lost","disqualified")'),
+    const [total, newLeads, converted, overdue] = await Promise.all([
+      db.lead.count(),
+      db.lead.count({ where: { status: 'new' } }),
+      db.lead.count({ where: { status: 'retained' } }),
+      db.lead.count({ where: { sla_deadline: { lt: new Date() }, status: { notIn: ['retained', 'lost', 'disqualified'] } } }),
     ])
-
     logQueryTime('getLeadStats', performance.now() - startTime)
-
-    return {
-      total: totalResult.count ?? 0,
-      newLeads: newResult.count ?? 0,
-      converted: retainedResult.count ?? 0,
-      overdue: overdueResult.count ?? 0,
-    }
+    return { total, newLeads, converted, overdue }
   },
 }
 
@@ -401,57 +351,47 @@ export const LeadQueries = {
 export const TaskQueries = {
   async getTasksByUser(userId: string, status?: string) {
     const startTime = performance.now()
-    const client = getClient()
+    const where: Record<string, unknown> = { assigned_to: userId }
+    if (status) where.status = status
 
-    let query = client
-      .from('tasks')
-      .select(`
-        id, title, description, status, priority, due_date,
-        case:cases!tasks_case_id_fkey (id, title, case_ref),
-        creator:profiles!tasks_created_by_fkey (id, full_name),
-        created_at
-      `)
-      .eq('assigned_to', userId)
-      .order('priority', { ascending: false })
-      .order('due_date', { ascending: true })
-
-    if (status) {
-      query = query.eq('status', status)
-    }
-
-    const { data, error } = await query
-
+    const result = await db.task.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        priority: true,
+        due_date: true,
+        case: { select: { id: true, title: true, matter_number: true } },
+        creator: { select: { id: true, full_name: true } },
+        created_at: true,
+      },
+      orderBy: [{ priority: 'desc' }, { due_date: 'asc' }],
+    })
     logQueryTime('getTasksByUser', performance.now() - startTime)
-
-    if (error) {
-      throw new Error(`getTasksByUser failed: ${error.message}`)
-    }
-
-    return data ?? []
+    return result
   },
 
   async getOverdueTasks() {
     const startTime = performance.now()
-    const client = getClient()
-
-    const { data, error } = await client
-      .from('tasks')
-      .select(`
-        id, title, due_date, priority,
-        assignee:profiles!tasks_assigned_to_fkey (id, full_name),
-        case:cases!tasks_case_id_fkey (id, title)
-      `)
-      .lt('due_date', new Date().toISOString())
-      .in('status', ['pending', 'in_progress'])
-      .order('due_date', { ascending: true })
-
+    const result = await db.task.findMany({
+      where: {
+        due_date: { lt: new Date() },
+        status: { in: ['pending', 'in_progress'] },
+      },
+      select: {
+        id: true,
+        title: true,
+        due_date: true,
+        priority: true,
+        assignee: { select: { id: true, full_name: true } },
+        case: { select: { id: true, title: true } },
+      },
+      orderBy: { due_date: 'asc' },
+    })
     logQueryTime('getOverdueTasks', performance.now() - startTime)
-
-    if (error) {
-      throw new Error(`getOverdueTasks failed: ${error.message}`)
-    }
-
-    return data ?? []
+    return result
   },
 }
 
@@ -462,21 +402,21 @@ export const TaskQueries = {
 export const DocumentQueries = {
   async getDocumentsByCase(caseId: string) {
     const startTime = performance.now()
-    const client = getClient()
-
-    const { data, error } = await client
-      .from('documents')
-      .select('id, file_name, document_type, status, version, is_confidential, created_at')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false })
-
+    const result = await db.document.findMany({
+      where: { case_id: caseId },
+      select: {
+        id: true,
+        title: true,
+        document_type: true,
+        workflow_status: true,
+        version: true,
+        is_locked: true,
+        created_at: true,
+      },
+      orderBy: { created_at: 'desc' },
+    })
     logQueryTime('getDocumentsByCase', performance.now() - startTime)
-
-    if (error) {
-      throw new Error(`getDocumentsByCase failed: ${error.message}`)
-    }
-
-    return data ?? []
+    return result
   },
 }
 
@@ -487,65 +427,48 @@ export const DocumentQueries = {
 export const UserQueries = {
   async getUserById(id: string) {
     const startTime = performance.now()
-    const client = getClient()
-
-    const { data, error } = await client
-      .from('profiles')
-      .select('id, email, full_name, phone, role, avatar_url, email_verified, last_login_at, created_at, updated_at')
-      .eq('id', id)
-      .single()
-
+    const result = await db.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        phone: true,
+        role: true,
+        department: true,
+        bar_number: true,
+        is_active: true,
+        avatar: true,
+        email_verified: true,
+        hire_date: true,
+        created_at: true,
+        profiles: true,
+        attorney_profile: true,
+      },
+    })
     logQueryTime('getUserById', performance.now() - startTime)
-
-    if (error) {
-      if (error.code === 'PGRST116') return null
-      throw new Error(`getUserById failed: ${error.message}`)
-    }
-
-    return data
+    return result
   },
 
   async getUserByEmail(email: string) {
     const startTime = performance.now()
-    const client = getClient()
-
-    const { data, error } = await client
-      .from('profiles')
-      .select('id, email, full_name, role, email_verified, created_at, updated_at')
-      .eq('email', email)
-      .single()
-
+    const result = await db.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        full_name: true,
+        role: true,
+        department: true,
+        is_active: true,
+        email_verified: true,
+        password_expires_at: true,
+        last_password_change: true,
+      },
+    })
     logQueryTime('getUserByEmail', performance.now() - startTime)
-
-    if (error) {
-      if (error.code === 'PGRST116') return null
-      throw new Error(`getUserByEmail failed: ${error.message}`)
-    }
-
-    return data
-  },
-
-  /**
-   * Get a user's attorney profile if they have one.
-   */
-  async getAttorneyProfile(userId: string) {
-    const startTime = performance.now()
-    const client = getClient()
-
-    const { data, error } = await client
-      .from('attorneys')
-      .select('*')
-      .eq('id', userId)
-      .single()
-
-    logQueryTime('getAttorneyProfile', performance.now() - startTime)
-
-    if (error) {
-      if (error.code === 'PGRST116') return null
-      throw new Error(`getAttorneyProfile failed: ${error.message}`)
-    }
-
-    return data
+    return result
   },
 }
 
@@ -555,44 +478,35 @@ export const UserQueries = {
 
 export const NotificationQueries = {
   async getUnreadCount(userId: string): Promise<number> {
-    const client = getClient()
-
-    const { count, error } = await client
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('is_read', false)
-
-    if (error) {
-      throw new Error(`getUnreadCount failed: ${error.message}`)
-    }
-
-    return count ?? 0
+    return db.notification.count({
+      where: { user_id: userId, is_read: false },
+    })
   },
 
   async getUserNotifications(userId: string, page: number = 1, perPage: number = 20) {
-    return paginate<NotificationRow>(
-      'notifications',
-      'id, type, title, message, is_read, link, created_at',
+    return paginate(
+      db.notification,
       { user_id: userId },
       page,
       perPage,
-      'created_at.desc'
+      { created_at: 'desc' },
+      {
+        id: true,
+        type: true,
+        title: true,
+        message: true,
+        is_read: true,
+        link: true,
+        created_at: true,
+      }
     )
   },
 
   async markAllRead(userId: string): Promise<void> {
-    const client = getClient()
-
-    const { error } = await client
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', userId)
-      .eq('is_read', false)
-
-    if (error) {
-      throw new Error(`markAllRead failed: ${error.message}`)
-    }
+    await db.notification.updateMany({
+      where: { user_id: userId, is_read: false },
+      data: { is_read: true },
+    })
   },
 }
 
@@ -603,56 +517,36 @@ export const NotificationQueries = {
 export const DashboardQueries = {
   async getOverview() {
     const startTime = performance.now()
-    const client = getClient()
-
     const [
-      totalCasesResult,
-      activeCasesResult,
-      totalLeadsResult,
-      newLeadsResult,
-      totalTasksResult,
-      pendingTasksResult,
-      overdueTasksResult,
-      totalDocumentsResult,
-      totalClientsResult,
+      totalCases,
+      activeCases,
+      totalLeads,
+      newLeads,
+      totalTasks,
+      pendingTasks,
+      overdueTasks,
+      totalDocuments,
+      totalClients,
     ] = await Promise.all([
-      client.from('cases').select('*', { count: 'exact', head: true }),
-      client.from('cases').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-      client.from('leads').select('*', { count: 'exact', head: true }),
-      client.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'new'),
-      client.from('tasks').select('*', { count: 'exact', head: true }),
-      client.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      client
-        .from('tasks')
-        .select('*', { count: 'exact', head: true })
-        .lt('due_date', new Date().toISOString())
-        .in('status', ['pending', 'in_progress']),
-      client.from('documents').select('*', { count: 'exact', head: true }),
-      client.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'client'),
+      db.case.count(),
+      db.case.count({ where: { status: 'active' } }),
+      db.lead.count(),
+      db.lead.count({ where: { status: 'new' } }),
+      db.task.count(),
+      db.task.count({ where: { status: 'pending' } }),
+      db.task.count({ where: { due_date: { lt: new Date() }, status: { in: ['pending', 'in_progress'] } } }),
+      db.document.count(),
+      db.user.count({ where: { role: 'client', is_active: true } }),
     ])
 
     logQueryTime('getDashboardOverview', performance.now() - startTime)
 
     return {
-      cases: {
-        total: totalCasesResult.count ?? 0,
-        active: activeCasesResult.count ?? 0,
-      },
-      leads: {
-        total: totalLeadsResult.count ?? 0,
-        new: newLeadsResult.count ?? 0,
-      },
-      tasks: {
-        total: totalTasksResult.count ?? 0,
-        pending: pendingTasksResult.count ?? 0,
-        overdue: overdueTasksResult.count ?? 0,
-      },
-      documents: {
-        total: totalDocumentsResult.count ?? 0,
-      },
-      clients: {
-        total: totalClientsResult.count ?? 0,
-      },
+      cases: { total: totalCases, active: activeCases },
+      leads: { total: totalLeads, new: newLeads },
+      tasks: { total: totalTasks, pending: pendingTasks, overdue: overdueTasks },
+      documents: { total: totalDocuments },
+      clients: { total: totalClients },
     }
   },
 }
