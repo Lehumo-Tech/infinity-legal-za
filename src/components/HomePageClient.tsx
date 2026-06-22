@@ -6,7 +6,7 @@ import {
   Users, FolderKanban, Target, FileText, Shield, TrendingUp,
   Bell, Search, ChevronRight, Activity, Clock, AlertTriangle, CheckCircle2,
   LogOut, DollarSign, UserPlus, FileCheck,
-  ArrowUpRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
+  ArrowUpRight, ArrowRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
   Mail, Phone, Building, Star, Zap, Globe,
   KeyRound, ShieldCheck, Upload, Plus,
   BookOpen, Briefcase, Crown, MessageSquare, LayoutDashboard,
@@ -40,12 +40,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { LandingPage } from '@/components/LandingPage';
 import { LoginScreen } from '@/components/LoginScreen';
+import { PaymentWall } from '@/components/PaymentWall';
 import { useAuth } from '@/hooks/useAuth';
 
 // ============================================
 // TYPES
 // ============================================
-type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart';
+type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart' | 'subscription';
 type UserRole = 'managing_director' | 'admin' | 'attorney' | 'paralegal' | 'systems_admin' | 'client';
 
 interface User {
@@ -179,16 +180,17 @@ export default function HomePageClient() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [subscription, setSubscription] = useState<any>(null);
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auth is handled by useAuth() hook - signIn/signOut are in the LoginScreen and topbar
   // The auth state (isAuthenticated, user, token) is derived from the auth context
   // No more localStorage - sessions are managed via Supabase cookies
 
-  // Loading timeout — prevent infinite loading spinner (15 second max)
+  // Loading timeout — prevent infinite loading spinner (8 second max)
   useEffect(() => {
     if (authLoading) {
-      loadingTimerRef.current = setTimeout(() => setLoadingTimeout(true), 15000);
+      loadingTimerRef.current = setTimeout(() => setLoadingTimeout(true), 8000);
     }
     return () => {
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
@@ -309,6 +311,24 @@ export default function HomePageClient() {
     }
   };
 
+  const loadSubscription = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/subscriptions', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success && data.data?.subscription) {
+        setSubscription(data.data.subscription);
+      } else {
+        setSubscription(null);
+      }
+    } catch (e) {
+      console.error('Subscription load error:', e);
+      setSubscription(null);
+    }
+  };
+
   const loadNotifications = async () => {
     if (!token) return;
     try {
@@ -336,17 +356,17 @@ export default function HomePageClient() {
       else if (currentView === 'documents') await loadDocuments();
       else if (currentView === 'tasks') await loadTasks();
       else if (currentView === 'staff' || currentView === 'org-chart') await loadStaff();
-      else if (currentView === 'pricing') await loadPricingPlans();
+      else if (currentView === 'pricing' || currentView === 'subscription') await loadPricingPlans();
     };
     loadData();
   }, [currentView, isAuthenticated]);
 
-  // Load notifications on auth (wrapped in async IIFE to avoid setState-in-effect lint)
+  // Load notifications and subscription on auth
   useEffect(() => {
     if (isAuthenticated && token) {
       void (async () => {
         try {
-          await loadNotifications();
+          await Promise.all([loadNotifications(), loadSubscription()]);
         } catch { /* ignore */ }
       })();
     }
@@ -366,31 +386,36 @@ export default function HomePageClient() {
       { id: 'workbench', label: 'Workbench', icon: LayoutDashboard, group: 'Main' },
     ];
 
-    // Cases — all roles can see (clients see their own cases, staff see all/assigned)
-    items.push({ id: 'cases', label: 'Cases', icon: FolderKanban, group: 'Practice' });
-    items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'Practice' });
+    if (isClient) {
+      // CLIENT NAVIGATION — simplified, focused on their needs
+      items.push({ id: 'cases', label: 'My Cases', icon: FolderKanban, group: 'My Legal' });
+      items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'My Legal' });
+      items.push({ id: 'documents', label: 'My Documents', icon: FileText, group: 'My Legal' });
+      items.push({ id: 'tasks', label: 'My Tasks', icon: CheckCircle2, group: 'My Legal' });
+      items.push({ id: 'subscription', label: subscription ? 'My Plan' : 'Subscribe', icon: subscription ? Crown : Zap, group: 'Plan' });
+    } else {
+      // STAFF NAVIGATION
+      items.push({ id: 'cases', label: 'Cases', icon: FolderKanban, group: 'Practice' });
+      items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'Practice' });
 
-    // Leads — only staff who manage leads
-    if (isManagement || isSales || isLegal) {
-      items.push({ id: 'leads', label: 'Leads', icon: Target, group: 'Practice' });
+      if (isManagement || isSales || isLegal) {
+        items.push({ id: 'leads', label: 'Leads', icon: Target, group: 'Practice' });
+      }
+
+      items.push({ id: 'documents', label: 'Documents', icon: FileText, group: 'Practice' });
+      items.push({ id: 'tasks', label: 'Tasks', icon: CheckCircle2, group: 'Practice' });
+
+      if (isManagement || isLegal || isParalegal || isFinance) {
+        items.push({ id: 'staff', label: 'Staff Portal', icon: Users, group: 'Firm' });
+        items.push({ id: 'org-chart', label: 'Org Structure', icon: TreePine, group: 'Firm' });
+      }
+
+      if (isManagement) {
+        items.push({ id: 'analytics', label: 'Analytics', icon: TrendingUp, group: 'Firm' });
+      }
+
+      items.push({ id: 'pricing', label: 'Pricing', icon: DollarSign, group: 'More' });
     }
-
-    // Documents & Tasks — all roles (clients see own, staff see all/assigned)
-    items.push({ id: 'documents', label: 'Documents', icon: FileText, group: 'Practice' });
-    items.push({ id: 'tasks', label: 'Tasks', icon: CheckCircle2, group: 'Practice' });
-
-    // Staff & Org — internal only, not for clients
-    if (isManagement || isLegal || isParalegal || isFinance) {
-      items.push({ id: 'staff', label: 'Staff Portal', icon: Users, group: 'Firm' });
-      items.push({ id: 'org-chart', label: 'Org Structure', icon: TreePine, group: 'Firm' });
-    }
-
-    // Analytics — management only
-    if (isManagement) {
-      items.push({ id: 'analytics', label: 'Analytics', icon: TrendingUp, group: 'Firm' });
-    }
-
-    items.push({ id: 'pricing', label: 'Pricing', icon: DollarSign, group: 'More' });
 
     return items;
   };
@@ -696,7 +721,7 @@ export default function HomePageClient() {
 
         {/* Page content */}
         <div className="flex-1 overflow-auto p-6">
-          {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} />}
+          {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} subscription={subscription} />}
           {currentView === 'cases' && <CasesView cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} token={token} user={user} staff={staff} />}
           {currentView === 'leads' && <LeadsView leads={leads} page={leadsPage} total={leadsTotal} onPageChange={loadLeads} onRefresh={() => loadLeads(leadsPage)} />}
           {currentView === 'documents' && <DocumentsView token={token} documents={documents} onRefresh={loadDocuments} user={user} />}
@@ -705,7 +730,83 @@ export default function HomePageClient() {
           {currentView === 'staff' && <StaffPortal staff={staff} user={user} />}
           {currentView === 'org-chart' && <OrgChartView staff={staff} />}
           {currentView === 'analytics' && <AnalyticsView token={token} stats={stats} />}
-          {currentView === 'pricing' && <PricingView plans={pricingPlans} />}
+          {currentView === 'pricing' && <PricingView plans={pricingPlans} onSubscribe={(planId) => setCurrentView('subscription')} onLoginClick={() => {}} isAuthenticated={true} />}
+          {(currentView === 'subscription') && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-[#0c1e3c]">{subscription ? 'My Subscription' : 'Choose Your Legal Plan'}</h2>
+                <p className="text-[13px] text-slate-500 mt-1">{subscription ? 'Manage your current subscription' : 'All prices in South African Rand (ZAR). Cancel anytime.'}</p>
+              </div>
+              {subscription && (
+                <Card className="max-w-lg mx-auto shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/15 flex items-center justify-center">
+                        <Crown className="w-5 h-5 text-[#a88832]" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-[#0c1e3c]">{subscription.plan?.name || 'Active Plan'}</h3>
+                        <p className="text-[11px] text-slate-500">{subscription.plan?.slug?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Status</span>
+                        <Badge className={subscription.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>{subscription.status}</Badge>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Monthly Price</span>
+                        <span className="font-medium">R{subscription.plan?.price_monthly || '—'}</span>
+                      </div>
+                      {subscription.days_remaining !== null && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-500">Days Remaining</span>
+                          <span className="font-medium">{subscription.days_remaining}</span>
+                        </div>
+                      )}
+                      {subscription.cancel_at_period_end && (
+                        <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[12px]">
+                          Your subscription will cancel at the end of the billing period.
+                        </div>
+                      )}
+                    </div>
+                    <Separator className="my-4" />
+                    {subscription.plan?.features && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Included Features</p>
+                        <ul className="space-y-1.5">
+                          {(Array.isArray(subscription.plan.features) ? subscription.plan.features : []).map((f: string, i: number) => (
+                            <li key={i} className="flex items-center gap-2 text-[12px] text-slate-600">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c]" />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {!subscription.cancel_at_period_end && (
+                      <Button variant="outline" size="sm" className="w-full mt-4 text-red-600 border-red-200 hover:bg-red-50 text-[12px]" onClick={async () => {
+                        if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) return;
+                        try {
+                          const res = await fetch('/api/subscriptions', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
+                          const data = await res.json();
+                          if (data.success) {
+                            toast.success('Subscription scheduled for cancellation');
+                            await loadSubscription();
+                          } else {
+                            toast.error(data.error?.message || 'Failed to cancel');
+                          }
+                        } catch {
+                          toast.error('Network error');
+                        }
+                      }}>Cancel Subscription</Button>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+              <PaymentWall isAuthenticated={true} onPaymentInitiated={() => loadSubscription()} className="max-w-4xl mx-auto" />
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -729,10 +830,10 @@ export default function HomePageClient() {
 // ============================================
 // WORKBENCH VIEW - Premium Legal Dashboard
 // ============================================
-function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth }: {
+function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth, subscription }: {
   stats: Stats | null; user: User | null; cases: any[]; consultations: Consultation[];
   tasks: TaskItem[]; token: string | null; onViewChange: (v: View) => void;
-  charts: any; firmHealth: Record<string, boolean>;
+  charts: any; firmHealth: Record<string, boolean>; subscription: any;
 }) {
   const role = user?.role || 'client';
   const isClient = role === 'client';
@@ -745,7 +846,16 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const todayStr = now.toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-  const quickActions = [
+  const quickActions = isClient ? [
+    // CLIENT quick actions — focused on their needs
+    { label: 'My Cases', icon: FolderKanban, color: 'bg-[#0c1e3c] text-[#c9a84c]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'cases' as View },
+    { label: 'Consultations', icon: BookOpen, color: 'bg-emerald-50 text-emerald-700', accent: 'group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)]', view: 'consultations' as View },
+    { label: 'My Documents', icon: FileUp, color: 'bg-blue-50 text-blue-700', accent: 'group-hover:shadow-[0_0_12px_rgba(59,130,246,0.2)]', view: 'documents' as View },
+    { label: 'My Tasks', icon: CheckCircle2, color: 'bg-amber-50 text-amber-700', accent: 'group-hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]', view: 'tasks' as View },
+    ...(subscription ? [] : [{ label: 'Subscribe Now', icon: Zap, color: 'bg-[#c9a84c]/15 text-[#a88832]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'subscription' as View }]),
+    ...(subscription ? [{ label: 'My Plan', icon: Crown, color: 'bg-[#c9a84c]/15 text-[#a88832]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'subscription' as View }] : []),
+  ] : [
+    // STAFF quick actions
     ...(isLegal || isManagement ? [{ label: 'Log Consultation', icon: BookOpen, color: 'bg-[#0c1e3c] text-[#c9a84c]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'consultations' as View }] : []),
     ...(isLegal || isParalegal || isManagement ? [{ label: 'Upload Document', icon: FileUp, color: 'bg-emerald-50 text-emerald-700', accent: 'group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)]', view: 'documents' as View }] : []),
     ...(isManagement || isLegal ? [{ label: 'New Case', icon: FolderKanban, color: 'bg-blue-50 text-blue-700', accent: 'group-hover:shadow-[0_0_12px_rgba(59,130,246,0.2)]', view: 'cases' as View }] : []),
@@ -803,6 +913,54 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
           </div>
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════
+          SUBSCRIPTION CTA — For clients without a plan
+          ═══════════════════════════════════════════ */}
+      {isClient && !subscription && (
+        <div className="relative rounded-2xl overflow-hidden border-2 border-[#c9a84c]/30 bg-gradient-to-r from-[#0c1e3c] via-[#132d52] to-[#0c1e3c]">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[#c9a84c]/[0.06] rounded-full blur-[40px]" />
+          <div className="relative p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-[#c9a84c]/15 flex items-center justify-center flex-shrink-0">
+                <Zap className="w-6 h-6 text-[#c9a84c]" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-base">Get Legal Coverage from R99/month</h3>
+                <p className="text-[#8fa4c4] text-[13px] mt-0.5">Choose a plan that covers your legal needs — Civil, Labour, or Extensive.</p>
+              </div>
+            </div>
+            <Button onClick={() => onViewChange('subscription')} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg px-6 text-[13px] font-semibold shadow-lg shadow-[#c9a84c]/20 flex-shrink-0 gap-2">
+              View Plans <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════
+          SUBSCRIPTION STATUS — For clients with a plan
+          ═══════════════════════════════════════════ */}
+      {isClient && subscription && (
+        <div className="relative rounded-2xl overflow-hidden border border-emerald-200 bg-gradient-to-r from-emerald-50/50 via-white to-emerald-50/50">
+          <div className="relative p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <Crown className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-[#0c1e3c] font-semibold text-sm">{subscription.plan?.name || 'Active Plan'}</h3>
+                  <Badge className={subscription.status === 'active' ? 'bg-emerald-100 text-emerald-700 text-[9px]' : 'bg-amber-100 text-amber-700 text-[9px]'}>{subscription.status}</Badge>
+                </div>
+                <p className="text-slate-500 text-[12px] mt-0.5">R{subscription.plan?.price_monthly || '—'}/month{subscription.days_remaining !== null ? ` · ${subscription.days_remaining} days remaining` : ''}</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => onViewChange('subscription')} className="text-[#a88832] border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 text-[12px]">
+              Manage Plan
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════
           QUICK ACTIONS — Staggered Premium Cards

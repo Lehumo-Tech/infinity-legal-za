@@ -62,8 +62,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null,
   });
   const supabaseRef = useRef<ReturnType<typeof createBrowserSupabaseClient> | null>(null);
-  const initRef = useRef(false);
-  const initResolvedRef = useRef(false);
 
   // Lazy init the browser client
   const getSupabase = useCallback(() => {
@@ -107,11 +105,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [getSupabase]);
 
+  // Build a minimal profile from auth user data when the profiles table row doesn't exist yet
+  const buildMinimalProfile = useCallback((authUser: User): (Profile & { email_verified: boolean }) => ({
+    id: authUser.id,
+    email: authUser.email || '',
+    full_name: authUser.user_metadata?.full_name || null,
+    phone: authUser.user_metadata?.phone || null,
+    avatar_url: null,
+    role: (authUser.user_metadata?.role || 'client') as string,
+    id_number: null,
+    company: null,
+    address: null,
+    preferences: null,
+    popi_consent: false,
+    email_verified: !!authUser.email_confirmed_at,
+    last_login_at: null,
+    created_at: authUser.created_at,
+    updated_at: authUser.updated_at || authUser.created_at,
+  }), []);
+
   // Initialize auth state — runs once
   useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
-
     // If Supabase isn't configured, skip auth initialization
     if (!isSupabaseConfigured()) {
       queueMicrotask(() => {
@@ -128,67 +142,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const supabase = getSupabase();
 
-    // Get initial session
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await withTimeout(
-          supabase.auth.getSession(),
-          10000 // 10 second timeout
-        );
-
-        initResolvedRef.current = true;
-
-        if (session?.user) {
-          const profile = await fetchProfile(session.user.id);
-          setAuthState({
-            supabaseUser: session.user,
-            user: profile,
-            accessToken: session.access_token,
-            loading: false,
-            error: null,
-          });
-        } else {
-          setAuthState({
-            supabaseUser: null,
-            user: null,
-            accessToken: null,
-            loading: false,
-            error: null,
-          });
-        }
-      } catch (err) {
-        initResolvedRef.current = true;
-        console.error('Auth init error:', err);
-        setAuthState({
-          supabaseUser: null,
-          user: null,
-          loading: false,
-          error: null, // Don't show error — user can still use the app unauthenticated
-          accessToken: null,
-        });
-      }
-    };
-
-    initAuth();
-
-    // Listen for auth state changes
+    // Listen for auth state changes — handles everything including INITIAL_SESSION
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // Ignore INITIAL_SESSION — we already handle it in initAuth
-        if (event === 'INITIAL_SESSION') return;
-
-        // Prevent race with initAuth — skip events until init has resolved
-        if (!initResolvedRef.current) return;
-
-        if (event === 'SIGNED_IN' && session?.user) {
-          const profile = await fetchProfile(session.user.id);
-          setAuthState({
-            supabaseUser: session.user,
-            user: profile,
-            accessToken: session.access_token,
-            loading: false,
-            error: null,
-          });
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+          if (session?.user) {
+            const profile = await fetchProfile(session.user.id);
+            setAuthState({
+              supabaseUser: session.user,
+              user: profile ?? buildMinimalProfile(session.user),
+              accessToken: session.access_token,
+              loading: false,
+              error: null,
+            });
+          } else {
+            setAuthState({
+              supabaseUser: null,
+              user: null,
+              accessToken: null,
+              loading: false,
+              error: null,
+            });
+          }
         } else if (event === 'SIGNED_OUT') {
           setAuthState({
             supabaseUser: null,
@@ -210,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [getSupabase, fetchProfile]);
+  }, [getSupabase, fetchProfile, buildMinimalProfile]);
 
   // Sign in with email and password — uses Supabase browser client directly
   // Auto-confirms email if needed, then retries sign-in
@@ -251,20 +226,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
               if (!retryError && retryData.user) {
                 const profile = await fetchProfile(retryData.user.id);
-                if (!profile) {
-                  setAuthState({
-                    supabaseUser: retryData.user,
-                    user: null,
-                    accessToken: retryData.session?.access_token ?? null,
-                    loading: false,
-                    error: 'Profile not found. Please contact support.',
-                  });
-                  return { success: false, error: 'Profile not found. Please contact support.' };
-                }
 
                 setAuthState({
                   supabaseUser: retryData.user,
-                  user: profile,
+                  user: profile ?? buildMinimalProfile(retryData.user),
                   accessToken: retryData.session?.access_token ?? null,
                   loading: false,
                   error: null,
@@ -283,20 +248,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user) {
         const profile = await fetchProfile(data.user.id);
-        if (!profile) {
-          setAuthState({
-            supabaseUser: data.user,
-            user: null,
-            accessToken: data.session?.access_token ?? null,
-            loading: false,
-            error: 'Profile not found. Please contact support.',
-          });
-          return { success: false, error: 'Profile not found. Please contact support.' };
-        }
 
         setAuthState({
           supabaseUser: data.user,
-          user: profile,
+          user: profile ?? buildMinimalProfile(data.user),
           accessToken: data.session?.access_token ?? null,
           loading: false,
           error: null,
@@ -311,7 +266,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
-  }, [getSupabase, fetchProfile]);
+  }, [getSupabase, fetchProfile, buildMinimalProfile]);
 
   // Sign up via server-side route — auto sign-in after successful signup
   const signUp = useCallback(async (signUpData: SignUpData): Promise<{ success: boolean; error?: string }> => {
@@ -353,7 +308,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profile = await fetchProfile(signInData.user.id);
           setAuthState({
             supabaseUser: signInData.user,
-            user: profile,
+            user: profile ?? buildMinimalProfile(signInData.user),
             accessToken: signInData.session?.access_token ?? null,
             loading: false,
             error: null,
@@ -372,7 +327,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
-  }, [getSupabase, fetchProfile]);
+  }, [getSupabase, fetchProfile, buildMinimalProfile]);
 
   // Sign out
   const signOut = useCallback(async () => {
