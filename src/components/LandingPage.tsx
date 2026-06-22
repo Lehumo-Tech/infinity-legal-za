@@ -44,7 +44,28 @@ interface ChatMessage {
 export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated, onBackToDashboard, userName }: LandingPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [pricingPlans, setPricingPlans] = useState<any[]>([]);
 
+  // Fetch pricing plans from API
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch('/api/pricing');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setPricingPlans(data.data);
+        }
+      } catch { /* fallback to hardcoded below */ }
+    };
+    fetchPlans();
+  }, []);
+
+  // Fallback plans if API fails
+  const displayPlans = pricingPlans.length > 0 ? pricingPlans : [
+    { name: 'Civil Legal Plan', slug: 'civil_legal_plan', price_monthly: 99, price_annual: 999, description: 'For civil disputes and general legal matters.', features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'], is_popular: false },
+    { name: 'Labour Legal Plan', slug: 'labour_legal_plan', price_monthly: 99, price_annual: 999, description: 'For workplace and employment matters.', features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'], is_popular: true },
+    { name: 'Extensive Plan', slug: 'extensive_plan', price_monthly: 139, price_annual: 1399, description: 'Complete legal coverage across all practice areas.', features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'], is_popular: false },
+  ];
 
   // Resolve action handlers: prefer onLoginClick, fall back to onSignIn/onSignUp
   const handleSignIn = onLoginClick || onSignIn || (() => {});
@@ -594,63 +615,47 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
             <p className="mt-4 text-slate-500 text-base">All plans include POPIA compliance and AI-powered case analysis.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-4xl mx-auto">
-            {[
-              {
-                name: 'Civil Legal Plan',
-                price: 'R99',
-                period: '/month',
-                popular: false,
-                description: 'For civil disputes and general legal matters.',
-                features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'],
-              },
-              {
-                name: 'Labour Legal Plan',
-                price: 'R99',
-                period: '/month',
-                popular: false,
-                description: 'For workplace and employment matters.',
-                features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'],
-              },
-              {
-                name: 'Extensive Plan',
-                price: 'R139',
-                period: '/month',
-                popular: true,
-                description: 'Complete legal coverage across all practice areas.',
-                features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'],
-              },
-            ].map((plan) => (
-              <div key={plan.name} className={`relative flex flex-col rounded-2xl transition-all duration-300 ${plan.popular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">
-                      <Star className="w-3 h-3" />Most Popular
-                    </span>
-                  </div>
-                )}
-                <div className="p-6 lg:p-8">
-                  <div className="mb-6">
-                    <h3 className={`text-base font-semibold ${plan.popular ? 'text-[#c9a84c]' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
-                    <p className={`text-[12px] mt-1 ${plan.popular ? 'text-[#8fa4c4]' : 'text-slate-500'}`}>{plan.description}</p>
-                    <div className="mt-4 flex items-baseline gap-1">
-                      <span className={`text-4xl font-bold tracking-tight ${plan.popular ? 'text-white' : 'text-[#0c1e3c]'}`}>{plan.price}</span>
-                      <span className={`text-sm ${plan.popular ? 'text-[#5a7199]' : 'text-slate-400'}`}>{plan.period}</span>
+            {displayPlans.map((plan: any) => {
+              const isPopular = plan.is_popular || plan.slug === 'labour_legal_plan';
+              const features = Array.isArray(plan.features) ? plan.features : [];
+              return (
+                <div key={plan.slug || plan.name} className={`relative flex flex-col rounded-2xl transition-all duration-300 ${isPopular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
+                  {isPopular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">
+                        <Star className="w-3 h-3" />Most Popular
+                      </span>
                     </div>
+                  )}
+                  <div className="p-6 lg:p-8">
+                    <div className="mb-6">
+                      <h3 className={`text-base font-semibold ${isPopular ? 'text-[#c9a84c]' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
+                      <p className={`text-[12px] mt-1 ${isPopular ? 'text-[#8fa4c4]' : 'text-slate-500'}`}>{plan.description}</p>
+                      <div className="mt-4 flex items-baseline gap-1">
+                        <span className={`text-4xl font-bold tracking-tight ${isPopular ? 'text-white' : 'text-[#0c1e3c]'}`}>R{Math.round(plan.price_monthly)}</span>
+                        <span className={`text-sm ${isPopular ? 'text-[#5a7199]' : 'text-slate-400'}`}>/month</span>
+                      </div>
+                      {plan.price_annual && (
+                        <p className={`text-[10px] mt-1 ${isPopular ? 'text-[#c9a84c]' : 'text-emerald-600'}`}>
+                          R{Math.round(plan.price_annual)}/year — save {Math.round((1 - plan.price_annual / (plan.price_monthly * 12)) * 100)}%
+                        </p>
+                      )}
+                    </div>
+                    <ul className="space-y-3 mb-8 flex-1">
+                      {features.map((feature: string) => (
+                        <li key={feature} className="flex items-start gap-2.5">
+                          <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#c9a84c]" />
+                          <span className={`text-[13px] ${isPopular ? 'text-[#c4d3e8]' : 'text-slate-600'}`}>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button onClick={() => handleSignUpWithEmail()} className={`w-full rounded-xl py-4 text-sm font-semibold transition-all ${isPopular ? 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] shadow-lg shadow-[#c9a84c]/20' : 'bg-[#0c1e3c] text-white hover:bg-[#1a3358]'}`}>
+                      Choose Plan
+                    </Button>
                   </div>
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5">
-                        <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#c9a84c]" />
-                        <span className={`text-[13px] ${plan.popular ? 'text-[#c4d3e8]' : 'text-slate-600'}`}>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button onClick={() => handleSignUpWithEmail()} className={`w-full rounded-xl py-4 text-sm font-semibold transition-all ${plan.popular ? 'bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] shadow-lg shadow-[#c9a84c]/20' : 'bg-[#0c1e3c] text-white hover:bg-[#1a3358]'}`}>
-                    Choose Plan
-                  </Button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

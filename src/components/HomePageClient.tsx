@@ -2749,6 +2749,9 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
 // PRICING VIEW
 // ============================================
 function PricingView({ plans }: { plans: any[] }) {
+  const { accessToken } = useAuth();
+  const [subscribingPlanId, setSubscribingPlanId] = useState<string | null>(null);
+
   const planStyleMap: Record<string, { isPopular: boolean; badge: string | null }> = {
     civil_legal_plan: { isPopular: false, badge: null },
     labour_legal_plan: { isPopular: true, badge: 'Most Popular' },
@@ -2756,6 +2759,52 @@ function PricingView({ plans }: { plans: any[] }) {
   };
 
   const defaultPlanStyle = { isPopular: false, badge: null };
+
+  const handleSubscribe = async (planId: string) => {
+    if (!accessToken) {
+      toast.error('Please sign in to subscribe');
+      return;
+    }
+    setSubscribingPlanId(planId);
+    try {
+      const res = await fetch('/api/payfast/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ planId, billingCycle: 'monthly' }),
+      });
+      const data = await res.json();
+
+      if (data.success && data.data) {
+        // Create and submit hidden form to PayFast
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.data.payfastUrl;
+        Object.entries(data.data.formData).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        const errorMsg = data.error?.message || data.error || 'Failed to initiate payment';
+        if (res.status === 409) {
+          toast.error('Active subscription found', { description: 'You already have an active subscription.' });
+        } else {
+          toast.error('Payment failed', { description: errorMsg });
+        }
+      }
+    } catch {
+      toast.error('Network error', { description: 'Could not connect to the payment service.' });
+    } finally {
+      setSubscribingPlanId(null);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -2781,6 +2830,7 @@ function PricingView({ plans }: { plans: any[] }) {
             const style = planStyleMap[plan.slug] || defaultPlanStyle;
             const features = Array.isArray(plan.features) ? plan.features : [];
             const isPopular = style.isPopular;
+            const isSubscribing = subscribingPlanId === plan.id;
 
             return (
               <div key={plan.id} className={`relative ${isPopular ? 'card-navy p-0' : 'card-premium p-0'} ${isPopular ? 'ring-2 ring-[#c9a84c]/40' : ''}`}>
@@ -2798,6 +2848,9 @@ function PricingView({ plans }: { plans: any[] }) {
                 <div className="p-6">
                   {/* Plan name */}
                   <h3 className={`font-semibold text-base ${isPopular ? 'text-white' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
+                  {plan.description && (
+                    <p className={`text-[11px] mt-0.5 ${isPopular ? 'text-[#8fa4c4]' : 'text-slate-400'}`}>{plan.description}</p>
+                  )}
 
                   {/* Price display — large serif font */}
                   <div className="mt-3 flex items-baseline gap-1">
@@ -2811,13 +2864,6 @@ function PricingView({ plans }: { plans: any[] }) {
                   {plan.price_annual && (
                     <p className={`text-xs mt-1 ${isPopular ? 'text-emerald-400' : 'text-emerald-600'}`}>
                       R{Math.round(plan.price_annual)}/year — save {Math.round((1 - plan.price_annual / (plan.price_monthly * 12)) * 100)}%
-                    </p>
-                  )}
-
-                  {/* Plan limits */}
-                  {plan.max_cases && (
-                    <p className={`text-xs mt-2 ${isPopular ? 'text-[#7a94b8]' : 'text-slate-400'}`}>
-                      Up to {plan.max_cases} cases · {plan.max_documents || '∞'} documents
                     </p>
                   )}
 
@@ -2838,14 +2884,22 @@ function PricingView({ plans }: { plans: any[] }) {
                     ))}
                   </ul>
 
-                  {/* CTA button */}
+                  {/* CTA button — actual PayFast checkout */}
                   <button
-                    className={`w-full mt-5 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    className={`w-full mt-5 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                       isPopular ? 'btn-gold' : 'btn-navy'
-                    }`}
-                    onClick={() => toast.success(`${plan.name} selected! Redirecting to signup...`)}
+                    } ${isSubscribing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={subscribingPlanId !== null}
                   >
-                    {isPopular ? 'Get Started' : `Choose ${plan.name}`}
+                    {isSubscribing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>Subscribe — R{Math.round(plan.price_monthly)}/mo</>
+                    )}
                   </button>
                 </div>
               </div>

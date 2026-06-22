@@ -31,6 +31,7 @@ const PUBLIC_API_ROUTES = [
   '/api/ai/intake',      // Public AI intake form on landing page
   '/api/ai/chat',        // Public AI chat (rate-limited for anonymous users)
   '/api/articles',       // Public legal articles
+  '/api/admin/seed-pricing', // Seed pricing plans (admin setup)
 ];
 
 // Allowed origin for CORS
@@ -149,11 +150,18 @@ export async function proxy(request: NextRequest) {
       );
 
       if (!isPublicRoute && !user) {
-        // Block unauthenticated access to protected API routes
-        return NextResponse.json(
-          { success: false, error: { message: 'Authentication required', code: 'AUTH_REQUIRED' } },
-          { status: 401 }
-        );
+        // Check for Bearer token as fallback — the route handler's requireAuth() will validate it
+        const authHeader = request.headers.get('Authorization');
+        const hasBearerToken = authHeader?.startsWith('Bearer ');
+
+        if (!hasBearerToken) {
+          // No cookie session AND no Bearer token — block access
+          return NextResponse.json(
+            { success: false, error: { message: 'Authentication required', code: 'AUTH_REQUIRED' } },
+            { status: 401 }
+          );
+        }
+        // Has Bearer token — let the request through; route handler will validate it
       }
 
       // Add CORS headers for API routes

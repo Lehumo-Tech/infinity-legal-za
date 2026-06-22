@@ -216,15 +216,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Auto-confirms email if needed, then retries sign-in
   const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     if (!isSupabaseConfigured()) {
-      return { success: false, error: 'Service unavailable. Please try again.' };
+      return { success: false, error: 'Service unavailable. Please try again later.' };
     }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const supabase = getSupabase();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase().trim(),
-        password,
-      });
+      const { data, error } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: email.toLowerCase().trim(),
+          password,
+        }),
+        15000 // 15 second timeout for sign-in
+      );
 
       if (error) {
         // If email is not confirmed, auto-confirm and retry
@@ -238,10 +241,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (confirmRes.ok) {
               // Retry sign-in after auto-confirm
-              const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-                email: email.toLowerCase().trim(),
-                password,
-              });
+              const { data: retryData, error: retryError } = await withTimeout(
+                supabase.auth.signInWithPassword({
+                  email: email.toLowerCase().trim(),
+                  password,
+                }),
+                15000
+              );
 
               if (!retryError && retryData.user) {
                 const profile = await fetchProfile(retryData.user.id);
@@ -301,7 +307,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthState(prev => ({ ...prev, loading: false, error: 'Sign in failed' }));
       return { success: false, error: 'Sign in failed — no user returned' };
     } catch (err: any) {
-      const message = err?.message || 'Sign in failed';
+      const message = err?.message?.includes('timed out') ? 'Sign in timed out. Please check your connection and try again.' : (err?.message || 'Sign in failed');
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }

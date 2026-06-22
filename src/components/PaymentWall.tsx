@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 // ============================================
 // TYPES
@@ -24,6 +25,8 @@ interface PricingPlan {
   features: string[];
   is_active: boolean;
   sort_order: number;
+  is_popular: boolean;
+  description?: string;
 }
 
 type BillingCycle = 'monthly' | 'annual';
@@ -38,6 +41,19 @@ interface PaymentWallProps {
   /** Optional className for the wrapper */
   className?: string;
 }
+
+// ============================================
+// PLAN STYLE MAP — matches database slugs
+// ============================================
+const PLAN_STYLES: Record<string, {
+  icon: typeof Shield;
+  popular: boolean;
+  badge: string | null;
+}> = {
+  civil_legal_plan: { icon: Shield, popular: false, badge: null },
+  labour_legal_plan: { icon: Zap, popular: true, badge: 'Most Popular' },
+  extensive_plan: { icon: Crown, popular: false, badge: 'Best Value' },
+};
 
 // ============================================
 // CURRENCY FORMATTING
@@ -61,6 +77,7 @@ export function PaymentWall({
   onPaymentInitiated,
   className,
 }: PaymentWallProps) {
+  const { accessToken } = useAuth();
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
@@ -87,20 +104,10 @@ export function PaymentWall({
   // Handle subscribe button click
   const handleSubscribe = useCallback(async (planId: string) => {
     // Check authentication first
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !accessToken) {
       onLoginClick?.();
       toast.error('Please sign in to subscribe', {
         description: 'You need an account to complete your subscription.',
-      });
-      return;
-    }
-
-    // Get auth token from localStorage
-    const token = localStorage.getItem('il_token');
-    if (!token) {
-      onLoginClick?.();
-      toast.error('Session expired', {
-        description: 'Please sign in again to continue.',
       });
       return;
     }
@@ -112,7 +119,7 @@ export function PaymentWall({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ planId, billingCycle }),
       });
@@ -162,31 +169,7 @@ export function PaymentWall({
     } finally {
       setLoadingPlanId(null);
     }
-  }, [isAuthenticated, billingCycle, onLoginClick, onPaymentInitiated]);
-
-  // Get plan description based on slug
-  const getPlanDescription = (slug: string): string => {
-    switch (slug) {
-      case 'civil': return 'For civil disputes and general legal matters.';
-      case 'labour': return 'For workplace and employment matters.';
-      case 'extensive': return 'Complete legal coverage across all practice areas.';
-      default: return 'Legal coverage tailored to your needs.';
-    }
-  };
-
-  // Get plan icon based on slug
-  const getPlanIcon = (slug: string) => {
-    switch (slug) {
-      case 'extensive': return Crown;
-      case 'labour': return Zap;
-      default: return Shield;
-    }
-  };
-
-  // Determine if a plan is the "popular" one
-  const isPopularPlan = (slug: string, index: number): boolean => {
-    return slug === 'extensive' || (plans.length > 0 && index === plans.length - 1);
-  };
+  }, [isAuthenticated, accessToken, billingCycle, onLoginClick, onPaymentInitiated]);
 
   // Get the price for display based on billing cycle
   const getDisplayPrice = (plan: PricingPlan): number => {
@@ -201,6 +184,11 @@ export function PaymentWall({
       return plan.price_annual;
     }
     return plan.price_monthly;
+  };
+
+  // Determine if a plan is "popular" based on database flag or slug map
+  const isPopularPlan = (plan: PricingPlan): boolean => {
+    return plan.is_popular || PLAN_STYLES[plan.slug]?.popular === true;
   };
 
   return (
@@ -245,7 +233,7 @@ export function PaymentWall({
           </Label>
           {billingCycle === 'annual' && (
             <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold ml-1">
-              Save up to 17%
+              Save up to 16%
             </Badge>
           )}
         </div>
@@ -270,9 +258,11 @@ export function PaymentWall({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-4xl mx-auto">
-          {plans.map((plan, index) => {
-            const popular = isPopularPlan(plan.slug, index);
-            const PlanIcon = getPlanIcon(plan.slug);
+          {plans.map((plan) => {
+            const planStyle = PLAN_STYLES[plan.slug];
+            const popular = isPopularPlan(plan);
+            const PlanIcon = planStyle?.icon || Shield;
+            const badgeText = planStyle?.badge;
             const displayPrice = getDisplayPrice(plan);
             const savings = calculateAnnualSavings(plan.price_monthly, plan.price_annual);
             const isLoading = loadingPlanId === plan.id;
@@ -286,11 +276,11 @@ export function PaymentWall({
                     : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50 hover:border-slate-300'
                 }`}
               >
-                {/* Popular Badge */}
-                {popular && (
+                {/* Badge */}
+                {(badgeText || popular) && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">
-                      <Star className="w-3 h-3" />Most Popular
+                      <Star className="w-3 h-3" />{badgeText || 'Most Popular'}
                     </span>
                   </div>
                 )}
@@ -309,7 +299,7 @@ export function PaymentWall({
                       </h3>
                     </div>
                     <p className={`text-[12px] mt-1 ${popular ? 'text-[#8fa4c4]' : 'text-slate-500'}`}>
-                      {getPlanDescription(plan.slug)}
+                      {plan.description}
                     </p>
 
                     {/* Price */}
@@ -319,7 +309,7 @@ export function PaymentWall({
                           {formatZAR(displayPrice)}
                         </span>
                         <span className={`text-sm ${popular ? 'text-[#5a7199]' : 'text-slate-400'}`}>
-                          /{billingCycle === 'annual' ? 'month' : 'month'}
+                          /month
                         </span>
                       </div>
                       {billingCycle === 'annual' && plan.price_annual && (
@@ -431,7 +421,7 @@ export function PaymentWall({
             onClick={() => setBillingCycle('annual')}
             className="text-[#a88832] text-xs font-medium hover:text-[#8a6e28] underline underline-offset-2 transition-colors"
           >
-            Switch to annual billing and save up to 17%
+            Switch to annual billing and save up to 16%
           </button>
         </div>
       )}
