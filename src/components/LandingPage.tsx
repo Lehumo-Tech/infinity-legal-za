@@ -56,11 +56,13 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
   }, []);
 
   const handleSignUpWithEmail = (prefillEmail?: string, prefilledName?: string) => {
-    if (onLoginClick) {
+    // Prefer onSignUp (opens signup form), fall back to onLoginClick (opens login form)
+    if (onSignUp) {
+      onSignUp(prefillEmail, prefilledName);
+    } else if (onLoginClick) {
       onLoginClick();
-    } else if (onSignUp) {
-      onSignUp();
     }
+    // Also store in sessionStorage as fallback for the LoginScreen to read
     if (prefillEmail) {
       sessionStorage.setItem('il_intake_email', prefillEmail);
       if (prefilledName) sessionStorage.setItem('il_intake_name', prefilledName);
@@ -988,7 +990,7 @@ const CATEGORY_META: Record<string, { label: string; color: string; bg: string }
   general: { label: 'General', color: 'text-slate-600', bg: 'bg-slate-50 border-slate-100' },
 };
 
-export function LegalArticlesSection() {
+function LegalArticlesSection() {
   const [articles, setArticles] = useState<any[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);

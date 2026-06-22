@@ -59,13 +59,17 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
   }, [error]);
 
   const handleSignIn = async () => {
+    if (!email.trim() || !password) {
+      setLoginError('Please enter your email and password');
+      return;
+    }
     setLoginError('');
     const result = await signIn(email, password);
     if (!result.success) {
-      setLoginError(result.error || 'Sign in failed');
+      setLoginError(result.error || 'Sign in failed. Please check your credentials.');
     }
     // If success, the AuthProvider will update the auth state
-    // and HomePageClient will react to it
+    // and HomePageClient will react to it automatically
   };
 
   const handleSignup = async () => {
@@ -82,15 +86,24 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
       });
 
       if (result.success) {
-        setSignupSuccess('Account created! You can now sign in.');
-        setIsSignup(false);
-        setEmail(signupEmail);
-        setPassword('');
+        // If auto sign-in worked, the AuthProvider will update the auth state
+        // and HomePageClient will redirect to the dashboard automatically.
+        // Only show the "please sign in" message if auto sign-in didn't work.
+        if (!result.error || result.error === 'Account created! Please sign in with your credentials.') {
+          setSignupSuccess(result.error || 'Account created! Signing you in...');
+          // Auto sign-in is handled by the useAuth hook — no need to switch to login form
+          // The auth state change will be picked up by AuthProvider → HomePageClient
+        } else {
+          setSignupSuccess('Account created! Please sign in with your credentials.');
+          setIsSignup(false);
+          setEmail(signupEmail);
+          setPassword('');
+        }
       } else {
         setSignupError(result.error || 'Signup failed');
       }
     } catch {
-      setSignupError('Network error');
+      setSignupError('Network error. Please try again.');
     }
     setSignupLoading(false);
   };

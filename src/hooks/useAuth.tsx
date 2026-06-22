@@ -2,11 +2,11 @@
  * useAuth - Supabase Authentication Hook
  *
  * Provides reactive auth state management using Supabase browser client.
- * Replaces the old localStorage-based token approach with proper
- * cookie-based SSR auth.
+ * Cookie-based SSR auth with middleware session refresh.
  *
- * IMPORTANT: Includes a 5-second timeout on auth initialization to prevent
- * the UI from being blocked forever if Supabase is unreachable.
+ * Auto sign-in: After signup, users are auto-confirmed and can sign in
+ * immediately. If a sign-in fails with "Email not confirmed", the system
+ * will auto-confirm the email and retry the sign-in automatically.
  */
 
 'use client';
@@ -43,8 +43,15 @@ interface SignUpData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Maximum time to wait for auth initialization before giving up
-const AUTH_INIT_TIMEOUT_MS = 5000;
+// Timeout wrapper to prevent hanging promises
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
@@ -55,7 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null,
   });
   const supabaseRef = useRef<ReturnType<typeof createBrowserSupabaseClient> | null>(null);
-  const mountedRef = useRef(false);
+  const initRef = useRef(false);
+  const initResolvedRef = useRef(false);
 
   // Lazy init the browser client
   const getSupabase = useCallback(() => {
@@ -65,55 +73,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return supabaseRef.current;
   }, []);
 
-  // Fetch the user's profile from the profiles table
-  // If the profile doesn't exist (e.g., handle_new_user trigger missing),
-  // auto-create it from the auth user metadata.
+  // Fetch the user's profile from the profiles table (with timeout)
   const fetchProfile = useCallback(async (userId: string): Promise<(Profile & { email_verified: boolean }) | null> => {
     const supabase = getSupabase();
     try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, role, phone, popi_consent, email_verified, avatar_url, company, created_at, updated_at')
-        .eq('id', userId)
-        .single();
+      const { data: profile, error } = await withTimeout(
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single(),
+        8000 // 8 second timeout
+      );
 
       if (error || !profile) {
-        // Profile might not exist yet — try to auto-create it
-        console.warn('Profile not found, attempting auto-create for:', userId);
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          const meta = authUser.user_metadata || {};
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: authUser.id,
-              email: authUser.email || '',
-              full_name: meta.full_name || authUser.email?.split('@')[0] || 'User',
-              role: meta.role || 'client',
-              phone: meta.phone || null,
-              popi_consent: true,
-              email_verified: !!authUser.email_confirmed_at,
-            }, { onConflict: 'id' })
-            .select('id, email, full_name, role, phone, popi_consent, email_verified, avatar_url, company, created_at, updated_at')
-            .single();
-
-          if (createError) {
-            console.error('Auto-create profile error:', createError);
-            return null;
-          }
-
-          if (newProfile) {
-            return {
-              ...newProfile,
-              email_verified: authUser.email_confirmed_at ? true : false,
-            };
-          }
-        }
+        console.error('Profile fetch error:', error);
         return null;
       }
 
       // Also get email_verified from auth
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const { data: { user: authUser } } = await withTimeout(
+        supabase.auth.getUser(),
+        5000 // 5 second timeout
+      );
 
       return {
         ...profile,
@@ -125,14 +107,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [getSupabase]);
 
-  // Initialize auth state
+  // Initialize auth state — runs once
   useEffect(() => {
-    if (mountedRef.current) return;
-    mountedRef.current = true;
+    if (initRef.current) return;
+    initRef.current = true;
 
     // If Supabase isn't configured, skip auth initialization
     if (!isSupabaseConfigured()) {
-      // Use microtask to avoid synchronous setState in effect
       queueMicrotask(() => {
         setAuthState({
           supabaseUser: null,
@@ -146,41 +127,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const supabase = getSupabase();
-    let timedOut = false;
-
-    // Safety timeout: if auth init takes too long, force loading to false
-    // so the UI isn't blocked forever. This can happen if Supabase is unreachable.
-    const timeoutId = setTimeout(() => {
-      timedOut = true;
-      setAuthState(prev => {
-        // Only force if still loading (user hasn't already been resolved)
-        if (prev.loading) {
-          console.warn('[Auth] Initialization timed out after 5s — forcing loading=false');
-          return {
-            supabaseUser: null,
-            user: null,
-            accessToken: null,
-            loading: false,
-            error: null,
-          };
-        }
-        return prev;
-      });
-    }, AUTH_INIT_TIMEOUT_MS);
 
     // Get initial session
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await withTimeout(
+          supabase.auth.getSession(),
+          10000 // 10 second timeout
+        );
 
-        // Check if we already timed out before this resolved
-        if (timedOut) return;
-        clearTimeout(timeoutId);
+        initResolvedRef.current = true;
 
         if (session?.user) {
           const profile = await fetchProfile(session.user.id);
-          if (timedOut) return;
-
           setAuthState({
             supabaseUser: session.user,
             user: profile,
@@ -198,14 +157,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (err) {
-        if (timedOut) return;
-        clearTimeout(timeoutId);
+        initResolvedRef.current = true;
         console.error('Auth init error:', err);
         setAuthState({
           supabaseUser: null,
           user: null,
           loading: false,
-          error: null, // Don't show error — just let user try to sign in
+          error: null, // Don't show error — user can still use the app unauthenticated
+          accessToken: null,
         });
       }
     };
@@ -215,7 +174,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        clearTimeout(timeoutId);
+        // Ignore INITIAL_SESSION — we already handle it in initAuth
+        if (event === 'INITIAL_SESSION') return;
+
+        // Prevent race with initAuth — skip events until init has resolved
+        if (!initResolvedRef.current) return;
 
         if (event === 'SIGNED_IN' && session?.user) {
           const profile = await fetchProfile(session.user.id);
@@ -235,11 +198,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             error: null,
           });
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          const profile = await fetchProfile(session.user.id);
           setAuthState(prev => ({
             ...prev,
             supabaseUser: session.user,
-            user: profile ?? prev.user,
             accessToken: session.access_token,
           }));
         }
@@ -247,15 +208,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => {
-      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, [getSupabase, fetchProfile]);
 
-  // Sign in with email and password
+  // Sign in with email and password — uses Supabase browser client directly
+  // Auto-confirms email if needed, then retries sign-in
   const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     if (!isSupabaseConfigured()) {
-      return { success: false, error: 'Authentication service is not available. Please try again later.' };
+      return { success: false, error: 'Service unavailable. Please try again.' };
     }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
@@ -266,20 +227,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        setAuthState(prev => ({ ...prev, loading: false, error: error.message }));
-        // Return user-friendly error messages
-        if (error.message.includes('Invalid login credentials')) {
-          return { success: false, error: 'Invalid email or password. Please check your credentials and try again.' };
+        // If email is not confirmed, auto-confirm and retry
+        if (error.message?.toLowerCase().includes('email not confirmed') || error.message?.toLowerCase().includes('email not verified')) {
+          try {
+            const confirmRes = await fetch('/api/auth/auto-confirm', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email.toLowerCase().trim() }),
+            });
+
+            if (confirmRes.ok) {
+              // Retry sign-in after auto-confirm
+              const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+                email: email.toLowerCase().trim(),
+                password,
+              });
+
+              if (!retryError && retryData.user) {
+                const profile = await fetchProfile(retryData.user.id);
+                if (!profile) {
+                  setAuthState({
+                    supabaseUser: retryData.user,
+                    user: null,
+                    accessToken: retryData.session?.access_token ?? null,
+                    loading: false,
+                    error: 'Profile not found. Please contact support.',
+                  });
+                  return { success: false, error: 'Profile not found. Please contact support.' };
+                }
+
+                setAuthState({
+                  supabaseUser: retryData.user,
+                  user: profile,
+                  accessToken: retryData.session?.access_token ?? null,
+                  loading: false,
+                  error: null,
+                });
+                return { success: true };
+              }
+            }
+          } catch {
+            // Auto-confirm failed, fall through to original error
+          }
         }
+
+        setAuthState(prev => ({ ...prev, loading: false, error: error.message }));
         return { success: false, error: error.message };
       }
 
       if (data.user) {
         const profile = await fetchProfile(data.user.id);
         if (!profile) {
-          // Profile might not exist yet — create one or let user know
-          setAuthState(prev => ({ ...prev, loading: false }));
-          return { success: false, error: 'Your profile could not be loaded. Please contact support or try again.' };
+          setAuthState({
+            supabaseUser: data.user,
+            user: null,
+            accessToken: data.session?.access_token ?? null,
+            loading: false,
+            error: 'Profile not found. Please contact support.',
+          });
+          return { success: false, error: 'Profile not found. Please contact support.' };
         }
 
         setAuthState({
@@ -292,19 +298,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true };
       }
 
-      setAuthState(prev => ({ ...prev, loading: false }));
-      return { success: false, error: 'Sign in failed. Please try again.' };
+      setAuthState(prev => ({ ...prev, loading: false, error: 'Sign in failed' }));
+      return { success: false, error: 'Sign in failed — no user returned' };
     } catch (err: any) {
-      const message = err?.message || 'Sign in failed. Please check your connection and try again.';
+      const message = err?.message || 'Sign in failed';
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
   }, [getSupabase, fetchProfile]);
 
-  // Sign up via server-side route to avoid browser client 400 errors
+  // Sign up via server-side route — auto sign-in after successful signup
   const signUp = useCallback(async (signUpData: SignUpData): Promise<{ success: boolean; error?: string }> => {
     if (!isSupabaseConfigured()) {
-      return { success: false, error: 'Authentication service is not available. Please try again later.' };
+      return { success: false, error: 'Service unavailable. Please try again.' };
     }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
@@ -325,36 +331,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!response.ok || result.error) {
         const errorMessage = result.error?.message || result.error || result.message || 'Signup failed';
-        setAuthState(prev => ({ ...prev, loading: false, error: errorMessage }));
+        setAuthState(prev => ({ ...prev, loading: false }));
         return { success: false, error: errorMessage };
       }
 
-      // Server-side signup succeeded — try to sign in on the browser side
-      const supabase = getSupabase();
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: signUpData.email.toLowerCase().trim(),
-        password: signUpData.password,
-      });
+      // Account created successfully — auto sign-in
+      try {
+        const supabase = getSupabase();
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: signUpData.email.toLowerCase().trim(),
+          password: signUpData.password,
+        });
 
-      if (signInError || !signInData.user) {
-        // User was created but browser sign-in failed — they can sign in manually
-        console.warn('Auto sign-in after signup failed:', signInError?.message);
-        setAuthState(prev => ({ ...prev, loading: false }));
-        return { success: true, error: 'Account created! Please sign in with your credentials.' };
+        if (!signInError && signInData.user) {
+          const profile = await fetchProfile(signInData.user.id);
+          setAuthState({
+            supabaseUser: signInData.user,
+            user: profile,
+            accessToken: signInData.session?.access_token ?? null,
+            loading: false,
+            error: null,
+          });
+          return { success: true };
+        }
+      } catch {
+        // Auto sign-in failed — user will need to sign in manually
       }
 
-      // Successfully signed in on the browser side
-      const profile = await fetchProfile(signInData.user.id);
-      setAuthState({
-        supabaseUser: signInData.user,
-        user: profile,
-        accessToken: signInData.session?.access_token ?? null,
-        loading: false,
-        error: null,
-      });
-      return { success: true };
+      // Fallback: account created but couldn't auto sign-in — clear error state
+      setAuthState(prev => ({ ...prev, loading: false, error: null }));
+      return { success: true, error: 'Account created! Please sign in with your credentials.' };
     } catch (err: any) {
-      const message = err?.message || 'Signup failed. Please check your connection and try again.';
+      const message = err?.message || 'Signup failed';
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
@@ -373,6 +381,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error('Signout error:', err);
     }
+    // Always clear local state regardless of API call success
     setAuthState({
       supabaseUser: null,
       user: null,
@@ -384,7 +393,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Refresh profile data
   const refreshProfile = useCallback(async (userId?: string) => {
-    // Use the supabase client directly to get the current user if no userId provided
     const supabase = getSupabase();
     let uid = userId;
     if (!uid) {

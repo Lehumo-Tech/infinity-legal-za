@@ -157,6 +157,7 @@ export default function HomePageClient() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [initialSignup, setInitialSignup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [charts, setCharts] = useState<any>(null);
@@ -177,10 +178,22 @@ export default function HomePageClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auth is handled by useAuth() hook - signIn/signOut are in the LoginScreen and topbar
   // The auth state (isAuthenticated, user, token) is derived from the auth context
   // No more localStorage - sessions are managed via Supabase cookies
+
+  // Loading timeout — prevent infinite loading spinner (15 second max)
+  useEffect(() => {
+    if (authLoading) {
+      loadingTimerRef.current = setTimeout(() => setLoadingTimeout(true), 15000);
+    }
+    return () => {
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    };
+  }, [authLoading]);
 
   const loadDashboard = async (authToken?: string) => {
     const t = authToken || token;
@@ -382,6 +395,25 @@ export default function HomePageClient() {
     return items;
   };
 
+  // Loading guard — show skeleton while auth is initializing
+  // This prevents the flash of LandingPage for logged-in users
+  // If loading takes more than 15 seconds, show the landing page instead
+  if (authLoading && !loadingTimeout) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="w-12 h-12 rounded-full border-2 border-[#c9a84c]/20 border-t-[#c9a84c] animate-spin" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Image src="/logo_legal.png" alt="Infinity Legal SA" width={80} height={45} className="object-contain opacity-60" />
+          </div>
+          <p className="text-slate-400 text-xs tracking-wider uppercase">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     if (showLogin) {
       return (
@@ -389,11 +421,22 @@ export default function HomePageClient() {
           onLogin={() => {}}
           loading={false}
           error={loginError}
-          onBackToHome={() => setShowLogin(false)}
+          initialSignup={initialSignup}
+          onBackToHome={() => { setShowLogin(false); setInitialSignup(false); }}
         />
       );
     }
-    return <LandingPage onLoginClick={() => setShowLogin(true)} />;
+    return (
+      <LandingPage
+        onLoginClick={() => { setShowLogin(true); setInitialSignup(false); }}
+        onSignUp={(email?: string, name?: string) => {
+          if (email) sessionStorage.setItem('il_intake_email', email);
+          if (name) sessionStorage.setItem('il_intake_name', name);
+          setShowLogin(true);
+          setInitialSignup(true);
+        }}
+      />
+    );
   }
 
   if (showLanding) {

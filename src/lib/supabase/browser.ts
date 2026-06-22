@@ -9,13 +9,13 @@ import type { Database } from '@/lib/supabase/types';
 let _isConfigured: boolean | null = null;
 
 export function isSupabaseConfigured(): boolean {
-  if (_isConfigured === null) {
-    _isConfigured = !!(
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
-  }
-  return _isConfigured;
+  const configured = !!(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+  // Only cache true — never cache false (env vars might become available later)
+  if (configured) _isConfigured = true;
+  return _isConfigured ?? configured;
 }
 
 export function createBrowserSupabaseClient() {

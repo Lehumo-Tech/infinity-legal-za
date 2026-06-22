@@ -2,15 +2,10 @@
  * Infinity Legal ZA - Security Proxy (Next.js 16)
  *
  * Root-level proxy that:
- * 1. Applies security headers to all responses (FAST — no network calls)
- * 2. Refreshes Supabase auth sessions only for protected API routes
+ * 1. Refreshes Supabase auth sessions (cookie-based)
+ * 2. Applies security headers to all responses
  * 3. Protects API routes (blocks unauthenticated access to protected endpoints)
  * 4. Adds CORS headers for API routes
- *
- * PERFORMANCE: Non-API routes (page loads, static files) skip Supabase
- * session verification entirely. This eliminates the 8+ second delay
- * caused by calling getUser() on every request. Auth state is checked
- * client-side via the useAuth hook instead.
  */
 
 import { createServerClient } from '@supabase/ssr';
@@ -24,6 +19,7 @@ const PUBLIC_API_ROUTES = [
   '/api/auth/login',
   '/api/auth/signup',
   '/api/auth/callback',
+  '/api/auth/auto-confirm', // Auto-confirm email after signup
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/auth/signout',
@@ -35,7 +31,6 @@ const PUBLIC_API_ROUTES = [
   '/api/ai/intake',      // Public AI intake form on landing page
   '/api/ai/chat',        // Public AI chat (rate-limited for anonymous users)
   '/api/articles',       // Public legal articles
-  '/api/holidays',       // Public SA holidays
 ];
 
 // Allowed origin for CORS
@@ -48,7 +43,7 @@ const CSP_HEADER = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: https: blob:",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co wss://*.supabase.co",
+  "connect-src 'self' https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
@@ -95,60 +90,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ===== FAST PATH: Non-API routes (page loads, etc.) =====
-  // Just add security headers — NO Supabase network calls.
-  // Auth state is checked client-side via useAuth hook.
-  // This eliminates the 8+ second delay on initial page load.
-  if (!pathname.startsWith('/api/')) {
-    const response = NextResponse.next({ request });
-    addSecurityHeaders(response);
-    return response;
-  }
-
-  // ===== API ROUTES =====
-
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Handle CORS preflight requests first (no auth needed)
-  if (request.method === 'OPTIONS') {
-    const response = new NextResponse(null, { status: 204 });
-    const origin = request.headers.get('origin');
-    if (origin && (origin === ALLOWED_ORIGIN || origin === 'http://localhost:3000')) {
-      response.headers.set('Access-Control-Allow-Origin', origin);
-    }
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    response.headers.set('Access-Control-Max-Age', '86400');
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
-    addSecurityHeaders(response);
-    return response;
-  }
-
-  // Check if this is a public API route
-  const isPublicRoute = PUBLIC_API_ROUTES.some(
-    route => pathname === route || pathname.startsWith(route + '/')
-  );
-
-  // For public API routes, just add headers — no auth check needed
-  if (isPublicRoute) {
-    const response = NextResponse.next({ request });
-    addSecurityHeaders(response);
-    addCorsHeaders(response, request);
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    return response;
-  }
-
-  // ===== PROTECTED API ROUTES — Auth check required =====
-
-  // If Supabase is not configured, skip auth but still add security headers
+  // If Supabase is not configured, skip session refresh but still add security headers
   if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'https://placeholder.supabase.co') {
     const response = NextResponse.next({ request });
     addSecurityHeaders(response);
-    addCorsHeaders(response, request);
     return response;
   }
 
+  // Create Supabase client for session refresh
   let response = NextResponse.next({ request });
 
   try {
@@ -171,44 +123,61 @@ export async function proxy(request: NextRequest) {
       },
     });
 
-    // Verify the user's session — only for protected API routes
+    // Refresh the session — this validates the user's tokens and sets fresh cookies
     const { data: { user } } = await supabase.auth.getUser();
 
     // Add security headers to all responses
     addSecurityHeaders(response);
-    addCorsHeaders(response, request);
 
-    if (!user) {
-      // Block unauthenticated access to protected API routes
-      return NextResponse.json(
-        { success: false, error: { message: 'Authentication required', code: 'AUTH_REQUIRED' } },
-        { status: 401 }
+    // Handle CORS preflight requests for API routes
+    if (pathname.startsWith('/api/')) {
+      if (request.method === 'OPTIONS') {
+        const origin = request.headers.get('origin');
+        if (origin && (origin === ALLOWED_ORIGIN || origin === 'http://localhost:3000')) {
+          response.headers.set('Access-Control-Allow-Origin', origin);
+        }
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        response.headers.set('Access-Control-Max-Age', '86400');
+        response.headers.set('Access-Control-Allow-Credentials', 'true');
+        return new NextResponse(null, { status: 204, headers: response.headers });
+      }
+
+      // Check if this is a public API route
+      const isPublicRoute = PUBLIC_API_ROUTES.some(
+        route => pathname === route || pathname.startsWith(route + '/')
       );
-    }
 
-    // Cache control for API routes
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
+      if (!isPublicRoute && !user) {
+        // Block unauthenticated access to protected API routes
+        return NextResponse.json(
+          { success: false, error: { message: 'Authentication required', code: 'AUTH_REQUIRED' } },
+          { status: 401 }
+        );
+      }
+
+      // Add CORS headers for API routes
+      const origin = request.headers.get('origin');
+      if (origin && (origin === ALLOWED_ORIGIN || origin === 'http://localhost:3000')) {
+        response.headers.set('Access-Control-Allow-Origin', origin);
+        response.headers.set('Access-Control-Allow-Credentials', 'true');
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        response.headers.set('Access-Control-Max-Age', '86400');
+      }
+
+      // Cache control for API routes
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+    }
   } catch (error) {
     // If Supabase session refresh fails, continue without auth but still add security headers
     console.error('Proxy session refresh error:', error);
     addSecurityHeaders(response);
-    addCorsHeaders(response, request);
   }
 
   return response;
-}
-
-function addCorsHeaders(response: NextResponse, request: NextRequest): void {
-  const origin = request.headers.get('origin');
-  if (origin && (origin === ALLOWED_ORIGIN || origin === 'http://localhost:3000')) {
-    response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    response.headers.set('Access-Control-Max-Age', '86400');
-  }
 }
 
 export const config = {

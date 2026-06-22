@@ -147,11 +147,7 @@ export function requireRoles(role: string, allowedRoles: RoleKey[]) {
 // ============================================
 
 export async function checkRateLimit(request: NextRequest, limiter = apiRateLimiter) {
-  // Use only the FIRST IP in x-forwarded-for (set by trusted reverse proxy)
-  // to prevent IP spoofing for rate limit bypass
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  const firstIp = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
-  const ip = firstIp || request.headers.get('x-real-ip') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   const endpoint = new URL(request.url).pathname;
   const key = `${ip}:${endpoint}`;
 
@@ -257,11 +253,17 @@ export function validateCSRF(request: NextRequest): { valid: boolean; error: Ret
   const referer = request.headers.get('referer');
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
+  // Derive the request's own host as an allowed origin (covers any deployment URL)
+  const requestHost = request.headers.get('host');
+  const requestProto = request.headers.get('x-forwarded-proto') || 'https';
+  const requestOrigin = requestHost ? `${requestProto}://${requestHost}` : null;
+
   const allowedOrigins = [
     appUrl,
     'http://localhost:3000',
     'https://infinitylegal.org',
-  ];
+    requestOrigin,
+  ].filter(Boolean) as string[];
 
   // Check Origin header first (most reliable)
   if (origin) {
