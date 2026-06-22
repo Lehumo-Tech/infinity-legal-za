@@ -38,6 +38,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
   const [signupPassword, setSignupPassword] = useState('');
   const [popiaConsent, setPopiaConsent] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
+  const [signInLoading, setSignInLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState('');
   const [signupError, setSignupError] = useState('');
   const [loginError, setLoginError] = useState(error);
@@ -64,7 +65,9 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
       return;
     }
     setLoginError('');
+    setSignInLoading(true);
     const result = await signIn(email, password);
+    setSignInLoading(false);
     if (!result.success) {
       setLoginError(result.error || 'Sign in failed. Please check your credentials.');
     }
@@ -108,7 +111,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
     setSignupLoading(false);
   };
 
-  const isLoading = loading || authLoading;
+  const isLoading = signInLoading;
 
   return (
     <div className="min-h-screen flex">
