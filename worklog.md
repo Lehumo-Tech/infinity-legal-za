@@ -1415,3 +1415,31 @@ Stage Summary:
 - CSRF validation fixed for Vercel deployments
 - Code pushed to GitHub — Vercel should auto-deploy
 - CRITICAL: Vercel environment variables must be verified/set in Vercel dashboard
+---
+Task ID: 1
+Agent: Main Agent
+Task: Overhaul intranet flow, fix pricing, fix auth, fix all bugs, run QA
+
+Work Log:
+- Investigated full codebase: auth files, pricing components, database, proxy
+- Discovered CRITICAL pricing mismatch: Supabase DB had Free Consultation (R0), Starter (R1,500), Professional (R4,500), Enterprise (R12,000) with slugs free-consultation/starter/professional/enterprise
+- Frontend expected Civil Legal Plan (R99), Labour Legal Plan (R99), Extensive Plan (R139) with slugs civil_legal_plan/labour_legal_plan/extensive_plan
+- Created /api/admin/seed-pricing endpoint and seeded correct plans
+- Fixed PaymentWall.tsx: removed broken localStorage.getItem('il_token'), now uses useAuth() accessToken for Supabase session auth
+- Fixed PricingView.tsx: aligned slugs with database, added plan icons (Shield/Zap/Crown), descriptions
+- Fixed LandingPage.tsx: made pricing section dynamic from /api/pricing instead of hardcoded
+- Fixed useAuth.tsx: added 15-second timeout to signInWithPassword() to prevent infinite loading
+- Fixed proxy.ts: now accepts Bearer tokens for protected API routes (not just cookies) so dashboard API calls work
+- Fixed intranet PricingView in HomePageClient: replaced useless toast button with actual PayFast checkout flow with loading states
+- Ran lint check - clean
+- Tested with agent-browser: sign-in works, sign-up works, Get Started works, dashboard loads, pricing shows R99/R99/R139
+- Pushed to GitHub (commit 96a45c6)
+
+Stage Summary:
+- Pricing database now has correct R99/R99/R139 plans with matching slugs
+- PaymentWall now uses Supabase session auth instead of broken localStorage token
+- Auth flow has timeout protection to prevent infinite loading
+- Intranet pricing subscribe buttons now trigger actual PayFast checkout
+- Landing page pricing is dynamic from API
+- All prices consistent across landing page, intranet pricing, and PaymentWall
+- Vercel deployment: code pushed to GitHub but Vercel token lacks team scope access - user needs to manually add NEXT_PUBLIC_SUPABASE_ANON_KEY env var to Vercel dashboard
