@@ -62,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null,
   });
   const supabaseRef = useRef<ReturnType<typeof createBrowserSupabaseClient> | null>(null);
+  const initializedRef = useRef(false);
 
   // Lazy init the browser client
   const getSupabase = useCallback(() => {
@@ -145,6 +146,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth state changes — handles everything including INITIAL_SESSION
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        initializedRef.current = true;
+
         if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
           if (session?.user) {
             const profile = await fetchProfile(session.user.id);
@@ -182,8 +185,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
+    // Fallback: if onAuthStateChange never fires (e.g. Supabase is slow), stop loading after 5s
+    const fallbackTimer = setTimeout(() => {
+      if (!initializedRef.current) {
+        console.warn('Auth initialization timed out — setting loading to false');
+        setAuthState(prev => ({ ...prev, loading: false }));
+      }
+    }, 5000);
+
     return () => {
       subscription.unsubscribe();
+      clearTimeout(fallbackTimer);
     };
   }, [getSupabase, fetchProfile, buildMinimalProfile]);
 

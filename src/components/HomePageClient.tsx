@@ -356,7 +356,10 @@ export default function HomePageClient() {
       else if (currentView === 'documents') await loadDocuments();
       else if (currentView === 'tasks') await loadTasks();
       else if (currentView === 'staff' || currentView === 'org-chart') await loadStaff();
-      else if (currentView === 'pricing' || currentView === 'subscription') await loadPricingPlans();
+      else if (currentView === 'pricing' || currentView === 'subscription') {
+        await loadPricingPlans();
+        await loadSubscription();
+      }
     };
     loadData();
   }, [currentView, isAuthenticated]);
@@ -733,78 +736,85 @@ export default function HomePageClient() {
           {currentView === 'pricing' && <PricingView plans={pricingPlans} onSubscribe={(planId) => setCurrentView('subscription')} onLoginClick={() => {}} isAuthenticated={true} />}
           {(currentView === 'subscription') && (
             <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-xl font-bold text-[#0c1e3c]">{subscription ? 'My Subscription' : 'Choose Your Legal Plan'}</h2>
-                <p className="text-[13px] text-slate-500 mt-1">{subscription ? 'Manage your current subscription' : 'All prices in South African Rand (ZAR). Cancel anytime.'}</p>
-              </div>
-              {subscription && (
-                <Card className="max-w-lg mx-auto shadow-sm">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/15 flex items-center justify-center">
-                        <Crown className="w-5 h-5 text-[#a88832]" />
+              {subscription ? (
+                <>
+                  {/* Active Subscription Details */}
+                  <div className="text-center">
+                    <h2 className="text-xl font-bold text-[#0c1e3c]">My Subscription</h2>
+                    <p className="text-[13px] text-slate-500 mt-1">Manage your current legal plan</p>
+                  </div>
+                  <Card className="max-w-lg mx-auto shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/15 flex items-center justify-center">
+                          <Crown className="w-5 h-5 text-[#a88832]" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-[#0c1e3c]">{subscription.plan?.name || 'Active Plan'}</h3>
+                          <p className="text-[11px] text-slate-500">{subscription.plan?.slug?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-[#0c1e3c]">{subscription.plan?.name || 'Active Plan'}</h3>
-                        <p className="text-[11px] text-slate-500">{subscription.plan?.slug?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Status</span>
-                        <Badge className={subscription.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>{subscription.status}</Badge>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Monthly Price</span>
-                        <span className="font-medium">R{subscription.plan?.price_monthly || '—'}</span>
-                      </div>
-                      {subscription.days_remaining !== null && (
+                      <div className="space-y-3">
                         <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">Days Remaining</span>
-                          <span className="font-medium">{subscription.days_remaining}</span>
+                          <span className="text-slate-500">Status</span>
+                          <Badge className={subscription.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>{subscription.status}</Badge>
                         </div>
-                      )}
-                      {subscription.cancel_at_period_end && (
-                        <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[12px]">
-                          Your subscription will cancel at the end of the billing period.
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-500">Monthly Price</span>
+                          <span className="font-medium">R{subscription.plan?.price_monthly || '—'}</span>
                         </div>
-                      )}
-                    </div>
-                    <Separator className="my-4" />
-                    {subscription.plan?.features && (
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Included Features</p>
-                        <ul className="space-y-1.5">
-                          {(Array.isArray(subscription.plan.features) ? subscription.plan.features : []).map((f: string, i: number) => (
-                            <li key={i} className="flex items-center gap-2 text-[12px] text-slate-600">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c]" />
-                              {f}
-                            </li>
-                          ))}
-                        </ul>
+                        {subscription.days_remaining !== null && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-500">Days Remaining</span>
+                            <span className="font-medium">{subscription.days_remaining}</span>
+                          </div>
+                        )}
+                        {subscription.cancel_at_period_end && (
+                          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[12px]">
+                            Your subscription will cancel at the end of the billing period.
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {!subscription.cancel_at_period_end && (
-                      <Button variant="outline" size="sm" className="w-full mt-4 text-red-600 border-red-200 hover:bg-red-50 text-[12px]" onClick={async () => {
-                        if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) return;
-                        try {
-                          const res = await fetch('/api/subscriptions', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
-                          const data = await res.json();
-                          if (data.success) {
-                            toast.success('Subscription scheduled for cancellation');
-                            await loadSubscription();
-                          } else {
-                            toast.error(data.error?.message || 'Failed to cancel');
+                      <Separator className="my-4" />
+                      {subscription.plan?.features && (
+                        <div>
+                          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Included Features</p>
+                          <ul className="space-y-1.5">
+                            {(Array.isArray(subscription.plan.features) ? subscription.plan.features : []).map((f: string, i: number) => (
+                              <li key={i} className="flex items-center gap-2 text-[12px] text-slate-600">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c]" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {!subscription.cancel_at_period_end && (
+                        <Button variant="outline" size="sm" className="w-full mt-4 text-red-600 border-red-200 hover:bg-red-50 text-[12px]" onClick={async () => {
+                          if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) return;
+                          try {
+                            const res = await fetch('/api/subscriptions', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
+                            const data = await res.json();
+                            if (data.success) {
+                              toast.success('Subscription scheduled for cancellation');
+                              await loadSubscription();
+                            } else {
+                              toast.error(data.error?.message || 'Failed to cancel');
+                            }
+                          } catch {
+                            toast.error('Network error');
                           }
-                        } catch {
-                          toast.error('Network error');
-                        }
-                      }}>Cancel Subscription</Button>
-                    )}
-                  </CardContent>
-                </Card>
+                        }}>Cancel Subscription</Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <>
+                  {/* No subscription — show PaymentWall */}
+                  <PaymentWall isAuthenticated={true} onPaymentInitiated={() => loadSubscription()} className="max-w-4xl mx-auto" />
+                </>
               )}
-              <PaymentWall isAuthenticated={true} onPaymentInitiated={() => loadSubscription()} className="max-w-4xl mx-auto" />
             </div>
           )}
         </div>
