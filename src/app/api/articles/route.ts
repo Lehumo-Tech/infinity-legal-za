@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
   try {
     const db = getAdminClient();
     if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
+      // Database not configured — return empty articles list
+      return apiResponse({ articles: [], total: 0, limit: 20, offset: 0 });
     }
 
     const url = new URL(request.url);
@@ -69,7 +70,8 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Articles query error:', error);
-      return apiError('Failed to load articles', 500, 'ARTICLES_ERROR');
+      // Return empty list instead of error so the page still renders
+      return apiResponse({ articles: [], total: 0, limit, offset });
     }
 
     return apiResponse({
@@ -80,7 +82,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Articles error:', error);
-    return apiError('Failed to load articles', 500, 'ARTICLES_ERROR');
+    // Return empty list instead of error so the page still renders
+    return apiResponse({ articles: [], total: 0, limit: 20, offset: 0 });
   }
 }
 

@@ -187,10 +187,10 @@ export default function HomePageClient() {
   // The auth state (isAuthenticated, user, token) is derived from the auth context
   // No more localStorage - sessions are managed via Supabase cookies
 
-  // Loading timeout — prevent infinite loading spinner (8 second max)
+  // Loading timeout — prevent infinite loading spinner (4 second max)
   useEffect(() => {
     if (authLoading) {
-      loadingTimerRef.current = setTimeout(() => setLoadingTimeout(true), 8000);
+      loadingTimerRef.current = setTimeout(() => setLoadingTimeout(true), 4000);
     }
     return () => {
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
@@ -425,8 +425,10 @@ export default function HomePageClient() {
 
   // Loading guard — show skeleton while auth is initializing
   // This prevents the flash of LandingPage for logged-in users
-  // If loading takes more than 15 seconds, show the landing page instead
-  if (authLoading && !loadingTimeout) {
+  // IMPORTANT: Skip the loading guard if the user is already on the login/signup screen
+  // Otherwise, a sign-in attempt will trigger authLoading=true, which unmounts the
+  // LoginScreen and loses the form state (email, password, error messages)
+  if (authLoading && !loadingTimeout && !showLogin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">

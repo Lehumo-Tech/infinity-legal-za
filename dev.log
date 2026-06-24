@@ -5,4 +5,1658 @@ $ next dev -p 3000 --webpack
 - Environments: .env
 
 ✓ Starting...
-✓ Ready in 1396ms
+✓ Ready in 1421ms
+○ Compiling / ...
+ GET / 200 in 7.9s (compile: 7.4s, proxy.ts: 228ms, render: 300ms)
+ GET / 200 in 522ms (compile: 3ms, proxy.ts: 487ms, render: 31ms)
+ GET / 200 in 34ms (compile: 3ms, proxy.ts: 5ms, render: 26ms)
+ GET / 200 in 34ms (compile: 3ms, proxy.ts: 5ms, render: 26ms)
+⚠ Blocked cross-origin request from preview-chat-ef25ef42-5616-496d-9b3b-1fd0dbbba81f.space-z.ai to /_next/* resource. To allow this, configure "allowedDevOrigins" in next.config
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ GET / 200 in 273ms (compile: 57ms, proxy.ts: 5ms, render: 211ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 45ms (compile: 2ms, proxy.ts: 8ms, render: 35ms)
+ GET /api/articles?limit=20 200 in 3.5s (compile: 1012ms, proxy.ts: 5ms, render: 2.5s)
+ GET /api/pricing 200 in 2.7s (compile: 251ms, proxy.ts: 302ms, render: 2.2s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 7ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 2ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 4ms, proxy.ts: 10ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.1s (compile: 11ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 3ms, proxy.ts: 5ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 1896µs, proxy.ts: 5ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 8ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 2ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 7ms, proxy.ts: 8ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 2ms, proxy.ts: 15ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 6ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.1s (compile: 19ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.1s (compile: 19ms, proxy.ts: 11ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 6ms, proxy.ts: 11ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 4ms, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 3ms, proxy.ts: 10ms, render: 7.0s)
+ GET / 200 in 355ms (compile: 97ms, proxy.ts: 205ms, render: 53ms)
+ GET / 200 in 36ms (compile: 3ms, proxy.ts: 5ms, render: 27ms)
+ GET / 200 in 23ms (compile: 2ms, proxy.ts: 5ms, render: 16ms)
+ GET / 200 in 145ms (compile: 96ms, proxy.ts: 6ms, render: 43ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 326ms (compile: 1946µs, proxy.ts: 5ms, render: 319ms)
+ GET / 200 in 46ms (compile: 6ms, proxy.ts: 6ms, render: 33ms)
+ GET / 200 in 26ms (compile: 2ms, proxy.ts: 5ms, render: 18ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 724ms (compile: 74ms, proxy.ts: 397ms, render: 254ms)
+ GET / 200 in 54ms (compile: 2ms, proxy.ts: 5ms, render: 47ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 8.1s (compile: 1076ms, proxy.ts: 11ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 8.1s (compile: 1063ms, proxy.ts: 20ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 8.2s (compile: 1063ms, proxy.ts: 20ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 8.2s (compile: 1077ms, proxy.ts: 10ms, render: 7.2s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 2ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1968µs, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 2ms, proxy.ts: 9ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1920µs, proxy.ts: 6ms, render: 7.0s)
+ GET / 200 in 186ms (compile: 102ms, proxy.ts: 6ms, render: 78ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 260ms (compile: 2ms, proxy.ts: 4ms, render: 253ms)
+ GET / 200 in 52ms (compile: 7ms, proxy.ts: 6ms, render: 39ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 2ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1796µs, proxy.ts: 6ms, render: 7.0s)
+ GET / 200 in 48ms (compile: 8ms, proxy.ts: 7ms, render: 34ms)
+ GET / 200 in 87ms (compile: 20ms, proxy.ts: 17ms, render: 51ms)
+ GET / 200 in 57ms (compile: 4ms, proxy.ts: 7ms, render: 46ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 62ms (compile: 3ms, proxy.ts: 7ms, render: 52ms)
+ GET /api/articles?limit=20 200 in 1606ms (compile: 11ms, proxy.ts: 140ms, render: 1455ms)
+ GET /api/pricing 200 in 1475ms (compile: 12ms, proxy.ts: 17ms, render: 1446ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.2s (compile: 108ms, proxy.ts: 16ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.2s (compile: 128ms, proxy.ts: 17ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.2s (compile: 129ms, proxy.ts: 17ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.2s (compile: 107ms, proxy.ts: 17ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1551µs, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1857µs, proxy.ts: 10ms, render: 7.0s)
+ GET / 200 in 105ms (compile: 65ms, proxy.ts: 6ms, render: 34ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 21ms (compile: 3ms, proxy.ts: 4ms, render: 15ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 2ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 1949µs, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 109ms (compile: 73ms, proxy.ts: 7ms, render: 29ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 199ms (compile: 2ms, proxy.ts: 4ms, render: 192ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 57ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 5ms, proxy.ts: 5ms, render: 7.0s)
+ GET / 200 in 53ms (compile: 5ms, proxy.ts: 14ms, render: 34ms)
+ GET / 200 in 39ms (compile: 2ms, proxy.ts: 5ms, render: 32ms)
+ GET / 200 in 51ms (compile: 3ms, proxy.ts: 5ms, render: 43ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 39ms (compile: 3ms, proxy.ts: 4ms, render: 32ms)
+ GET / 200 in 33ms (compile: 2ms, proxy.ts: 4ms, render: 27ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 65ms, proxy.ts: 15ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 65ms, proxy.ts: 15ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 79ms, proxy.ts: 15ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 79ms, proxy.ts: 15ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1803µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.2s (compile: 3ms, proxy.ts: 4ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 4ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 118ms (compile: 70ms, proxy.ts: 6ms, render: 43ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 22ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.3s (compile: 1916µs, proxy.ts: 6ms, render: 7.3s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.2s (compile: 2ms, proxy.ts: 6ms, render: 7.2s)
+ GET / 200 in 98ms (compile: 65ms, proxy.ts: 4ms, render: 29ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 22ms (compile: 3ms, proxy.ts: 5ms, render: 14ms)
+ GET / 200 in 123ms (compile: 83ms, proxy.ts: 7ms, render: 33ms)
+ GET / 200 in 24ms (compile: 4ms, proxy.ts: 6ms, render: 14ms)
+ GET / 200 in 24ms (compile: 2ms, proxy.ts: 4ms, render: 18ms)
+ GET / 200 in 134ms (compile: 98ms, proxy.ts: 4ms, render: 33ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 35ms (compile: 2ms, proxy.ts: 18ms, render: 14ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 61ms, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 7ms, proxy.ts: 76ms, render: 7.0s)
+ GET / 200 in 27ms (compile: 4ms, proxy.ts: 5ms, render: 17ms)
+ GET / 200 in 32ms (compile: 5ms, proxy.ts: 6ms, render: 21ms)
+ GET / 200 in 22ms (compile: 2ms, proxy.ts: 5ms, render: 14ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 7ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 2ms, proxy.ts: 6ms, render: 7.1s)
+ GET / 200 in 315ms (compile: 5ms, proxy.ts: 4ms, render: 305ms)
+ GET / 200 in 54ms (compile: 4ms, proxy.ts: 6ms, render: 44ms)
+ GET / 200 in 58ms (compile: 3ms, proxy.ts: 6ms, render: 48ms)
+ GET / 200 in 41ms (compile: 2ms, proxy.ts: 4ms, render: 34ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 24ms, proxy.ts: 18ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 13ms, proxy.ts: 10ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 18ms, proxy.ts: 18ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 4ms, proxy.ts: 37ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1985µs, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1677µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1879µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1773µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 5ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1996µs, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 37ms (compile: 2ms, proxy.ts: 6ms, render: 29ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 10ms, proxy.ts: 9ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 21ms, proxy.ts: 11ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 6ms, proxy.ts: 9ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 26ms, proxy.ts: 12ms, render: 7.0s)
+ GET / 200 in 40ms (compile: 2ms, proxy.ts: 4ms, render: 33ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 6ms, proxy.ts: 13ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 12ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 4ms, proxy.ts: 32ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 12ms, proxy.ts: 32ms, render: 7.0s)
+ GET / 200 in 390ms (compile: 96ms, proxy.ts: 248ms, render: 46ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 243ms (compile: 2ms, proxy.ts: 9ms, render: 232ms)
+ GET / 200 in 46ms (compile: 11ms, proxy.ts: 6ms, render: 28ms)
+ GET / 200 in 459ms (compile: 70ms, proxy.ts: 147ms, render: 243ms)
+ GET / 200 in 460ms (compile: 70ms, proxy.ts: 147ms, render: 244ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 33ms (compile: 2ms, proxy.ts: 4ms, render: 26ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 44ms (compile: 2ms, proxy.ts: 4ms, render: 37ms)
+ GET / 200 in 37ms (compile: 3ms, proxy.ts: 4ms, render: 29ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.7s (compile: 1638ms, proxy.ts: 9ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 8.7s (compile: 1637ms, proxy.ts: 10ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 8.7s (compile: 19ms, proxy.ts: 1652ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.7s (compile: 16ms, proxy.ts: 1652ms, render: 7.1s)
+ GET / 200 in 60ms (compile: 3ms, proxy.ts: 7ms, render: 50ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 5ms, proxy.ts: 17ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 10ms, proxy.ts: 18ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 2ms, proxy.ts: 8ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 6ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 20ms, proxy.ts: 7ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 3ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 11ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 3ms, proxy.ts: 8ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1897µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 4ms, proxy.ts: 8ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 244ms (compile: 183ms, proxy.ts: 13ms, render: 48ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 304ms (compile: 2ms, proxy.ts: 5ms, render: 298ms)
+ GET / 200 in 32ms (compile: 3ms, proxy.ts: 5ms, render: 23ms)
+ GET / 200 in 61ms (compile: 9ms, proxy.ts: 9ms, render: 44ms)
+ GET / 200 in 32ms (compile: 6ms, proxy.ts: 4ms, render: 22ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 49ms (compile: 3ms, proxy.ts: 6ms, render: 40ms)
+ GET /api/articles?limit=20 200 in 3.2s (compile: 137ms, proxy.ts: 11ms, render: 3.0s)
+ GET /api/pricing 200 in 3.2s (compile: 130ms, proxy.ts: 13ms, render: 3.0s)
+ GET /api/pricing 200 in 3.2s (compile: 140ms, proxy.ts: 12ms, render: 3.0s)
+ GET /api/articles?limit=20 200 in 3.2s (compile: 107ms, proxy.ts: 12ms, render: 3.0s)
+ GET / 200 in 124ms (compile: 6ms, proxy.ts: 9ms, render: 110ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 5ms, proxy.ts: 14ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 14ms, proxy.ts: 14ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 14ms, proxy.ts: 14ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 6ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1878µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1890µs, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 4ms, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 6ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 3ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 3ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 3ms, proxy.ts: 7ms, render: 7.1s)
+ GET / 200 in 170ms (compile: 113ms, proxy.ts: 5ms, render: 52ms)
+ GET / 200 in 32ms (compile: 4ms, proxy.ts: 6ms, render: 21ms)
+ GET / 200 in 29ms (compile: 3ms, proxy.ts: 6ms, render: 20ms)
+ GET / 200 in 329ms (compile: 5ms, proxy.ts: 5ms, render: 319ms)
+ GET / 200 in 75ms (compile: 4ms, proxy.ts: 19ms, render: 51ms)
+ GET / 200 in 45ms (compile: 9ms, proxy.ts: 6ms, render: 29ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.2s (compile: 112ms, proxy.ts: 8ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.2s (compile: 134ms, proxy.ts: 8ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.2s (compile: 7ms, proxy.ts: 148ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.2s (compile: 8ms, proxy.ts: 151ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 9ms, proxy.ts: 9ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 5ms, proxy.ts: 8ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 3ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1930µs, proxy.ts: 11ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 6ms, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1768µs, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1823µs, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 12.0s (compile: 4ms, proxy.ts: 5ms, render: 12.0s)
+ GET / 200 in 52ms (compile: 4ms, proxy.ts: 7ms, render: 41ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 13ms, proxy.ts: 13ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 13ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 5ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 5ms, proxy.ts: 13ms, render: 7.0s)
+ GET / 200 in 35ms (compile: 1991µs, proxy.ts: 4ms, render: 30ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 5ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 5ms, proxy.ts: 7ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 5ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 9ms, proxy.ts: 7ms, render: 7.0s)

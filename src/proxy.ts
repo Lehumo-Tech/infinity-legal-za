@@ -124,8 +124,20 @@ export async function proxy(request: NextRequest) {
       },
     });
 
-    // Refresh the session — this validates the user's tokens and sets fresh cookies
-    const { data: { user } } = await supabase.auth.getUser();
+    // Refresh the session — with a 3-second timeout to prevent blocking page loads
+    // When Supabase is unreachable, we must not block the entire page load
+    let user: any = null;
+    try {
+      const userResult = await Promise.race([
+        supabase.auth.getUser(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+      ]);
+      if (userResult && typeof userResult === 'object' && 'data' in userResult) {
+        user = userResult.data?.user ?? null;
+      }
+    } catch {
+      // Session refresh failed — continue without auth
+    }
 
     // Add security headers to all responses
     addSecurityHeaders(response);

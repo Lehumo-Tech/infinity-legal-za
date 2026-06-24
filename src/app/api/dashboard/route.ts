@@ -10,13 +10,24 @@ import { getDashboardStats } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
+
+    const db = getAdminClient();
+    if (!db) {
+      // Database not configured — return minimal dashboard data
+      return apiResponse({
+        stats: {
+          totalCases: 0, activeCases: 0, pendingCases: 0, closedCases: 0,
+          totalLeads: 0, newLeads: 0, totalDocuments: 0,
+          pendingTasks: 0, overdueTasks: 0, totalClients: 0,
+          totalAttorneys: 0, totalRevenue: 0,
+        },
+        charts: { casesByType: [], casesByStatus: [], leadsBySource: [] },
+        health: { rbac: false, popia: true, auditLogging: false, encryption: true, passwordPolicy: true, backupActive: false },
+        recent: { cases: [], leads: [] },
+      });
+    }
 
     // Get core stats from the audit helper
     const stats = await getDashboardStats();

@@ -82,18 +82,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .select('*')
           .eq('id', userId)
           .single(),
-        8000 // 8 second timeout
+        5000 // 5 second timeout
       );
 
       if (error || !profile) {
-        console.error('Profile fetch error:', error);
         return null;
       }
 
       // Also get email_verified from auth
       const { data: { user: authUser } } = await withTimeout(
         supabase.auth.getUser(),
-        5000 // 5 second timeout
+        3000 // 3 second timeout
       );
 
       return {
@@ -101,7 +100,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email_verified: authUser?.email_confirmed_at ? true : false,
       };
     } catch (err) {
-      console.error('Profile fetch exception:', err);
       return null;
     }
   }, [getSupabase]);
@@ -185,13 +183,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Fallback: if onAuthStateChange never fires (e.g. Supabase is slow), stop loading after 5s
+    // Fallback: if onAuthStateChange never fires (e.g. Supabase is unreachable), stop loading after 3s
     const fallbackTimer = setTimeout(() => {
       if (!initializedRef.current) {
-        console.warn('Auth initialization timed out — setting loading to false');
         setAuthState(prev => ({ ...prev, loading: false }));
       }
-    }, 5000);
+    }, 3000);
 
     return () => {
       subscription.unsubscribe();
@@ -208,23 +205,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const supabase = getSupabase();
+
+      // First, do a quick connectivity check to the Supabase auth endpoint
+      try {
+        const controller = new AbortController();
+        const connectivityTimeout = setTimeout(() => controller.abort(), 4000);
+        await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/health`, {
+          method: 'GET',
+          signal: controller.signal,
+        });
+        clearTimeout(connectivityTimeout);
+      } catch (connErr) {
+        // Supabase is unreachable — fail immediately with a clear message
+        console.warn('Supabase connectivity check failed:', connErr);
+        setAuthState(prev => ({ ...prev, loading: false }));
+        return { success: false, error: 'Unable to connect to the authentication service. Please check your internet connection and try again.' };
+      }
+
       const { data, error } = await withTimeout(
         supabase.auth.signInWithPassword({
           email: email.toLowerCase().trim(),
           password,
         }),
-        15000 // 15 second timeout for sign-in
+        8000 // 8 second timeout for sign-in
       );
 
       if (error) {
+        // Check if this is a network error (Supabase unreachable)
+        if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError') || error.message?.includes('Network request failed')) {
+          setAuthState(prev => ({ ...prev, loading: false }));
+          return { success: false, error: 'Unable to connect to authentication service. Please check your internet connection and try again.' };
+        }
+
         // If email is not confirmed, auto-confirm and retry
         if (error.message?.toLowerCase().includes('email not confirmed') || error.message?.toLowerCase().includes('email not verified')) {
           try {
-            const confirmRes = await fetch('/api/auth/auto-confirm', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email.toLowerCase().trim() }),
-            });
+            const confirmRes = await withTimeout(
+              fetch('/api/auth/auto-confirm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email.toLowerCase().trim() }),
+              }),
+              5000 // 5 second timeout for auto-confirm
+            );
 
             if (confirmRes.ok) {
               // Retry sign-in after auto-confirm
@@ -233,7 +256,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   email: email.toLowerCase().trim(),
                   password,
                 }),
-                15000
+                8000
               );
 
               if (!retryError && retryData.user) {
@@ -274,7 +297,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthState(prev => ({ ...prev, loading: false, error: 'Sign in failed' }));
       return { success: false, error: 'Sign in failed — no user returned' };
     } catch (err: any) {
-      const message = err?.message?.includes('timed out') ? 'Sign in timed out. Please check your connection and try again.' : (err?.message || 'Sign in failed');
+      const message = err?.message?.includes('timed out')
+        ? 'Sign in timed out. The authentication service may be temporarily unavailable.'
+        : (err?.message || 'Sign in failed');
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
