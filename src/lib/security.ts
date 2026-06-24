@@ -141,6 +141,7 @@ export const uploadRateLimiter = new RateLimiter(10, 60000);
 export const searchRateLimiter = new RateLimiter(20, 60000);
 export const contactRateLimiter = new RateLimiter(5, 300000);
 export const aiChatRateLimiter = new RateLimiter(20, 60000);
+export const intakeRateLimiter = new RateLimiter(5, 3600000); // 5 intake submissions per hour
 
 export { RateLimiter };
 

@@ -1,26 +1,19 @@
 /**
- * GET /api/staff - List staff members via Supabase
- * profiles.role CHECK: ('client','attorney','paralegal','admin','managing_director','systems_admin')
- * profiles has no: is_active, department, supervisor_id, hire_date, avatar (has avatar_url)
- * profiles PK is `id` (not `user_id`)
+ * GET /api/staff - List staff members via Prisma/SQLite
+ * Returns attorneys, paralegals, admins, managing_director, systems_admin
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 
-// Roles included in staff listing — only roles that exist in profiles CHECK constraint
+// Roles included in staff listing
 const STAFF_ROLES = ['attorney', 'paralegal', 'admin', 'managing_director', 'systems_admin'];
 
 // GET - List staff members
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -28,73 +21,71 @@ export async function GET(request: NextRequest) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    const { page, perPage, from, to } = getPaginationParams(request);
+    const { page, perPage } = getPaginationParams(request);
     const url = new URL(request.url);
 
     const role = url.searchParams.get('role');
-    const view = url.searchParams.get('view'); // 'flat' or 'hierarchy' (default: flat)
+    const view = url.searchParams.get('view'); // 'flat' or 'hierarchy'
 
-    // Build query — exclude client role by default
-    // profiles has no department, is_active, supervisor_id columns
-    let query = db
-      .from('profiles')
-      .select('*', { count: 'exact' })
-      .in('role', STAFF_ROLES);
+    // Build where clause
+    const where: Record<string, unknown> = {
+      is_active: true,
+      role: { in: STAFF_ROLES },
+    };
 
-    if (role) query = query.eq('role', role);
+    if (role) {
+      where.role = role;
+    }
 
     // If hierarchy view requested, return grouped by role
     if (view === 'hierarchy') {
-      const { data: staff, error } = await query
-        .order('role', { ascending: true })
-        .order('full_name', { ascending: true });
-
-      if (error) {
-        console.error('Staff hierarchy query error:', error);
-        return apiError('Failed to load staff', 500, 'STAFF_ERROR');
-      }
-
-      // Also fetch attorneys for enriched data
-      const staffIds = (staff || []).map((m: any) => m.id);
-      let attorneysMap: Record<string, any> = {};
-
-      if (staffIds.length > 0) {
-        const { data: attorneys } = await db
-          .from('attorneys')
-          .select('id, practice_number, specialization, hourly_rate, available')
-          .in('id', staffIds);
-
-        if (attorneys) {
-          for (const a of attorneys) {
-            attorneysMap[a.id] = a;
-          }
-        }
-      }
+      const staff = await db.user.findMany({
+        where,
+        orderBy: [{ role: 'asc' }, { full_name: 'asc' }],
+        select: {
+          id: true,
+          full_name: true,
+          email: true,
+          phone: true,
+          role: true,
+          avatar_url: true,
+          department: true,
+          practice_number: true,
+          specialization: true,
+          hourly_rate: true,
+          bio: true,
+        },
+      });
 
       // Group by role
-      const roles: Record<string, any[]> = {};
-      for (const member of staff || []) {
+      const roles: Record<string, typeof staff> = {};
+      for (const member of staff) {
         const r = member.role || 'unknown';
         if (!roles[r]) {
           roles[r] = [];
         }
-        roles[r].push({
-          ...member,
-          attorney_details: attorneysMap[member.id] || null,
-        });
+        roles[r].push(member);
       }
 
       // Build hierarchy structure
-      const hierarchy = Object.entries(roles).map(([role, members]) => ({
-        role,
-        members: members.map((m: any) => ({
+      const hierarchy = Object.entries(roles).map(([roleName, members]) => ({
+        role: roleName,
+        members: members.map((m) => ({
           id: m.id,
           full_name: m.full_name,
           email: m.email,
           phone: m.phone,
           role: m.role,
           avatar_url: m.avatar_url,
-          attorney_details: m.attorney_details,
+          department: m.department,
+          attorney_details: ['attorney', 'associate', 'candidate_attorney'].includes(m.role)
+            ? {
+                practice_number: m.practice_number,
+                specialization: m.specialization,
+                hourly_rate: m.hourly_rate,
+                bio: m.bio,
+              }
+            : null,
         })),
         head_count: members.length,
       }));
@@ -102,51 +93,55 @@ export async function GET(request: NextRequest) {
       return apiResponse({
         data: hierarchy,
         total_roles: Object.keys(roles).length,
-        total_staff: (staff || []).length,
+        total_staff: staff.length,
       });
     }
 
     // Flat list view (default)
-    const { data: staff, count, error } = await query
-      .order('role', { ascending: true })
-      .order('full_name', { ascending: true })
-      .range(from, to);
+    const [staff, total] = await Promise.all([
+      db.user.findMany({
+        where,
+        orderBy: [{ role: 'asc' }, { full_name: 'asc' }],
+        skip: (page - 1) * perPage,
+        take: perPage,
+        select: {
+          id: true,
+          full_name: true,
+          email: true,
+          phone: true,
+          role: true,
+          avatar_url: true,
+          department: true,
+          practice_number: true,
+          specialization: true,
+          hourly_rate: true,
+          bio: true,
+        },
+      }),
+      db.user.count({ where }),
+    ]);
 
-    if (error) {
-      console.error('Staff list query error:', error);
-      return apiError('Failed to load staff', 500, 'STAFF_ERROR');
-    }
-
-    // Fetch attorney details for staff members who are attorneys
-    const staffIds = (staff || []).map((m: any) => m.id);
-    let attorneysMap: Record<string, any> = {};
-
-    if (staffIds.length > 0) {
-      const { data: attorneys } = await db
-        .from('attorneys')
-        .select('id, practice_number, specialization, hourly_rate, available')
-        .in('id', staffIds);
-
-      if (attorneys) {
-        for (const a of attorneys) {
-          attorneysMap[a.id] = a;
-        }
-      }
-    }
-
-    const formattedStaff = (staff || []).map((m: any) => ({
+    const formattedStaff = staff.map((m) => ({
       id: m.id,
       full_name: m.full_name,
       email: m.email,
       phone: m.phone,
       role: m.role,
       avatar_url: m.avatar_url,
-      attorney_details: attorneysMap[m.id] || null,
+      department: m.department,
+      attorney_details: ['attorney', 'associate', 'candidate_attorney'].includes(m.role)
+        ? {
+            practice_number: m.practice_number,
+            specialization: m.specialization,
+            hourly_rate: m.hourly_rate,
+            bio: m.bio,
+          }
+        : null,
     }));
 
     return apiResponse({
       data: formattedStaff,
-      pagination: createPaginationResult(count || 0, page, perPage),
+      pagination: createPaginationResult(total, page, perPage),
     });
   } catch (error) {
     console.error('Staff list error:', error);

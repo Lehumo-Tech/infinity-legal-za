@@ -10,7 +10,7 @@
 
 import { NextRequest } from 'next/server';
 import { analyzeIntake } from '@/lib/llm-service';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { apiResponse, apiError, checkRateLimit, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { authRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { isStaff, type RoleKey } from '@/lib/auth';
@@ -27,7 +27,6 @@ const VALID_CASE_TYPES = [
   'property',
   'labour',
   'immigration',
-  'intellectual_property',
   'tax',
   'personal_injury',
   'debt_recovery',
@@ -57,7 +56,7 @@ const CASE_TYPE_MAP: Record<string, string> = {
   'Personal Injury': 'personal_injury',
   'personal_injury': 'personal_injury',
   'Tax': 'tax',
-  'Intellectual Property': 'intellectual_property',
+  'Intellectual Property': 'other',
   'Property': 'property',
   'Other': 'other',
 };
@@ -68,9 +67,6 @@ const CASE_TYPE_MAP: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    // Database is optional — AI analysis still works without it
-
     // Rate limiting
     const rateResult = await checkRateLimit(request, authRateLimiter);
     if (!rateResult.allowed) {
@@ -111,6 +107,19 @@ export async function POST(request: NextRequest) {
       return apiError('POPIA consent is required to process your submission', 400, 'POPIA_CONSENT_REQUIRED');
     }
 
+    // ---- Find or create client profile ----
+    const normalizedEmail = email.toLowerCase().trim();
+    let clientId: string | null = null;
+
+    const existingUser = await db.user.findUnique({
+      where: { email: normalizedEmail },
+      include: { client_profile: true },
+    });
+
+    if (existingUser?.client_profile) {
+      clientId = existingUser.client_profile.id;
+    }
+
     // ---- AI Analysis via LLM Service ----
     let aiAnalysis: string;
     let aiProvider = 'none';
@@ -135,18 +144,18 @@ export async function POST(request: NextRequest) {
         'We were unable to generate an AI analysis at this time. Your submission has been received and our legal team will review it shortly. A consultant will contact you within 24 hours to discuss your matter.';
     }
 
-    // ---- Save to Database (if available) ----
+    // ---- Save to Database ----
     let submission = null;
-    if (db) {
-      const { data, error: insertError } = await db
-        .from('intake_submissions')
-        .insert({
+    try {
+      const data = await db.intakeSubmission.create({
+        data: {
+          client_id: clientId,
           case_type: normalizedCaseType,
           case_description: sanitizeString(description.trim()),
           urgency: urgency || 'medium',
           personal_info: {
             full_name: sanitizeString(name.trim()),
-            email: email.toLowerCase().trim(),
+            email: normalizedEmail,
             phone: phone ? sanitizeString(phone.trim()) : null,
             consent_given: true,
             popia_consent: true,
@@ -161,19 +170,15 @@ export async function POST(request: NextRequest) {
             model: aiModel,
           },
           ai_confidence: aiConfidence,
+          ai_summary: aiAnalysis.substring(0, 500),
           status: 'submitted',
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('Failed to save intake submission:', insertError);
-        // Don't fail the request — still return the AI analysis
-      } else {
-        submission = data;
-      }
-    } else {
-      console.warn('[Intake] Database not configured — AI analysis only, submission not saved');
+          submitted_at: new Date(),
+        },
+      });
+      submission = data;
+    } catch (insertError) {
+      console.error('Failed to save intake submission:', insertError);
+      // Don't fail the request — still return the AI analysis
     }
 
     return apiResponse(
@@ -202,56 +207,59 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
-    // Require authentication (async for Supabase)
     const authResult = await requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
     }
 
     const user = authResult.user!;
-    const isStaffMember = isStaff(user.role as RoleKey);
-    const { page, perPage, from, to } = getPaginationParams(request);
+    const userIsStaff = isStaff(user.role as RoleKey);
+    const { page, perPage } = getPaginationParams(request);
 
-    // Build query - staff see all, clients see their own
     const url = new URL(request.url);
     const statusFilter = url.searchParams.get('status');
     const caseTypeFilter = url.searchParams.get('case_type');
 
-    // Build Supabase query
-    let query = db
-      .from('intake_submissions')
-      .select('*', { count: 'exact' });
+    // Build where clause
+    const where: Record<string, unknown> = {};
 
-    // Clients can only see their own submissions (matched by personal_info email)
-    if (!isStaffMember) {
-      query = query.contains('personal_info', { email: user.email });
+    // Clients can only see their own submissions
+    if (!userIsStaff) {
+      // Find client profile for this user
+      const clientProfile = await db.client.findUnique({
+        where: { user_id: user.userId },
+      });
+      if (clientProfile) {
+        where.client_id = clientProfile.id;
+      } else {
+        // No client profile — no submissions to show
+        return apiResponse({
+          submissions: [],
+          pagination: createPaginationResult(0, page, perPage),
+        });
+      }
     }
 
-    if (statusFilter) {
-      query = query.eq('status', statusFilter);
-    }
+    if (statusFilter) where.status = statusFilter;
+    if (caseTypeFilter) where.case_type = caseTypeFilter;
 
-    if (caseTypeFilter) {
-      query = query.eq('case_type', caseTypeFilter);
-    }
+    const [submissions, total] = await Promise.all([
+      db.intakeSubmission.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        skip: (page - 1) * perPage,
+        take: perPage,
+        include: {
+          client: { include: { user: { select: { full_name: true, email: true } } } },
+          case: { select: { case_ref: true, title: true } },
+          reviewer: { select: { full_name: true, email: true } },
+        },
+      }),
+      db.intakeSubmission.count({ where }),
+    ]);
 
-    // Apply pagination and ordering
-    const { data: submissions, count: total, error: queryError } = await query
-      .order('created_at', { ascending: false })
-      .range(from, to);
-
-    if (queryError) {
-      console.error('Intake list query error:', queryError);
-      return apiError('Failed to retrieve submissions', 500, 'INTAKE_LIST_ERROR');
-    }
-
-    // Map to response format using actual schema columns
-    const sanitized = (submissions || []).map((sub: Record<string, unknown>) => {
+    // Map to response format
+    const sanitized = submissions.map((sub) => {
       const personalInfo = (sub.personal_info || {}) as Record<string, unknown>;
       const aiData = (sub.ai_extracted_data || {}) as Record<string, unknown>;
       return {
@@ -260,19 +268,23 @@ export async function GET(request: NextRequest) {
         case_description: sub.case_description,
         urgency: sub.urgency,
         status: sub.status,
-        full_name: isStaffMember ? personalInfo.full_name : undefined,
-        email: isStaffMember ? personalInfo.email : undefined,
-        phone: isStaffMember ? personalInfo.phone : undefined,
+        full_name: userIsStaff ? personalInfo.full_name : undefined,
+        email: userIsStaff ? personalInfo.email : undefined,
+        phone: userIsStaff ? personalInfo.phone : undefined,
         ai_analysis: aiData.ai_analysis,
         ai_confidence: sub.ai_confidence,
+        submitted_at: sub.submitted_at,
         created_at: sub.created_at,
         updated_at: sub.updated_at,
+        client: sub.client?.user ? { full_name: sub.client.user.full_name, email: sub.client.user.email } : null,
+        case: sub.case ? { case_ref: sub.case.case_ref, title: sub.case.title } : null,
+        reviewer: sub.reviewer ? { full_name: sub.reviewer.full_name, email: sub.reviewer.email } : null,
       };
     });
 
     return apiResponse({
       submissions: sanitized,
-      pagination: createPaginationResult(total || 0, page, perPage),
+      pagination: createPaginationResult(total, page, perPage),
     });
   } catch (error) {
     console.error('Intake list error:', error);

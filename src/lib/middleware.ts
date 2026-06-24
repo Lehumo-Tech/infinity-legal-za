@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromToken, hasPermission, type RoleKey, type PermissionKey } from '@/lib/auth';
 import { apiRateLimiter, sanitizeObject } from '@/lib/security';
 import { getAuthUser } from '@/lib/supabase/auth-helpers';
+import { validateLocalToken } from '@/lib/local-auth';
 
 // ============================================
 // API RESPONSE HELPERS
@@ -112,12 +113,29 @@ export async function requireAuth(request: NextRequest): Promise<AuthResult> {
     // Cookie-based auth failed, try Bearer token
   }
 
-  // Strategy 2: Bearer token auth (fallback for API clients)
+  // Strategy 2: Bearer token auth — try Supabase JWT first, then local JWT
   const authHeader = request.headers.get('Authorization');
   if (authHeader?.startsWith('Bearer ')) {
-    const payload = await getUserFromToken(authHeader);
-    if (payload) {
-      return { authenticated: true, user: payload, error: null };
+    // Try Supabase JWT verification first
+    const supabasePayload = await getUserFromToken(authHeader);
+    if (supabasePayload) {
+      return { authenticated: true, user: supabasePayload, error: null };
+    }
+
+    // Fallback: Try local JWT token validation
+    const token = authHeader.substring(7);
+    const localPayload = await validateLocalToken(token);
+    if (localPayload) {
+      return {
+        authenticated: true,
+        user: {
+          userId: localPayload.userId,
+          email: localPayload.email,
+          role: localPayload.role,
+          department: undefined,
+        },
+        error: null,
+      };
     }
   }
 

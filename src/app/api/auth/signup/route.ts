@@ -1,5 +1,5 @@
 /**
- * POST /api/auth/signup - Register new user via Supabase Auth
+ * POST /api/auth/signup - Register new user via Supabase Auth with local fallback
  *
  * SECURITY:
  * - Strict rate limiting (3 per hour per IP)
@@ -10,6 +10,7 @@
  * - Audit logging
  * - CSRF protection
  * - No role escalation (always 'client' for self-signup)
+ * - Falls back to local Prisma/SQLite auth when Supabase is unreachable
  */
 
 import { NextRequest } from 'next/server';
@@ -18,14 +19,10 @@ import { validatePasswordStrength } from '@/lib/auth';
 import { signupRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF } from '@/lib/middleware';
 import { createAuditLog, logConsent } from '@/lib/audit';
+import { createLocalUser, isSupabaseReachable } from '@/lib/local-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Service temporarily unavailable', 503, 'SERVICE_UNAVAILABLE');
-    }
-
     // CSRF validation
     const csrf = validateCSRF(request);
     if (!csrf.valid) return csrf.error!;
@@ -82,120 +79,163 @@ export async function POST(request: NextRequest) {
       return apiError('POPIA consent is required to create an account', 400, 'CONSENT_REQUIRED');
     }
 
-    // ---- Check for existing account ----
-
-    const { data: existingProfile } = await db
-      .from('profiles')
-      .select('id')
-      .eq('email', email.toLowerCase().trim())
-      .single();
-
-    if (existingProfile) {
-      // Don't reveal that email exists — but still return 409 for UX
-      return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
-    }
-
-    // ---- Create User ----
-
-    const { data: authData, error: authError } = await db.auth.admin.createUser({
-      email: email.toLowerCase().trim(),
-      password,
-      email_confirm: true, // Auto-confirm for now (can switch to email verification later)
-      user_metadata: {
-        full_name: sanitizedName,
-        phone: phone ? sanitizeString(phone.trim()) : undefined,
-        role,
-      },
-    });
-
-    if (authError || !authData.user) {
-      if (authError?.message?.includes('already registered')) {
-        return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
-      }
-      console.error('Signup auth error:', authError?.message);
-      return apiError('Failed to create account', 500, 'SIGNUP_ERROR');
-    }
-
-    // ---- Update Profile ----
-    // (auto-created by handle_new_user() trigger)
-
-    const { error: profileError } = await db
-      .from('profiles')
-      .update({
-        full_name: sanitizedName,
-        phone: phone ? sanitizeString(phone.trim()) : null,
-        popi_consent: true,
-      })
-      .eq('id', authData.user.id);
-
-    if (profileError) {
-      console.error('Profile update error:', profileError);
-      // Non-fatal — profile exists but may lack some data
-    }
-
-    // ---- Log Consent ----
-
-    const userId = authData.user.id;
     const ipAddress = request.headers.get('x-forwarded-for') || undefined;
     const userAgent = request.headers.get('user-agent') || undefined;
 
-    await Promise.all([
-      logConsent({
-        user_id: userId,
-        consent_type: 'data_processing',
-        granted: true,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-      }),
-      logConsent({
-        user_id: userId,
-        consent_type: 'popi_act',
-        granted: true,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-      }),
-    ]);
+    // ============================================
+    // Strategy 1: Try Supabase Auth first
+    // ============================================
+    const db = getAdminClient();
+    const supabaseReachable = db && await isSupabaseReachable();
 
-    // ---- Audit Log ----
+    if (supabaseReachable && db) {
+      try {
+        // Check for existing account in Supabase
+        const { data: existingProfile } = await db
+          .from('profiles')
+          .select('id')
+          .eq('email', email.toLowerCase().trim())
+          .single();
 
+        if (existingProfile) {
+          return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
+        }
+
+        // Create User in Supabase
+        const { data: authData, error: authError } = await db.auth.admin.createUser({
+          email: email.toLowerCase().trim(),
+          password,
+          email_confirm: true,
+          user_metadata: {
+            full_name: sanitizedName,
+            phone: phone ? sanitizeString(phone.trim()) : undefined,
+            role,
+          },
+        });
+
+        if (authError || !authData.user) {
+          if (authError?.message?.includes('already registered')) {
+            return apiError('An account with this email already exists', 409, 'EMAIL_EXISTS');
+          }
+          console.error('Signup auth error:', authError?.message);
+          // Fall through to local auth
+        } else {
+          // Update Profile in Supabase
+          const { error: profileError } = await db
+            .from('profiles')
+            .update({
+              full_name: sanitizedName,
+              phone: phone ? sanitizeString(phone.trim()) : null,
+              popi_consent: true,
+            })
+            .eq('id', authData.user.id);
+
+          if (profileError) {
+            console.error('Profile update error:', profileError);
+          }
+
+          // Log Consent
+          await Promise.all([
+            logConsent({
+              user_id: authData.user.id,
+              consent_type: 'data_processing',
+              granted: true,
+              ip_address: ipAddress,
+              user_agent: userAgent,
+            }),
+            logConsent({
+              user_id: authData.user.id,
+              consent_type: 'popi_act',
+              granted: true,
+              ip_address: ipAddress,
+              user_agent: userAgent,
+            }),
+          ]);
+
+          // Audit Log
+          await createAuditLog({
+            user_id: authData.user.id,
+            action: 'USER_SIGNUP',
+            resource_type: 'user',
+            resource_id: authData.user.id,
+            ip_address: ipAddress,
+            user_agent: userAgent,
+          });
+
+          // Sign In to Get Token
+          const { data: signInData, error: signInError } = await db.auth.signInWithPassword({
+            email: email.toLowerCase().trim(),
+            password,
+          });
+
+          if (signInError || !signInData.session) {
+            return apiResponse({
+              message: 'Account created successfully. Please sign in.',
+              authProvider: 'supabase',
+              user: {
+                id: authData.user.id,
+                email: email.toLowerCase().trim(),
+                full_name: sanitizedName,
+                role,
+                email_verified: true,
+              },
+            }, 201);
+          }
+
+          return apiResponse({
+            token: signInData.session.access_token,
+            authProvider: 'supabase',
+            user: {
+              id: authData.user.id,
+              email: email.toLowerCase().trim(),
+              full_name: sanitizedName,
+              role,
+              email_verified: true,
+            },
+          }, 201);
+        }
+      } catch (supabaseError) {
+        console.warn('[Signup] Supabase signup failed, falling back to local auth:', supabaseError);
+      }
+    }
+
+    // ============================================
+    // Strategy 2: Local Auth Fallback (Prisma/SQLite)
+    // ============================================
+    const localResult = await createLocalUser({
+      email: email.toLowerCase().trim(),
+      password,
+      full_name: sanitizedName,
+      phone: phone ? sanitizeString(phone.trim()) : undefined,
+      role,
+    });
+
+    if ('error' in localResult) {
+      if (localResult.error.includes('already exists')) {
+        return apiError(localResult.error, 409, 'EMAIL_EXISTS');
+      }
+      return apiError(localResult.error, 500, 'SIGNUP_ERROR');
+    }
+
+    // Log consent locally
     await createAuditLog({
-      user_id: userId,
-      action: 'USER_SIGNUP',
+      user_id: localResult.user.id,
+      action: 'USER_SIGNUP_LOCAL',
       resource_type: 'user',
-      resource_id: userId,
+      resource_id: localResult.user.id,
       ip_address: ipAddress,
       user_agent: userAgent,
     });
 
-    // ---- Sign In to Get Token ----
-
-    const { data: signInData, error: signInError } = await db.auth.signInWithPassword({
-      email: email.toLowerCase().trim(),
-      password,
-    });
-
-    if (signInError || !signInData.session) {
-      // User was created but can't sign in immediately
-      return apiResponse({
-        message: 'Account created successfully. Please sign in.',
-        user: {
-          id: userId,
-          email: email.toLowerCase().trim(),
-          full_name: sanitizedName,
-          role,
-          email_verified: true,
-        },
-      }, 201);
-    }
-
     return apiResponse({
-      token: signInData.session.access_token,
+      token: localResult.token,
+      authProvider: 'local',
       user: {
-        id: userId,
-        email: email.toLowerCase().trim(),
-        full_name: sanitizedName,
-        role,
-        email_verified: true,
+        id: localResult.user.id,
+        email: localResult.user.email,
+        full_name: localResult.user.full_name,
+        role: localResult.user.role,
+        email_verified: localResult.user.email_verified,
       },
     }, 201);
   } catch (error) {

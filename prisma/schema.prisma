@@ -3,102 +3,126 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================
-// PROFILES & AUTH
+// USER (Auth + Staff + Client accounts)
 // ============================================
 
-model Profile {
-  id             String   @id @default(uuid())
-  email          String
-  full_name      String?
-  phone          String?
-  avatar_url     String?
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  password              String    // hashed password (salt:hash format)
+  full_name             String
+  phone                 String?
+  avatar_url            String?
   /// CHECK: client | attorney | paralegal | admin | managing_director | systems_admin
-  role           String   @default("client")
-  id_number      String?
-  company        String?
-  address        Json?
-  preferences    Json?
-  popi_consent   Boolean  @default(false)
-  email_verified Boolean  @default(false)
-  last_login_at  DateTime?
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  role                  String    @default("client")
+  department            String?
+  id_number             String?
+  company               String?
+  address               Json?
+  practice_number       String?   // For attorneys
+  bar_admission_date    DateTime? // For attorneys
+  specialization        Json?     // For attorneys - was String[] in PG
+  hourly_rate           Float?    // For attorneys
+  bio                   String?   // For attorneys
+  is_active             Boolean   @default(true)
+  email_verified        Boolean   @default(false)
+  popi_consent          Boolean   @default(false)
+  password_expires_at   DateTime?
+  last_password_change  DateTime?
+  last_login_at         DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
 
   // Reverse relations
-  attorney                       Attorney?
-  cases_as_client                Case[]
-  leads_assigned                 Lead[]                @relation("LeadAssignedTo")
-  leads_converted                Lead[]                @relation("LeadConvertedClient")
-  intake_submissions_as_client   IntakeSubmission[]    @relation("IntakeClient")
-  intake_submissions_reviewed    IntakeSubmission[]    @relation("IntakeReviewer")
-  ai_intake_sessions             AiIntakeSession[]
-  ai_analyses_requested          AiAnalysis[]
-  documents_uploaded             Document[]
-  tasks_assigned                 Task[]                @relation("TaskAssignedTo")
-  tasks_created                  Task[]                @relation("TaskCreatedBy")
-  messages_sent                  Message[]             @relation("MessageSender")
-  messages_received              Message[]             @relation("MessageRecipient")
-  timeline_events                CaseTimeline[]
-  privileged_notes               PrivilegedNote[]
-  consultations_as_client        Consultation[]
-  consent_logs                   ConsentLog[]
-  notifications                  Notification[]
-  subscriptions                  UserSubscription[]
-  payment_records                PaymentRecord[]
-  audit_logs                     AuditLog[]
-  api_analytics                  ApiAnalytic[]
-  error_logs                     ErrorLog[]
-  workbench_config               WorkbenchConfig?
-  workbench_widgets              WorkbenchWidget[]
-  workbench_quick_actions        WorkbenchQuickAction[]
-  workbench_pinned_items         WorkbenchPinnedItem[]
-  workbench_recent_activities    WorkbenchRecentActivity[]
-  lead_pipeline_stages_auto_assigned LeadPipelineStage[]
-  lead_pipeline_transitions      LeadPipelineTransition[]
-  lead_communications_made       LeadCommunication[]
-  lead_automation_rules          LeadAutomationRule[]
-  admin_sessions                 AdminSession[]
-  admin_activity_logs            AdminActivityLog[]
-  crm_notifications              CrmNotification[]
-  crm_reports                    CrmReport[]
-  crm_system_settings_updated    CrmSystemSetting[]
-  crm_contact_messages_assigned  CrmContactMessage[]
-  crm_user_notes                 CrmUserNote[]         @relation("CrmUserNoteUser")
-  crm_user_notes_authored        CrmUserNote[]         @relation("CrmUserNoteAuthor")
-  crm_subscription_events        CrmSubscriptionEvent[]
-  legal_articles                 LegalArticle[]
+  client_profile        Client?
+  cases_as_attorney     Case[]
+  documents_uploaded    Document[]
+  messages_sent         Message[]              @relation("MessageSender")
+  messages_received     Message[]              @relation("MessageRecipient")
+  tasks_assigned        Task[]                 @relation("TaskAssignedTo")
+  tasks_created         Task[]                 @relation("TaskCreatedBy")
+  timeline_events       CaseTimeline[]
+  consultations_as_client Consultation[]       @relation("ConsultationClient")
+  consultations_as_attorney Consultation[]     @relation("ConsultationAttorney")
+  privileged_notes      PrivilegedNote[]
+  consent_logs          ConsentLog[]
+  notifications         Notification[]
+  audit_logs            AuditLog[]
+  intake_submissions    IntakeSubmission[]     @relation("IntakeReviewer")
+  ai_analyses_requested AiAnalysis[]
 
   @@index([role])
   @@index([email])
+  @@index([is_active])
 }
 
 // ============================================
-// ATTORNEYS
+// CLIENT (Extended profile for legal clients)
 // ============================================
 
-model Attorney {
-  id                 String   @id @default(uuid())
-  practice_number    String?  @unique
-  specialization     String[]
-  bar_admission_date DateTime?
-  hourly_rate        Float?
-  bio                String?
-  available          Boolean  @default(true)
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
+model Client {
+  id               String   @id @default(uuid())
+  user_id          String   @unique
+  contract_number  String?  @unique
+  id_number        String?
+  plan_id          String?
+  /// CHECK: none | active | past_due | cancelled | expired | trial
+  subscription_status String  @default("none")
+  membership_number String?  @unique
+  membership_card_issued Boolean @default(false)
+  address          Json?
+  employer         String?
+  occupation       String?
+  annual_income    Float?
+  notes            String?
+  tags             Json?     // was String[] in PG
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
 
-  profile       Profile       @relation(fields: [id], references: [id])
-  cases         Case[]
-  consultations Consultation[]
+  user             User             @relation(fields: [user_id], references: [id])
+  plan             PricingPlan?     @relation(fields: [plan_id], references: [id])
+  cases            Case[]
+  intake_submissions IntakeSubmission[] @relation("IntakeClient")
+  subscriptions    UserSubscription[]
+  payment_records  PaymentRecord[]
 
-  @@index([practice_number])
-  @@index([available])
+  @@index([user_id])
+  @@index([contract_number])
+  @@index([membership_number])
+  @@index([subscription_status])
+}
+
+// ============================================
+// PRICING PLANS
+// ============================================
+
+model PricingPlan {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  price_monthly Float
+  price_annual  Float?
+  currency      String   @default("ZAR")
+  features      Json?
+  max_cases     Int      @default(10)
+  max_documents Int      @default(50)
+  is_popular    Boolean  @default(false)
+  is_active     Boolean  @default(true)
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  clients       Client[]
+  subscriptions UserSubscription[]
+
+  @@index([slug])
+  @@index([is_active])
 }
 
 // ============================================
@@ -107,33 +131,33 @@ model Attorney {
 
 model Case {
   id              String   @id @default(uuid())
-  /// Auto-generated case reference
   case_ref        String   @unique
+  case_number     String?  // Court-assigned number
   title           String
   description     String?
-  /// CHECK: civil | criminal | family | corporate | property | labour | immigration | intellectual_property | tax | personal_injury | debt_recovery | other
+  /// CHECK: civil | criminal | family | corporate | property | labour | immigration | tax | personal_injury | debt_recovery | other
   case_type       String
+  /// CHECK: low | medium | high | critical
+  urgency         String   @default("medium")
   /// CHECK: intake | review | active | on_hold | closed | archived
   status          String   @default("intake")
   client_id       String
   attorney_id     String?
   opposing_party  String?
   court_name      String?
-  case_number     String?
   jurisdiction    String?
   estimated_value Float?
   retainer_amount Float?
-  contingency_fee Float?
   next_deadline   DateTime?
   notes           String?
-  tags            String[]
+  is_high_risk    Boolean  @default(false)
+  tags            Json?    // was String[] in PG
   metadata        Json?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  client              Profile           @relation(fields: [client_id], references: [id])
-  attorney            Attorney?         @relation(fields: [attorney_id], references: [id])
-  converted_leads     Lead[]
+  client              Client             @relation(fields: [client_id], references: [id])
+  attorney            User?              @relation(fields: [attorney_id], references: [id])
   intake_submissions  IntakeSubmission[]
   documents           Document[]
   tasks               Task[]
@@ -146,104 +170,55 @@ model Case {
 
   @@index([status])
   @@index([case_type])
+  @@index([urgency])
   @@index([client_id])
   @@index([attorney_id])
   @@index([created_at])
 }
 
 // ============================================
-// LEADS
-// ============================================
-
-model Lead {
-  id                 String   @id @default(uuid())
-  first_name         String
-  last_name          String
-  email              String
-  phone              String?
-  company            String?
-  /// CHECK: website | referral | social_media | google_ads | walk_in | phone | email | partner | event | other
-  source             String
-  /// CHECK: new | contacted | qualified | consultation_scheduled | retained | lost | nurturing
-  status             String   @default("new")
-  /// CHECK: civil | criminal | family | corporate | property | labour | immigration | intellectual_property | tax | personal_injury | debt_recovery | other
-  case_type          String?
-  description        String?
-  estimated_value    Float?
-  lead_score         Int?
-  assigned_to        String?
-  converted_client_id String?
-  converted_case_id  String?
-  notes              String?
-  tags               String[]
-  utm_source         String?
-  utm_medium         String?
-  utm_campaign       String?
-  last_contacted_at  DateTime?
-  next_follow_up     DateTime?
-  metadata           Json?
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-
-  assigned_to_profile    Profile?                @relation("LeadAssignedTo", fields: [assigned_to], references: [id])
-  converted_client       Profile?                @relation("LeadConvertedClient", fields: [converted_client_id], references: [id])
-  converted_case         Case?                   @relation(fields: [converted_case_id], references: [id])
-  intake_submissions     IntakeSubmission[]
-  pipeline_transitions   LeadPipelineTransition[]
-  communications        LeadCommunication[]
-  form_submissions      LeadFormSubmission[]
-  crm_contact_messages  CrmContactMessage[]
-
-  @@index([status])
-  @@index([source])
-  @@index([email])
-  @@index([assigned_to])
-  @@index([created_at])
-}
-
-// ============================================
-// INTAKE SUBMISSIONS
+// INTAKE SUBMISSIONS (AI-powered intake)
 // ============================================
 
 model IntakeSubmission {
-  id                String   @id @default(uuid())
-  client_id         String?
-  case_id           String?
-  lead_id           String?
+  id                  String   @id @default(uuid())
+  client_id           String?
+  case_id             String?
   /// CHECK: draft | submitted | under_review | approved | rejected | additional_info_needed
-  status            String   @default("draft")
-  case_type         String?
-  case_description  String?
-  opposing_party    String?
-  estimated_value   Float?
-  urgency           String?
-  timeline          String?
-  desired_outcome   String?
+  status              String   @default("draft")
+  case_type           String?
+  case_description    String?
+  opposing_party      String?
+  estimated_value     Float?
+  /// CHECK: low | medium | high | critical
+  urgency             String?
+  timeline            String?
+  desired_outcome     String?
   previous_legal_help String?
-  documents_ready   Boolean?
-  personal_info     Json?
-  case_details      Json?
-  financial_info    Json?
-  ai_extracted_data Json?
-  ai_confidence     Float?
-  review_notes      String?
-  reviewed_by       String?
-  reviewed_at       DateTime?
-  submitted_at      DateTime?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
+  documents_ready     Boolean?
+  personal_info       Json?
+  case_details        Json?
+  financial_info      Json?
+  ai_extracted_data   Json?
+  ai_confidence       Float?
+  ai_summary          String?
+  ai_recommendations  Json?
+  review_notes        String?
+  reviewed_by         String?
+  reviewed_at         DateTime?
+  submitted_at        DateTime?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
 
-  client              Profile?          @relation("IntakeClient", fields: [client_id], references: [id])
+  client              Client?           @relation("IntakeClient", fields: [client_id], references: [id])
   case                Case?             @relation(fields: [case_id], references: [id])
-  lead                Lead?             @relation(fields: [lead_id], references: [id])
-  reviewer            Profile?          @relation("IntakeReviewer", fields: [reviewed_by], references: [id])
+  reviewer            User?             @relation("IntakeReviewer", fields: [reviewed_by], references: [id])
   ai_sessions         AiIntakeSession[]
   ai_analyses         AiAnalysis[]
 
   @@index([status])
   @@index([client_id])
   @@index([case_id])
-  @@index([lead_id])
   @@index([created_at])
 }
 
@@ -256,25 +231,22 @@ model AiIntakeSession {
   client_id            String?
   intake_submission_id String?
   session_token        String?  @unique
-  /// CHECK: draft | submitted | under_review | approved | rejected | additional_info_needed
+  /// CHECK: draft | submitted | under_review | completed | abandoned
   status               String   @default("draft")
   conversation_history Json?
   extracted_entities   Json?
   current_step         String?
-  steps_completed      String[]
-  steps_remaining      String[]
+  steps_completed      Json?    // was String[] in PG
+  steps_remaining      Json?    // was String[] in PG
   ai_model_used        String?
   total_tokens         Int?
   completed_at         DateTime?
   created_at           DateTime @default(now())
   updated_at           DateTime @updatedAt
 
-  client            Profile?          @relation(fields: [client_id], references: [id])
-  intake_submission IntakeSubmission? @relation(fields: [intake_submission_id], references: [id])
+  intake_submission    IntakeSubmission? @relation(fields: [intake_submission_id], references: [id])
 
   @@index([session_token])
-  @@index([client_id])
-  @@index([intake_submission_id])
   @@index([status])
 }
 
@@ -307,39 +279,12 @@ model AiAnalysis {
 
   case          Case?             @relation(fields: [case_id], references: [id])
   intake        IntakeSubmission? @relation(fields: [intake_id], references: [id])
-  requester     Profile?          @relation(fields: [requested_by], references: [id])
-  queue_entries AiAnalysisQueue[]
+  requester     User?             @relation(fields: [requested_by], references: [id])
 
   @@index([case_id])
-  @@index([intake_id])
   @@index([analysis_type])
   @@index([status])
-  @@index([requested_by])
   @@index([created_at])
-}
-
-// ============================================
-// AI ANALYSIS QUEUE
-// ============================================
-
-model AiAnalysisQueue {
-  id           String    @id @default(uuid())
-  analysis_id  String
-  /// CHECK: low | medium | high | urgent
-  priority     String    @default("medium")
-  retry_count  Int       @default(0)
-  max_retries  Int       @default(3)
-  scheduled_at DateTime?
-  started_at   DateTime?
-  completed_at DateTime?
-  error_message String?
-  created_at   DateTime  @default(now())
-
-  analysis AiAnalysis @relation(fields: [analysis_id], references: [id])
-
-  @@index([analysis_id])
-  @@index([priority])
-  @@index([scheduled_at])
 }
 
 // ============================================
@@ -350,35 +295,36 @@ model Document {
   id                  String   @id @default(uuid())
   case_id             String?
   uploaded_by         String?
+  title               String?
   /// CHECK: id_document | contract | court_filing | correspondence | evidence | financial | medical | police_report | affidavit | other
   document_type       String
   /// CHECK: uploading | uploaded | reviewing | approved | rejected | archived
   status              String   @default("uploading")
   file_name           String
   file_path           String
-  file_size           BigInt?
+  file_size           Int?
   mime_type           String?
   description         String?
-  tags                String[]
+  tags                Json?    // was String[] in PG
   version             Int      @default(1)
   parent_document_id  String?
   ai_extracted_text   String?
   ai_summary          String?
+  ai_categories       Json?    // AI-generated categories
   is_confidential     Boolean  @default(false)
   metadata            Json?
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
-  case            Case?     @relation(fields: [case_id], references: [id])
-  uploader       Profile?  @relation(fields: [uploaded_by], references: [id])
-  parent_document Document? @relation("DocumentHierarchy", fields: [parent_document_id], references: [id])
-  child_documents Document[] @relation("DocumentHierarchy")
+  case             Case?     @relation(fields: [case_id], references: [id])
+  uploader         User?     @relation(fields: [uploaded_by], references: [id])
+  parent_document  Document? @relation("DocumentHierarchy", fields: [parent_document_id], references: [id])
+  child_documents  Document[] @relation("DocumentHierarchy")
 
   @@index([case_id])
   @@index([document_type])
   @@index([status])
   @@index([uploaded_by])
-  @@index([parent_document_id])
   @@index([created_at])
 }
 
@@ -404,19 +350,18 @@ model Task {
   updated_at   DateTime @updatedAt
 
   case      Case?    @relation(fields: [case_id], references: [id])
-  assignee  Profile  @relation("TaskAssignedTo", fields: [assigned_to], references: [id])
-  creator   Profile @relation("TaskCreatedBy", fields: [created_by], references: [id])
+  assignee  User     @relation("TaskAssignedTo", fields: [assigned_to], references: [id])
+  creator   User     @relation("TaskCreatedBy", fields: [created_by], references: [id])
 
   @@index([status])
   @@index([assigned_to])
   @@index([case_id])
   @@index([due_date])
   @@index([priority])
-  @@index([created_at])
 }
 
 // ============================================
-// MESSAGES
+// MESSAGES (Secure client-attorney chat)
 // ============================================
 
 model Message {
@@ -429,13 +374,14 @@ model Message {
   subject           String?
   content           String
   is_read           Boolean  @default(false)
+  is_encrypted      Boolean  @default(false)
   parent_message_id String?
   metadata          Json?
   created_at        DateTime @default(now())
 
   case           Case?    @relation(fields: [case_id], references: [id])
-  sender         Profile  @relation("MessageSender", fields: [sender_id], references: [id])
-  recipient      Profile? @relation("MessageRecipient", fields: [recipient_id], references: [id])
+  sender         User     @relation("MessageSender", fields: [sender_id], references: [id])
+  recipient      User?    @relation("MessageRecipient", fields: [recipient_id], references: [id])
   parent_message Message? @relation("MessageThread", fields: [parent_message_id], references: [id])
   replies        Message[] @relation("MessageThread")
 
@@ -447,21 +393,21 @@ model Message {
 }
 
 // ============================================
-// CASE TIMELINE
+// CASE TIMELINE (Status timeline)
 // ============================================
 
 model CaseTimeline {
-  id               String   @id @default(uuid())
-  case_id          String
-  event_type       String
+  id                String   @id @default(uuid())
+  case_id           String
+  event_type        String
   event_description String
-  performed_by     String?
-  metadata         Json?
-  is_system_event  Boolean  @default(false)
-  created_at       DateTime @default(now())
+  performed_by      String?
+  metadata          Json?
+  is_system_event   Boolean  @default(false)
+  created_at        DateTime @default(now())
 
-  case        Case     @relation(fields: [case_id], references: [id])
-  performer   Profile? @relation(fields: [performed_by], references: [id])
+  case        Case  @relation(fields: [case_id], references: [id])
+  performer   User? @relation(fields: [performed_by], references: [id])
 
   @@index([case_id])
   @@index([event_type])
@@ -481,8 +427,8 @@ model PrivilegedNote {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  case   Case    @relation(fields: [case_id], references: [id])
-  author Profile @relation(fields: [author_id], references: [id])
+  case   Case  @relation(fields: [case_id], references: [id])
+  author User  @relation(fields: [author_id], references: [id])
 
   @@index([case_id])
   @@index([author_id])
@@ -510,9 +456,9 @@ model Consultation {
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt
 
-  case     Case?    @relation(fields: [case_id], references: [id])
-  client   Profile  @relation(fields: [client_id], references: [id])
-  attorney Attorney @relation(fields: [attorney_id], references: [id])
+  case     Case?  @relation(fields: [case_id], references: [id])
+  client   User  @relation("ConsultationClient", fields: [client_id], references: [id])
+  attorney User  @relation("ConsultationAttorney", fields: [attorney_id], references: [id])
 
   @@index([case_id])
   @@index([client_id])
@@ -522,7 +468,7 @@ model Consultation {
 }
 
 // ============================================
-// CONSENT LOGS
+// CONSENT LOGS (POPIA compliance)
 // ============================================
 
 model ConsentLog {
@@ -536,7 +482,7 @@ model ConsentLog {
   version      String?
   created_at   DateTime @default(now())
 
-  user Profile? @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
   @@index([consent_type])
@@ -552,14 +498,14 @@ model Notification {
   user_id    String
   title      String
   message    String
-  /// Default: info
+  /// CHECK: info | warning | success | error
   type       String   @default("info")
   link       String?
   is_read    Boolean  @default(false)
   metadata   Json?
   created_at DateTime @default(now())
 
-  user Profile @relation(fields: [user_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
   @@index([is_read])
@@ -568,86 +514,62 @@ model Notification {
 }
 
 // ============================================
-// PRICING PLANS
-// ============================================
-
-model PricingPlan {
-  id            String   @id @default(uuid())
-  name          String
-  slug          String   @unique
-  description   String?
-  price_monthly Float
-  price_annual  Float?
-  currency      String   @default("ZAR")
-  features      Json?
-  is_popular    Boolean  @default(false)
-  is_active     Boolean  @default(true)
-  sort_order    Int      @default(0)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-
-  subscriptions UserSubscription[]
-
-  @@index([slug])
-  @@index([is_active])
-}
-
-// ============================================
 // USER SUBSCRIPTIONS
 // ============================================
 
 model UserSubscription {
-  id                    String   @id @default(uuid())
-  user_id               String
-  plan_id               String
+  id                   String   @id @default(uuid())
+  client_id            String
+  plan_id              String
   /// CHECK: active | past_due | cancelled | expired | trial
-  status                String   @default("active")
-  current_period_start  DateTime?
-  current_period_end    DateTime?
-  cancel_at_period_end  Boolean  @default(false)
-  trial_ends_at         DateTime?
-  payfast_token         String?
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
+  status               String   @default("active")
+  current_period_start DateTime?
+  current_period_end   DateTime?
+  cancel_at_period_end Boolean  @default(false)
+  trial_ends_at        DateTime?
+  payfast_token        String?
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
 
-  user             Profile            @relation(fields: [user_id], references: [id])
-  plan             PricingPlan        @relation(fields: [plan_id], references: [id])
-  payment_records  PaymentRecord[]
-  subscription_events CrmSubscriptionEvent[]
+  client             Client             @relation(fields: [client_id], references: [id])
+  plan               PricingPlan        @relation(fields: [plan_id], references: [id])
+  payment_records    PaymentRecord[]
 
-  @@index([user_id])
+  @@index([client_id])
   @@index([plan_id])
   @@index([status])
 }
 
 // ============================================
-// PAYMENT RECORDS
+// PAYMENT RECORDS (PayFast integration)
 // ============================================
 
 model PaymentRecord {
-  id                  String   @id @default(uuid())
-  subscription_id     String?
-  case_id             String?
-  user_id             String
-  amount              Float
-  currency            String?
+  id                    String   @id @default(uuid())
+  subscription_id       String?
+  case_id               String?
+  client_id             String
+  amount                Float
+  currency              String?  @default("ZAR")
   /// CHECK: pending | completed | failed | refunded | partially_refunded
-  status              String   @default("pending")
-  payfast_payment_id  String?
-  payfast_token       String?
-  payment_method      String?
-  description         String?
-  metadata            Json?
-  paid_at             DateTime?
-  created_at          DateTime @default(now())
+  status                String   @default("pending")
+  payfast_payment_id    String?
+  payfast_token         String?
+  payfast_merchant_id   String?
+  payfast_signature     String?
+  payment_method        String?
+  description           String?
+  metadata              Json?
+  paid_at               DateTime?
+  created_at            DateTime @default(now())
 
-  subscription UserSubscription? @relation(fields: [subscription_id], references: [id])
-  case         Case?             @relation(fields: [case_id], references: [id])
-  user         Profile           @relation(fields: [user_id], references: [id])
+  subscription  UserSubscription? @relation(fields: [subscription_id], references: [id])
+  case          Case?             @relation(fields: [case_id], references: [id])
+  client        Client            @relation(fields: [client_id], references: [id])
 
   @@index([subscription_id])
   @@index([case_id])
-  @@index([user_id])
+  @@index([client_id])
   @@index([status])
   @@index([created_at])
 }
@@ -667,7 +589,7 @@ model AuditLog {
   user_agent    String?
   created_at    DateTime @default(now())
 
-  user Profile? @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
   @@index([action])
@@ -676,309 +598,27 @@ model AuditLog {
 }
 
 // ============================================
-// API ANALYTICS
+// OTP VERIFICATION (OTP-based auth)
 // ============================================
 
-model ApiAnalytic {
-  id               String   @id @default(uuid())
-  endpoint         String
-  method           String
-  status_code      Int
-  response_time_ms Int?
-  user_id          String?
-  ip_address       String?
-  user_agent       String?
-  created_at       DateTime @default(now())
-
-  user Profile? @relation(fields: [user_id], references: [id])
-
-  @@index([endpoint])
-  @@index([status_code])
-  @@index([user_id])
-  @@index([created_at])
-}
-
-// ============================================
-// ERROR LOGS
-// ============================================
-
-model ErrorLog {
-  id           String   @id @default(uuid())
-  error_type   String
-  message      String
-  stack_trace  String?
-  user_id      String?
-  request_path String?
-  metadata     Json?
-  resolved     Boolean  @default(false)
-  created_at   DateTime @default(now())
-
-  user Profile? @relation(fields: [user_id], references: [id])
-
-  @@index([error_type])
-  @@index([resolved])
-  @@index([user_id])
-  @@index([created_at])
-}
-
-// ============================================
-// RATE LIMIT LOGS
-// ============================================
-
-model RateLimitLog {
-  id            String   @id @default(uuid())
-  identifier    String
-  endpoint      String
-  request_count Int
-  blocked       Boolean  @default(false)
-  created_at    DateTime @default(now())
-
-  @@index([identifier])
-  @@index([endpoint])
-  @@index([created_at])
-}
-
-// ============================================
-// BACKUP RECORDS
-// ============================================
-
-model BackupRecord {
-  id              String   @id @default(uuid())
-  backup_type     String
-  status          String
-  file_path       String?
-  file_size_bytes BigInt?
-  started_at      DateTime @default(now())
-  completed_at    DateTime?
-  error_message   String?
-  metadata        Json?
-  created_at      DateTime @default(now())
-
-  @@index([status])
-  @@index([backup_type])
-  @@index([started_at])
-}
-
-// ============================================
-// WORKBENCH CONFIGS
-// ============================================
-
-model WorkbenchConfig {
-  id               String   @id @default(uuid())
-  user_id          String   @unique
-  /// CHECK: grid | list | compact
-  layout           String   @default("grid")
-  widgets          Json?
-  sidebar_collapsed Boolean  @default(false)
-  theme            String?
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
-
-  user Profile @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-}
-
-// ============================================
-// WORKBENCH WIDGETS
-// ============================================
-
-model WorkbenchWidget {
+model OtpVerification {
   id          String   @id @default(uuid())
-  user_id     String
-  /// CHECK: case_summary | task_list | upcoming_deadlines | recent_documents | billing_overview | lead_pipeline | ai_insights | quick_actions | notifications | calendar
-  widget_type String
-  title       String
-  position_x  Int      @default(0)
-  position_y  Int      @default(0)
-  width       Int      @default(1)
-  height      Int      @default(1)
-  is_visible  Boolean  @default(true)
-  config      Json?
-  sort_order  Int      @default(0)
+  email       String
+  otp_code    String
+  /// CHECK: pending | verified | expired | failed
+  status      String   @default("pending")
+  attempts    Int      @default(0)
+  max_attempts Int     @default(3)
+  ip_address  String?
+  user_agent  String?
+  verified_at DateTime?
+  expires_at  DateTime
   created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
 
-  user Profile @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-  @@index([widget_type])
-}
-
-// ============================================
-// WORKBENCH QUICK ACTIONS
-// ============================================
-
-model WorkbenchQuickAction {
-  id         String   @id @default(uuid())
-  user_id    String
-  action_type String
-  label      String
-  icon       String?
-  target_url String?
-  config     Json?
-  sort_order Int      @default(0)
-  created_at DateTime @default(now())
-
-  user Profile @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-}
-
-// ============================================
-// WORKBENCH PINNED ITEMS
-// ============================================
-
-model WorkbenchPinnedItem {
-  id         String   @id @default(uuid())
-  user_id    String
-  item_type  String
-  item_id    String
-  label      String
-  metadata   Json?
-  sort_order Int      @default(0)
-  created_at DateTime @default(now())
-
-  user Profile @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-  @@index([item_type])
-}
-
-// ============================================
-// WORKBENCH RECENT ACTIVITY
-// ============================================
-
-model WorkbenchRecentActivity {
-  id            String   @id @default(uuid())
-  user_id       String
-  activity_type String
-  resource_type String?
-  resource_id   String?
-  description   String?
-  metadata      Json?
-  created_at    DateTime @default(now())
-
-  user Profile @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-  @@index([activity_type])
-  @@index([created_at])
-}
-
-// ============================================
-// LEAD PIPELINE STAGES
-// ============================================
-
-model LeadPipelineStage {
-  id             String   @id @default(uuid())
-  name           String
-  slug           String   @unique
-  description    String?
-  sort_order     Int      @default(0)
-  color          String?
-  is_default     Boolean  @default(false)
-  auto_assign_to String?
-  created_at     DateTime @default(now())
-
-  auto_assignee Profile? @relation(fields: [auto_assign_to], references: [id])
-
-  @@index([slug])
-  @@index([sort_order])
-}
-
-// ============================================
-// LEAD PIPELINE TRANSITIONS
-// ============================================
-
-model LeadPipelineTransition {
-  id         String   @id @default(uuid())
-  lead_id    String
-  from_stage String?
-  to_stage   String
-  changed_by String?
-  reason     String?
-  created_at DateTime @default(now())
-
-  lead       Lead     @relation(fields: [lead_id], references: [id])
-  changer    Profile? @relation(fields: [changed_by], references: [id])
-
-  @@index([lead_id])
-  @@index([created_at])
-}
-
-// ============================================
-// LEAD COMMUNICATIONS
-// ============================================
-
-model LeadCommunication {
-  id             String    @id @default(uuid())
-  lead_id        String
-  /// Default: note
-  type           String    @default("note")
-  /// Default: outbound
-  direction      String    @default("outbound")
-  subject        String?
-  content        String
-  contacted_by   String?
-  follow_up_date DateTime?
-  metadata       Json?
-  created_at     DateTime  @default(now())
-
-  lead         Lead     @relation(fields: [lead_id], references: [id])
-  contactor    Profile? @relation(fields: [contacted_by], references: [id])
-
-  @@index([lead_id])
-  @@index([created_at])
-}
-
-// ============================================
-// LEAD AUTOMATION RULES
-// ============================================
-
-model LeadAutomationRule {
-  id               String   @id @default(uuid())
-  name             String
-  description      String?
-  trigger_event    String
-  conditions       Json?
-  actions          Json?
-  is_active        Boolean  @default(true)
-  created_by       String?
-  last_triggered_at DateTime?
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
-
-  creator Profile? @relation(fields: [created_by], references: [id])
-
-  @@index([trigger_event])
-  @@index([is_active])
-}
-
-// ============================================
-// LEAD FORM SUBMISSIONS
-// ============================================
-
-model LeadFormSubmission {
-  id           String   @id @default(uuid())
-  form_slug    String
-  lead_id      String?
-  form_data    Json?
-  utm_source   String?
-  utm_medium   String?
-  utm_campaign String?
-  utm_content  String?
-  ip_address   String?
-  user_agent   String?
-  is_processed Boolean  @default(false)
-  created_at   DateTime @default(now())
-
-  lead Lead? @relation(fields: [lead_id], references: [id])
-
-  @@index([form_slug])
-  @@index([lead_id])
-  @@index([is_processed])
-  @@index([created_at])
+  @@index([email])
+  @@index([otp_code])
+  @@index([status])
+  @@index([expires_at])
 }
 
 // ============================================
@@ -994,240 +634,37 @@ model AdminSession {
   expires_at DateTime
   created_at DateTime @default(now())
 
-  user Profile @relation(fields: [user_id], references: [id])
-
   @@index([token])
   @@index([user_id])
   @@index([expires_at])
 }
 
 // ============================================
-// ADMIN ACTIVITY LOGS
-// ============================================
-
-model AdminActivityLog {
-  id            String   @id @default(uuid())
-  user_id       String?
-  action        String
-  resource_type String
-  resource_id   String?
-  details       Json?
-  ip_address    String?
-  /// Default: info
-  severity      String   @default("info")
-  created_at    DateTime @default(now())
-
-  user Profile? @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-  @@index([action])
-  @@index([resource_type, resource_id])
-  @@index([severity])
-  @@index([created_at])
-}
-
-// ============================================
-// CRM DASHBOARD WIDGETS
-// ============================================
-
-model CrmDashboardWidget {
-  id          String   @id @default(uuid())
-  widget_key  String   @unique
-  title       String
-  description String?
-  /// Default: stat
-  widget_type String   @default("stat")
-  config      Json?
-  data_source String?
-  is_active   Boolean  @default(true)
-  sort_order  Int      @default(0)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  @@index([widget_key])
-  @@index([is_active])
-  @@index([sort_order])
-}
-
-// ============================================
-// CRM REPORTS
-// ============================================
-
-model CrmReport {
-  id            String   @id @default(uuid())
-  title         String
-  /// CHECK: leads_summary | revenue | case_metrics | client_acquisition | attorney_performance | ai_usage | conversion_funnel
-  report_type   String
-  description   String?
-  parameters    Json?
-  result_data   Json?
-  generated_by  String?
-  is_scheduled  Boolean  @default(false)
-  schedule_cron String?
-  format        String?
-  status        String?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-
-  generator Profile? @relation(fields: [generated_by], references: [id])
-
-  @@index([report_type])
-  @@index([generated_by])
-  @@index([is_scheduled])
-  @@index([created_at])
-}
-
-// ============================================
-// CRM NOTIFICATIONS
-// ============================================
-
-model CrmNotification {
-  id         String   @id @default(uuid())
-  user_id    String
-  type       String
-  title      String
-  message    String
-  /// CHECK: low | medium | high | urgent
-  priority   String   @default("medium")
-  link       String?
-  is_read    Boolean  @default(false)
-  metadata   Json?
-  created_at DateTime @default(now())
-
-  user Profile @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-  @@index([is_read])
-  @@index([priority])
-  @@index([created_at])
-}
-
-// ============================================
-// CRM SYSTEM SETTINGS
-// ============================================
-
-model CrmSystemSetting {
-  id            String   @id @default(uuid())
-  setting_key   String   @unique
-  setting_value Json?
-  description   String?
-  is_public     Boolean  @default(false)
-  updated_by    String?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-
-  updater Profile? @relation(fields: [updated_by], references: [id])
-
-  @@index([setting_key])
-  @@index([is_public])
-}
-
-// ============================================
-// CRM CONTACT MESSAGES
-// ============================================
-
-model CrmContactMessage {
-  id            String   @id @default(uuid())
-  name          String
-  email         String
-  phone         String?
-  subject       String?
-  message       String
-  /// CHECK: unread | read | replied | archived
-  status        String   @default("unread")
-  assigned_to   String?
-  replied_at    DateTime?
-  reply_content String?
-  lead_id       String?
-  metadata      Json?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-
-  assignee Profile? @relation(fields: [assigned_to], references: [id])
-  lead     Lead?    @relation(fields: [lead_id], references: [id])
-
-  @@index([status])
-  @@index([assigned_to])
-  @@index([lead_id])
-  @@index([created_at])
-}
-
-// ============================================
-// CRM USER NOTES
-// ============================================
-
-model CrmUserNote {
-  id          String   @id @default(uuid())
-  user_id     String
-  author_id   String
-  content     String
-  is_pinned   Boolean  @default(false)
-  is_internal Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  user   Profile @relation("CrmUserNoteUser", fields: [user_id], references: [id])
-  author Profile @relation("CrmUserNoteAuthor", fields: [author_id], references: [id])
-
-  @@index([user_id])
-  @@index([author_id])
-  @@index([is_pinned])
-  @@index([created_at])
-}
-
-// ============================================
-// CRM SUBSCRIPTION EVENTS
-// ============================================
-
-model CrmSubscriptionEvent {
-  id              String   @id @default(uuid())
-  subscription_id String
-  user_id         String
-  event_type      String
-  description     String?
-  metadata        Json?
-  created_at      DateTime @default(now())
-
-  subscription UserSubscription @relation(fields: [subscription_id], references: [id])
-  user         Profile          @relation(fields: [user_id], references: [id])
-
-  @@index([subscription_id])
-  @@index([user_id])
-  @@index([event_type])
-  @@index([created_at])
-}
-
-// ============================================
-// LEGAL ARTICLES
+// LEGAL ARTICLES (Knowledge base)
 // ============================================
 
 model LegalArticle {
-  id              String   @id @default(uuid())
-  slug            String   @unique
-  title           String
-  subtitle        String?
-  content         String
-  summary         String?
-  /// CHECK: civil_litigation | labour_law | criminal_defence | family_law | corporate_commercial | property_conveyancing | estate_planning | debt_recovery | consumer_rights | popia_compliance | immigration | general
-  category        String
-  tags            String[]
-  cover_image_url String?
-  author_id       String?
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  title            String
+  subtitle         String?
+  content          String
+  summary          String?
+  category         String
+  tags             Json?    // was String[] in PG
+  cover_image_url  String?
+  author_id        String?
   reading_time_min Int?
-  is_published    Boolean  @default(false)
-  is_featured     Boolean  @default(false)
-  published_at    DateTime?
-  sort_order      Int      @default(0)
-  metadata        Json?
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  author Profile? @relation(fields: [author_id], references: [id])
+  is_published     Boolean  @default(false)
+  is_featured      Boolean  @default(false)
+  published_at     DateTime?
+  sort_order       Int      @default(0)
+  metadata         Json?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
   @@index([slug])
   @@index([category])
   @@index([is_published])
-  @@index([is_featured])
   @@index([published_at])
-  @@index([sort_order])
 }

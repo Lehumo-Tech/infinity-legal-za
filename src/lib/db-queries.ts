@@ -2,6 +2,7 @@
  * Infinity Legal ZA - Database Query Helpers
  * Optimized query functions with cursor-based pagination, select/include,
  * transaction wrappers, and query timing/analytics.
+ * Works with Prisma + SQLite.
  */
 
 import { db } from '@/lib/db'
@@ -44,7 +45,6 @@ export interface CursorPaginatedResult<T> {
 /**
  * Generic paginate function for any Prisma model.
  * Uses offset-based pagination with count query.
- * Always uses select to limit fields - no SELECT *.
  */
 export async function paginate<
   T extends Record<string, unknown>,
@@ -63,7 +63,7 @@ export async function paginate<
   const startTime = performance.now()
 
   const safePage = Math.max(1, page)
-  const safePerPage = Math.min(Math.max(1, perPage), 100) // Cap at 100
+  const safePerPage = Math.min(Math.max(1, perPage), 100)
   const skip = (safePage - 1) * safePerPage
 
   const findManyArgs: Record<string, unknown> = {
@@ -102,7 +102,6 @@ export async function paginate<
 
 /**
  * Generic cursor-based pagination for efficient large dataset traversal.
- * Better performance for infinite scroll / real-time feeds.
  */
 export async function cursorPaginate<
   T extends Record<string, unknown> & { id: string },
@@ -123,7 +122,7 @@ export async function cursorPaginate<
   const findManyArgs: Record<string, unknown> = {
     where,
     orderBy,
-    take: safeLimit + 1, // Fetch one extra to check for more
+    take: safeLimit + 1,
     ...(select ? { select } : {}),
   }
 
@@ -200,7 +199,6 @@ function logQueryTime(operation: string, durationMs: number): void {
 
   const timings = queryTimings.get(operation) ?? []
   timings.push(durationMs)
-  // Keep last 100 timings per operation
   if (timings.length > 100) timings.shift()
   queryTimings.set(operation, timings)
 }
@@ -243,21 +241,20 @@ export const CaseQueries = {
       { created_at: 'desc' },
       {
         id: true,
-        matter_number: true,
+        case_ref: true,
+        case_number: true,
         title: true,
         case_type: true,
         urgency: true,
         status: true,
         client_id: true,
-        lead_attorney_id: true,
-        court_date: true,
+        attorney_id: true,
+        next_deadline: true,
         is_high_risk: true,
-        next_action: true,
-        next_action_date: true,
         created_at: true,
         updated_at: true,
-        client: { select: { id: true, full_name: true, email: true } },
-        lead_attorney: { select: { id: true, full_name: true } },
+        client: { select: { id: true, user: { select: { full_name: true, email: true } } } },
+        attorney: { select: { id: true, full_name: true } },
       }
     )
   },
@@ -270,13 +267,12 @@ export const CaseQueries = {
     const result = await db.case.findUnique({
       where: { id },
       include: {
-        client: { select: { id: true, full_name: true, email: true, phone: true } },
-        lead_attorney: { select: { id: true, full_name: true, email: true } },
-        support_paralegal: { select: { id: true, full_name: true } },
-        documents: { select: { id: true, title: true, document_type: true, workflow_status: true, created_at: true } },
+        client: { select: { id: true, user: { select: { full_name: true, email: true, phone: true } } } },
+        attorney: { select: { id: true, full_name: true, email: true } },
+        documents: { select: { id: true, title: true, document_type: true, status: true, created_at: true } },
         tasks: { select: { id: true, title: true, status: true, priority: true, due_date: true, assignee: { select: { full_name: true } } } },
-        timeline: { select: { id: true, action: true, description: true, created_at: true }, orderBy: { created_at: 'desc' } },
-        consultations: { select: { id: true, scheduled_date: true, status: true, meeting_type: true } },
+        timeline_events: { select: { id: true, event_type: true, event_description: true, created_at: true }, orderBy: { created_at: 'desc' } },
+        consultations: { select: { id: true, scheduled_at: true, status: true, meeting_type: true } },
       },
     })
     logQueryTime('getCaseById', performance.now() - startTime)
@@ -300,122 +296,46 @@ export const CaseQueries = {
 }
 
 // ============================================================
-// Lead-specific Optimized Queries
+// Client-specific Optimized Queries
 // ============================================================
 
-export const LeadQueries = {
-  async getLeadList(
+export const ClientQueries = {
+  async getClientList(
     where: Record<string, unknown> = {},
     page: number = 1,
     perPage: number = 20
   ) {
     return paginate(
-      db.lead,
+      db.client,
       where,
       page,
       perPage,
       { created_at: 'desc' },
       {
         id: true,
-        name: true,
-        email: true,
-        phone: true,
-        source: true,
-        status: true,
-        case_type: true,
-        estimated_value: true,
-        sla_deadline: true,
+        contract_number: true,
+        membership_number: true,
+        subscription_status: true,
+        user: { select: { id: true, full_name: true, email: true, phone: true, role: true } },
+        plan: { select: { id: true, name: true, slug: true } },
         created_at: true,
-        assigned_paralegal: { select: { id: true, full_name: true } },
       }
     )
   },
 
-  async getLeadStats() {
+  async getClientById(id: string) {
     const startTime = performance.now()
-    const [total, newLeads, converted, overdue] = await Promise.all([
-      db.lead.count(),
-      db.lead.count({ where: { status: 'new' } }),
-      db.lead.count({ where: { status: 'retained' } }),
-      db.lead.count({ where: { sla_deadline: { lt: new Date() }, status: { notIn: ['retained', 'lost', 'disqualified'] } } }),
-    ])
-    logQueryTime('getLeadStats', performance.now() - startTime)
-    return { total, newLeads, converted, overdue }
-  },
-}
-
-// ============================================================
-// Task-specific Optimized Queries
-// ============================================================
-
-export const TaskQueries = {
-  async getTasksByUser(userId: string, status?: string) {
-    const startTime = performance.now()
-    const where: Record<string, unknown> = { assigned_to: userId }
-    if (status) where.status = status
-
-    const result = await db.task.findMany({
-      where,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        due_date: true,
-        case: { select: { id: true, title: true, matter_number: true } },
-        creator: { select: { id: true, full_name: true } },
-        created_at: true,
+    const result = await db.client.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        plan: true,
+        cases: { select: { id: true, case_ref: true, title: true, status: true, case_type: true, created_at: true } },
+        subscriptions: { include: { plan: true } },
+        payment_records: { take: 10, orderBy: { created_at: 'desc' } },
       },
-      orderBy: [{ priority: 'desc' }, { due_date: 'asc' }],
     })
-    logQueryTime('getTasksByUser', performance.now() - startTime)
-    return result
-  },
-
-  async getOverdueTasks() {
-    const startTime = performance.now()
-    const result = await db.task.findMany({
-      where: {
-        due_date: { lt: new Date() },
-        status: { in: ['pending', 'in_progress'] },
-      },
-      select: {
-        id: true,
-        title: true,
-        due_date: true,
-        priority: true,
-        assignee: { select: { id: true, full_name: true } },
-        case: { select: { id: true, title: true } },
-      },
-      orderBy: { due_date: 'asc' },
-    })
-    logQueryTime('getOverdueTasks', performance.now() - startTime)
-    return result
-  },
-}
-
-// ============================================================
-// Document-specific Optimized Queries
-// ============================================================
-
-export const DocumentQueries = {
-  async getDocumentsByCase(caseId: string) {
-    const startTime = performance.now()
-    const result = await db.document.findMany({
-      where: { case_id: caseId },
-      select: {
-        id: true,
-        title: true,
-        document_type: true,
-        workflow_status: true,
-        version: true,
-        is_locked: true,
-        created_at: true,
-      },
-      orderBy: { created_at: 'desc' },
-    })
-    logQueryTime('getDocumentsByCase', performance.now() - startTime)
+    logQueryTime('getClientById', performance.now() - startTime)
     return result
   },
 }
@@ -436,14 +356,12 @@ export const UserQueries = {
         phone: true,
         role: true,
         department: true,
-        bar_number: true,
+        practice_number: true,
         is_active: true,
-        avatar: true,
+        avatar_url: true,
         email_verified: true,
-        hire_date: true,
         created_at: true,
-        profiles: true,
-        attorney_profile: true,
+        client_profile: true,
       },
     })
     logQueryTime('getUserById', performance.now() - startTime)
@@ -520,33 +438,28 @@ export const DashboardQueries = {
     const [
       totalCases,
       activeCases,
-      totalLeads,
-      newLeads,
+      totalClients,
       totalTasks,
       pendingTasks,
       overdueTasks,
       totalDocuments,
-      totalClients,
     ] = await Promise.all([
       db.case.count(),
       db.case.count({ where: { status: 'active' } }),
-      db.lead.count(),
-      db.lead.count({ where: { status: 'new' } }),
+      db.client.count(),
       db.task.count(),
       db.task.count({ where: { status: 'pending' } }),
       db.task.count({ where: { due_date: { lt: new Date() }, status: { in: ['pending', 'in_progress'] } } }),
       db.document.count(),
-      db.user.count({ where: { role: 'client', is_active: true } }),
     ])
 
     logQueryTime('getDashboardOverview', performance.now() - startTime)
 
     return {
       cases: { total: totalCases, active: activeCases },
-      leads: { total: totalLeads, new: newLeads },
+      clients: { total: totalClients },
       tasks: { total: totalTasks, pending: pendingTasks, overdue: overdueTasks },
       documents: { total: totalDocuments },
-      clients: { total: totalClients },
     }
   },
 }

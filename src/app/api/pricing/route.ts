@@ -1,12 +1,12 @@
 /**
- * GET /api/pricing - Active pricing plans from Supabase
- * Falls back to hardcoded plans when database is unreachable
+ * GET /api/pricing - Active pricing plans from Prisma/SQLite
+ * Falls back to hardcoded plans when database is empty
  */
 
-import { getAdminClient } from '@/lib/supabase/api-client';
-import { apiResponse, apiError } from '@/lib/middleware';
+import { db } from '@/lib/db';
+import { apiResponse } from '@/lib/middleware';
 
-// Fallback pricing data — used when Supabase is unreachable
+// Fallback pricing data — used when database has no plans
 // MUST match database schema: Civil R99, Labour R99, Extensive R139
 const FALLBACK_PLANS = [
   {
@@ -18,6 +18,8 @@ const FALLBACK_PLANS = [
     price_annual: 999,
     currency: 'ZAR',
     features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'],
+    max_cases: 10,
+    max_documents: 50,
     is_popular: false,
     is_active: true,
     sort_order: 1,
@@ -31,6 +33,8 @@ const FALLBACK_PLANS = [
     price_annual: 999,
     currency: 'ZAR',
     features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'],
+    max_cases: 10,
+    max_documents: 50,
     is_popular: true,
     is_active: true,
     sort_order: 2,
@@ -44,6 +48,8 @@ const FALLBACK_PLANS = [
     price_annual: 1399,
     currency: 'ZAR',
     features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'],
+    max_cases: 25,
+    max_documents: 100,
     is_popular: false,
     is_active: true,
     sort_order: 3,
@@ -52,32 +58,20 @@ const FALLBACK_PLANS = [
 
 export async function GET() {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      // Database not configured — return fallback plans
-      return apiResponse(FALLBACK_PLANS);
-    }
-
-    const { data: plans, error } = await db
-      .from('pricing_plans')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
-
-    if (error) {
-      console.error('Pricing query error:', error);
-      // Database error — return fallback plans
-      return apiResponse(FALLBACK_PLANS);
-    }
+    const plans = await db.pricingPlan.findMany({
+      where: { is_active: true },
+      orderBy: { sort_order: 'asc' },
+    });
 
     if (!plans || plans.length === 0) {
       // No plans in database — return fallback
       return apiResponse(FALLBACK_PLANS);
     }
 
-    const parsedPlans = (plans || []).map(plan => ({
+    // Parse features from JSON if needed
+    const parsedPlans = plans.map((plan) => ({
       ...plan,
-      features: typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features,
+      features: typeof plan.features === 'string' ? JSON.parse(plan.features as string) : plan.features,
     }));
 
     return apiResponse(parsedPlans);

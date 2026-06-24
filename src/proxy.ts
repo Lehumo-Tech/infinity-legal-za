@@ -29,6 +29,7 @@ const PUBLIC_API_ROUTES = [
   '/api/report',         // Public report
   '/api/pricing',        // Public pricing info
   '/api/ai/intake',      // Public AI intake form on landing page
+  '/api/intake',         // Public intake form (creates lead + case + AI analysis)
   '/api/ai/chat',        // Public AI chat (rate-limited for anonymous users)
   '/api/articles',       // Public legal articles
   '/api/admin/seed-pricing', // Seed pricing plans (admin setup)

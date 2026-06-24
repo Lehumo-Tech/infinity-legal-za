@@ -3,7 +3,7 @@
 // Aligned with deployed Supabase schema
 // ============================================
 
-export type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart';
+export type View = 'dashboard' | 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart' | 'subscription' | 'messages' | 'clients' | 'subscriptions';
 // Schema CHECK constraint: profiles.role IN ('client','attorney','paralegal','admin','managing_director','systems_admin')
 export type UserRole = 'managing_director' | 'admin' | 'attorney' | 'paralegal' | 'systems_admin' | 'client';
 
