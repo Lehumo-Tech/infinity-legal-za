@@ -116,6 +116,17 @@ export default function HomePageClient() {
         setStats(data.data.stats);
         setCharts(data.data.charts || null);
         setFirmHealth(data.data.health || {});
+        // For client/attorney dashboards, the API returns cases directly — use them
+        if (data.data.cases && data.data.cases.length > 0 && cases.length === 0) {
+          setCases(data.data.cases);
+        }
+        // For attorney dashboards, also set tasks and consultations
+        if (data.data.tasks && data.data.tasks.length > 0 && tasks.length === 0) {
+          setTasks(data.data.tasks);
+        }
+        if (data.data.consultations && data.data.consultations.length > 0 && consultations.length === 0) {
+          setConsultations(data.data.consultations);
+        }
       }
     } catch (e) { console.error('Dashboard load error:', e); }
   };
@@ -688,7 +699,7 @@ export default function HomePageClient() {
                 <ChevronRight className={`w-3 h-3 text-slate-400 hidden sm:block transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`} />
               </button>
               {showUserMenu && (
-                <div className="absolute right-0 top-12 w-56 bg-white border shadow-xl rounded-xl z-50 overflow-hidden animate-scale-in">
+                <div className="absolute right-0 top-12 w-56 bg-white border shadow-xl rounded-xl z-[60] overflow-hidden animate-scale-in">
                   <div className="p-3 border-b bg-slate-50/50">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-9 h-9">

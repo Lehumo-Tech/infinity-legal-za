@@ -42,66 +42,69 @@ class RateLimiter {
       return { allowed: true, remaining: this.maxRequests - cacheEntry.count, resetAt: cacheEntry.windowStart + this.windowMs };
     }
 
-    // Cache miss or expired — check DB
-    try {
-      if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
-      const [ip, endpoint] = key.split(':');
-      const { data: dbEntry } = await db
-        .from('rate_limit_logs')
-        .select('*')
-        .eq('ip', ip)
-        .eq('endpoint', endpoint)
-        .single();
+    // Cache miss or expired — try DB (Supabase) if configured, otherwise use in-memory
+    if (isSupabaseConfigured() && db) {
+      try {
+        const [ip, endpoint] = key.split(':');
+        const { data: dbEntry } = await db
+          .from('rate_limit_logs')
+          .select('*')
+          .eq('ip', ip)
+          .eq('endpoint', endpoint)
+          .single();
 
-      if (dbEntry) {
-        const windowStart = new Date(dbEntry.window_start).getTime();
-        if (now - windowStart > this.windowMs) {
-          // Window expired — reset
+        if (dbEntry) {
+          const windowStart = new Date(dbEntry.window_start).getTime();
+          if (now - windowStart > this.windowMs) {
+            // Window expired — reset
+            await db
+              .from('rate_limit_logs')
+              .upsert({
+                ip,
+                endpoint,
+                request_count: 1,
+                window_start: new Date(now).toISOString(),
+              }, { onConflict: 'ip,endpoint' });
+            const entry: RateLimitEntry = { count: 1, windowStart: now };
+            this.cache.set(key, entry);
+            return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
+          }
+
+          if (dbEntry.request_count >= this.maxRequests) {
+            const entry: RateLimitEntry = { count: dbEntry.request_count, windowStart: windowStart };
+            this.cache.set(key, entry);
+            return { allowed: false, remaining: 0, resetAt: windowStart + this.windowMs };
+          }
+
+          // Increment DB count
+          const newCount = dbEntry.request_count + 1;
           await db
             .from('rate_limit_logs')
-            .upsert({
-              ip,
-              endpoint,
-              request_count: 1,
-              window_start: new Date(now).toISOString(),
-            }, { onConflict: 'ip,endpoint' });
-          const entry: RateLimitEntry = { count: 1, windowStart: now };
+            .update({ request_count: newCount })
+            .eq('id', dbEntry.id);
+          const entry: RateLimitEntry = { count: newCount, windowStart: windowStart };
           this.cache.set(key, entry);
-          return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
+          return { allowed: true, remaining: this.maxRequests - newCount, resetAt: windowStart + this.windowMs };
         }
 
-        if (dbEntry.request_count >= this.maxRequests) {
-          const entry: RateLimitEntry = { count: dbEntry.request_count, windowStart: windowStart };
-          this.cache.set(key, entry);
-          return { allowed: false, remaining: 0, resetAt: windowStart + this.windowMs };
-        }
-
-        // Increment DB count
-        const newCount = dbEntry.request_count + 1;
-        await db
-          .from('rate_limit_logs')
-          .update({ request_count: newCount })
-          .eq('id', dbEntry.id);
-        const entry: RateLimitEntry = { count: newCount, windowStart: windowStart };
+        // No DB entry — create one
+        await db.from('rate_limit_logs').insert({ ip, endpoint, request_count: 1 });
+        const entry: RateLimitEntry = { count: 1, windowStart: now };
         this.cache.set(key, entry);
-        return { allowed: true, remaining: this.maxRequests - newCount, resetAt: windowStart + this.windowMs };
+        return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
+      } catch {
+        // DB failure — fall back to in-memory only (silent)
       }
-
-      // No DB entry — create one
-      await db.from('rate_limit_logs').insert({ ip, endpoint, request_count: 1 });
-      const entry: RateLimitEntry = { count: 1, windowStart: now };
-      this.cache.set(key, entry);
-      return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
-    } catch (dbError) {
-      // DB failure — fall back to in-memory only
-      console.warn('[RateLimit] DB check failed, using in-memory fallback:', dbError);
-      const entry: RateLimitEntry = { count: 1, windowStart: now };
-      this.cache.set(key, entry);
-      return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
     }
+
+    // In-memory fallback (no Supabase or DB query failed)
+    const entry: RateLimitEntry = { count: 1, windowStart: now };
+    this.cache.set(key, entry);
+    return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
   }
 
   private async syncToDb(key: string, entry: RateLimitEntry): Promise<void> {
+    if (!isSupabaseConfigured() || !db) return;
     try {
       const [ip, endpoint] = key.split(':');
       await db
@@ -119,8 +122,10 @@ class RateLimiter {
 
   reset(key: string): void {
     this.cache.delete(key);
-    const [ip, endpoint] = key.split(':');
-    db.from('rate_limit_logs').delete().eq('ip', ip).eq('endpoint', endpoint).catch(() => {});
+    if (isSupabaseConfigured() && db) {
+      const [ip, endpoint] = key.split(':');
+      db.from('rate_limit_logs').delete().eq('ip', ip).eq('endpoint', endpoint).catch(() => {});
+    }
   }
 
   cleanup(): void {

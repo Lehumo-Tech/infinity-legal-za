@@ -9,39 +9,42 @@
  *   Attorney:          attorney@infinitylegal.org / Infinity@2025!
  *   Client:            thabo@example.com / Client@2025!
  *   Client:            sarah@example.com / Client@2025!
+ *
+ * IMPORTANT: Uses bcryptjs for password hashing to match local-auth.ts
+ * IMPORTANT: Uses slugs matching PricingView.tsx PLAN_STYLES map
  */
 
 import { PrismaClient } from '@prisma/client';
-import { createHmac, randomBytes } from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-function hashPassword(password: string): string {
-  const salt = randomBytes(32).toString('hex');
-  const hash = createHmac('sha512', salt).update(password).digest('hex');
-  return `${salt}:${hash}`;
+const SALT_ROUNDS = 12;
+
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, SALT_ROUNDS);
 }
 
 async function main() {
   console.log('🌱 Seeding Infinity Legal ZA database...\n');
 
   // ─── Create Pricing Plans ───
+  // IMPORTANT: Slugs MUST match PricingView.tsx PLAN_STYLES keys
+  // (civil_legal_plan, labour_legal_plan, extensive_plan)
   const plans = [
     {
       name: 'Civil Legal Plan',
-      slug: 'civil-legal',
-      description: 'Cover for civil litigation, conveyancing, and corporate matters',
+      slug: 'civil_legal_plan',
+      description: 'For civil disputes and general legal matters.',
       price_monthly: 99,
       price_annual: 999,
       currency: 'ZAR',
       features: JSON.stringify([
-        'Civil litigation management',
-        'Conveyancing support',
-        'Corporate & commercial matters',
-        'Document management (up to 50)',
-        'Up to 10 active cases',
+        'Unlimited civil consultations',
+        'Document review & drafting',
+        'Court representation',
+        'AI case analysis',
         'Email support',
-        'POPIA compliance tools',
       ]),
       max_cases: 10,
       max_documents: 50,
@@ -51,47 +54,42 @@ async function main() {
     },
     {
       name: 'Labour Legal Plan',
-      slug: 'labour-legal',
-      description: 'Cover for labour law, CCMA processes, and workplace disputes',
+      slug: 'labour_legal_plan',
+      description: 'For workplace and employment matters.',
       price_monthly: 99,
       price_annual: 999,
       currency: 'ZAR',
       features: JSON.stringify([
-        'Labour law & CCMA processes',
-        'Unfair dismissal representation',
-        'Workplace dispute resolution',
-        'Document management (up to 50)',
-        'Up to 10 active cases',
-        'Email support',
-        'POPIA compliance tools',
+        'Unlimited labour consultations',
+        'CCMA representation',
+        'Employment contract review',
+        'Dismissal advice',
+        'Priority support',
       ]),
       max_cases: 10,
       max_documents: 50,
-      is_popular: false,
+      is_popular: true,
       is_active: true,
       sort_order: 2,
     },
     {
-      name: 'Extensive Cover Plan',
-      slug: 'extensive-cover',
-      description: 'Comprehensive cover across all practice areas with priority support',
+      name: 'Extensive Plan',
+      slug: 'extensive_plan',
+      description: 'Complete legal coverage across all practice areas.',
       price_monthly: 139,
       price_annual: 1399,
       currency: 'ZAR',
       features: JSON.stringify([
-        'All practice areas covered',
-        'Family law, criminal defence & civil litigation',
-        'Conveyancing, estate planning & corporate',
-        'Unlimited document management',
-        'Up to 50 active cases',
-        'Priority support',
-        'AI legal assistant access',
-        'POPIA compliance tools',
-        'Dedicated attorney assignment',
+        'All Civil & Labour features',
+        'Family law consultations',
+        'Criminal defence advice',
+        'Estate planning',
+        '24/7 priority support',
+        'Dedicated attorney',
       ]),
       max_cases: 50,
       max_documents: 999,
-      is_popular: true,
+      is_popular: false,
       is_active: true,
       sort_order: 3,
     },
@@ -102,16 +100,43 @@ async function main() {
       where: { slug: plan.slug },
     });
     if (existing) {
-      console.log(`⏭️  Plan "${plan.name}" already exists, skipping...`);
+      // Update existing plan with correct data
+      await prisma.pricingPlan.update({
+        where: { slug: plan.slug },
+        data: plan,
+      });
+      console.log(`✏️  Updated plan: ${plan.name} (R${plan.price_monthly}/mo)`);
     } else {
       await prisma.pricingPlan.create({ data: plan });
       console.log(`✅ Created plan: ${plan.name} (R${plan.price_monthly}/mo)`);
     }
   }
 
+  // Clean up old slug variants if they exist
+  // Map old slugs to new slugs for migration
+  const slugMigration: Record<string, string> = {
+    'civil-legal': 'civil_legal_plan',
+    'labour-legal': 'labour_legal_plan',
+    'extensive-cover': 'extensive_plan',
+  };
+  for (const [oldSlug, newSlug] of Object.entries(slugMigration)) {
+    const old = await prisma.pricingPlan.findUnique({ where: { slug: oldSlug } });
+    if (old) {
+      // Migrate any clients/subscriptions referencing the old plan to the new plan
+      const newPlan = await prisma.pricingPlan.findUnique({ where: { slug: newSlug } });
+      if (newPlan) {
+        await prisma.client.updateMany({ where: { plan_id: old.id }, data: { plan_id: newPlan.id } });
+        await prisma.userSubscription.updateMany({ where: { plan_id: old.id }, data: { plan_id: newPlan.id } });
+      }
+      // Now safe to delete the old plan
+      await prisma.pricingPlan.delete({ where: { slug: oldSlug } });
+      console.log(`🗑️  Migrated & removed old plan slug: ${oldSlug} → ${newSlug}`);
+    }
+  }
+
   // ─── Create Staff Users ───
-  const passwordHash = hashPassword('Infinity@2025!');
-  const clientPasswordHash = hashPassword('Client@2025!');
+  const passwordHash = await hashPassword('Infinity@2025!');
+  const clientPasswordHash = await hashPassword('Client@2025!');
   const passwordExpiry = new Date();
   passwordExpiry.setDate(passwordExpiry.getDate() + 90);
 
@@ -128,6 +153,7 @@ async function main() {
       specialization: JSON.stringify(['corporate_commercial', 'civil_litigation']),
       is_active: true,
       email_verified: true,
+      popi_consent: true,
       password_expires_at: passwordExpiry,
       last_password_change: new Date(),
     },
@@ -140,6 +166,7 @@ async function main() {
       department: 'it',
       is_active: true,
       email_verified: true,
+      popi_consent: true,
       password_expires_at: passwordExpiry,
       last_password_change: new Date(),
     },
@@ -157,6 +184,7 @@ async function main() {
       bio: 'Specialist in labour law and family law with 10 years of experience in CCMA proceedings and divorce matters.',
       is_active: true,
       email_verified: true,
+      popi_consent: true,
       password_expires_at: passwordExpiry,
       last_password_change: new Date(),
     },
@@ -168,8 +196,17 @@ async function main() {
       where: { email: userData.email },
     });
     if (existing) {
-      console.log(`⏭️  User "${userData.email}" already exists, skipping...`);
+      // Update password hash to bcrypt format
+      await prisma.user.update({
+        where: { email: userData.email },
+        data: {
+          password: passwordHash,
+          popi_consent: true,
+          email_verified: true,
+        },
+      });
       createdStaff[userData.email] = existing.id;
+      console.log(`✏️  Updated user: ${userData.email} (bcrypt password)`);
     } else {
       const user = await prisma.user.create({ data: userData });
       createdStaff[userData.email] = user.id;
@@ -190,11 +227,12 @@ async function main() {
         role: 'client',
         id_number: '8501015800089',
         email_verified: true,
+        popi_consent: true,
         password_expires_at: passwordExpiry,
         last_password_change: new Date(),
       },
       client: {
-        contract_number: 'IL-2025-C001',
+        contract_number: 'INF-202501-00001',
         id_number: '8501015800089',
         subscription_status: 'active',
         membership_number: 'IL-M001',
@@ -204,7 +242,7 @@ async function main() {
         annual_income: 650000,
         tags: JSON.stringify(['vip', 'corporate']),
       },
-      planSlug: 'labour-legal',
+      planSlug: 'labour_legal_plan',
       case: {
         case_ref: 'IL-2025-L001',
         case_number: 'CCMA/JHB/2025/0234',
@@ -230,11 +268,12 @@ async function main() {
         role: 'client',
         id_number: '9205020080067',
         email_verified: true,
+        popi_consent: true,
         password_expires_at: passwordExpiry,
         last_password_change: new Date(),
       },
       client: {
-        contract_number: 'IL-2025-C002',
+        contract_number: 'INF-202501-00002',
         id_number: '9205020080067',
         subscription_status: 'active',
         membership_number: 'IL-M002',
@@ -244,9 +283,9 @@ async function main() {
         annual_income: 420000,
         tags: JSON.stringify(['small-business']),
       },
-      planSlug: 'civil-legal',
+      planSlug: 'civil_legal_plan',
       case: {
-        case_ref: 'IL-2025-C002',
+        case_ref: 'IL-2025-C001',
         case_number: 'GJ/2025/5678',
         title: 'Commercial Lease Dispute - Sandton City',
         description: 'Landlord attempting to increase lease by 40% without proper notice. Seeking interdict and lease review.',
@@ -271,13 +310,22 @@ async function main() {
     });
 
     if (existingUser) {
-      console.log(`⏭️  Client "${cd.user.email}" already exists, skipping...`);
+      // Update password to bcrypt
+      await prisma.user.update({
+        where: { email: cd.user.email },
+        data: {
+          password: clientPasswordHash,
+          popi_consent: true,
+          email_verified: true,
+        },
+      });
       const existingClient = await prisma.client.findUnique({
         where: { user_id: existingUser.id },
       });
       if (existingClient) {
         createdClientIds.push(existingClient.id);
       }
+      console.log(`✏️  Updated client: ${cd.user.email} (bcrypt password)`);
       continue;
     }
 
