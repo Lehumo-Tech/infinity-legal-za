@@ -43,7 +43,11 @@ export function AdminSubscriptionsView({ token }: AdminSubscriptionsViewProps) {
       });
       const data = await res.json();
       if (data.success) {
-        setSubscriptions(data.data?.subscriptions || data.data || []);
+        setSubscriptions(
+          Array.isArray(data.data?.subscriptions) ? data.data.subscriptions
+          : Array.isArray(data.data) ? data.data
+          : []
+        );
       }
     } catch (e) {
       console.error('Subscriptions load error:', e);

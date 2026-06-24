@@ -570,6 +570,8 @@ export default function HomePageClient() {
               error={loginError}
               initialSignup={currentView === 'signup'}
               onBackToHome={() => navigate('home')}
+              onSwitchToSignup={() => navigate('signup')}
+              onSwitchToLogin={() => navigate('login')}
             />
           </motion.div>
         </AnimatePresence>

@@ -14,9 +14,11 @@ interface LoginScreenProps {
   error: string;
   initialSignup?: boolean;
   onBackToHome?: () => void;
+  onSwitchToSignup?: () => void;
+  onSwitchToLogin?: () => void;
 }
 
-export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHome }: LoginScreenProps) {
+export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHome, onSwitchToSignup, onSwitchToLogin }: LoginScreenProps) {
   const { signIn, signUp, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -244,7 +246,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
                 </div>
 
                 <div className="text-center">
-                  <button onClick={() => { setIsSignup(true); setSignupError(''); setLoginError(''); }} className="text-[13px] text-[#a88832] hover:text-[#8a6e28] font-medium transition-all duration-200">
+                  <button onClick={() => { setIsSignup(true); setSignupError(''); setLoginError(''); onSwitchToSignup?.(); }} className="text-[13px] text-[#a88832] hover:text-[#8a6e28] font-medium transition-all duration-200">
                     Don&apos;t have an account? <span className="underline underline-offset-2">Sign Up</span>
                   </button>
                 </div>
@@ -316,7 +318,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
                 </div>
 
                 <div className="text-center">
-                  <button onClick={() => { setIsSignup(false); setSignupError(''); setLoginError(''); }} className="text-[13px] text-[#a88832] hover:text-[#8a6e28] font-medium transition-all duration-200">
+                  <button onClick={() => { setIsSignup(false); setSignupError(''); setLoginError(''); onSwitchToLogin?.(); }} className="text-[13px] text-[#a88832] hover:text-[#8a6e28] font-medium transition-all duration-200">
                     Already have an account? <span className="underline underline-offset-2">Sign In</span>
                   </button>
                 </div>

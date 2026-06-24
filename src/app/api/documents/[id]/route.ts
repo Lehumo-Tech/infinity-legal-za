@@ -1,15 +1,15 @@
 /**
- * GET/PUT/DELETE /api/documents/[id] - Get/Update/Delete a single document via Supabase
+ * GET/PUT/DELETE /api/documents/[id] - Get/Update/Delete a single document via Prisma
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Valid enum values per Supabase schema
+// Valid enum values per schema
 const VALID_STATUSES = ['uploading', 'uploaded', 'reviewing', 'approved', 'rejected', 'archived'];
 const VALID_DOCUMENT_TYPES = ['id_document', 'contract', 'court_filing', 'correspondence', 'evidence', 'financial', 'medical', 'police_report', 'affidavit', 'other'];
 
@@ -19,11 +19,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -33,15 +28,15 @@ export async function GET(
 
     const { id } = await params;
 
-    // documents has `status` (not workflow_status), `uploaded_by` (not prepared_by/approved_by/signed_by/supervising_officer)
-    // cases has `case_ref` (not matter_number)
-    const { data: document, error } = await db
-      .from('documents')
-      .select('*, case:cases(id, case_ref, title, status), uploader:profiles!documents_uploaded_by_fkey(id, full_name, email, role)')
-      .eq('id', id)
-      .single();
+    const document = await db.document.findUnique({
+      where: { id },
+      include: {
+        case: { select: { id: true, case_ref: true, title: true, status: true } },
+        uploader: { select: { id: true, full_name: true, email: true, role: true } },
+      },
+    });
 
-    if (error || !document) {
+    if (!document) {
       return apiError('Document not found', 404, 'DOCUMENT_NOT_FOUND');
     }
 
@@ -58,24 +53,15 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
     // Verify document exists
-    const { data: existingDoc, error: fetchError } = await db
-      .from('documents')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const existingDoc = await db.document.findUnique({ where: { id } });
 
-    if (fetchError || !existingDoc) {
+    if (!existingDoc) {
       return apiError('Document not found', 404, 'DOCUMENT_NOT_FOUND');
     }
 
@@ -88,7 +74,7 @@ export async function PUT(
       is_confidential,
     } = body;
 
-    // Validate status enum if provided — schema uses `status` (not `workflow_status`)
+    // Validate status enum if provided
     if (status && !VALID_STATUSES.includes(status)) {
       return apiError(`Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`, 400, 'INVALID_STATUS');
     }
@@ -116,17 +102,14 @@ export async function PUT(
     if (tags !== undefined) updateData.tags = tags;
     if (is_confidential !== undefined) updateData.is_confidential = is_confidential;
 
-    const { data: updatedDoc, error: updateError } = await db
-      .from('documents')
-      .update(updateData)
-      .eq('id', id)
-      .select('*, case:cases(id, case_ref, title), uploader:profiles!documents_uploaded_by_fkey(id, full_name, email)')
-      .single();
-
-    if (updateError || !updatedDoc) {
-      console.error('Update document error:', updateError);
-      return apiError('Failed to update document', 500, 'UPDATE_DOCUMENT_ERROR');
-    }
+    const updatedDoc = await db.document.update({
+      where: { id },
+      data: updateData,
+      include: {
+        case: { select: { id: true, case_ref: true, title: true } },
+        uploader: { select: { id: true, full_name: true, email: true } },
+      },
+    });
 
     await createAuditLog({
       user_id: auth.user.userId,
@@ -149,11 +132,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -164,25 +142,16 @@ export async function DELETE(
     const { id } = await params;
 
     // Verify document exists
-    const { data: existingDoc, error: fetchError } = await db
-      .from('documents')
-      .select('id, file_name')
-      .eq('id', id)
-      .single();
+    const existingDoc = await db.document.findUnique({
+      where: { id },
+      select: { id: true, file_name: true },
+    });
 
-    if (fetchError || !existingDoc) {
+    if (!existingDoc) {
       return apiError('Document not found', 404, 'DOCUMENT_NOT_FOUND');
     }
 
-    const { error: deleteError } = await db
-      .from('documents')
-      .delete()
-      .eq('id', id);
-
-    if (deleteError) {
-      console.error('Delete document error:', deleteError);
-      return apiError('Failed to delete document', 500, 'DELETE_DOCUMENT_ERROR');
-    }
+    await db.document.delete({ where: { id } });
 
     await createAuditLog({
       user_id: auth.user.userId,
