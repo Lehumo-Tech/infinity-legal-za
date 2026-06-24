@@ -3054,3 +3054,178 @@ CRM overview error: TypeError: _lib_db__WEBPACK_IMPORTED_MODULE_0__.db.from is n
  GET /api/notifications?perPage=20 200 in 25ms (compile: 5ms, proxy.ts: 7ms, render: 13ms)
  GET /api/subscriptions 200 in 26ms (compile: 9ms, proxy.ts: 7ms, render: 10ms)
  GET /api/dashboard 200 in 36ms (compile: 3ms, proxy.ts: 7ms, render: 27ms)
+ GET / 200 in 71ms (compile: 8ms, proxy.ts: 5ms, render: 59ms)
+ GET / 200 in 35ms (compile: 3ms, proxy.ts: 6ms, render: 26ms)
+ GET / 200 in 37ms (compile: 2ms, proxy.ts: 4ms, render: 30ms)
+ GET / 200 in 46ms (compile: 8ms, proxy.ts: 8ms, render: 30ms)
+ GET / 200 in 427ms (compile: 73ms, proxy.ts: 190ms, render: 163ms)
+ GET / 200 in 32ms (compile: 2ms, proxy.ts: 4ms, render: 26ms)
+ GET / 200 in 47ms (compile: 2ms, proxy.ts: 4ms, render: 41ms)
+ GET / 200 in 40ms (compile: 3ms, proxy.ts: 5ms, render: 32ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 5ms, render: 27ms)
+ GET / 200 in 417ms (compile: 162ms, proxy.ts: 9ms, render: 247ms)
+ GET / 200 in 262ms (compile: 77ms, proxy.ts: 5ms, render: 180ms)
+ GET / 200 in 56ms (compile: 1849µs, proxy.ts: 6ms, render: 48ms)
+ GET /api/pricing 200 in 3.2s (compile: 3.2s, proxy.ts: 8ms, render: 22ms)
+ GET /api/articles?limit=20 200 in 3.2s (compile: 3.2s, proxy.ts: 8ms, render: 23ms)
+ GET /api/pricing 200 in 76ms (compile: 3ms, proxy.ts: 67ms, render: 6ms)
+ GET /api/articles?limit=20 200 in 77ms (compile: 5ms, proxy.ts: 67ms, render: 4ms)
+ GET /?v=login 200 in 85ms (compile: 60ms, proxy.ts: 5ms, render: 20ms)
+ POST /api/auth/login 401 in 982ms (compile: 947ms, proxy.ts: 4ms, render: 31ms)
+ POST /api/auth/login 200 in 320ms (compile: 5ms, proxy.ts: 7ms, render: 308ms)
+○ Compiling /api/subscriptions ...
+ GET /api/subscriptions 200 in 3.2s (compile: 3.2s, proxy.ts: 6ms, render: 20ms)
+ GET /api/notifications?perPage=20 200 in 3.2s (compile: 3.2s, proxy.ts: 6ms, render: 21ms)
+ GET /?v=cases 200 in 99ms (compile: 70ms, proxy.ts: 7ms, render: 22ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 620ms (compile: 582ms, proxy.ts: 9ms, render: 29ms)
+ GET /?v=cases 200 in 91ms (compile: 46ms, proxy.ts: 6ms, render: 40ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 17ms (compile: 3ms, proxy.ts: 6ms, render: 8ms)
+ GET /?v=documents 200 in 27ms (compile: 4ms, proxy.ts: 5ms, render: 18ms)
+ GET /?v=documents 200 in 89ms (compile: 48ms, proxy.ts: 6ms, render: 36ms)
+Documents list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/documents?perPage=50 500 in 8.3s (compile: 1228ms, proxy.ts: 7ms, render: 7.1s)
+ GET /?v=leads 200 in 42ms (compile: 10ms, proxy.ts: 10ms, render: 22ms)
+ GET /api/leads?page=1&perPage=10 200 in 1003ms (compile: 973ms, proxy.ts: 10ms, render: 20ms)
+ GET /?v=leads 200 in 114ms (compile: 58ms, proxy.ts: 12ms, render: 44ms)
+ GET /?v=home 200 in 31ms (compile: 3ms, proxy.ts: 8ms, render: 20ms)
+ GET /api/articles?limit=20 200 in 2.8s (compile: 2.7s, proxy.ts: 24ms, render: 15ms)
+ GET /api/pricing 200 in 2.8s (compile: 2.7s, proxy.ts: 24ms, render: 16ms)
+ GET /api/pricing 200 in 2.8s (compile: 2.7s, proxy.ts: 24ms, render: 17ms)
+ GET /api/articles?limit=20 200 in 2.8s (compile: 2.8s, proxy.ts: 12ms, render: 19ms)
+ GET / 200 in 73ms (compile: 52ms, proxy.ts: 4ms, render: 16ms)
+ GET /api/dashboard 200 in 666ms (compile: 622ms, proxy.ts: 5ms, render: 39ms)
+ GET /api/articles?limit=20 200 in 65ms (compile: 19ms, proxy.ts: 15ms, render: 31ms)
+ GET /api/articles?limit=20 200 in 69ms (compile: 19ms, proxy.ts: 16ms, render: 35ms)
+ GET /api/pricing 200 in 72ms (compile: 38ms, proxy.ts: 16ms, render: 19ms)
+ GET /api/pricing 200 in 75ms (compile: 38ms, proxy.ts: 16ms, render: 22ms)
+ GET /?v=cases 200 in 305ms (compile: 50ms, proxy.ts: 4ms, render: 250ms)
+ GET /api/auth/verify 200 in 355ms (compile: 334ms, proxy.ts: 11ms, render: 10ms)
+ GET /api/notifications?perPage=20 200 in 668ms (compile: 640ms, proxy.ts: 9ms, render: 19ms)
+ GET /api/subscriptions 200 in 670ms (compile: 640ms, proxy.ts: 9ms, render: 20ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 671ms (compile: 641ms, proxy.ts: 9ms, render: 22ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 14ms (compile: 1920µs, proxy.ts: 5ms, render: 8ms)
+ GET /?v=cases 200 in 355ms (compile: 109ms, proxy.ts: 204ms, render: 42ms)
+ GET /api/notifications?perPage=20 200 in 796ms (compile: 756ms, proxy.ts: 7ms, render: 33ms)
+ GET /api/subscriptions 200 in 797ms (compile: 756ms, proxy.ts: 7ms, render: 34ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 799ms (compile: 757ms, proxy.ts: 7ms, render: 35ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 371ms (compile: 8ms, proxy.ts: 349ms, render: 14ms)
+ GET /api/notifications?perPage=20 200 in 372ms (compile: 11ms, proxy.ts: 349ms, render: 12ms)
+ GET /api/subscriptions 200 in 373ms (compile: 13ms, proxy.ts: 349ms, render: 11ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 106ms (compile: 19ms, proxy.ts: 76ms, render: 11ms)
+ GET /api/notifications?perPage=20 200 in 107ms (compile: 21ms, proxy.ts: 76ms, render: 10ms)
+ GET /api/subscriptions 200 in 109ms (compile: 23ms, proxy.ts: 77ms, render: 10ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 15ms (compile: 1652µs, proxy.ts: 7ms, render: 7ms)
+ GET /?v=login 200 in 345ms (compile: 60ms, proxy.ts: 7ms, render: 279ms)
+ GET /api/auth/verify 200 in 662ms (compile: 630ms, proxy.ts: 7ms, render: 25ms)
+ GET /api/notifications?perPage=20 200 in 98ms (compile: 9ms, proxy.ts: 6ms, render: 83ms)
+ GET /api/subscriptions 200 in 99ms (compile: 20ms, proxy.ts: 7ms, render: 73ms)
+ GET / 200 in 101ms (compile: 74ms, proxy.ts: 6ms, render: 22ms)
+ GET /api/dashboard 200 in 2.1s (compile: 2.1s, proxy.ts: 5ms, render: 32ms)
+ GET /?v=login 200 in 216ms (compile: 38ms, proxy.ts: 5ms, render: 173ms)
+ POST /api/auth/login 200 in 1252ms (compile: 926ms, proxy.ts: 4ms, render: 321ms)
+ GET /api/notifications?perPage=20 200 in 79ms (compile: 11ms, proxy.ts: 7ms, render: 62ms)
+ GET /api/subscriptions 200 in 81ms (compile: 19ms, proxy.ts: 7ms, render: 55ms)
+ GET / 200 in 82ms (compile: 61ms, proxy.ts: 6ms, render: 15ms)
+ GET /api/dashboard 200 in 30ms (compile: 7ms, proxy.ts: 7ms, render: 16ms)
+ GET / 200 in 181ms (compile: 4ms, proxy.ts: 7ms, render: 170ms)
+ GET / 200 in 53ms (compile: 4ms, proxy.ts: 6ms, render: 43ms)
+○ Compiling /api/pricing ...
+ GET /api/pricing 200 in 5.0s (compile: 5.0s, proxy.ts: 11ms, render: 14ms)
+ GET /api/articles?limit=20 200 in 5.0s (compile: 5.0s, proxy.ts: 11ms, render: 15ms)
+ GET /api/pricing 200 in 13ms (compile: 2ms, proxy.ts: 6ms, render: 5ms)
+ GET /api/articles?limit=20 200 in 14ms (compile: 5ms, proxy.ts: 6ms, render: 4ms)
+ GET /?v=login 200 in 93ms (compile: 65ms, proxy.ts: 6ms, render: 22ms)
+ POST /api/auth/login 200 in 657ms (compile: 334ms, proxy.ts: 5ms, render: 317ms)
+ GET / 200 in 95ms (compile: 65ms, proxy.ts: 6ms, render: 23ms)
+ GET /api/subscriptions 200 in 1386ms (compile: 1349ms, proxy.ts: 7ms, render: 30ms)
+ GET /api/notifications?perPage=20 200 in 1387ms (compile: 1350ms, proxy.ts: 7ms, render: 31ms)
+ GET /api/dashboard 200 in 700ms (compile: 595ms, proxy.ts: 84ms, render: 21ms)
+ GET /?v=cases 200 in 87ms (compile: 67ms, proxy.ts: 5ms, render: 14ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 1257ms (compile: 1238ms, proxy.ts: 6ms, render: 14ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 13ms (compile: 2ms, proxy.ts: 4ms, render: 7ms)
+ GET /?v=documents 200 in 69ms (compile: 50ms, proxy.ts: 4ms, render: 15ms)
+ GET /?v=tasks 200 in 71ms (compile: 51ms, proxy.ts: 4ms, render: 16ms)
+Documents list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/documents?perPage=50 500 in 8.2s (compile: 1139ms, proxy.ts: 4ms, render: 7.1s)
+Tasks list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/tasks?perPage=50 500 in 7.7s (compile: 635ms, proxy.ts: 6ms, render: 7.0s)
+ GET /?v=home 200 in 101ms (compile: 75ms, proxy.ts: 6ms, render: 20ms)
+ GET /api/articles?limit=20 200 in 811ms (compile: 786ms, proxy.ts: 9ms, render: 16ms)
+ GET /api/pricing 200 in 816ms (compile: 791ms, proxy.ts: 7ms, render: 18ms)
+ GET /api/pricing 200 in 814ms (compile: 787ms, proxy.ts: 9ms, render: 19ms)
+ GET /api/articles?limit=20 200 in 818ms (compile: 791ms, proxy.ts: 7ms, render: 20ms)
+ GET / 200 in 84ms (compile: 60ms, proxy.ts: 6ms, render: 18ms)
+ GET /api/dashboard 200 in 45ms (compile: 11ms, proxy.ts: 13ms, render: 22ms)
+ GET /api/articles?limit=20 200 in 30ms (compile: 5ms, proxy.ts: 10ms, render: 15ms)
+ GET /api/articles?limit=20 200 in 32ms (compile: 5ms, proxy.ts: 10ms, render: 16ms)
+ GET /api/pricing 200 in 33ms (compile: 13ms, proxy.ts: 10ms, render: 10ms)
+ GET /api/pricing 200 in 35ms (compile: 13ms, proxy.ts: 10ms, render: 12ms)
+ GET /?v=analytics 200 in 284ms (compile: 12ms, proxy.ts: 5ms, render: 267ms)
+ GET /api/auth/verify 200 in 1247ms (compile: 1233ms, proxy.ts: 5ms, render: 10ms)
+ GET /api/dashboard 200 in 40ms (compile: 9ms, proxy.ts: 7ms, render: 24ms)
+ GET /api/subscriptions 200 in 626ms (compile: 593ms, proxy.ts: 7ms, render: 25ms)
+ GET /api/notifications?perPage=20 200 in 627ms (compile: 593ms, proxy.ts: 7ms, render: 26ms)
+ GET /?v=cases 200 in 111ms (compile: 73ms, proxy.ts: 11ms, render: 28ms)
+○ Compiling /api/cases ...
+ GET /api/cases?page=1&perPage=10&search= 200 in 3.7s (compile: 3.7s, proxy.ts: 6ms, render: 33ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 14ms (compile: 2ms, proxy.ts: 4ms, render: 8ms)
+ GET /?v=documents 200 in 92ms (compile: 65ms, proxy.ts: 6ms, render: 21ms)
+Documents list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/documents?perPage=50 500 in 8.3s (compile: 1210ms, proxy.ts: 8ms, render: 7.1s)
+ GET / 200 in 77ms (compile: 56ms, proxy.ts: 4ms, render: 16ms)
+ GET /api/dashboard 200 in 3.1s (compile: 3.0s, proxy.ts: 4ms, render: 31ms)
+ GET /?v=tasks 200 in 76ms (compile: 56ms, proxy.ts: 4ms, render: 16ms)
+Tasks list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/tasks?perPage=50 500 in 8.3s (compile: 1236ms, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 91ms (compile: 66ms, proxy.ts: 5ms, render: 20ms)
+ GET /api/dashboard 200 in 44ms (compile: 12ms, proxy.ts: 6ms, render: 26ms)

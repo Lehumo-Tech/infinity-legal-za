@@ -60,3 +60,42 @@ Stage Summary:
 - Profile API now works for both Supabase and local auth users
 - Dashboard no longer shows hardcoded/incorrect values
 - Code pushed to GitHub — Vercel should auto-deploy
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Make the platform feel like a multi-page website instead of a single-page app
+
+Work Log:
+- Analyzed the entire codebase: the app was a pure SPA with all views controlled by useState<View> in HomePageClient.tsx
+- URL never changed (always `/`), browser back/forward buttons didn't work, no deep linking possible
+- Implemented URL-based routing using Next.js `useSearchParams()` and `useRouter()`:
+  - Views are now addressable via `?v=` search params (e.g., `/?v=cases`, `/?v=documents`)
+  - `navigate()` helper function uses `router.push()` for all navigation
+  - `currentView` is derived from the URL search param instead of local state
+  - Added `v=home`, `v=login`, `v=signup` to the View type for URL-based routing
+- Added Framer Motion `AnimatePresence` + `motion.div` page transitions:
+  - Smooth fade + slide-up animation on view enter (0.3s cubic-bezier)
+  - Quick fade-out on view exit (0.15s)
+  - Landing page has its own fade transition variant
+- Added scroll-to-top behavior when navigating between views
+- Added redirect from `/?v=login` to `/` after successful authentication (using `router.replace()`)
+- Updated `page.tsx` to wrap `HomePageClient` in `<Suspense>` (required for `useSearchParams`)
+- Updated breadcrumb labels to use a `viewLabels` map for consistent display
+- Fixed lint error: removed `setIsTransitioning` call inside useEffect (react-hooks/set-state-in-effect)
+- Browser tested all 10 scenarios: all PASS
+  - URL changes correctly on every navigation
+  - Browser back/forward buttons work
+  - Deep linking works (direct URL access to `/?v=analytics`)
+  - Login redirects from `/?v=login` to `/` (dashboard)
+  - Page transitions animate smoothly
+  - Sidebar active indicator and breadcrumb update correctly
+
+Stage Summary:
+- Platform now behaves like a multi-page website with URL-based routing
+- Every view has its own URL: `/?v=cases`, `/?v=documents`, `/?v=home`, etc.
+- Browser back/forward buttons work for in-app navigation
+- Deep linking works — sharing a URL goes to the correct view
+- Smooth Framer Motion page transitions between views
+- Scroll-to-top on navigation
+- All 10 browser test scenarios passed, lint clean

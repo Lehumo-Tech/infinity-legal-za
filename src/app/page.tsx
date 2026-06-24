@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import HomePageClient from '@/components/HomePageClient';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
@@ -64,5 +65,9 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <HomePageClient />;
+  return (
+    <Suspense>
+      <HomePageClient />
+    </Suspense>
+  );
 }

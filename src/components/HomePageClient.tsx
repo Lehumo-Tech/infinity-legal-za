@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, FolderKanban, Target, FileText, Shield, TrendingUp,
   Bell, Search, ChevronRight, CheckCircle2,
@@ -49,6 +51,68 @@ import { AnalyticsView } from '@/components/AnalyticsView';
 import { PricingView } from '@/components/PricingView';
 
 // ============================================
+// VIEW LABEL MAP
+// ============================================
+const viewLabels: Record<string, string> = {
+  dashboard: 'Dashboard',
+  workbench: 'AI Workbench',
+  cases: 'Cases',
+  leads: 'Leads',
+  documents: 'Documents',
+  consultations: 'Consultations',
+  tasks: 'Tasks',
+  staff: 'Staff Portal',
+  analytics: 'Analytics',
+  pricing: 'Pricing',
+  'org-chart': 'Organisation',
+  subscription: 'Subscription',
+  messages: 'Messages',
+  clients: 'Clients',
+  subscriptions: 'Subscriptions',
+  home: 'Homepage',
+  login: 'Sign In',
+  signup: 'Sign Up',
+};
+
+// ============================================
+// PAGE TRANSITION VARIANTS
+// ============================================
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 8,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -4,
+    transition: {
+      duration: 0.15,
+      ease: 'easeIn',
+    },
+  },
+};
+
+const landingVariants = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: { duration: 0.4, ease: 'easeOut' },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.2, ease: 'easeIn' },
+  },
+};
+
+// ============================================
 // MAIN APP COMPONENT
 // ============================================
 export default function HomePageClient() {
@@ -64,12 +128,30 @@ export default function HomePageClient() {
   } : null;
   const token = accessToken;
 
-  const [currentView, setCurrentView] = useState<View>('dashboard');
+  // URL-based routing
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const viewParam = searchParams.get('v') as View | null;
+
+  // Derive current view from URL
+  const currentView: View = useMemo(() => {
+    if (!viewParam) return 'dashboard';
+    const validViews: View[] = ['dashboard', 'workbench', 'cases', 'leads', 'documents', 'consultations', 'tasks', 'staff', 'analytics', 'pricing', 'org-chart', 'subscription', 'messages', 'clients', 'subscriptions', 'home', 'login', 'signup'];
+    return validViews.includes(viewParam) ? viewParam : 'dashboard';
+  }, [viewParam]);
+
+  // Navigation helper - uses URL routing
+  const navigate = useCallback((view: View) => {
+    if (view === 'dashboard') {
+      router.push('/', { scroll: false });
+    } else {
+      router.push(`?v=${view}`, { scroll: false });
+    }
+  }, [router]);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showLanding, setShowLanding] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const [initialSignup, setInitialSignup] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Data state
   const [stats, setStats] = useState<Stats | null>(null);
@@ -95,6 +177,25 @@ export default function HomePageClient() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevViewRef = useRef<View>(currentView);
+
+  // Redirect from login/signup URL to dashboard after successful authentication
+  useEffect(() => {
+    if (isAuthenticated && (currentView === 'login' || currentView === 'signup')) {
+      router.replace('/', { scroll: false });
+    }
+  }, [isAuthenticated, currentView, router]);
+
+  // Scroll to top on view change
+  useEffect(() => {
+    if (prevViewRef.current !== currentView) {
+      prevViewRef.current = currentView;
+      // Scroll the content area to top
+      if (contentRef.current) {
+        contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [currentView]);
 
   // Loading timeout
   useEffect(() => {
@@ -107,7 +208,7 @@ export default function HomePageClient() {
   }, [authLoading]);
 
   // Data loading functions
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch('/api/dashboard', { headers: { Authorization: `Bearer ${token}` } });
@@ -116,11 +217,9 @@ export default function HomePageClient() {
         setStats(data.data.stats);
         setCharts(data.data.charts || null);
         setFirmHealth(data.data.health || {});
-        // For client/attorney dashboards, the API returns cases directly — use them
         if (data.data.cases && data.data.cases.length > 0 && cases.length === 0) {
           setCases(data.data.cases);
         }
-        // For attorney dashboards, also set tasks and consultations
         if (data.data.tasks && data.data.tasks.length > 0 && tasks.length === 0) {
           setTasks(data.data.tasks);
         }
@@ -129,71 +228,71 @@ export default function HomePageClient() {
         }
       }
     } catch (e) { console.error('Dashboard load error:', e); }
-  };
+  }, [token, cases.length, tasks.length, consultations.length]);
 
-  const loadCases = async (page = 1) => {
+  const loadCases = useCallback(async (page = 1) => {
     if (!token) return;
     try {
       const res = await fetch(`/api/cases?page=${page}&perPage=10&search=${searchQuery}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) { setCases(data.data.data); setCasesTotal(data.data.pagination.total); setCasesPage(page); }
     } catch (e) { console.error('Cases load error:', e); }
-  };
+  }, [token, searchQuery]);
 
-  const loadLeads = async (page = 1) => {
+  const loadLeads = useCallback(async (page = 1) => {
     if (!token) return;
     try {
       const res = await fetch(`/api/leads?page=${page}&perPage=10`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) { setLeads(data.data.data); setLeadsTotal(data.data.pagination.total); setLeadsPage(page); }
     } catch (e) { console.error('Leads load error:', e); }
-  };
+  }, [token]);
 
-  const loadConsultations = async () => {
+  const loadConsultations = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch('/api/consultations?perPage=50', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) setConsultations(data.data.data || []);
     } catch (e) { console.error('Consultations load error:', e); }
-  };
+  }, [token]);
 
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch('/api/documents?perPage=50', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) setDocuments(data.data.data || []);
     } catch (e) { console.error('Documents load error:', e); }
-  };
+  }, [token]);
 
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch('/api/tasks?perPage=50', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) setTasks(data.data.data || []);
     } catch (e) { console.error('Tasks load error:', e); }
-  };
+  }, [token]);
 
-  const loadStaff = async () => {
+  const loadStaff = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch('/api/staff?perPage=100', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) setStaff(data.data.data || []);
     } catch (e) { console.error('Staff load error:', e); }
-  };
+  }, [token]);
 
-  const loadPricingPlans = async () => {
+  const loadPricingPlans = useCallback(async () => {
     try {
       const res = await fetch('/api/pricing');
       const data = await res.json();
       if (data.success) setPricingPlans(data.data || []);
     } catch (e) { console.error('Pricing load error:', e); }
-  };
+  }, []);
 
-  const loadSubscription = async () => {
+  const loadSubscription = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch('/api/subscriptions', { headers: { Authorization: `Bearer ${token}` } });
@@ -201,16 +300,16 @@ export default function HomePageClient() {
       if (data.success && data.data?.subscription) setSubscription(data.data.subscription);
       else setSubscription(null);
     } catch (e) { console.error('Subscription load error:', e); setSubscription(null); }
-  };
+  }, [token]);
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch('/api/notifications?perPage=20', { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) setNotifications(data.data.data || []);
     } catch (e) { console.error('Notifications load error:', e); }
-  };
+  }, [token]);
 
   // Load data on view change
   useEffect(() => {
@@ -256,7 +355,7 @@ export default function HomePageClient() {
       }
     };
     loadData();
-  }, [currentView, isAuthenticated]);
+  }, [currentView, isAuthenticated, loadDashboard, loadCases, loadLeads, loadConsultations, loadDocuments, loadTasks, loadStaff, loadPricingPlans, loadSubscription]);
 
   // Load notifications and subscription on auth
   useEffect(() => {
@@ -265,7 +364,7 @@ export default function HomePageClient() {
         try { await Promise.all([loadNotifications(), loadSubscription()]); } catch { /* ignore */ }
       })();
     }
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, token, loadNotifications, loadSubscription]);
 
   // ============================================
   // NAVIGATION ITEMS (role-based)
@@ -273,7 +372,6 @@ export default function HomePageClient() {
   const getNavItems = (): { id: View; label: string; icon: any; group: string }[] => {
     const role = user?.role || 'client';
     const isClient = role === 'client';
-    const isManagement = ['managing_director', 'systems_admin'].includes(role);
     const isLegal = role === 'attorney' || role === 'paralegal';
 
     if (isClient) {
@@ -335,7 +433,7 @@ export default function HomePageClient() {
               consultations={consultations}
               tasks={tasks}
               subscription={subscription}
-              onViewChange={(v) => setCurrentView(v)}
+              onViewChange={navigate}
             />
           );
         }
@@ -348,7 +446,7 @@ export default function HomePageClient() {
               consultations={consultations}
               tasks={tasks}
               token={token}
-              onViewChange={(v) => setCurrentView(v)}
+              onViewChange={navigate}
               charts={charts}
               firmHealth={firmHealth}
             />
@@ -363,7 +461,7 @@ export default function HomePageClient() {
               leads={leads}
               staff={staff}
               token={token}
-              onViewChange={(v) => setCurrentView(v)}
+              onViewChange={navigate}
               charts={charts}
               firmHealth={firmHealth}
             />
@@ -377,7 +475,7 @@ export default function HomePageClient() {
             consultations={consultations}
             tasks={tasks}
             subscription={subscription}
-            onViewChange={(v) => setCurrentView(v)}
+            onViewChange={navigate}
           />
         );
 
@@ -406,7 +504,7 @@ export default function HomePageClient() {
         return <AnalyticsView token={token} stats={stats} />;
 
       case 'pricing':
-        return <PricingView plans={pricingPlans} onSubscribe={() => setCurrentView('subscription')} onLoginClick={() => {}} isAuthenticated={true} />;
+        return <PricingView plans={pricingPlans} onSubscribe={() => navigate('subscription')} onLoginClick={() => navigate('login')} isAuthenticated={true} />;
 
       case 'subscription':
         return (
@@ -436,7 +534,7 @@ export default function HomePageClient() {
   // ============================================
   // LOADING GUARD
   // ============================================
-  if (authLoading && !loadingTimeout && !showLogin) {
+  if (authLoading && !loadingTimeout && currentView !== 'login' && currentView !== 'signup') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
@@ -453,43 +551,72 @@ export default function HomePageClient() {
   }
 
   // ============================================
-  // NOT AUTHENTICATED → Landing / Login
+  // NOT AUTHENTICATED → Landing / Login / Signup
   // ============================================
   if (!isAuthenticated) {
-    if (showLogin) {
+    if (currentView === 'login' || currentView === 'signup') {
       return (
-        <LoginScreen
-          onLogin={() => {}}
-          loading={false}
-          error={loginError}
-          initialSignup={initialSignup}
-          onBackToHome={() => { setShowLogin(false); setInitialSignup(false); }}
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="login"
+            variants={landingVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <LoginScreen
+              onLogin={() => {}}
+              loading={false}
+              error={loginError}
+              initialSignup={currentView === 'signup'}
+              onBackToHome={() => navigate('home')}
+            />
+          </motion.div>
+        </AnimatePresence>
       );
     }
     return (
-      <LandingPage
-        onLoginClick={() => { setShowLogin(true); setInitialSignup(false); }}
-        onSignUp={(email?: string, name?: string) => {
-          if (email) sessionStorage.setItem('il_intake_email', email);
-          if (name) sessionStorage.setItem('il_intake_name', name);
-          setShowLogin(true);
-          setInitialSignup(true);
-        }}
-      />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="landing"
+          variants={landingVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <LandingPage
+            onLoginClick={() => navigate('login')}
+            onSignUp={(email?: string, name?: string) => {
+              if (email) sessionStorage.setItem('il_intake_email', email);
+              if (name) sessionStorage.setItem('il_intake_name', name);
+              navigate('signup');
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
     );
   }
 
   // ============================================
   // SHOW LANDING PAGE (for authenticated users)
   // ============================================
-  if (showLanding) {
+  if (currentView === 'home') {
     return (
-      <LandingPage
-        isAuthenticated={true}
-        onBackToDashboard={() => setShowLanding(false)}
-        userName={user?.full_name?.split(' ')[0]}
-      />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="landing-auth"
+          variants={landingVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <LandingPage
+            isAuthenticated={true}
+            onBackToDashboard={() => navigate('dashboard')}
+            userName={user?.full_name?.split(' ')[0]}
+          />
+        </motion.div>
+      </AnimatePresence>
     );
   }
 
@@ -506,7 +633,7 @@ export default function HomePageClient() {
         {/* Logo Area */}
         <div
           className="p-4 flex items-center gap-3 border-b border-[#c9a84c]/20 cursor-pointer hover:bg-[#132d52]/30 transition-all duration-200 group"
-          onClick={() => setShowLanding(true)}
+          onClick={() => navigate('home')}
           title="Visit Homepage"
         >
           <div className="relative">
@@ -527,7 +654,7 @@ export default function HomePageClient() {
           <nav className="p-2 space-y-0.5">
             {/* Homepage Link */}
             <button
-              onClick={() => setShowLanding(true)}
+              onClick={() => navigate('home')}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 text-[#c9a84c] hover:bg-[#c9a84c]/10 border border-[#c9a84c]/15 hover:border-[#c9a84c]/30 mb-2 ${sidebarOpen ? '' : 'justify-center'}`}
             >
               <HomeIcon className="w-4 h-4 flex-shrink-0" />
@@ -556,7 +683,7 @@ export default function HomePageClient() {
                 {navItems.filter(i => i.group === group).map(item => (
                   <button
                     key={item.id}
-                    onClick={() => setCurrentView(item.id)}
+                    onClick={() => navigate(item.id)}
                     aria-label={item.label}
                     className={`sidebar-nav-item ${currentView === item.id ? 'active' : ''} relative ${!sidebarOpen ? 'justify-center !px-0' : ''}`}
                   >
@@ -609,7 +736,7 @@ export default function HomePageClient() {
           <div className="flex items-center gap-3">
             <nav className="flex items-center gap-1.5 text-sm">
               <button
-                onClick={() => setShowLanding(true)}
+                onClick={() => navigate('home')}
                 className="text-[#7a94b8] hover:text-[#0c1e3c] transition-colors duration-200 flex items-center gap-1"
                 title="Visit Homepage"
               >
@@ -617,7 +744,7 @@ export default function HomePageClient() {
                 <span className="hidden sm:inline">Home</span>
               </button>
               <ChevronRight className="w-3 h-3 text-slate-300" />
-              <span className="font-semibold text-[#0c1e3c] capitalize">{currentView.replace(/-/g, ' ')}</span>
+              <span className="font-semibold text-[#0c1e3c]">{viewLabels[currentView] || currentView.replace(/-/g, ' ')}</span>
             </nav>
             <Badge className="bg-[#c9a84c]/5 text-[#a88832] text-[9px] font-medium border-0 hover:bg-[#c9a84c]/10 transition-colors duration-200">
               <ShieldCheck className="w-3 h-3 mr-1" />
@@ -742,9 +869,19 @@ export default function HomePageClient() {
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 overflow-auto p-6">
-          {renderView()}
+        {/* Page Content with transitions */}
+        <div className="flex-1 overflow-auto p-6" ref={contentRef}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentView}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              {renderView()}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Footer */}
