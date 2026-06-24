@@ -47,7 +47,7 @@ const FALLBACK_PLANS = [
     price_monthly: 139,
     price_annual: 1399,
     currency: 'ZAR',
-    features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'],
+    features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated legal advisor'],
     max_cases: 25,
     max_documents: 100,
     is_popular: false,

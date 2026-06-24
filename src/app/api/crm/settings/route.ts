@@ -43,7 +43,7 @@ const DEFAULT_SETTINGS = [
     key: 'auto_assign_leads',
     value: 'true',
     type: 'boolean',
-    description: 'Automatically assign new leads to available attorneys based on workload',
+    description: 'Automatically assign new leads to available legal advisors based on workload',
     updated_at: new Date().toISOString(),
   },
   {

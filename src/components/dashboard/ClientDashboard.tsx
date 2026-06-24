@@ -248,7 +248,7 @@ export function ClientDashboard({
                          <MapPin className="w-4 h-4" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-slate-900 truncate">{c.attorney?.full_name || 'Attorney'}</div>
+                        <div className="text-sm font-medium text-slate-900 truncate">{c.attorney?.full_name || 'Legal Advisor'}</div>
                         <div className="text-[10px] text-slate-500">
                           {c.scheduled_at ? new Date(c.scheduled_at).toLocaleDateString('en-ZA') : 'TBD'} · {c.duration_minutes}min
                         </div>

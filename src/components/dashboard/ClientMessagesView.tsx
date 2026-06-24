@@ -107,7 +107,7 @@ export function ClientMessagesView({ token, user }: ClientMessagesViewProps) {
         <div>
           <h2 className="text-xl font-bold text-[#0c1e3c]">Messages</h2>
           <p className="text-[13px] text-slate-500">
-            Secure communication with your attorney
+            Secure communication with your legal advisor
             {unreadCount > 0 && <span className="ml-2 text-[#a88832]">({unreadCount} unread)</span>}
           </p>
         </div>
@@ -126,7 +126,7 @@ export function ClientMessagesView({ token, user }: ClientMessagesViewProps) {
             </div>
             <h3 className="text-lg font-semibold text-slate-700">No messages yet</h3>
             <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">
-              Your secure conversation with your attorney will appear here. Messages are encrypted and POPIA compliant.
+              Your secure conversation with your legal advisor will appear here. Messages are encrypted and POPIA compliant.
             </p>
           </div>
         </div>
@@ -156,7 +156,7 @@ export function ClientMessagesView({ token, user }: ClientMessagesViewProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-slate-900 truncate">
-                          {msg.sender_id === user?.id ? 'You' : msg.sender?.full_name || 'Attorney'}
+                          {msg.sender_id === user?.id ? 'You' : msg.sender?.full_name || 'Legal Advisor'}
                         </span>
                         <span className="text-[10px] text-slate-400 flex-shrink-0">
                           {new Date(msg.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })}
@@ -185,7 +185,7 @@ export function ClientMessagesView({ token, user }: ClientMessagesViewProps) {
                     </Avatar>
                     <div>
                       <div className="text-sm font-semibold text-[#0c1e3c]">
-                        {selectedMessage.sender_id === user?.id ? 'You' : selectedMessage.sender?.full_name || 'Attorney'}
+                        {selectedMessage.sender_id === user?.id ? 'You' : selectedMessage.sender?.full_name || 'Legal Advisor'}
                       </div>
                       <div className="text-[11px] text-slate-500">
                         {new Date(selectedMessage.created_at).toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}

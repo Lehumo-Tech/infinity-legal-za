@@ -64,7 +64,7 @@ If you believe your POPIA rights have been violated, you can:
 
 The Information Regulator can be contacted at: inforeg@justice.gov.za
 
-*This article is for informational purposes only and does not constitute legal advice. Consult with an attorney for specific guidance.*`,
+*This article is for informational purposes only and does not constitute legal advice. Consult with a legal advisor for specific guidance.*`,
     summary: 'A comprehensive guide to South Africa\'s Protection of Personal Information Act — your 8 rights and how to exercise them.',
     category: 'popia_compliance',
     tags: ['POPIA', 'data protection', 'privacy rights', 'Information Regulator'],
@@ -132,9 +132,9 @@ If the CCMA finds your dismissal was unfair, they may order:
 
 ## Getting Legal Help
 
-You don't need an attorney for CCMA proceedings, but legal representation can significantly improve your chances — especially at arbitration.
+You don't need a legal advisor for CCMA proceedings, but legal representation can significantly improve your chances — especially at arbitration.
 
-*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*`,
+*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal legal advisor.*`,
     summary: 'Step-by-step guide to CCMA referrals and labour rights in South Africa — including the critical 30-day deadline.',
     category: 'labour_law',
     tags: ['unfair dismissal', 'CCMA', 'labour law', 'LRA', 'employment rights'],
@@ -198,7 +198,7 @@ If you bought something through direct marketing (phone call, door-to-door), you
 3. Provincial Consumer Affairs offices
 4. Legal consultation for complex matters
 
-*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*`,
+*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal legal advisor.*`,
     summary: 'How the Consumer Protection Act shields you from unfair business practices — your 9 fundamental rights explained.',
     category: 'consumer_rights',
     tags: ['consumer rights', 'CPA', 'Consumer Protection Act', 'returns', 'cooling-off period'],
@@ -248,7 +248,7 @@ The Children's Act prioritises the **best interests of the child**: primary resi
 5. **Trial** (if contested) — A judge decides disputed issues
 6. **Decree** — The court grants the divorce order
 
-*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*`,
+*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal legal advisor.*`,
     summary: 'What you need to know about divorce proceedings, asset division, maintenance, and child custody in South Africa.',
     category: 'family_law',
     tags: ['divorce', 'family law', 'custody', 'maintenance', 'marital regime'],
@@ -288,7 +288,7 @@ The Rental Housing Act and the Consumer Protection Act provide strong protection
 - **Legal Aid South Africa**: 0800 110 110
 - **Infinity Legal**: 068 127 6038
 
-*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*`,
+*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal legal advisor.*`,
     summary: 'Know what your landlord can and cannot do under the Rental Housing Act — unlawful eviction, deposits, and repairs.',
     category: 'civil_litigation',
     tags: ['tenant rights', 'rental housing', 'eviction', 'deposit', 'landlord'],
@@ -328,7 +328,7 @@ You may qualify for debt review if you are over-indebted (unable to meet all deb
 - **No asset repossession** — Your home and car are protected
 - **No more harassment** — Creditors must communicate through your counsellor
 
-*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal attorney.*`,
+*This article is for informational purposes only and does not constitute legal advice. For case-specific guidance, book a consultation with an Infinity Legal legal advisor.*`,
     summary: 'How the National Credit Act protects over-indebted South Africans through debt review and counselling.',
     category: 'debt_recovery',
     tags: ['debt review', 'debt counselling', 'NCA', 'National Credit Act', 'over-indebted'],

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   keywords: [
     'legal services south africa',
     'law firm management',
-    'attorney',
+    'legal advisor',
     'conveyancing',
     'labour law',
     'CCMA',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     'criminal defence',
     'estate planning',
     'corporate commercial',
-    'candidate attorney',
+    'candidate legal advisor',
     'legal tech',
   ],
   alternates: {

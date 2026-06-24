@@ -33,7 +33,7 @@ import type { View, UserRole, User, Stats, Consultation, DocumentItem, TaskItem,
 import { ClientDashboard } from '@/components/dashboard/ClientDashboard';
 import { ClientMessagesView } from '@/components/dashboard/ClientMessagesView';
 import { ClientSubscriptionView } from '@/components/dashboard/ClientSubscriptionView';
-import { AttorneyDashboard } from '@/components/dashboard/AttorneyDashboard';
+import { LegalAdvisorDashboard } from '@/components/dashboard/LegalAdvisorDashboard';
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { AdminClientsView } from '@/components/dashboard/AdminClientsView';
 import { AdminSubscriptionsView } from '@/components/dashboard/AdminSubscriptionsView';
@@ -72,6 +72,16 @@ const viewLabels: Record<string, string> = {
   home: 'Homepage',
   login: 'Sign In',
   signup: 'Sign Up',
+};
+
+const roleDisplayLabels: Record<string, string> = {
+  managing_director: 'Managing Director',
+  systems_admin: 'Systems Admin',
+  attorney: 'Legal Advisor',
+  candidate_attorney: 'Candidate Legal Advisor',
+  paralegal: 'Paralegal',
+  admin: 'Admin',
+  client: 'Client',
 };
 
 // ============================================
@@ -439,7 +449,7 @@ export default function HomePageClient() {
         }
         if (role === 'attorney' || role === 'paralegal') {
           return (
-            <AttorneyDashboard
+            <LegalAdvisorDashboard
               user={user}
               stats={stats}
               cases={cases}
@@ -646,7 +656,7 @@ export default function HomePageClient() {
             <div>
               <span className="font-bold text-lg tracking-tight">Infinity Legal</span>
               <p className="text-[10px] text-[#7a8fb0] uppercase tracking-widest">
-                {user?.role === 'client' ? 'Client Portal' : user?.role === 'attorney' ? 'Attorney Portal' : 'Admin Portal'}
+                {user?.role === 'client' ? 'Client Portal' : user?.role === 'attorney' ? 'Legal Advisor Portal' : 'Admin Portal'}
               </p>
             </div>
           )}
@@ -712,7 +722,7 @@ export default function HomePageClient() {
             {sidebarOpen && (
               <div className="min-w-0">
                 <div className="text-xs font-medium text-white truncate">{user?.full_name}</div>
-                <div className="text-[10px] text-[#7a94b8] capitalize truncate">{user?.role?.replace(/_/g, ' ')}</div>
+                <div className="text-[10px] text-[#7a94b8] truncate">{roleDisplayLabels[user?.role || ''] || user?.role?.replace(/_/g, ' ')}</div>
               </div>
             )}
           </div>
@@ -837,7 +847,7 @@ export default function HomePageClient() {
                 </Avatar>
                 <div className="text-sm hidden sm:block text-left">
                   <div className="font-medium text-[#0c1e3c] text-xs leading-tight">{user?.full_name}</div>
-                  <div className="text-[10px] text-slate-500 capitalize leading-tight">{user?.role?.replace(/_/g, ' ')}</div>
+                  <div className="text-[10px] text-slate-500 leading-tight">{roleDisplayLabels[user?.role || ''] || user?.role?.replace(/_/g, ' ')}</div>
                 </div>
                 <ChevronRight className={`w-3 h-3 text-slate-400 hidden sm:block transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`} />
               </button>

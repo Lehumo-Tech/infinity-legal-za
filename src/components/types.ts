@@ -27,7 +27,7 @@ export interface Stats {
   pendingTasks: number;
   overdueTasks: number;
   totalClients: number;
-  totalAttorneys: number;
+  totalLegalAdvisors: number;
   totalRevenue: number;
 }
 

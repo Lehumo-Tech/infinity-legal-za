@@ -69,7 +69,7 @@ const CORRECT_PLANS = [
       'Criminal defence advice',
       'Estate planning',
       '24/7 priority support',
-      'Dedicated attorney',
+      'Dedicated legal advisor',
     ],
     max_cases: 50,
     max_documents: 999,

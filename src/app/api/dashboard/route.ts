@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
           pendingTasks: stats.pendingTasks,
           overdueTasks,
           totalClients: stats.totalClients,
-          totalAttorneys,
+          totalLegalAdvisors: totalAttorneys,
           totalRevenue: stats.totalRevenue,
         },
         charts: {

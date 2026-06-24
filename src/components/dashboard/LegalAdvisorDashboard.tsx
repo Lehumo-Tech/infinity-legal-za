@@ -30,7 +30,7 @@ interface AttorneyDashboardProps {
   firmHealth: Record<string, boolean>;
 }
 
-export function AttorneyDashboard({
+export function LegalAdvisorDashboard({
   user,
   stats,
   cases,
@@ -84,7 +84,7 @@ export function AttorneyDashboard({
             </div>
             <Badge className="mt-3 bg-gradient-to-r from-[#c9a84c] via-[#dfc475] to-[#c9a84c] text-[#0c1e3c] text-[10px] font-semibold animate-shimmer bg-[length:200%_100%] shadow-sm">
               <Crown className="w-3 h-3 mr-1" />
-              Attorney Portal
+              Legal Advisor Portal
             </Badge>
           </div>
           <div className="hidden md:flex gap-3">

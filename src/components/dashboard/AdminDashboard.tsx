@@ -172,7 +172,7 @@ export function AdminDashboard({
               </div>
               <div>
                 <h3 className="text-[#0c1e3c] font-semibold text-sm">{intakeCases.length} Case{intakeCases.length !== 1 ? 's' : ''} Awaiting Assignment</h3>
-                <p className="text-slate-500 text-[12px] mt-0.5">Review new intakes and assign to attorneys</p>
+                <p className="text-slate-500 text-[12px] mt-0.5">Review new intakes and assign to legal advisors</p>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => onViewChange('cases')} className="text-[#a88832] border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 text-[12px]">

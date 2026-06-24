@@ -102,9 +102,9 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[12px]">Attorney</Label>
+                    <Label className="text-[12px]">Legal Advisor</Label>
                     <Select value={form.attorney_id} onValueChange={v => setForm(f => ({ ...f, attorney_id: v }))}>
-                      <SelectTrigger className="mt-1 text-[12px]"><SelectValue placeholder="Select attorney" /></SelectTrigger>
+                      <SelectTrigger className="mt-1 text-[12px]"><SelectValue placeholder="Select legal advisor" /></SelectTrigger>
                       <SelectContent>
                         {attorneys.map(a => (
                           <SelectItem key={a.id} value={a.id}>{a.full_name} ({a.role.replace(/_/g, ' ')})</SelectItem>
@@ -171,7 +171,7 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
                 <tr className="border-b bg-[#0c1e3c]/[0.03]">
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Type</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Client</th>
-                  <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Attorney</th>
+                  <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Legal Advisor</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Date & Time</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Duration</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Status</th>

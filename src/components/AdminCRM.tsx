@@ -728,7 +728,7 @@ export default function AdminCRM({ user }: AdminCRMProps) {
                 <SelectItem value="associate">Associate</SelectItem>
                 <SelectItem value="paralegal">Paralegal</SelectItem>
                 <SelectItem value="legal_officer">Legal Officer</SelectItem>
-                <SelectItem value="candidate_attorney">Candidate Attorney</SelectItem>
+                <SelectItem value="candidate_attorney">Candidate Legal Advisor</SelectItem>
                 <SelectItem value="systems_admin">Systems Admin</SelectItem>
                 <SelectItem value="client">Client</SelectItem>
               </SelectContent>
@@ -1210,7 +1210,7 @@ export default function AdminCRM({ user }: AdminCRMProps) {
                     <SelectItem value="supervising_officer">Supervising Officer</SelectItem>
                     <SelectItem value="senior_consultant">Senior Consultant</SelectItem>
                     <SelectItem value="consultant">Consultant</SelectItem>
-                    <SelectItem value="candidate_attorney">Candidate Attorney</SelectItem>
+                    <SelectItem value="candidate_attorney">Candidate Legal Advisor</SelectItem>
                     <SelectItem value="hr_manager">HR Manager</SelectItem>
                     <SelectItem value="finance_manager">Finance Manager</SelectItem>
                     <SelectItem value="office_administrator">Office Administrator</SelectItem>

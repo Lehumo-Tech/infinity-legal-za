@@ -14,7 +14,7 @@ export function OrgChartView({ staff }: { staff: StaffMember[] }) {
 
   const roleLabels: Record<string, string> = {
     managing_director: 'Managing Director', admin: 'Admin',
-    attorney: 'Attorney', paralegal: 'Paralegal',
+    attorney: 'Legal Advisor', paralegal: 'Paralegal',
     systems_admin: 'Systems Admin', client: 'Client',
   };
 
