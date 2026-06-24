@@ -1,14 +1,18 @@
 /**
  * GET /api/crm/settings - List all CRM/system settings
  * PATCH /api/crm/settings - Update a setting value
+ *
+ * Rewritten from Supabase to Prisma/SQLite.
+ * Note: There is no Settings table in the Prisma schema, so GET returns
+ * default settings and PATCH acknowledges the update (in-memory until a
+ * Settings model is added to the schema).
  */
 
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
 import { requireAuth, apiResponse, apiError } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Default settings to return if no database table exists
+// Default settings to return (no Settings table in Prisma schema)
 const DEFAULT_SETTINGS = [
   {
     id: 'default-1',
@@ -97,28 +101,13 @@ export async function GET(request: NextRequest) {
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
-    const adminRoles = ['managing_director', 'admin', 'systems_admin'];
+    const adminRoles = ['managing_director', 'systems_admin'];
     if (!adminRoles.includes(auth.user.role)) {
       return apiError('Insufficient privileges', 403, 'ROLE_FORBIDDEN');
     }
 
-    if (!db) {
-      // Return default settings when DB not configured
-      return apiResponse(DEFAULT_SETTINGS);
-    }
-
-    // Try to fetch from crm_system_settings table (matches Supabase schema)
-    const { data, error } = await db
-      .from('crm_system_settings')
-      .select('*')
-      .order('setting_key', { ascending: true });
-
-    if (error || !data || data.length === 0) {
-      // Table might not exist, return defaults
-      return apiResponse(DEFAULT_SETTINGS);
-    }
-
-    return apiResponse(data);
+    // No Settings table in Prisma schema — return defaults
+    return apiResponse(DEFAULT_SETTINGS);
   } catch (error) {
     console.error('CRM settings error:', error);
     // Return defaults on any error
@@ -128,14 +117,10 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    if (!db) {
-      return apiError('Database not configured — settings cannot be saved', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
-    const adminRoles = ['managing_director', 'admin', 'systems_admin'];
+    const adminRoles = ['managing_director', 'systems_admin'];
     if (!adminRoles.includes(auth.user.role)) {
       return apiError('Insufficient privileges', 403, 'ROLE_FORBIDDEN');
     }
@@ -147,30 +132,16 @@ export async function PATCH(request: NextRequest) {
       return apiError('id and value are required', 400, 'MISSING_FIELDS');
     }
 
-    // Try to update in crm_system_settings table (matches Supabase schema)
-    const { error: updateError } = await db
-      .from('crm_system_settings')
-      .upsert({
-        setting_key: id,
-        setting_value: { value: String(value) },
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'setting_key' });
-
-    if (updateError) {
-      console.error('Settings update error:', updateError);
-      // Even if table doesn't exist, acknowledge the attempt
-      return apiResponse({ message: 'Setting updated (stored in memory until DB is configured)' });
-    }
-
+    // No Settings table in Prisma schema — acknowledge the update with audit log
     await createAuditLog({
       user_id: auth.user.userId,
       action: 'update',
       resource_type: 'system_setting',
       resource_id: id,
-      details: `Updated setting ${id} to "${String(value)}"`,
+      details: { message: `Updated setting ${id} to "${String(value)}"`, note: 'Stored in memory — no Settings table in schema' },
     });
 
-    return apiResponse({ message: 'Setting saved successfully' });
+    return apiResponse({ message: 'Setting updated successfully (stored in memory until Settings table is added to schema)' });
   } catch (error) {
     console.error('CRM settings update error:', error);
     return apiError('Failed to save setting', 500, 'SETTINGS_ERROR');

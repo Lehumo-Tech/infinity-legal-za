@@ -273,7 +273,7 @@ export default function HomePageClient() {
   const getNavItems = (): { id: View; label: string; icon: any; group: string }[] => {
     const role = user?.role || 'client';
     const isClient = role === 'client';
-    const isManagement = ['managing_director', 'admin', 'systems_admin'].includes(role);
+    const isManagement = ['managing_director', 'systems_admin'].includes(role);
     const isLegal = role === 'attorney' || role === 'paralegal';
 
     if (isClient) {
@@ -322,6 +322,7 @@ export default function HomePageClient() {
   const renderView = () => {
     const role = user?.role || 'client';
     const isClient = role === 'client';
+    const isManagement = ['managing_director', 'systems_admin'].includes(role);
 
     switch (currentView) {
       case 'dashboard':
@@ -353,17 +354,30 @@ export default function HomePageClient() {
             />
           );
         }
+        if (isManagement) {
+          return (
+            <AdminDashboard
+              user={user}
+              stats={stats}
+              cases={cases}
+              leads={leads}
+              staff={staff}
+              token={token}
+              onViewChange={(v) => setCurrentView(v)}
+              charts={charts}
+              firmHealth={firmHealth}
+            />
+          );
+        }
         return (
-          <AdminDashboard
+          <ClientDashboard
             user={user}
             stats={stats}
             cases={cases}
-            leads={leads}
-            staff={staff}
-            token={token}
+            consultations={consultations}
+            tasks={tasks}
+            subscription={subscription}
             onViewChange={(v) => setCurrentView(v)}
-            charts={charts}
-            firmHealth={firmHealth}
           />
         );
 

@@ -21,7 +21,7 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
   charts: any; firmHealth: Record<string, boolean>; loading?: boolean;
 }) {
   const role = user?.role || 'client';
-  const isManagement = ['managing_director', 'admin', 'systems_admin'].includes(role);
+  const isManagement = ['managing_director', 'systems_admin'].includes(role);
   const isLegal = role === 'attorney';
   const isParalegal = role === 'paralegal';
 

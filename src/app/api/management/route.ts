@@ -1,6 +1,6 @@
 /**
  * GET /api/management - Management Portal aggregated data
- * Access: managing_director, admin, systems_admin
+ * Access: managing_director, systems_admin only (directors)
  * profiles.role CHECK: ('client','attorney','paralegal','admin','managing_director','systems_admin')
  * cases has: case_ref (not matter_number), attorney_id FK → attorneys(id) (not lead_attorney_id → profiles)
  * cases has NO: urgency, is_high_risk, support_paralegal_id
@@ -13,7 +13,7 @@ import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { type RoleKey } from '@/lib/auth';
 
 // Only roles in profiles CHECK constraint
-const ALLOWED_ROLES: RoleKey[] = ['managing_director', 'admin', 'systems_admin'];
+const ALLOWED_ROLES: RoleKey[] = ['managing_director', 'systems_admin'];
 
 export async function GET(request: NextRequest) {
   try {

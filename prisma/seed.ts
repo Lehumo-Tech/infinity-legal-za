@@ -4,9 +4,9 @@
  * Run with: bun run db:seed
  *
  * Login credentials:
- *   Managing Director: md@infinitylegal.org / Infinity@2025!
- *   Systems Admin:     admin@infinitylegal.org / Infinity@2025!
- *   Attorney:          attorney@infinitylegal.org / Infinity@2025!
+ *   Managing Director: tidimalo@infinitylegal.org / Tidimalo@2025!
+ *   Co-Director (IT):  brian@infinitylegal.org / Brian@2025!
+ *   Legal Advisor:     tshepo@infinitylegal.org / Tshepo@2025!
  *   Client:            thabo@example.com / Client@2025!
  *   Client:            sarah@example.com / Client@2025!
  *
@@ -135,22 +135,24 @@ async function main() {
   }
 
   // ─── Create Staff Users ───
-  const passwordHash = await hashPassword('Infinity@2025!');
+  const tidimaloPasswordHash = await hashPassword('Tidimalo@2025!');
+  const brianPasswordHash = await hashPassword('Brian@2025!');
+  const tshepoPasswordHash = await hashPassword('Tshepo@2025!');
   const clientPasswordHash = await hashPassword('Client@2025!');
   const passwordExpiry = new Date();
   passwordExpiry.setDate(passwordExpiry.getDate() + 90);
 
   const staffUsers = [
     {
-      email: 'md@infinitylegal.org',
-      password: passwordHash,
-      full_name: 'Nomsa Dlamini',
+      email: 'tidimalo@infinitylegal.org',
+      password: tidimaloPasswordHash,
+      full_name: 'Tidimalo Tsatsi',
       phone: '+27 11 555 0100',
       role: 'managing_director',
       department: 'management',
       practice_number: 'NP/2019/0001',
       bar_admission_date: new Date('2010-06-15'),
-      specialization: JSON.stringify(['corporate_commercial', 'civil_litigation']),
+      specialization: JSON.stringify(['corporate_commercial', 'civil_litigation', 'labour_law']),
       is_active: true,
       email_verified: true,
       popi_consent: true,
@@ -158,9 +160,9 @@ async function main() {
       last_password_change: new Date(),
     },
     {
-      email: 'admin@infinitylegal.org',
-      password: passwordHash,
-      full_name: 'Pieter van der Merwe',
+      email: 'brian@infinitylegal.org',
+      password: brianPasswordHash,
+      full_name: 'Brian Mokwena',
       phone: '+27 11 555 0101',
       role: 'systems_admin',
       department: 'it',
@@ -171,9 +173,9 @@ async function main() {
       last_password_change: new Date(),
     },
     {
-      email: 'attorney@infinitylegal.org',
-      password: passwordHash,
-      full_name: 'Thandi Mokoena',
+      email: 'tshepo@infinitylegal.org',
+      password: tshepoPasswordHash,
+      full_name: 'Tshepo Rametsi',
       phone: '+27 11 555 0102',
       role: 'attorney',
       department: 'litigation',
@@ -181,7 +183,7 @@ async function main() {
       bar_admission_date: new Date('2015-03-20'),
       specialization: JSON.stringify(['labour_law', 'family_law', 'civil_litigation']),
       hourly_rate: 850,
-      bio: 'Specialist in labour law and family law with 10 years of experience in CCMA proceedings and divorce matters.',
+      bio: 'Legal advisor specialising in labour law and family law with extensive CCMA experience.',
       is_active: true,
       email_verified: true,
       popi_consent: true,
@@ -215,7 +217,7 @@ async function main() {
   }
 
   // ─── Create Client Users + Client Profiles ───
-  const attorneyId = createdStaff['attorney@infinitylegal.org'];
+  const attorneyId = createdStaff['tshepo@infinitylegal.org'];
 
   const clientData = [
     {
@@ -400,12 +402,14 @@ async function main() {
   console.log('\n🎉 Seeding complete!');
   console.log('\n📋 Login Credentials:');
   console.log('   ┌──────────────────────────────────────────────────────┐');
-  console.log('   │  Managing Director:  md@infinitylegal.org            │');
-  console.log('   │  Systems Admin:      admin@infinitylegal.org         │');
-  console.log('   │  Attorney:           attorney@infinitylegal.org      │');
+  console.log('   │  Managing Director:  tidimalo@infinitylegal.org         │');
+  console.log('   │  Co-Director (IT):  brian@infinitylegal.org            │');
+  console.log('   │  Legal Advisor:     tshepo@infinitylegal.org           │');
   console.log('   │  Client:             thabo@example.com               │');
   console.log('   │  Client:             sarah@example.com               │');
-  console.log('   │  Password (staff):   Infinity@2025!                  │');
+  console.log('   │  Password (MD):      Tidimalo@2025!                  │');
+  console.log('   │  Password (Co-Dir):  Brian@2025!                     │');
+  console.log('   │  Password (Legal):   Tshepo@2025!                    │');
   console.log('   │  Password (clients): Client@2025!                    │');
   console.log('   └──────────────────────────────────────────────────────┘');
   console.log('\n⚠️  Change passwords after first login!');
