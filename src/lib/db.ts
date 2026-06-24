@@ -31,11 +31,13 @@ export function isDbConfigured(): boolean {
 
 /**
  * Check if Supabase is properly configured.
- * Returns false in this environment since we use local Prisma/SQLite.
+ * Checks for required environment variables.
  * Kept for backward compatibility with existing code that imports this.
  */
 export function isSupabaseConfigured(): boolean {
-  return false;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return !!(url && key && url !== 'https://placeholder.supabase.co');
 }
 
 /**

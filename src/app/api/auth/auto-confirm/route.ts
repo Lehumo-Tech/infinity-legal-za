@@ -10,6 +10,7 @@
  * - Only confirms the email — does not grant any additional permissions
  * - Audit logged
  * - Requires either user_id or email (but not both)
+ * - For local auth: only confirms users created within the last 30 minutes
  */
 
 import { NextRequest } from 'next/server';
@@ -17,7 +18,8 @@ import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError, checkRateLimit, validateBodySize } from '@/lib/middleware';
 import { signupRateLimiter } from '@/lib/security';
 import { createAuditLog } from '@/lib/audit';
-import { confirmLocalEmail, isSupabaseReachable } from '@/lib/local-auth';
+import { confirmLocalEmail, isSupabaseReachable, findLocalUser } from '@/lib/local-auth';
+import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,15 +51,15 @@ export async function POST(request: NextRequest) {
     // ============================================
     // Strategy 1: Try Supabase first
     // ============================================
-    const db = getAdminClient();
-    const supabaseReachable = db && await isSupabaseReachable();
+    const supabaseAdmin = getAdminClient();
+    const supabaseReachable = supabaseAdmin && await isSupabaseReachable();
 
-    if (supabaseReachable && db) {
+    if (supabaseReachable && supabaseAdmin) {
       try {
         // Find the user by ID or email
         let userId = user_id;
         if (!userId && email) {
-          const { data: profile } = await db
+          const { data: profile } = await supabaseAdmin
             .from('profiles')
             .select('id')
             .eq('email', email.toLowerCase().trim())
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Confirm the user's email using admin API
-        const { error: updateError } = await db.auth.admin.updateUserById(userId!, {
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId!, {
           email_confirm: true,
         });
 
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Update the profile's email_verified flag
-        await db
+        await supabaseAdmin
           .from('profiles')
           .update({ email_verified: true })
           .eq('id', userId!);
@@ -105,8 +107,28 @@ export async function POST(request: NextRequest) {
     // ============================================
     // Strategy 2: Local Auth Fallback (Prisma/SQLite)
     // ============================================
+    // Security: Only confirm local users created within the last 30 minutes
+    // to prevent abuse of this endpoint for confirming old accounts
+    const THIRTY_MINUTES = 30 * 60 * 1000;
+    const localUser = await db.user.findFirst({
+      where: {
+        OR: [
+          { id: user_id || undefined },
+          { email: email ? email.toLowerCase().trim() : undefined },
+        ],
+        email_verified: false,
+        created_at: { gte: new Date(Date.now() - THIRTY_MINUTES) },
+      },
+      select: { id: true },
+    });
+
+    if (!localUser) {
+      // User not found, already verified, or created too long ago
+      return apiResponse({ confirmed: true, message: 'Email confirmation processed' });
+    }
+
     await confirmLocalEmail({
-      userId: user_id,
+      userId: localUser.id,
       email: email ? email.toLowerCase().trim() : undefined,
     });
 

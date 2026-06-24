@@ -129,7 +129,7 @@ export function AdminDashboard({
             { label: 'Total Cases', value: stats.totalCases, icon: FolderKanban, color: 'text-blue-600 bg-blue-50', border: 'border-l-blue-500' },
             { label: 'Active Cases', value: stats.activeCases, icon: Activity, color: 'text-emerald-600 bg-emerald-50', border: 'border-l-emerald-500' },
             { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-600 bg-purple-50', border: 'border-l-purple-500' },
-            { label: 'Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
+            { label: 'Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: stats.revenueTrend || 'N/A' },
             { label: 'Pending Tasks', value: stats.pendingTasks, icon: Clock, color: 'text-orange-600 bg-orange-50', border: 'border-l-orange-500' },
             { label: 'Overdue', value: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600 bg-red-50', border: 'border-l-red-500' },
             { label: 'Clients', value: stats.totalClients, icon: Users, color: 'text-teal-600 bg-teal-50', border: 'border-l-teal-500' },
@@ -143,7 +143,7 @@ export function AdminDashboard({
                 {card.trend && (
                   <div className="flex items-center gap-0.5 text-emerald-600 text-[10px] font-semibold">
                     <ArrowUpRight className="w-3 h-3" />
-                    <span>12%</span>
+                    <span>{card.trend}</span>
                   </div>
                 )}
               </div>

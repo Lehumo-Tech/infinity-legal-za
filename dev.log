@@ -2732,3 +2732,238 @@ Articles query error: {
  GET /api/subscriptions 200 in 49ms (compile: 29ms, proxy.ts: 6ms, render: 14ms)
  GET /api/dashboard 200 in 59ms (compile: 9ms, proxy.ts: 6ms, render: 44ms)
  GET / 200 in 170ms (compile: 36ms, proxy.ts: 4ms, render: 129ms)
+ GET / 200 in 536ms (compile: 81ms, proxy.ts: 201ms, render: 254ms)
+ GET / 200 in 333ms (compile: 3ms, proxy.ts: 296ms, render: 34ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 5ms, render: 27ms)
+ GET / 200 in 39ms (compile: 2ms, proxy.ts: 5ms, render: 32ms)
+ GET /api/pricing 200 in 1743ms (compile: 1726ms, proxy.ts: 6ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 2.9s (compile: 1123ms, proxy.ts: 1735ms, render: 10ms)
+ GET /api/pricing 200 in 101ms (compile: 6ms, proxy.ts: 89ms, render: 6ms)
+ GET /api/articles?limit=20 200 in 11ms (compile: 1904µs, proxy.ts: 5ms, render: 4ms)
+ GET / 200 in 304ms (compile: 66ms, proxy.ts: 6ms, render: 232ms)
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+ GET / 404 in 387ms (compile: 64ms, proxy.ts: 194ms, render: 129ms)
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+ GET / 200 in 334ms (compile: 85ms, proxy.ts: 10ms, render: 238ms)
+ GET / 200 in 49ms (compile: 3ms, proxy.ts: 6ms, render: 40ms)
+ GET / 200 in 75ms (compile: 5ms, proxy.ts: 9ms, render: 62ms)
+○ Compiling /api/pricing ...
+ GET /api/pricing 200 in 3.4s (compile: 3.4s, proxy.ts: 8ms, render: 21ms)
+Health check DB error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/health 503 in 7.9s (compile: 791ms, proxy.ts: 67ms, render: 7.0s)
+ GET /api/pricing 200 in 15ms (compile: 5ms, proxy.ts: 4ms, render: 5ms)
+ POST /api/auth/login 401 in 603ms (compile: 291ms, proxy.ts: 4ms, render: 308ms)
+ POST /api/auth/signup 201 in 599ms (compile: 290ms, proxy.ts: 4ms, render: 305ms)
+ POST /api/auth/login 200 in 307ms (compile: 6ms, proxy.ts: 5ms, render: 296ms)
+ GET /api/auth/verify 200 in 308ms (compile: 293ms, proxy.ts: 4ms, render: 10ms)
+Auto-confirm error: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at POST (src/app/api/auth/auto-confirm/route.ts:113:37)
+  111 |     // to prevent abuse of this endpoint for confirming old accounts
+  112 |     const THIRTY_MINUTES = 30 * 60 * 1000;
+> 113 |     const localUser = await db.user.findFirst({
+      |                                     ^
+  114 |       where: {
+  115 |         OR: [
+  116 |           { id: user_id || undefined },
+ POST /api/auth/auto-confirm 500 in 927ms (compile: 798ms, proxy.ts: 5ms, render: 125ms)
+ POST /api/auth/auto-confirm 200 in 73ms (compile: 45ms, proxy.ts: 7ms, render: 21ms)
+ POST /api/auth/login 200 in 307ms (compile: 5ms, proxy.ts: 5ms, render: 297ms)
+prisma:error 
+Invalid `prisma.user.findUnique()` invocation:
+
+{
+  where: {
+    id: undefined,
+?   email?: String,
+?   AND?: UserWhereInput | UserWhereInput[],
+?   OR?: UserWhereInput[],
+?   NOT?: UserWhereInput | UserWhereInput[],
+?   password?: StringFilter | String,
+?   full_name?: StringFilter | String,
+?   phone?: StringNullableFilter | String | Null,
+?   avatar_url?: StringNullableFilter | String | Null,
+?   role?: StringFilter | String,
+?   department?: StringNullableFilter | String | Null,
+?   id_number?: StringNullableFilter | String | Null,
+?   company?: StringNullableFilter | String | Null,
+?   address?: JsonNullableFilter,
+?   practice_number?: StringNullableFilter | String | Null,
+?   bar_admission_date?: DateTimeNullableFilter | DateTime | Null,
+?   specialization?: JsonNullableFilter,
+?   hourly_rate?: FloatNullableFilter | Float | Null,
+?   bio?: StringNullableFilter | String | Null,
+?   is_active?: BoolFilter | Boolean,
+?   email_verified?: BoolFilter | Boolean,
+?   popi_consent?: BoolFilter | Boolean,
+?   password_expires_at?: DateTimeNullableFilter | DateTime | Null,
+?   last_password_change?: DateTimeNullableFilter | DateTime | Null,
+?   last_login_at?: DateTimeNullableFilter | DateTime | Null,
+?   created_at?: DateTimeFilter | DateTime,
+?   updated_at?: DateTimeFilter | DateTime,
+?   client_profile?: ClientNullableScalarRelationFilter | ClientWhereInput | Null,
+?   cases_as_attorney?: CaseListRelationFilter,
+?   documents_uploaded?: DocumentListRelationFilter,
+?   messages_sent?: MessageListRelationFilter,
+?   messages_received?: MessageListRelationFilter,
+?   tasks_assigned?: TaskListRelationFilter,
+?   tasks_created?: TaskListRelationFilter,
+?   timeline_events?: CaseTimelineListRelationFilter,
+?   consultations_as_client?: ConsultationListRelationFilter,
+?   consultations_as_attorney?: ConsultationListRelationFilter,
+?   privileged_notes?: PrivilegedNoteListRelationFilter,
+?   consent_logs?: ConsentLogListRelationFilter,
+?   notifications?: NotificationListRelationFilter,
+?   audit_logs?: AuditLogListRelationFilter,
+?   intake_submissions?: IntakeSubmissionListRelationFilter,
+?   ai_analyses_requested?: AiAnalysisListRelationFilter
+  },
+  select: {
+    id: true,
+    email: true,
+    full_name: true,
+    phone: true,
+    role: true,
+    department: true,
+    id_number: true,
+    avatar_url: true,
+    is_active: true,
+    email_verified: true,
+    popi_consent: true,
+    created_at: true,
+    updated_at: true
+  }
+}
+
+Argument `where` of type UserWhereUniqueInput needs at least one of `id` or `email` arguments. Available options are marked with ?.
+Profile fetch error: Error [PrismaClientValidationError]: 
+Invalid `prisma.user.findUnique()` invocation:
+
+{
+  where: {
+    id: undefined,
+?   email?: String,
+?   AND?: UserWhereInput | UserWhereInput[],
+?   OR?: UserWhereInput[],
+?   NOT?: UserWhereInput | UserWhereInput[],
+?   password?: StringFilter | String,
+?   full_name?: StringFilter | String,
+?   phone?: StringNullableFilter | String | Null,
+?   avatar_url?: StringNullableFilter | String | Null,
+?   role?: StringFilter | String,
+?   department?: StringNullableFilter | String | Null,
+?   id_number?: StringNullableFilter | String | Null,
+?   company?: StringNullableFilter | String | Null,
+?   address?: JsonNullableFilter,
+?   practice_number?: StringNullableFilter | String | Null,
+?   bar_admission_date?: DateTimeNullableFilter | DateTime | Null,
+?   specialization?: JsonNullableFilter,
+?   hourly_rate?: FloatNullableFilter | Float | Null,
+?   bio?: StringNullableFilter | String | Null,
+?   is_active?: BoolFilter | Boolean,
+?   email_verified?: BoolFilter | Boolean,
+?   popi_consent?: BoolFilter | Boolean,
+?   password_expires_at?: DateTimeNullableFilter | DateTime | Null,
+?   last_password_change?: DateTimeNullableFilter | DateTime | Null,
+?   last_login_at?: DateTimeNullableFilter | DateTime | Null,
+?   created_at?: DateTimeFilter | DateTime,
+?   updated_at?: DateTimeFilter | DateTime,
+?   client_profile?: ClientNullableScalarRelationFilter | ClientWhereInput | Null,
+?   cases_as_attorney?: CaseListRelationFilter,
+?   documents_uploaded?: DocumentListRelationFilter,
+?   messages_sent?: MessageListRelationFilter,
+?   messages_received?: MessageListRelationFilter,
+?   tasks_assigned?: TaskListRelationFilter,
+?   tasks_created?: TaskListRelationFilter,
+?   timeline_events?: CaseTimelineListRelationFilter,
+?   consultations_as_client?: ConsultationListRelationFilter,
+?   consultations_as_attorney?: ConsultationListRelationFilter,
+?   privileged_notes?: PrivilegedNoteListRelationFilter,
+?   consent_logs?: ConsentLogListRelationFilter,
+?   notifications?: NotificationListRelationFilter,
+?   audit_logs?: AuditLogListRelationFilter,
+?   intake_submissions?: IntakeSubmissionListRelationFilter,
+?   ai_analyses_requested?: AiAnalysisListRelationFilter
+  },
+  select: {
+    id: true,
+    email: true,
+    full_name: true,
+    phone: true,
+    role: true,
+    department: true,
+    id_number: true,
+    avatar_url: true,
+    is_active: true,
+    email_verified: true,
+    popi_consent: true,
+    created_at: true,
+    updated_at: true
+  }
+}
+
+Argument `where` of type UserWhereUniqueInput needs at least one of `id` or `email` arguments. Available options are marked with ?.
+    at async GET (src/app/api/auth/profile/route.ts:48:23)
+  46 |     }
+  47 |
+> 48 |     const localUser = await db.user.findUnique({
+     |                       ^
+  49 |       where: { id: auth.userId },
+  50 |       select: {
+  51 |         id: true, {
+  clientVersion: '6.19.2'
+}
+ GET /api/auth/profile 500 in 420ms (compile: 280ms, proxy.ts: 4ms, render: 135ms)
+ POST /api/auth/login 200 in 361ms (compile: 44ms, proxy.ts: 5ms, render: 313ms)
+ GET /api/auth/profile 200 in 19ms (compile: 6ms, proxy.ts: 4ms, render: 9ms)
+ GET / 200 in 289ms (compile: 66ms, proxy.ts: 7ms, render: 215ms)
+ GET /api/pricing 200 in 684ms (compile: 666ms, proxy.ts: 8ms, render: 10ms)
+ GET /api/articles?limit=20 200 in 690ms (compile: 670ms, proxy.ts: 9ms, render: 12ms)
+ GET /api/pricing 200 in 18ms (compile: 4ms, proxy.ts: 8ms, render: 7ms)
+ GET /api/articles?limit=20 200 in 20ms (compile: 7ms, proxy.ts: 8ms, render: 5ms)
+ GET / 200 in 100ms (compile: 61ms, proxy.ts: 7ms, render: 31ms)
+ POST /api/auth/signup 201 in 1198ms (compile: 885ms, proxy.ts: 5ms, render: 308ms)
+ GET /api/notifications?perPage=20 200 in 622ms (compile: 589ms, proxy.ts: 7ms, render: 27ms)
+ GET /api/subscriptions 200 in 624ms (compile: 589ms, proxy.ts: 7ms, render: 28ms)
+ GET /api/dashboard 200 in 627ms (compile: 589ms, proxy.ts: 7ms, render: 30ms)
+ GET / 200 in 67ms (compile: 37ms, proxy.ts: 4ms, render: 27ms)
+ POST /api/auth/signout 200 in 549ms (compile: 508ms, proxy.ts: 12ms, render: 29ms)
+ POST /api/auth/login 200 in 712ms (compile: 389ms, proxy.ts: 5ms, render: 318ms)
+ GET /api/notifications?perPage=20 200 in 716ms (compile: 686ms, proxy.ts: 8ms, render: 22ms)
+ GET /api/subscriptions 200 in 718ms (compile: 687ms, proxy.ts: 8ms, render: 23ms)
+ GET /api/dashboard 200 in 721ms (compile: 687ms, proxy.ts: 8ms, render: 26ms)
+ GET /api/pricing 200 in 326ms (compile: 306ms, proxy.ts: 11ms, render: 10ms)
+ GET /api/pricing 200 in 327ms (compile: 306ms, proxy.ts: 11ms, render: 11ms)
+ GET /api/pricing 200 in 328ms (compile: 306ms, proxy.ts: 11ms, render: 12ms)
+ GET /api/subscriptions 200 in 16ms (compile: 5ms, proxy.ts: 4ms, render: 7ms)

@@ -70,7 +70,7 @@ export function ClientSubscriptionView({
           {/* Membership Card */}
           <MembershipCard
             clientName={user?.full_name || 'Member'}
-            contractNumber={subscription.plan?.slug === 'extensive_plan' ? 'INF-2026-EXT01' : subscription.plan?.slug === 'labour_legal_plan' ? 'INF-2026-LAB01' : 'INF-2026-CIV01'}
+            contractNumber={subscription.contract_number || subscription.membership_number || `INF-${new Date(subscription.created_at || Date.now()).toISOString().slice(0,7).replace('-','')}-${Math.random().toString(36).substring(2,7).toUpperCase()}`}
             planName={subscription.plan?.name}
             planSlug={subscription.plan?.slug}
             status={subscription.status}
