@@ -2605,3 +2605,130 @@ Documents list query error: {
  GET /api/notifications?perPage=20 200 in 1015ms (compile: 914ms, proxy.ts: 80ms, render: 21ms)
  GET /api/dashboard 200 in 1017ms (compile: 914ms, proxy.ts: 80ms, render: 24ms)
  GET /api/subscriptions 200 in 1019ms (compile: 914ms, proxy.ts: 80ms, render: 25ms)
+ GET / 200 in 343ms (compile: 62ms, proxy.ts: 6ms, render: 275ms)
+ GET / 200 in 36ms (compile: 2ms, proxy.ts: 6ms, render: 28ms)
+ GET / 200 in 57ms (compile: 3ms, proxy.ts: 7ms, render: 46ms)
+ GET / 200 in 63ms (compile: 3ms, proxy.ts: 7ms, render: 53ms)
+ GET /api/pricing 200 in 2.3s (compile: 2.3s, proxy.ts: 6ms, render: 11ms)
+ GET /api/pricing 200 in 113ms (compile: 8ms, proxy.ts: 99ms, render: 7ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 11.1s (compile: 1744ms, proxy.ts: 2.3s, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 2ms, proxy.ts: 5ms, render: 7.1s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/ai/chat/route.ts:36:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/ai/chat 200 in 1709ms (compile: 763ms, proxy.ts: 5ms, render: 942ms)
+ GET /api/pricing 200 in 18ms (compile: 8ms, proxy.ts: 4ms, render: 5ms)
+ GET /api/pricing 200 in 10ms (compile: 2ms, proxy.ts: 4ms, render: 4ms)
+ GET /api/articles?limit=20 200 in 5.2s (compile: 7ms, proxy.ts: 5ms, render: 5.2s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET / 200 in 278ms (compile: 61ms, proxy.ts: 5ms, render: 212ms)
+ GET / 200 in 33ms (compile: 2ms, proxy.ts: 4ms, render: 27ms)
+ GET / 200 in 484ms (compile: 13ms, proxy.ts: 63ms, render: 407ms)
+ GET / 200 in 31ms (compile: 4ms, proxy.ts: 4ms, render: 22ms)
+ GET / 200 in 356ms (compile: 22ms, proxy.ts: 23ms, render: 311ms)
+ GET / 200 in 34ms (compile: 6ms, proxy.ts: 9ms, render: 19ms)
+ GET / 200 in 41ms (compile: 3ms, proxy.ts: 4ms, render: 34ms)
+ GET / 200 in 338ms (compile: 81ms, proxy.ts: 212ms, render: 45ms)
+ GET / 200 in 28ms (compile: 5ms, proxy.ts: 5ms, render: 17ms)
+ GET / 200 in 43ms (compile: 4ms, proxy.ts: 22ms, render: 17ms)
+ GET / 200 in 174ms (compile: 3ms, proxy.ts: 5ms, render: 166ms)
+ GET / 200 in 47ms (compile: 5ms, proxy.ts: 6ms, render: 36ms)
+ GET / 200 in 32ms (compile: 5ms, proxy.ts: 8ms, render: 20ms)
+ POST /api/auth/login 200 in 2.3s (compile: 2.0s, proxy.ts: 5ms, render: 324ms)
+ GET / 200 in 166ms (compile: 58ms, proxy.ts: 75ms, render: 34ms)
+ GET /api/pricing 200 in 269ms (compile: 255ms, proxy.ts: 4ms, render: 10ms)
+ GET / 200 in 85ms (compile: 49ms, proxy.ts: 5ms, render: 32ms)
+ POST /api/auth/login 200 in 324ms (compile: 6ms, proxy.ts: 4ms, render: 313ms)
+ POST /api/auth/login 200 in 306ms (compile: 2ms, proxy.ts: 5ms, render: 299ms)
+ GET /api/dashboard 200 in 719ms (compile: 700ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 82ms (compile: 48ms, proxy.ts: 5ms, render: 29ms)
+ GET / 200 in 216ms (compile: 2ms, proxy.ts: 5ms, render: 209ms)
+ GET /api/auth/verify 200 in 263ms (compile: 246ms, proxy.ts: 7ms, render: 10ms)
+ GET / 200 in 105ms (compile: 47ms, proxy.ts: 4ms, render: 53ms)
+ GET /api/dashboard 200 in 31ms (compile: 8ms, proxy.ts: 10ms, render: 13ms)
+ GET /api/notifications?perPage=20 200 in 513ms (compile: 488ms, proxy.ts: 10ms, render: 16ms)
+ GET /api/subscriptions 200 in 517ms (compile: 487ms, proxy.ts: 10ms, render: 20ms)
+ GET / 200 in 112ms (compile: 49ms, proxy.ts: 7ms, render: 55ms)
+ GET / 200 in 136ms (compile: 2ms, proxy.ts: 6ms, render: 128ms)
+ GET /api/pricing 200 in 1198ms (compile: 1170ms, proxy.ts: 15ms, render: 13ms)
+ GET /api/articles?limit=20 200 in 1204ms (compile: 1178ms, proxy.ts: 12ms, render: 14ms)
+ GET /api/articles?limit=20 200 in 1205ms (compile: 1178ms, proxy.ts: 13ms, render: 15ms)
+ GET /api/pricing 200 in 1206ms (compile: 1178ms, proxy.ts: 12ms, render: 16ms)
+ GET / 200 in 112ms (compile: 49ms, proxy.ts: 4ms, render: 58ms)
+ GET / 200 in 196ms (compile: 5ms, proxy.ts: 6ms, render: 185ms)
+ GET /api/articles?limit=20 200 in 30ms (compile: 6ms, proxy.ts: 13ms, render: 10ms)
+ GET /api/pricing 200 in 40ms (compile: 6ms, proxy.ts: 26ms, render: 8ms)
+ GET /api/articles?limit=20 200 in 53ms (compile: 4ms, proxy.ts: 37ms, render: 12ms)
+ GET /api/pricing 200 in 55ms (compile: 10ms, proxy.ts: 37ms, render: 8ms)
+ POST /api/auth/login 200 in 1788ms (compile: 1448ms, proxy.ts: 9ms, render: 330ms)
+ GET /api/notifications?perPage=20 200 in 679ms (compile: 648ms, proxy.ts: 7ms, render: 23ms)
+ GET /api/subscriptions 200 in 682ms (compile: 649ms, proxy.ts: 7ms, render: 26ms)
+ GET /api/dashboard 200 in 684ms (compile: 649ms, proxy.ts: 7ms, render: 28ms)
+ GET /api/pricing 200 in 19ms (compile: 7ms, proxy.ts: 5ms, render: 7ms)
+ GET /api/subscriptions 200 in 22ms (compile: 1949µs, proxy.ts: 11ms, render: 10ms)
+ GET /api/articles?limit=20 200 in 43ms (compile: 15ms, proxy.ts: 9ms, render: 19ms)
+ GET /api/articles?limit=20 200 in 45ms (compile: 15ms, proxy.ts: 9ms, render: 21ms)
+ GET /api/pricing 200 in 46ms (compile: 28ms, proxy.ts: 9ms, render: 10ms)
+ GET /api/pricing 200 in 48ms (compile: 27ms, proxy.ts: 9ms, render: 11ms)
+ GET /dashboard 404 in 1210ms (compile: 1024ms, proxy.ts: 5ms, render: 182ms)
+ GET /api/auth/verify 200 in 1324ms (compile: 1310ms, proxy.ts: 4ms, render: 10ms)
+ GET / 200 in 334ms (compile: 98ms, proxy.ts: 6ms, render: 229ms)
+ GET /api/auth/verify 200 in 14ms (compile: 3ms, proxy.ts: 6ms, render: 5ms)
+ GET /api/notifications?perPage=20 200 in 622ms (compile: 596ms, proxy.ts: 8ms, render: 18ms)
+ GET /api/subscriptions 200 in 627ms (compile: 596ms, proxy.ts: 8ms, render: 22ms)
+ GET /api/dashboard 200 in 628ms (compile: 597ms, proxy.ts: 8ms, render: 23ms)
+ POST /api/auth/signout 200 in 381ms (compile: 363ms, proxy.ts: 6ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 758ms (compile: 724ms, proxy.ts: 19ms, render: 15ms)
+ GET /api/pricing 200 in 760ms (compile: 724ms, proxy.ts: 19ms, render: 16ms)
+ GET /api/pricing 200 in 761ms (compile: 724ms, proxy.ts: 20ms, render: 18ms)
+ GET /api/articles?limit=20 200 in 771ms (compile: 733ms, proxy.ts: 19ms, render: 19ms)
+ GET / 200 in 200ms (compile: 37ms, proxy.ts: 5ms, render: 158ms)
+ GET /api/articles?limit=20 200 in 37ms (compile: 9ms, proxy.ts: 13ms, render: 15ms)
+ GET /api/articles?limit=20 200 in 39ms (compile: 9ms, proxy.ts: 14ms, render: 17ms)
+ GET /api/pricing 200 in 40ms (compile: 19ms, proxy.ts: 13ms, render: 8ms)
+ GET /api/pricing 200 in 40ms (compile: -393µs, proxy.ts: 37ms, render: 4ms)
+ POST /api/auth/login 200 in 1994ms (compile: 1686ms, proxy.ts: 4ms, render: 304ms)
+ GET /api/notifications?perPage=20 200 in 47ms (compile: 21ms, proxy.ts: 6ms, render: 20ms)
+ GET /api/subscriptions 200 in 49ms (compile: 29ms, proxy.ts: 6ms, render: 14ms)
+ GET /api/dashboard 200 in 59ms (compile: 9ms, proxy.ts: 6ms, render: 44ms)
+ GET / 200 in 170ms (compile: 36ms, proxy.ts: 4ms, render: 129ms)
