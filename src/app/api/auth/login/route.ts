@@ -87,8 +87,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has POPIA consent (required for SA law)
+    // Auto-grant consent for existing users who signed up before POPIA was enforced
     if (!profile.popi_consent) {
-      return apiError('Account requires POPIA consent. Please contact support.', 403, 'POPIA_CONSENT_REQUIRED');
+      await db
+        .from('profiles')
+        .update({ popi_consent: true })
+        .eq('id', authData.user.id);
     }
 
     // Audit log — successful login

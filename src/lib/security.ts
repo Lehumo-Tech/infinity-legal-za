@@ -161,15 +161,22 @@ const XSS_PATTERNS = [
 
 export function sanitizeString(input: string): string {
   let sanitized = input;
+  // Strip dangerous script/iframe/object/embed tags (not HTML-encode — that corrupts stored data)
   for (const pattern of XSS_PATTERNS) {
     sanitized = sanitized.replace(pattern, '');
   }
+  // Remove dangerous HTML tags but preserve legitimate content
+  // Do NOT HTML-encode here — that's a display-time concern (React auto-escapes)
+  // Storing HTML entities in the database corrupts names like O'Brien → O&#x27;Brien
   sanitized = sanitized
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+    .replace(/<embed\b[^>]*>/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/vbscript:/gi, '')
+    .replace(/data:text\/html/gi, '');
   return sanitized;
 }
 

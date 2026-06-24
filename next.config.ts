@@ -19,7 +19,7 @@ const securityHeaders = [
       "img-src 'self' data: https: blob:",
       "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self' https://vercel.live https://vercel-insights.com https://*.vercel.app https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co",
-      "frame-ancestors 'self' https: http:",
+      "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
       "object-src 'none'",
