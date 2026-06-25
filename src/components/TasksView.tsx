@@ -59,7 +59,7 @@ export function TasksView({ token, tasks, onRefresh, user, staff, loading }: {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-bold text-[#0c1e3c]">Tasks</h2>
           <p className="text-[13px] text-slate-500">{tasks.length} total tasks</p>
@@ -88,7 +88,7 @@ export function TasksView({ token, tasks, onRefresh, user, staff, loading }: {
                   <Label className="text-[12px]">Description</Label>
                   <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Task description..." className="mt-1 text-[13px]" rows={2} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-[12px]">Assign To</Label>
                     <Select value={form.assigned_to} onValueChange={v => setForm(f => ({ ...f, assigned_to: v }))}>
@@ -113,7 +113,7 @@ export function TasksView({ token, tasks, onRefresh, user, staff, loading }: {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-[12px]">Due Date</Label>
                     <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="mt-1 text-[12px]" />
@@ -160,7 +160,7 @@ export function TasksView({ token, tasks, onRefresh, user, staff, loading }: {
                 </div>
               </div>
               <Badge className={`text-[9px] border ${statusColors[task.status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{task.status.replace(/_/g, ' ')}</Badge>
-              <span className={`text-[9px] font-semibold uppercase tracking-wider ${priorityColors[task.priority]}`}>{task.priority.toUpperCase()}</span>
+              <span className={`text-[9px] font-semibold uppercase tracking-wider ${priorityColors[task.priority]} hidden sm:inline`}>{task.priority.toUpperCase()}</span>
             </div>
           ))
         )}

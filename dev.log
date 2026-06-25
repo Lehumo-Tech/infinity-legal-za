@@ -1,15 +1,10 @@
-⨯ Failed to start server
-Error: listen EADDRINUSE: address already in use :::3000
-    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
-    at new Promise (<anonymous>) {
-  code: 'EADDRINUSE',
-  errno: -98,
-  syscall: 'listen',
-  address: '::',
-  port: 3000
-}
-[?25h
- GET / 200 in 59ms (compile: 3ms, proxy.ts: 8ms, render: 48ms)
- GET / 200 in 40ms (compile: 3ms, proxy.ts: 4ms, render: 33ms)
- GET / 200 in 33ms (compile: 3ms, proxy.ts: 4ms, render: 25ms)
- GET / 200 in 53ms (compile: 4ms, proxy.ts: 7ms, render: 43ms)
+$ next dev -p 3000 --webpack
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.14.169:3000
+- Environments: .env
+
+✓ Starting...
+✓ Ready in 1488ms
+○ Compiling / ...
+ GET / 200 in 6.8s (compile: 6.3s, proxy.ts: 229ms, render: 258ms)

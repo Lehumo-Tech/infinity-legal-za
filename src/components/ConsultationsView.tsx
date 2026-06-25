@@ -69,7 +69,7 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-bold text-[#0c1e3c]">Consultations</h2>
           <p className="text-[13px] text-slate-500">{consultations.length} consultations logged</p>
@@ -90,7 +90,7 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
                 <DialogDescription className="text-[12px] text-slate-500">Schedule or log a client consultation</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-[12px]">Client ID (UUID)</Label>
                     <Input value={form.client_id} onChange={e => setForm(f => ({ ...f, client_id: e.target.value }))} placeholder="Client profile UUID" className="mt-1 text-[13px]" />
@@ -100,11 +100,11 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
                     <Input value={form.case_id} onChange={e => setForm(f => ({ ...f, case_id: e.target.value }))} placeholder="Case UUID" className="mt-1 text-[13px]" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[12px]">Attorney</Label>
+                    <Label className="text-[12px]">Legal Advisor</Label>
                     <Select value={form.attorney_id} onValueChange={v => setForm(f => ({ ...f, attorney_id: v }))}>
-                      <SelectTrigger className="mt-1 text-[12px]"><SelectValue placeholder="Select attorney" /></SelectTrigger>
+                      <SelectTrigger className="mt-1 text-[12px]"><SelectValue placeholder="Select legal advisor" /></SelectTrigger>
                       <SelectContent>
                         {attorneys.map(a => (
                           <SelectItem key={a.id} value={a.id}>{a.full_name} ({a.role.replace(/_/g, ' ')})</SelectItem>
@@ -124,7 +124,7 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-[12px]">Date & Time</Label>
                     <Input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} className="mt-1 text-[12px]" />
@@ -165,13 +165,46 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
           {loading && consultations.length === 0 ? (
             <TableSkeleton rows={5} cols={6} />
           ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile card layout */}
+          <div className="md:hidden space-y-3 p-3">
+            {consultations.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">No consultations logged yet</div>
+            ) : (
+              consultations.map(c => {
+                const IconComp = meetingIcons[c.meeting_type] || MapPin;
+                const iconStyle = meetingIconBg[c.meeting_type] || 'bg-slate-50 text-slate-600';
+                return (
+                  <div key={c.id} className="bg-white border rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${iconStyle}`}>
+                          <IconComp className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="font-medium text-[#0c1e3c] text-sm">{c.client?.full_name || 'Client'}</span>
+                      </div>
+                      <Badge className={`text-[9px] border ${statusColors[c.status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{c.status}</Badge>
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {c.attorney?.profile?.full_name || c.attorney?.full_name || 'Legal Advisor'}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span>{c.scheduled_at ? (() => { const d = new Date(c.scheduled_at); return `${d.toLocaleDateString('en-ZA')} at ${d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}`; })() : '-'}</span>
+                      <span>{c.duration_minutes} min</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          {/* Desktop table layout */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-[12px]">
               <thead>
                 <tr className="border-b bg-[#0c1e3c]/[0.03]">
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Type</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Client</th>
-                  <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Attorney</th>
+                  <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Legal Advisor</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Date & Time</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Duration</th>
                   <th className="text-left p-2.5 font-semibold uppercase tracking-wider text-[10px] text-slate-500">Status</th>
@@ -203,6 +236,7 @@ export function ConsultationsView({ token, consultations, onRefresh, user, staff
               </tbody>
             </table>
           </div>
+          </>
           )}
         </CardContent>
       </Card>

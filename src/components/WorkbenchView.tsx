@@ -61,11 +61,11 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
             <p className="text-[#5a7199] text-[13px]">{todayStr}</p>
             <Badge className="mt-2 bg-[#c9a84c]/15 text-[#c9a84c] text-[9px] border border-[#c9a84c]/20 hover:bg-[#c9a84c]/20">
               <Crown className="w-2.5 h-2.5 mr-1" />
-              {role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              {role === 'attorney' ? 'Legal Advisor' : role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </Badge>
           </div>
           {stats && (
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <div className="bg-white/[0.06] backdrop-blur-sm rounded-xl px-4 py-2.5 text-center border border-white/[0.06]">
                 <div className="text-lg font-bold text-[#c9a84c]">{stats.activeCases}</div>
                 <div className="text-[9px] text-[#5a7199] uppercase tracking-wider">Active</div>
@@ -106,7 +106,7 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
       {loading && !stats ? (
         <KPISkeleton />
       ) : stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Active Cases — Primary metric */}
           <Card className="border-l-[3px] border-l-[#0c1e3c] shadow-sm">
             <CardContent className="p-4">
@@ -171,7 +171,7 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
       {loading && !stats ? (
         <CardGridSkeleton count={2} />
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
         {/* Left column — 3/5 */}
         <div className="lg:col-span-3 space-y-5">
           {/* Upcoming Consultations */}

@@ -16,7 +16,7 @@ export function AnalyticsView({ token, stats }: { token: string | null; stats: S
 
       {stats && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: 'Total Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(2)}M`, icon: DollarSign, iconBg: 'bg-[#c9a84c]/10 text-[#a88832]', borderAccent: 'border-l-[#c9a84c]' },
               { label: 'Active Cases', value: stats.activeCases, icon: FolderKanban, iconBg: 'bg-blue-50 text-blue-600', borderAccent: 'border-l-blue-500' },
@@ -39,7 +39,7 @@ export function AnalyticsView({ token, stats }: { token: string | null; stats: S
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-sm">
               <CardHeader className="px-5 pt-5 pb-2">
                 <CardTitle className="text-[13px] font-semibold text-[#0c1e3c]">Case Status Distribution</CardTitle>

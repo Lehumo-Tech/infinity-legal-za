@@ -83,7 +83,7 @@ export function DocumentsView({ token, documents, onRefresh, user, loading }: {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-bold text-[#0c1e3c]">Documents</h2>
           <p className="text-[13px] text-slate-500">{documents.length} documents</p>
@@ -108,7 +108,7 @@ export function DocumentsView({ token, documents, onRefresh, user, loading }: {
                   <Label className="text-[12px]">Title</Label>
                   <Input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Document title" className="mt-1 text-[13px]" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-[12px]">Document Type</Label>
                     <Select value={uploadType} onValueChange={setUploadType}>

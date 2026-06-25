@@ -31,7 +31,7 @@ export function LeadsView({ leads, page, total, onPageChange, onRefresh, loading
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-bold text-[#0c1e3c]">Leads Pipeline</h2>
           <p className="text-[13px] text-slate-500">{total} total leads</p>
@@ -58,7 +58,34 @@ export function LeadsView({ leads, page, total, onPageChange, onRefresh, loading
           {loading && leads.length === 0 ? (
             <TableSkeleton rows={5} cols={6} />
           ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile card layout */}
+          <div className="md:hidden space-y-3 p-3">
+            {leads.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">No leads found</div>
+            ) : (
+              leads.map(l => (
+                <div key={l.id} className="bg-white border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-[#0c1e3c] text-sm">{[l.first_name, l.last_name].filter(Boolean).join(' ') || l.name || '-'}</span>
+                    <Badge className={`text-[9px] border ${statusColors[l.status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{(l.status || '').replace(/_/g, ' ')}</Badge>
+                  </div>
+                  <div className="text-xs text-slate-500">{l.email}</div>
+                  <div className="flex items-center justify-between text-xs">
+                    <Badge variant="outline" className="text-[9px] border-slate-200 text-slate-600 capitalize">{l.source?.replace(/_/g, ' ')}</Badge>
+                    <div className="flex items-center gap-1">
+                      <div className="w-10 h-1.5 bg-[#f0f1f3] rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${scoreColor(l.lead_score || 0)}`} style={{ width: `${l.lead_score || 0}%` }} />
+                      </div>
+                      <span className="text-[10px] text-slate-600">{l.lead_score || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {/* Desktop table layout */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-[12px]">
               <thead>
                 <tr className="border-b bg-[#0c1e3c]/[0.03]">
@@ -94,12 +121,13 @@ export function LeadsView({ leads, page, total, onPageChange, onRefresh, loading
               </tbody>
             </table>
           </div>
+          </>
           )}
         </CardContent>
       </Card>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-[12px] text-slate-500">Page {page} of {totalPages}</p>
           <div className="flex gap-1">
             <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)}

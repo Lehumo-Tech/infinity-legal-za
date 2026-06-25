@@ -19,7 +19,7 @@ export function CasesView({ cases, page, total, onPageChange, onRefresh, loading
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-bold text-[#0c1e3c]">Cases</h2>
           <p className="text-[13px] text-slate-500">{total} total cases</p>
@@ -34,7 +34,30 @@ export function CasesView({ cases, page, total, onPageChange, onRefresh, loading
           {loading && cases.length === 0 ? (
             <TableSkeleton rows={5} cols={7} />
           ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile card layout */}
+          <div className="md:hidden space-y-3 p-3">
+            {cases.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">No cases found</div>
+            ) : (
+              cases.map(c => (
+                <div key={c.id} className="bg-white border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs text-[#a88832]">{c.case_ref}</span>
+                    <Badge className={`text-[9px] border ${statusColors[c.status] || 'bg-slate-50 text-slate-700 border-slate-100'}`}>{(c.status || '').replace(/_/g, ' ')}</Badge>
+                  </div>
+                  <div className="font-medium text-[#0c1e3c] text-sm truncate">{c.title}</div>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Badge variant="outline" className="text-[9px] border-slate-200 text-slate-600">{(c.case_type || '').replace(/_/g, ' ')}</Badge>
+                    <span>{c.client?.full_name || '-'}</span>
+                  </div>
+                  <div className="text-xs text-slate-500">R{(c.estimated_value || 0).toLocaleString()}</div>
+                </div>
+              ))
+            )}
+          </div>
+          {/* Desktop table layout */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-[12px]">
               <thead>
                 <tr className="border-b bg-[#0c1e3c]/[0.03]">
@@ -64,12 +87,13 @@ export function CasesView({ cases, page, total, onPageChange, onRefresh, loading
               </tbody>
             </table>
           </div>
+          </>
           )}
         </CardContent>
       </Card>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-[12px] text-slate-500">Page {page} of {totalPages} ({total} results)</p>
           <div className="flex gap-1">
             <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)}

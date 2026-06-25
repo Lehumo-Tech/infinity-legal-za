@@ -64,7 +64,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
   const displayPlans = pricingPlans.length > 0 ? pricingPlans : [
     { name: 'Civil Legal Plan', slug: 'civil_legal_plan', price_monthly: 99, price_annual: 999, description: 'For civil disputes and general legal matters.', features: ['Unlimited civil consultations', 'Document review & drafting', 'Court representation', 'AI case analysis', 'Email support'], is_popular: false },
     { name: 'Labour Legal Plan', slug: 'labour_legal_plan', price_monthly: 99, price_annual: 999, description: 'For workplace and employment matters.', features: ['Unlimited labour consultations', 'CCMA representation', 'Employment contract review', 'Dismissal advice', 'Priority support'], is_popular: true },
-    { name: 'Extensive Plan', slug: 'extensive_plan', price_monthly: 139, price_annual: 1399, description: 'Complete legal coverage across all practice areas.', features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated attorney'], is_popular: false },
+    { name: 'Extensive Plan', slug: 'extensive_plan', price_monthly: 139, price_annual: 1399, description: 'Complete legal coverage across all practice areas.', features: ['All Civil & Labour features', 'Family law consultations', 'Criminal defence advice', 'Estate planning', '24/7 priority support', 'Dedicated Legal Advisor'], is_popular: false },
   ];
 
   // Resolve action handlers: prefer onLoginClick, fall back to onSignIn/onSignUp
@@ -187,7 +187,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-44">
-          <div className="grid lg:grid-cols-5 gap-12 lg:gap-8 items-center">
+          <div className="grid lg:grid-cols-5 gap-6 lg:gap-8 items-center">
             {/* Left: Copy — 3/5 */}
             <div className="lg:col-span-3 max-w-2xl">
               <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-[#c9a84c]/[0.08] border border-[#c9a84c]/20 rounded-full mb-8">
@@ -297,7 +297,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                 {[
                   { step: '01', icon: FileText, title: 'Describe Your Matter', desc: 'Select your case type, set urgency, and tell us the details.' },
                   { step: '02', icon: Bot, title: 'AI Analyses Your Case', desc: 'Our AI reviews your matter and returns a structured assessment with next steps.' },
-                  { step: '03', icon: Scale, title: 'Legal Team Gets Context', desc: 'When you sign up, our attorneys already understand your situation.' },
+                  { step: '03', icon: Scale, title: 'Legal Team Gets Context', desc: 'When you sign up, our legal advisors already understand your situation.' },
                   { step: '04', icon: CheckCircle2, title: 'Matched to a Plan', desc: 'We recommend the best legal plan for your needs — from R99/month.' },
                 ].map((item, i) => (
                   <div key={item.step} className="relative flex gap-5 pb-8 last:pb-0">
@@ -413,7 +413,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
             {[
               { img: '/images/official/creative-tenant-rights.png', title: 'Know Your Tenant Rights', desc: 'AI-powered lease analysis that highlights unfair clauses, missing protections, and your rights as a tenant in South Africa.', tag: 'New', tagColor: 'bg-[#c9a84c]/10 text-[#a88832] border-[#c9a84c]/20' },
-              { img: '/images/official/creative-subscription.png', title: 'Legal Peace of Mind from R99', desc: 'Affordable legal subscription plans for everyone. Get attorney access, document review, and AI-powered legal guidance.', tag: 'Popular', tagColor: 'bg-slate-100 text-slate-600 border-slate-200' },
+              { img: '/images/official/creative-subscription.png', title: 'Legal Peace of Mind from R99', desc: 'Affordable legal subscription plans for everyone. Get legal advisor access, document review, and AI-powered legal guidance.', tag: 'Popular', tagColor: 'bg-slate-100 text-slate-600 border-slate-200' },
             ].map((campaign) => (
               <article key={campaign.title} className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 hover:border-[#c9a84c]/30 hover:shadow-lg hover:shadow-slate-100/80 transition-all duration-300">
                 <div className="relative h-56 overflow-hidden">
@@ -459,12 +459,12 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
               Your legal portal, everywhere you go.
             </h2>
             <p className="text-[#7a8fb0] text-base leading-relaxed mt-4 max-w-lg mx-auto">
-              Access your cases, documents, and consultations from any device. Message your attorney, track case progress, and get AI-powered updates in real time.
+              Access your cases, documents, and consultations from any device. Message your legal advisor, track case progress, and get AI-powered updates in real time.
             </p>
           </div>
 
           {/* App features row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-14">
             {[
               { icon: Smartphone, title: 'Mobile App', desc: 'iOS & Android' },
               { icon: Globe, title: 'Web Portal', desc: 'Full dashboard' },
@@ -566,7 +566,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                   AI-Powered Legal Intake for South Africans
                 </h3>
                 <p className="text-slate-500 text-sm leading-relaxed max-w-lg">
-                  Describe your legal matter and receive instant AI analysis before consulting with an attorney — no sign-up required. Built with South African law in mind.
+                  Describe your legal matter and receive instant AI analysis before consulting with a legal advisor — no sign-up required. Built with South African law in mind.
                 </p>
                 <Button variant="link" onClick={() => handleSmoothScroll('ask-ai')} className="mt-6 p-0 text-[#a88832] hover:text-[#8a6e28] font-semibold text-sm group/link">
                   Try It Now <ArrowUpRight className="w-3.5 h-3.5 ml-1 group-hover/link:translate-x-0.5 transition-transform" />
@@ -580,7 +580,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                 { icon: Tv, category: 'Feature', title: 'POPIA-Compliant Case Management Built for SA Law Firms' },
                 { icon: BookOpen, category: 'Resource', title: 'Understanding Your Rights Under the Labour Relations Act' },
                 { icon: Briefcase, category: 'Feature', title: 'Affordable Legal Plans Starting from R99/Month' },
-                { icon: Zap, category: 'Feature', title: 'Secure Document Management with Attorney Oversight' },
+                { icon: Zap, category: 'Feature', title: 'Secure Document Management with Legal Advisor Oversight' },
               ].map((article) => (
                 <div key={article.title} className="group flex items-start gap-4 py-4 first:pt-0 last:pb-0 hover:bg-[#f7f8fa] -mx-3 px-3 rounded-lg transition-colors cursor-pointer">
                   <div className="w-8 h-8 rounded-lg bg-[#0c1e3c]/[0.04] flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -614,7 +614,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
             </h2>
             <p className="mt-4 text-slate-500 text-base">All plans include POPIA compliance and AI-powered case analysis.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 max-w-4xl mx-auto">
             {displayPlans.map((plan: any) => {
               const isPopular = plan.is_popular || plan.slug === 'labour_legal_plan';
               const features = Array.isArray(plan.features) ? plan.features : [];

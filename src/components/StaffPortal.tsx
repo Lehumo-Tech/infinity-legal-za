@@ -25,7 +25,7 @@ export function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User 
 
   const roleLabels: Record<string, string> = {
     managing_director: 'Managing Director', admin: 'Admin',
-    attorney: 'Attorney', paralegal: 'Paralegal',
+    attorney: 'Legal Advisor', paralegal: 'Paralegal',
     systems_admin: 'Systems Admin', client: 'Client',
   };
 

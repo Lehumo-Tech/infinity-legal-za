@@ -31,6 +31,9 @@ import {
   DialogTitle, DialogTrigger, DialogFooter, DialogClose,
 } from '@/components/ui/dialog';
 import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+} from '@/components/ui/sheet';
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,6 +51,18 @@ import { useAuth } from '@/hooks/useAuth';
 // ============================================
 type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart' | 'subscription';
 type UserRole = 'managing_director' | 'admin' | 'attorney' | 'paralegal' | 'systems_admin' | 'client';
+
+// Role display mapping — attorney shows as "Legal Advisor" in UI
+const ROLE_LABELS: Record<string, string> = {
+  managing_director: 'Managing Director',
+  admin: 'Admin',
+  attorney: 'Legal Advisor',
+  paralegal: 'Paralegal',
+  systems_admin: 'Systems Admin',
+  client: 'Client',
+};
+
+const displayRole = (role: string | null | undefined) => ROLE_LABELS[role || ''] || (role || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
 interface User {
   id: string;
@@ -156,6 +171,7 @@ export default function HomePageClient() {
   const token = accessToken;
   const [currentView, setCurrentView] = useState<View>('workbench');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLanding, setShowLanding] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [initialSignup, setInitialSignup] = useState(false);
@@ -483,7 +499,7 @@ export default function HomePageClient() {
   return (
     <div className="min-h-screen flex bg-slate-50">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-[272px]' : 'w-[68px]'} bg-[#0c1e3c] text-white flex flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex-shrink-0`}>
+      <aside className={`${sidebarOpen ? 'w-[272px]' : 'w-[68px]'} bg-[#0c1e3c] text-white flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex-shrink-0 hidden md:flex`}>
         {/* Logo Area */}
         <div
           className="p-4 flex items-center gap-3 border-b border-[#c9a84c]/20 cursor-pointer hover:bg-[#132d52]/30 transition-all duration-200 group"
@@ -562,7 +578,7 @@ export default function HomePageClient() {
             {sidebarOpen && (
               <div className="min-w-0">
                 <div className="text-xs font-medium text-white truncate">{user?.full_name}</div>
-                <div className="text-[10px] text-[#7a94b8] capitalize truncate">{user?.role?.replace(/_/g, ' ')}</div>
+                <div className="text-[10px] text-[#7a94b8] truncate">{displayRole(user?.role)}</div>
               </div>
             )}
           </div>
@@ -581,11 +597,64 @@ export default function HomePageClient() {
         </div>
       </aside>
 
+      {/* Mobile sidebar drawer */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="left" className="bg-[#0c1e3c] text-white w-[272px] p-0 border-0">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Navigation Menu</SheetTitle>
+            <SheetDescription>Site navigation</SheetDescription>
+          </SheetHeader>
+          {/* Same nav content as sidebar but always expanded */}
+          <div className="p-4 flex items-center gap-3 border-b border-[#c9a84c]/20 cursor-pointer" onClick={() => { setShowLanding(true); setMobileMenuOpen(false); }}>
+            <Image src="/logo_legal.png" alt="Infinity Legal SA" width={48} height={27} className="flex-shrink-0 object-contain" />
+            <div>
+              <span className="font-bold text-lg tracking-tight">Infinity Legal</span>
+              <p className="text-[10px] text-[#7a8fb0] uppercase tracking-widest">Intranet Portal</p>
+            </div>
+          </div>
+          <ScrollArea className="flex-1">
+            <nav className="p-2 space-y-0.5">
+              <button onClick={() => { setShowLanding(true); setMobileMenuOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#c9a84c] hover:bg-[#c9a84c]/10 border border-[#c9a84c]/15 mb-2">
+                <HomeIcon className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium">Visit Homepage</span>
+              </button>
+              {navGroups.map((group, gi) => (
+                <div key={group}>
+                  {gi > 0 && <><div className="divider-gold my-2 mx-3" /><div className="px-3 pt-2 pb-1.5"><span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a94b8]"><span className="text-[#c9a84c]/60 mr-1.5">—</span>{group}</span></div></>}
+                  {gi === 0 && group !== 'Main' && <div className="px-3 pt-2 pb-1.5"><span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a94b8]"><span className="text-[#c9a84c]/60 mr-1.5">—</span>{group}</span></div>}
+                  {navItems.filter(i => i.group === group).map(item => (
+                    <button key={item.id} onClick={() => { setCurrentView(item.id); setMobileMenuOpen(false); }} className={`sidebar-nav-item ${currentView === item.id ? 'active' : ''} relative w-full`}>
+                      {currentView === item.id && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-[#c9a84c] rounded-r-full" />}
+                      <item.icon className="w-4 h-4 flex-shrink-0" />
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </nav>
+          </ScrollArea>
+          <div className="p-3 border-t border-[#1a3358]">
+            <div className="flex items-center gap-3 p-2 rounded-lg">
+              <Avatar className="w-8 h-8 flex-shrink-0">
+                <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold">{user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <div className="text-xs font-medium text-white truncate">{user?.full_name}</div>
+                <div className="text-[10px] text-[#7a94b8] truncate">{displayRole(user?.role)}</div>
+              </div>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
       {/* Main content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="glass-nav h-14 flex items-center justify-between px-6 flex-shrink-0">
+        <header className="glass-nav h-14 flex items-center justify-between px-3 sm:px-6 flex-shrink-0">
           <div className="flex items-center gap-3">
+            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 -ml-1 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Open menu">
+              <Menu className="w-5 h-5 text-slate-600" />
+            </button>
             {/* Breadcrumbs */}
             <nav className="flex items-center gap-1.5 text-sm">
               <button
@@ -629,7 +698,7 @@ export default function HomePageClient() {
                 <Bell className="w-4 h-4 text-slate-600" />
               </button>
               {showNotifications && (
-                <div className="absolute right-0 top-10 w-80 bg-white border shadow-xl rounded-xl z-50 max-h-96 overflow-y-auto">
+                <div className="absolute right-0 top-10 w-80 max-w-[calc(100vw-2rem)] bg-white border shadow-xl rounded-xl z-50 max-h-96 overflow-y-auto">
                   <div className="p-3 border-b flex items-center justify-between">
                     <span className="font-semibold text-sm text-[#0c1e3c]">Notifications</span>
                     <div className="flex items-center gap-1">
@@ -688,7 +757,7 @@ export default function HomePageClient() {
                 </Avatar>
                 <div className="text-sm hidden sm:block text-left">
                   <div className="font-medium text-[#0c1e3c] text-xs leading-tight">{user?.full_name}</div>
-                  <div className="text-[10px] text-slate-500 capitalize leading-tight">{user?.role?.replace(/_/g, ' ')}</div>
+                  <div className="text-[10px] text-slate-500 leading-tight">{displayRole(user?.role)}</div>
                 </div>
                 <ChevronRight className={`w-3 h-3 text-slate-400 hidden sm:block transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`} />
               </button>
@@ -723,7 +792,7 @@ export default function HomePageClient() {
         </header>
 
         {/* Page content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 sm:p-6">
           {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} subscription={subscription} />}
           {currentView === 'cases' && <CasesView cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} token={token} user={user} staff={staff} />}
           {currentView === 'leads' && <LeadsView leads={leads} page={leadsPage} total={leadsTotal} onPageChange={loadLeads} onRefresh={() => loadLeads(leadsPage)} />}
@@ -821,7 +890,7 @@ export default function HomePageClient() {
 
         {/* Footer */}
         <footer className="bg-[#0c1e3c] py-4 px-6 flex-shrink-0 border-t border-[#c9a84c]/15">
-          <div className="flex items-center justify-between text-[10px] text-[#7a94b8]">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-[#7a94b8]">
             <span>&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</span>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> POPIA Compliant</span>
@@ -909,7 +978,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
             {/* Role badge with gold shimmer */}
             <Badge className="mt-3 bg-gradient-to-r from-[#c9a84c] via-[#dfc475] to-[#c9a84c] text-[#0c1e3c] text-[10px] font-semibold animate-shimmer bg-[length:200%_100%] shadow-sm">
               <Crown className="w-3 h-3 mr-1" />
-              {role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              {displayRole(role)}
             </Badge>
           </div>
           <div className="hidden md:flex gap-3">
@@ -918,6 +987,14 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
                 <MiniStat label="Active Cases" value={stats.activeCases} />
                 <MiniStat label="Pending Tasks" value={stats.pendingTasks} />
                 {!isClient && <MiniStat label="Revenue" value={`R${(stats.totalRevenue / 1000000).toFixed(1)}M`} />}
+              </>
+            )}
+          </div>
+          <div className="flex md:hidden gap-2 mt-3">
+            {stats && (
+              <>
+                <MiniStat label="Active" value={stats.activeCases} />
+                <MiniStat label="Tasks" value={stats.pendingTasks} />
               </>
             )}
           </div>
@@ -1052,7 +1129,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
       {/* ═══════════════════════════════════════════
           CONSULTATIONS & TASKS — Premium Cards
           ═══════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Upcoming Consultations */}
         <div className="card-premium">
           <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
@@ -1383,13 +1460,13 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input placeholder="Search cases..." value={caseSearch} onChange={e => setCaseSearch(e.target.value)} className="pl-9 input-premium focus:ring-0" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40 input-premium focus:ring-0">
+            <SelectTrigger className="w-full sm:w-40 input-premium focus:ring-0">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
@@ -1405,7 +1482,7 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto -mx-6">
+        <div className="overflow-x-auto -mx-4 sm:-mx-6">
           <table className="w-full table-premium">
             <thead>
               <tr>
@@ -1490,7 +1567,7 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
                 className="mt-1 input-premium focus:ring-0"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs font-medium text-slate-600">Case Type <span className="text-red-500">*</span></Label>
                 <Select value={caseForm.case_type} onValueChange={v => setCaseForm(f => ({ ...f, case_type: v }))}>
@@ -1525,7 +1602,7 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
                 rows={3}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs font-medium text-slate-600">Opposing Party</Label>
                 <Input
@@ -1845,7 +1922,7 @@ function DocumentsView({ token, documents, onRefresh, user }: {
                     <Label className="text-xs font-medium text-slate-600">Title</Label>
                     <Input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Document title" className="mt-1 input-premium" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs font-medium text-slate-600">Document Type</Label>
                       <Select value={uploadType} onValueChange={setUploadType}>
@@ -2102,7 +2179,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
           <h2 className="text-xl font-bold text-[#0c1e3c]">Consultations</h2>
           <p className="text-sm text-slate-500">{consultations.length} consultation{consultations.length !== 1 ? 's' : ''} logged</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button size="sm" variant="outline" onClick={onRefresh} className="border-slate-200 text-slate-600 hover:border-[#0c1e3c] hover:text-[#0c1e3c] transition-all duration-200">
             <RefreshCw className="w-4 h-4 mr-1" /> Refresh
           </Button>
@@ -2119,7 +2196,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                   <DialogDescription className="text-slate-500">Schedule or log a client consultation</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs font-medium text-slate-600">Client Name</Label>
                       <Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Client name" className="mt-1 input-premium" />
@@ -2129,11 +2206,11 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                       <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@infinitylegal.org" className="mt-1 input-premium" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-xs font-medium text-slate-600">Attorney</Label>
+                      <Label className="text-xs font-medium text-slate-600">Legal Advisor</Label>
                       <Select value={form.attorney_id} onValueChange={v => setForm(f => ({ ...f, attorney_id: v }))}>
-                        <SelectTrigger className="mt-1 input-premium"><SelectValue placeholder="Select attorney" /></SelectTrigger>
+                        <SelectTrigger className="mt-1 input-premium"><SelectValue placeholder="Select legal advisor" /></SelectTrigger>
                         <SelectContent>
                           {attorneys.map(a => (
                             <SelectItem key={a.id} value={a.id}>{a.full_name}</SelectItem>
@@ -2158,7 +2235,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs font-medium text-slate-600">Date & Time</Label>
                       <Input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} className="mt-1 input-premium" />
@@ -2209,7 +2286,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 stagger-children">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-children">
           {consultations.map(c => {
             const mConfig = meetingConfig[c.meeting_type] || meetingConfig.in_person;
             const MIcon = mConfig.icon;
@@ -2228,14 +2305,14 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                         {c.status?.replace(/_/g, ' ')}
                       </span>
                     </div>
-                    {/* Attorney with avatar */}
+                    {/* Legal Advisor with avatar */}
                     <div className="flex items-center gap-2 mt-1.5">
                       <Avatar className="w-5 h-5">
                         <AvatarFallback className="text-[8px] bg-[#0c1e3c] text-white">
                           {c.attorney?.profile?.full_name?.split(' ').map(n => n[0]).join('') || c.attorney?.full_name?.split(' ').map(n => n[0]).join('') || 'A'}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs text-slate-500">{c.attorney?.profile?.full_name || c.attorney?.full_name || 'Attorney'}</span>
+                      <span className="text-xs text-slate-500">{c.attorney?.profile?.full_name || c.attorney?.full_name || 'Legal Advisor'}</span>
                     </div>
                     {/* Date & Time elegantly formatted */}
                     {c.scheduled_at && (
@@ -2431,14 +2508,14 @@ function TasksView({ token, tasks, onRefresh, user, staff }: {
               <Label>Description</Label>
               <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Task description..." className="mt-1 input-premium focus:ring-0" rows={2} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Assign To</Label>
                 <Select value={form.assigned_to} onValueChange={v => setForm(f => ({ ...f, assigned_to: v }))}>
                   <SelectTrigger className="mt-1 input-premium focus:ring-0"><SelectValue placeholder="Select staff" /></SelectTrigger>
                   <SelectContent>
                     {staff.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.full_name} ({s.role.replace(/_/g, ' ')})</SelectItem>
+                      <SelectItem key={s.id} value={s.id}>{s.full_name} ({displayRole(s.role)})</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -2456,7 +2533,7 @@ function TasksView({ token, tasks, onRefresh, user, staff }: {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Due Date</Label>
                 <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="mt-1 input-premium focus:ring-0" />
@@ -2495,7 +2572,7 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
 
   const roleLabels: Record<string, string> = {
     managing_director: 'Managing Director', admin: 'Admin',
-    attorney: 'Attorney', paralegal: 'Paralegal',
+    attorney: 'Legal Advisor', paralegal: 'Paralegal',
     systems_admin: 'Systems Admin', client: 'Client',
   };
 
@@ -2550,7 +2627,7 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
               filterRole === r ? 'btn-navy text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            {roleLabels[r] || r.replace(/_/g, ' ')}
+            {displayRole(r)}
           </button>
         ))}
       </div>
@@ -2561,7 +2638,7 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
             <h3 className="text-sm font-semibold text-[#0c1e3c] uppercase tracking-wider capitalize">
-              {roleLabels[group] || group.replace(/_/g, ' ')}
+              {displayRole(group)}
             </h3>
             <span className="text-[10px] text-slate-400 font-medium">({members.length})</span>
           </div>
@@ -2592,7 +2669,7 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-[#0c1e3c] text-sm truncate">{m.full_name}</div>
                     <div className={`mt-1 ${roleBadgeVariant[m.role] || 'badge-status badge-closed'}`}>
-                      {roleLabels[m.role] || m.role.replace(/_/g, ' ')}
+                      {displayRole(m.role)}
                     </div>
                     <div className="text-[11px] text-slate-500 mt-2 flex items-center gap-1.5 truncate">
                       <Mail className="w-3 h-3 flex-shrink-0 text-slate-400" />{m.email}
@@ -2643,7 +2720,7 @@ function OrgChartView({ staff }: { staff: StaffMember[] }) {
 
   const roleLabels: Record<string, string> = {
     managing_director: 'Managing Director', admin: 'Admin',
-    attorney: 'Attorney', paralegal: 'Paralegal',
+    attorney: 'Legal Advisor', paralegal: 'Paralegal',
     systems_admin: 'Systems Admin', client: 'Client',
   };
 
@@ -2734,7 +2811,7 @@ function OrgChartView({ staff }: { staff: StaffMember[] }) {
                           </Avatar>
                           <div>
                             <div className="text-xs font-medium text-[#0c1e3c] group-hover/card:text-[#a88832] transition-colors">{m.full_name}</div>
-                            <div className="text-[9px] text-slate-400">{roleLabels[m.role] || m.role.replace(/_/g, ' ')}</div>
+                            <div className="text-[9px] text-slate-400">{displayRole(m.role)}</div>
                           </div>
                         </div>
                       ))}
@@ -2803,7 +2880,7 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
           </div>
 
           {/* Charts area */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Case Status Distribution — refined horizontal bars */}
             <div className="card-premium">
               <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
@@ -2852,7 +2929,7 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
                   { status: 'Pending Tasks', count: stats.pendingTasks, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-l-amber-400' },
                   { status: 'Overdue Tasks', count: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', border: 'border-l-red-400' },
                   { status: 'Total Documents', count: stats.totalDocuments, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-l-blue-400' },
-                  { status: 'Attorneys', count: stats.totalAttorneys, icon: Users, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]' },
+                  { status: 'Legal Advisors', count: stats.totalAttorneys, icon: Users, color: 'text-[#a88832]', bg: 'bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]' },
                 ].map(item => (
                   <div key={item.status} className={`flex items-center justify-between p-3 rounded-xl border-l-4 ${item.border} ${item.bg} hover:shadow-sm transition-all duration-200`}>
                     <div className="flex items-center gap-2.5">
@@ -3182,7 +3259,7 @@ function AskInfinityBubble() {
 
       {/* Chat popup — premium dialog */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] card-premium flex flex-col overflow-hidden animate-scale-in" style={{ height: '520px' }}>
+        <div className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] card-premium flex flex-col overflow-hidden animate-scale-in h-[520px] sm:h-auto" style={{ maxHeight: '70vh' }}>
           {/* Header */}
           <div className="p-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-gradient-to-r from-[#0c1e3c] to-[#132d52] rounded-t-2xl">
             <div className="flex items-center gap-2.5">

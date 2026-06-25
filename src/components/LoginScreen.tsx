@@ -181,7 +181,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
       </div>
 
       {/* Right side - Form */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-8 sm:p-12 bg-gradient-to-b from-white to-slate-50/50">
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-8 md:p-12 bg-gradient-to-b from-white to-slate-50/50">
         <div className="w-full max-w-[400px] animate-fade-in-up">
           {onBackToHome && (
             <button onClick={onBackToHome} className="flex items-center gap-1.5 text-[12px] text-slate-400 hover:text-[#a88832] mb-8 transition-all duration-200 font-medium">
@@ -325,11 +325,11 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
           </div>
 
           {/* Trust indicators - refined horizontal layout with separators */}
-          <div className="mt-10 flex items-center justify-center gap-0 text-[10px] text-slate-400">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] text-slate-400">
             <span className="flex items-center gap-1.5 px-3 py-1"><Shield className="w-3 h-3" /> POPIA Compliant</span>
-            <span className="w-px h-3 bg-slate-200" />
+            <span className="w-px h-3 bg-slate-200 hidden sm:block" />
             <span className="flex items-center gap-1.5 px-3 py-1"><Lock className="w-3 h-3" /> AES-256 Encrypted</span>
-            <span className="w-px h-3 bg-slate-200" />
+            <span className="w-px h-3 bg-slate-200 hidden sm:block" />
             <span className="flex items-center gap-1.5 px-3 py-1"><KeyRound className="w-3 h-3" /> 90-Day Expiry</span>
           </div>
         </div>
