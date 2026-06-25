@@ -1,10 +1,3569 @@
 $ next dev -p 3000 --webpack
 ▲ Next.js 16.1.3 (webpack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.14.169:3000
+- Network:       http://21.0.11.223:3000
 - Environments: .env
 
 ✓ Starting...
-✓ Ready in 1488ms
+✓ Ready in 1421ms
 ○ Compiling / ...
- GET / 200 in 6.8s (compile: 6.3s, proxy.ts: 229ms, render: 258ms)
+ GET / 200 in 7.9s (compile: 7.4s, proxy.ts: 228ms, render: 300ms)
+ GET / 200 in 522ms (compile: 3ms, proxy.ts: 487ms, render: 31ms)
+ GET / 200 in 34ms (compile: 3ms, proxy.ts: 5ms, render: 26ms)
+ GET / 200 in 34ms (compile: 3ms, proxy.ts: 5ms, render: 26ms)
+⚠ Blocked cross-origin request from preview-chat-ef25ef42-5616-496d-9b3b-1fd0dbbba81f.space-z.ai to /_next/* resource. To allow this, configure "allowedDevOrigins" in next.config
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ GET / 200 in 273ms (compile: 57ms, proxy.ts: 5ms, render: 211ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 45ms (compile: 2ms, proxy.ts: 8ms, render: 35ms)
+ GET /api/articles?limit=20 200 in 3.5s (compile: 1012ms, proxy.ts: 5ms, render: 2.5s)
+ GET /api/pricing 200 in 2.7s (compile: 251ms, proxy.ts: 302ms, render: 2.2s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 7ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 2ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 4ms, proxy.ts: 10ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.1s (compile: 11ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 3ms, proxy.ts: 5ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 1896µs, proxy.ts: 5ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 8ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 2ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 7ms, proxy.ts: 8ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 2ms, proxy.ts: 15ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 6ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.1s (compile: 19ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.1s (compile: 19ms, proxy.ts: 11ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 6ms, proxy.ts: 11ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 4ms, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 3ms, proxy.ts: 10ms, render: 7.0s)
+ GET / 200 in 355ms (compile: 97ms, proxy.ts: 205ms, render: 53ms)
+ GET / 200 in 36ms (compile: 3ms, proxy.ts: 5ms, render: 27ms)
+ GET / 200 in 23ms (compile: 2ms, proxy.ts: 5ms, render: 16ms)
+ GET / 200 in 145ms (compile: 96ms, proxy.ts: 6ms, render: 43ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 326ms (compile: 1946µs, proxy.ts: 5ms, render: 319ms)
+ GET / 200 in 46ms (compile: 6ms, proxy.ts: 6ms, render: 33ms)
+ GET / 200 in 26ms (compile: 2ms, proxy.ts: 5ms, render: 18ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 724ms (compile: 74ms, proxy.ts: 397ms, render: 254ms)
+ GET / 200 in 54ms (compile: 2ms, proxy.ts: 5ms, render: 47ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 8.1s (compile: 1076ms, proxy.ts: 11ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 8.1s (compile: 1063ms, proxy.ts: 20ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 8.2s (compile: 1063ms, proxy.ts: 20ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 8.2s (compile: 1077ms, proxy.ts: 10ms, render: 7.2s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 2ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1968µs, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 2ms, proxy.ts: 9ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1920µs, proxy.ts: 6ms, render: 7.0s)
+ GET / 200 in 186ms (compile: 102ms, proxy.ts: 6ms, render: 78ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 260ms (compile: 2ms, proxy.ts: 4ms, render: 253ms)
+ GET / 200 in 52ms (compile: 7ms, proxy.ts: 6ms, render: 39ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 2ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1796µs, proxy.ts: 6ms, render: 7.0s)
+ GET / 200 in 48ms (compile: 8ms, proxy.ts: 7ms, render: 34ms)
+ GET / 200 in 87ms (compile: 20ms, proxy.ts: 17ms, render: 51ms)
+ GET / 200 in 57ms (compile: 4ms, proxy.ts: 7ms, render: 46ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 62ms (compile: 3ms, proxy.ts: 7ms, render: 52ms)
+ GET /api/articles?limit=20 200 in 1606ms (compile: 11ms, proxy.ts: 140ms, render: 1455ms)
+ GET /api/pricing 200 in 1475ms (compile: 12ms, proxy.ts: 17ms, render: 1446ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.2s (compile: 108ms, proxy.ts: 16ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.2s (compile: 128ms, proxy.ts: 17ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.2s (compile: 129ms, proxy.ts: 17ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.2s (compile: 107ms, proxy.ts: 17ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1551µs, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 1857µs, proxy.ts: 10ms, render: 7.0s)
+ GET / 200 in 105ms (compile: 65ms, proxy.ts: 6ms, render: 34ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 21ms (compile: 3ms, proxy.ts: 4ms, render: 15ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 500 in 7.0s (compile: 2ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 1949µs, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 109ms (compile: 73ms, proxy.ts: 7ms, render: 29ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 199ms (compile: 2ms, proxy.ts: 4ms, render: 192ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 57ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 5ms, proxy.ts: 5ms, render: 7.0s)
+ GET / 200 in 53ms (compile: 5ms, proxy.ts: 14ms, render: 34ms)
+ GET / 200 in 39ms (compile: 2ms, proxy.ts: 5ms, render: 32ms)
+ GET / 200 in 51ms (compile: 3ms, proxy.ts: 5ms, render: 43ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 39ms (compile: 3ms, proxy.ts: 4ms, render: 32ms)
+ GET / 200 in 33ms (compile: 2ms, proxy.ts: 4ms, render: 27ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 65ms, proxy.ts: 15ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.1s (compile: 65ms, proxy.ts: 15ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 79ms, proxy.ts: 15ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 79ms, proxy.ts: 15ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1803µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.2s (compile: 3ms, proxy.ts: 4ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 4ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 118ms (compile: 70ms, proxy.ts: 6ms, render: 43ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 22ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.3s (compile: 1916µs, proxy.ts: 6ms, render: 7.3s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 500 in 7.2s (compile: 2ms, proxy.ts: 6ms, render: 7.2s)
+ GET / 200 in 98ms (compile: 65ms, proxy.ts: 4ms, render: 29ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 22ms (compile: 3ms, proxy.ts: 5ms, render: 14ms)
+ GET / 200 in 123ms (compile: 83ms, proxy.ts: 7ms, render: 33ms)
+ GET / 200 in 24ms (compile: 4ms, proxy.ts: 6ms, render: 14ms)
+ GET / 200 in 24ms (compile: 2ms, proxy.ts: 4ms, render: 18ms)
+ GET / 200 in 134ms (compile: 98ms, proxy.ts: 4ms, render: 33ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 35ms (compile: 2ms, proxy.ts: 18ms, render: 14ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 61ms, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 7ms, proxy.ts: 76ms, render: 7.0s)
+ GET / 200 in 27ms (compile: 4ms, proxy.ts: 5ms, render: 17ms)
+ GET / 200 in 32ms (compile: 5ms, proxy.ts: 6ms, render: 21ms)
+ GET / 200 in 22ms (compile: 2ms, proxy.ts: 5ms, render: 14ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 7ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 2ms, proxy.ts: 6ms, render: 7.1s)
+ GET / 200 in 315ms (compile: 5ms, proxy.ts: 4ms, render: 305ms)
+ GET / 200 in 54ms (compile: 4ms, proxy.ts: 6ms, render: 44ms)
+ GET / 200 in 58ms (compile: 3ms, proxy.ts: 6ms, render: 48ms)
+ GET / 200 in 41ms (compile: 2ms, proxy.ts: 4ms, render: 34ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 24ms, proxy.ts: 18ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 13ms, proxy.ts: 10ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 18ms, proxy.ts: 18ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 4ms, proxy.ts: 37ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1985µs, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1677µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1879µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1773µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 5ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1996µs, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 37ms (compile: 2ms, proxy.ts: 6ms, render: 29ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 10ms, proxy.ts: 9ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 21ms, proxy.ts: 11ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 6ms, proxy.ts: 9ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 26ms, proxy.ts: 12ms, render: 7.0s)
+ GET / 200 in 40ms (compile: 2ms, proxy.ts: 4ms, render: 33ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 6ms, proxy.ts: 13ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 12ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 4ms, proxy.ts: 32ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 12ms, proxy.ts: 32ms, render: 7.0s)
+ GET / 200 in 390ms (compile: 96ms, proxy.ts: 248ms, render: 46ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 243ms (compile: 2ms, proxy.ts: 9ms, render: 232ms)
+ GET / 200 in 46ms (compile: 11ms, proxy.ts: 6ms, render: 28ms)
+ GET / 200 in 459ms (compile: 70ms, proxy.ts: 147ms, render: 243ms)
+ GET / 200 in 460ms (compile: 70ms, proxy.ts: 147ms, render: 244ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 33ms (compile: 2ms, proxy.ts: 4ms, render: 26ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 44ms (compile: 2ms, proxy.ts: 4ms, render: 37ms)
+ GET / 200 in 37ms (compile: 3ms, proxy.ts: 4ms, render: 29ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.7s (compile: 1638ms, proxy.ts: 9ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 8.7s (compile: 1637ms, proxy.ts: 10ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 8.7s (compile: 19ms, proxy.ts: 1652ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.7s (compile: 16ms, proxy.ts: 1652ms, render: 7.1s)
+ GET / 200 in 60ms (compile: 3ms, proxy.ts: 7ms, render: 50ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 5ms, proxy.ts: 17ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 10ms, proxy.ts: 18ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 2ms, proxy.ts: 8ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 6ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 20ms, proxy.ts: 7ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 3ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 11ms, proxy.ts: 11ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 3ms, proxy.ts: 8ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1897µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 4ms, proxy.ts: 8ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 244ms (compile: 183ms, proxy.ts: 13ms, render: 48ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 304ms (compile: 2ms, proxy.ts: 5ms, render: 298ms)
+ GET / 200 in 32ms (compile: 3ms, proxy.ts: 5ms, render: 23ms)
+ GET / 200 in 61ms (compile: 9ms, proxy.ts: 9ms, render: 44ms)
+ GET / 200 in 32ms (compile: 6ms, proxy.ts: 4ms, render: 22ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 49ms (compile: 3ms, proxy.ts: 6ms, render: 40ms)
+ GET /api/articles?limit=20 200 in 3.2s (compile: 137ms, proxy.ts: 11ms, render: 3.0s)
+ GET /api/pricing 200 in 3.2s (compile: 130ms, proxy.ts: 13ms, render: 3.0s)
+ GET /api/pricing 200 in 3.2s (compile: 140ms, proxy.ts: 12ms, render: 3.0s)
+ GET /api/articles?limit=20 200 in 3.2s (compile: 107ms, proxy.ts: 12ms, render: 3.0s)
+ GET / 200 in 124ms (compile: 6ms, proxy.ts: 9ms, render: 110ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 5ms, proxy.ts: 14ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 14ms, proxy.ts: 14ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 14ms, proxy.ts: 14ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 6ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 1878µs, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1890µs, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 4ms, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 6ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 3ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 3ms, proxy.ts: 6ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 3ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 3ms, proxy.ts: 7ms, render: 7.1s)
+ GET / 200 in 170ms (compile: 113ms, proxy.ts: 5ms, render: 52ms)
+ GET / 200 in 32ms (compile: 4ms, proxy.ts: 6ms, render: 21ms)
+ GET / 200 in 29ms (compile: 3ms, proxy.ts: 6ms, render: 20ms)
+ GET / 200 in 329ms (compile: 5ms, proxy.ts: 5ms, render: 319ms)
+ GET / 200 in 75ms (compile: 4ms, proxy.ts: 19ms, render: 51ms)
+ GET / 200 in 45ms (compile: 9ms, proxy.ts: 6ms, render: 29ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.2s (compile: 112ms, proxy.ts: 8ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.2s (compile: 134ms, proxy.ts: 8ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.2s (compile: 7ms, proxy.ts: 148ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.2s (compile: 8ms, proxy.ts: 151ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 9ms, proxy.ts: 9ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 5ms, proxy.ts: 8ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 3ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1930µs, proxy.ts: 11ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 6ms, proxy.ts: 6ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1768µs, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1823µs, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 12.0s (compile: 4ms, proxy.ts: 5ms, render: 12.0s)
+ GET / 200 in 52ms (compile: 4ms, proxy.ts: 7ms, render: 41ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 13ms, proxy.ts: 13ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 13ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 5ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 5ms, proxy.ts: 13ms, render: 7.0s)
+ GET / 200 in 35ms (compile: 1991µs, proxy.ts: 4ms, render: 30ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 5ms, proxy.ts: 5ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 5ms, proxy.ts: 7ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 5ms, proxy.ts: 7ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 9ms, proxy.ts: 7ms, render: 7.0s)
+ GET / 200 in 42ms (compile: 2ms, proxy.ts: 6ms, render: 34ms)
+ GET / 200 in 34ms (compile: 3ms, proxy.ts: 4ms, render: 27ms)
+ POST /api/ai/chat 200 in 10.3s (compile: 1131ms, proxy.ts: 5ms, render: 9.2s)
+ POST /api/ai/chat 200 in 13.3s (compile: 2ms, proxy.ts: 5ms, render: 13.3s)
+ GET / 200 in 350ms (compile: 73ms, proxy.ts: 4ms, render: 273ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 6ms, render: 26ms)
+ GET / 200 in 49ms (compile: 3ms, proxy.ts: 6ms, render: 40ms)
+ GET / 200 in 1472ms (compile: 84ms, proxy.ts: 1122ms, render: 266ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.2s (compile: 1112ms, proxy.ts: 45ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.5s (compile: 12ms, proxy.ts: 1123ms, render: 7.3s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 8.7s (compile: 587ms, proxy.ts: 1122ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 8.7s (compile: 587ms, proxy.ts: 1123ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 7ms, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 2ms, proxy.ts: 4ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.0s (compile: 2ms, proxy.ts: 4ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.0s (compile: 1982µs, proxy.ts: 5ms, render: 7.0s)
+ GET / 200 in 341ms (compile: 70ms, proxy.ts: 7ms, render: 264ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 9ms, proxy.ts: 17ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 23ms, proxy.ts: 17ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 8ms, proxy.ts: 17ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 7.1s (compile: 32ms, proxy.ts: 17ms, render: 7.0s)
+ GET / 200 in 46ms (compile: 2ms, proxy.ts: 5ms, render: 39ms)
+ GET / 200 in 40ms (compile: 7ms, proxy.ts: 9ms, render: 25ms)
+ GET / 200 in 39ms (compile: 5ms, proxy.ts: 9ms, render: 25ms)
+ GET / 200 in 40ms (compile: 7ms, proxy.ts: 8ms, render: 25ms)
+ GET / 200 in 345ms (compile: 98ms, proxy.ts: 209ms, render: 38ms)
+ GET / 200 in 26ms (compile: 5ms, proxy.ts: 5ms, render: 16ms)
+ GET / 200 in 29ms (compile: 5ms, proxy.ts: 5ms, render: 19ms)
+ GET / 200 in 49ms (compile: 3ms, proxy.ts: 10ms, render: 35ms)
+ GET / 200 in 46ms (compile: 7ms, proxy.ts: 8ms, render: 31ms)
+ GET / 200 in 211ms (compile: 20ms, proxy.ts: 10ms, render: 181ms)
+ GET / 200 in 76ms (compile: 9ms, proxy.ts: 50ms, render: 18ms)
+ GET / 200 in 43ms (compile: 7ms, proxy.ts: 9ms, render: 27ms)
+ GET / 200 in 185ms (compile: 144ms, proxy.ts: 15ms, render: 25ms)
+ GET / 200 in 34ms (compile: 4ms, proxy.ts: 5ms, render: 25ms)
+ GET / 200 in 163ms (compile: 104ms, proxy.ts: 35ms, render: 24ms)
+ GET / 200 in 24ms (compile: 3ms, proxy.ts: 5ms, render: 17ms)
+  Reload env: .env
+ GET / 200 in 224ms (compile: 174ms, proxy.ts: 7ms, render: 43ms)
+ GET / 200 in 255ms (compile: 2ms, proxy.ts: 4ms, render: 249ms)
+ GET / 200 in 43ms (compile: 20ms, proxy.ts: 8ms, render: 15ms)
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 221ms (compile: 125ms, proxy.ts: 11ms, render: 86ms)
+ GET / 200 in 272ms (compile: 5ms, proxy.ts: 6ms, render: 262ms)
+⚠ ./src/lib/auth.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/auth.ts
+./src/lib/middleware.ts
+./src/app/api/articles/route.ts
+
+./src/lib/security.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/security.ts
+./src/app/api/articles/route.ts
+ GET / 200 in 213ms (compile: 68ms, proxy.ts: 106ms, render: 39ms)
+○ Compiling /api/pricing ...
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.9s (compile: 1825ms, proxy.ts: 12ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 8.9s (compile: 1825ms, proxy.ts: 12ms, render: 7.1s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 8.9s (compile: 1825ms, proxy.ts: 12ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.9s (compile: 1826ms, proxy.ts: 11ms, render: 7.1s)
+⚠ ./src/lib/auth.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/auth.ts
+./src/lib/middleware.ts
+./src/app/api/articles/route.ts
+
+./src/lib/security.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/security.ts
+./src/app/api/articles/route.ts
+ GET / 200 in 31ms (compile: 5ms, proxy.ts: 7ms, render: 20ms)
+ GET / 200 in 83ms (compile: 5ms, proxy.ts: 8ms, render: 69ms)
+⚠ ./src/lib/auth.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/auth.ts
+./src/lib/middleware.ts
+./src/app/api/articles/route.ts
+
+./src/lib/security.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/security.ts
+./src/app/api/articles/route.ts
+ GET / 200 in 275ms (compile: 180ms, proxy.ts: 30ms, render: 65ms)
+⚠ ./src/lib/auth.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/auth.ts
+./src/lib/middleware.ts
+./src/app/api/articles/route.ts
+
+./src/lib/security.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/security.ts
+./src/app/api/articles/route.ts
+⚠ ./src/lib/auth.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/auth.ts
+./src/lib/middleware.ts
+./src/app/api/articles/route.ts
+
+./src/lib/security.ts
+Attempted import error: 'isSupabaseConfigured' is not exported from '@/lib/db' (imported as 'isSupabaseConfigured').
+
+Import trace for requested module:
+./src/lib/security.ts
+./src/app/api/articles/route.ts
+ GET / 200 in 36ms (compile: 10ms, proxy.ts: 9ms, render: 17ms)
+ GET / 200 in 339ms (compile: 98ms, proxy.ts: 201ms, render: 40ms)
+ GET / 200 in 251ms (compile: 2ms, proxy.ts: 4ms, render: 244ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/login/route.ts:27:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/login 400 in 730ms (compile: 646ms, proxy.ts: 5ms, render: 79ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/signup/route.ts:31:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+[LocalAuth] User creation failed: TypeError: Cannot read properties of undefined (reading 'findUnique')
+    at createLocalUser (src/lib/local-auth.ts:224:43)
+    at POST (src/app/api/auth/signup/route.ts:205:46)
+  222 |
+  223 |     // Check if user already exists
+> 224 |     const existing = await prisma.profile.findUnique({
+      |                                           ^
+  225 |       where: { email },
+  226 |     });
+  227 |
+ POST /api/auth/signup 500 in 599ms (compile: 310ms, proxy.ts: 158ms, render: 131ms)
+⚠ ./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+
+./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+
+./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+
+./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+
+./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+
+./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+
+./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+
+./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+
+./src/lib/local-auth.ts
+Attempted import error: 'prisma' is not exported from '@/lib/db' (imported as 'prisma').
+
+Import trace for requested module:
+./src/lib/local-auth.ts
+./src/app/api/auth/signup/route.ts
+ GET / 200 in 155ms (compile: 96ms, proxy.ts: 7ms, render: 53ms)
+ GET / 200 in 326ms (compile: 98ms, proxy.ts: 191ms, render: 37ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/signup/route.ts:31:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/signup 201 in 1261ms (compile: 692ms, proxy.ts: 7ms, render: 562ms)
+ GET / 200 in 489ms (compile: 354ms, proxy.ts: 101ms, render: 34ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/login/route.ts:27:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/login 200 in 617ms (compile: 249ms, proxy.ts: 5ms, render: 363ms)
+ GET / 200 in 397ms (compile: 363ms, proxy.ts: 4ms, render: 29ms)
+ GET /api/auth/verify 200 in 671ms (compile: 653ms, proxy.ts: 5ms, render: 13ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/auto-confirm/route.ts:25:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/auto-confirm 200 in 458ms (compile: 363ms, proxy.ts: 4ms, render: 91ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/login/route.ts:27:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/login 401 in 421ms (compile: 16ms, proxy.ts: 6ms, render: 399ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/signup/route.ts:31:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/signup 409 in 101ms (compile: 9ms, proxy.ts: 6ms, render: 86ms)
+ GET / 200 in 106ms (compile: 65ms, proxy.ts: 8ms, render: 34ms)
+ GET / 200 in 310ms (compile: 3ms, proxy.ts: 6ms, render: 301ms)
+ GET / 200 in 54ms (compile: 10ms, proxy.ts: 10ms, render: 34ms)
+ POST /api/auth/login 401 in 29ms (compile: 2ms, proxy.ts: 7ms, render: 20ms)
+ POST /api/auth/login 200 in 312ms (compile: 5ms, proxy.ts: 5ms, render: 303ms)
+ GET / 200 in 49ms (compile: 2ms, proxy.ts: 5ms, render: 41ms)
+ GET / 200 in 146ms (compile: 98ms, proxy.ts: 5ms, render: 44ms)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 9.0s (compile: 1891ms, proxy.ts: 18ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 9.0s (compile: 1891ms, proxy.ts: 17ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 9.0s (compile: 100ms, proxy.ts: 1907ms, render: 7.0s)
+Pricing query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/pricing 200 in 14.0s (compile: 104ms, proxy.ts: 1907ms, render: 12.0s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/login/route.ts:27:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/login 200 in 368ms (compile: 8ms, proxy.ts: 7ms, render: 353ms)
+Notifications list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/notifications?perPage=20 500 in 7.7s (compile: 619ms, proxy.ts: 7ms, render: 7.1s)
+Subscription query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/subscriptions 500 in 7.7s (compile: 619ms, proxy.ts: 7ms, render: 7.1s)
+ GET /api/dashboard 200 in 7.7s (compile: 620ms, proxy.ts: 6ms, render: 7.1s)
+ GET / 200 in 379ms (compile: 119ms, proxy.ts: 213ms, render: 47ms)
+ GET / 200 in 43ms (compile: 5ms, proxy.ts: 18ms, render: 20ms)
+ GET / 200 in 29ms (compile: 4ms, proxy.ts: 6ms, render: 19ms)
+ GET / 200 in 25ms (compile: 4ms, proxy.ts: 6ms, render: 14ms)
+ GET / 200 in 40ms (compile: 5ms, proxy.ts: 5ms, render: 30ms)
+ GET / 200 in 31ms (compile: 5ms, proxy.ts: 10ms, render: 16ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/ai/intake/route.ts:239:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/ai/intake 200 in 5.0s (compile: 1078ms, proxy.ts: 5ms, render: 3.9s)
+ GET / 200 in 203ms (compile: 65ms, proxy.ts: 75ms, render: 63ms)
+ POST /api/ai/intake 400 in 12ms (compile: 1896µs, proxy.ts: 6ms, render: 4ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/ai/chat/route.ts:36:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ GET / 200 in 108ms (compile: 64ms, proxy.ts: 5ms, render: 38ms)
+ POST /api/ai/chat 200 in 12.7s (compile: 266ms, proxy.ts: 5ms, render: 12.4s)
+ GET / 200 in 30ms (compile: 5ms, proxy.ts: 5ms, render: 20ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/ai/intake/route.ts:239:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/ai/intake 400 in 60ms (compile: 6ms, proxy.ts: 5ms, render: 49ms)
+ GET / 200 in 37ms (compile: 5ms, proxy.ts: 7ms, render: 24ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/ai/intake/route.ts:239:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/ai/intake 200 in 3.5s (compile: 4ms, proxy.ts: 5ms, render: 3.5s)
+ POST /api/ai/intake 200 in 2.3s (compile: 1688µs, proxy.ts: 4ms, render: 2.3s)
+ POST /api/ai/intake 200 in 2.4s (compile: 1802µs, proxy.ts: 4ms, render: 2.4s)
+ POST /api/ai/intake 200 in 2.3s (compile: 8ms, proxy.ts: 7ms, render: 2.3s)
+ GET / 200 in 32ms (compile: 5ms, proxy.ts: 7ms, render: 21ms)
+ POST /api/ai/intake 200 in 2.4s (compile: 1959µs, proxy.ts: 9ms, render: 2.4s)
+ POST /api/ai/intake 429 in 11ms (compile: 1978µs, proxy.ts: 6ms, render: 4ms)
+ GET / 200 in 26ms (compile: 4ms, proxy.ts: 5ms, render: 17ms)
+ GET / 200 in 40ms (compile: 3ms, proxy.ts: 19ms, render: 19ms)
+ GET / 200 in 41ms (compile: 6ms, proxy.ts: 11ms, render: 25ms)
+ GET / 200 in 27ms (compile: 6ms, proxy.ts: 5ms, render: 17ms)
+ GET / 200 in 64ms (compile: 5ms, proxy.ts: 6ms, render: 53ms)
+ GET / 200 in 486ms (compile: 82ms, proxy.ts: 361ms, render: 43ms)
+ GET / 200 in 27ms (compile: 6ms, proxy.ts: 5ms, render: 16ms)
+ GET /api/pricing 200 in 945ms (compile: 928ms, proxy.ts: 5ms, render: 11ms)
+ GET / 200 in 171ms (compile: 63ms, proxy.ts: 69ms, render: 40ms)
+Health check DB error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/health 503 in 7.9s (compile: 824ms, proxy.ts: 5ms, render: 7.0s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/login/route.ts:27:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/login 401 in 716ms (compile: 630ms, proxy.ts: 5ms, render: 82ms)
+ GET / 200 in 110ms (compile: 73ms, proxy.ts: 5ms, render: 32ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/signup/route.ts:31:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/signup 400 in 361ms (compile: 299ms, proxy.ts: 9ms, render: 53ms)
+ GET / 200 in 82ms (compile: 53ms, proxy.ts: 6ms, render: 24ms)
+ POST /api/auth/signup 400 in 22ms (compile: 11ms, proxy.ts: 6ms, render: 5ms)
+ POST /api/auth/signup 201 in 329ms (compile: 3ms, proxy.ts: 9ms, render: 317ms)
+ GET /api/dashboard 200 in 763ms (compile: 741ms, proxy.ts: 6ms, render: 17ms)
+ GET / 200 in 90ms (compile: 54ms, proxy.ts: 7ms, render: 29ms)
+ GET /api/cases 200 in 384ms (compile: 368ms, proxy.ts: 6ms, render: 10ms)
+ GET /api/subscriptions 200 in 423ms (compile: 408ms, proxy.ts: 5ms, render: 11ms)
+ GET / 200 in 86ms (compile: 53ms, proxy.ts: 4ms, render: 28ms)
+ GET /api/notifications 200 in 301ms (compile: 283ms, proxy.ts: 4ms, render: 13ms)
+ GET / 200 in 131ms (compile: 54ms, proxy.ts: 12ms, render: 64ms)
+ GET /api/consultations 200 in 989ms (compile: 942ms, proxy.ts: 35ms, render: 12ms)
+ GET /api/leads 403 in 278ms (compile: 265ms, proxy.ts: 4ms, render: 9ms)
+ GET /api/staff 403 in 274ms (compile: 263ms, proxy.ts: 4ms, render: 8ms)
+ GET /api/analytics 403 in 307ms (compile: 283ms, proxy.ts: 4ms, render: 21ms)
+ GET / 200 in 330ms (compile: 89ms, proxy.ts: 198ms, render: 44ms)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/intake/route.ts:95:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/intake 201 in 4.9s (compile: 926ms, proxy.ts: 7ms, render: 4.0s)
+ GET /api/pricing 200 in 679ms (compile: 599ms, proxy.ts: 71ms, render: 10ms)
+ POST /api/subscriptions 201 in 265ms (compile: 227ms, proxy.ts: 5ms, render: 34ms)
+ GET /api/dashboard 200 in 491ms (compile: 473ms, proxy.ts: 4ms, render: 14ms)
+ GET /api/subscriptions 200 in 23ms (compile: 8ms, proxy.ts: 5ms, render: 10ms)
+ GET / 200 in 274ms (compile: 66ms, proxy.ts: 7ms, render: 202ms)
+ GET /api/auth/verify 200 in 815ms (compile: 800ms, proxy.ts: 4ms, render: 10ms)
+ GET / 200 in 139ms (compile: 79ms, proxy.ts: 6ms, render: 55ms)
+ GET /api/notifications?perPage=20 200 in 759ms (compile: 733ms, proxy.ts: 7ms, render: 18ms)
+ GET /api/subscriptions 200 in 761ms (compile: 734ms, proxy.ts: 7ms, render: 19ms)
+ GET /api/dashboard 200 in 770ms (compile: 734ms, proxy.ts: 7ms, render: 28ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 278ms (compile: 261ms, proxy.ts: 6ms, render: 11ms)
+ GET /api/pricing 200 in 562ms (compile: 550ms, proxy.ts: 6ms, render: 7ms)
+ GET /api/subscriptions 200 in 17ms (compile: 7ms, proxy.ts: 4ms, render: 6ms)
+ GET /api/pricing 200 in 39ms (compile: 12ms, proxy.ts: 22ms, render: 6ms)
+ GET /api/pricing 200 in 1839ms (compile: 1799ms, proxy.ts: 24ms, render: 16ms)
+ GET / 200 in 89ms (compile: 57ms, proxy.ts: 6ms, render: 27ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.9s (compile: 1805ms, proxy.ts: 22ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.9s (compile: 1798ms, proxy.ts: 24ms, render: 7.1s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/ai/intake/route.ts:71:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ GET / 200 in 95ms (compile: 60ms, proxy.ts: 4ms, render: 31ms)
+ POST /api/ai/intake 201 in 4.9s (compile: 585ms, proxy.ts: 5ms, render: 4.3s)
+ GET / 200 in 30ms (compile: 5ms, proxy.ts: 6ms, render: 20ms)
+ GET / 200 in 41ms (compile: 5ms, proxy.ts: 8ms, render: 27ms)
+ GET / 200 in 25ms (compile: 3ms, proxy.ts: 5ms, render: 17ms)
+ GET / 200 in 76ms (compile: 11ms, proxy.ts: 15ms, render: 51ms)
+ GET / 200 in 104ms (compile: 10ms, proxy.ts: 13ms, render: 81ms)
+ GET / 200 in 39ms (compile: 8ms, proxy.ts: 9ms, render: 22ms)
+ GET / 200 in 29ms (compile: 5ms, proxy.ts: 6ms, render: 18ms)
+ GET / 200 in 27ms (compile: 4ms, proxy.ts: 5ms, render: 18ms)
+ GET / 200 in 32ms (compile: 4ms, proxy.ts: 6ms, render: 21ms)
+ GET / 200 in 31ms (compile: 5ms, proxy.ts: 10ms, render: 17ms)
+ GET / 200 in 603ms (compile: 80ms, proxy.ts: 478ms, render: 45ms)
+ GET /api/subscriptions 200 in 702ms (compile: 652ms, proxy.ts: 7ms, render: 42ms)
+ GET /api/notifications?perPage=20 200 in 703ms (compile: 653ms, proxy.ts: 7ms, render: 43ms)
+ GET /api/dashboard 200 in 775ms (compile: 653ms, proxy.ts: 7ms, render: 115ms)
+ GET / 200 in 125ms (compile: 65ms, proxy.ts: 14ms, render: 46ms)
+ GET / 200 in 90ms (compile: 10ms, proxy.ts: 18ms, render: 62ms)
+ GET / 200 in 90ms (compile: 6ms, proxy.ts: 20ms, render: 63ms)
+ GET / 200 in 331ms (compile: 85ms, proxy.ts: 200ms, render: 46ms)
+ GET / 200 in 163ms (compile: 92ms, proxy.ts: 27ms, render: 45ms)
+ GET / 200 in 93ms (compile: 56ms, proxy.ts: 6ms, render: 31ms)
+ GET / 200 in 91ms (compile: 56ms, proxy.ts: 6ms, render: 29ms)
+ GET / 200 in 118ms (compile: 75ms, proxy.ts: 9ms, render: 35ms)
+ GET / 200 in 207ms (compile: 2ms, proxy.ts: 4ms, render: 201ms)
+ GET / 200 in 135ms (compile: 84ms, proxy.ts: 8ms, render: 43ms)
+ GET / 200 in 98ms (compile: 59ms, proxy.ts: 8ms, render: 31ms)
+ GET / 200 in 344ms (compile: 94ms, proxy.ts: 12ms, render: 238ms)
+ GET / 200 in 196ms (compile: 2ms, proxy.ts: 7ms, render: 187ms)
+ GET / 200 in 40ms (compile: 3ms, proxy.ts: 5ms, render: 32ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 5ms, render: 27ms)
+ GET /api/auth/verify 200 in 2.1s (compile: 2.1s, proxy.ts: 5ms, render: 15ms)
+ GET / 200 in 418ms (compile: 233ms, proxy.ts: 122ms, render: 64ms)
+ GET / 200 in 193ms (compile: 2ms, proxy.ts: 5ms, render: 186ms)
+ GET /api/auth/verify 200 in 86ms (compile: 67ms, proxy.ts: 6ms, render: 14ms)
+ GET /api/notifications?perPage=20 200 in 1031ms (compile: 999ms, proxy.ts: 12ms, render: 20ms)
+ GET /api/subscriptions 200 in 1033ms (compile: 999ms, proxy.ts: 12ms, render: 21ms)
+ GET /api/dashboard 200 in 1041ms (compile: 1000ms, proxy.ts: 12ms, render: 29ms)
+ GET / 200 in 274ms (compile: 51ms, proxy.ts: 4ms, render: 219ms)
+ GET /api/pricing 200 in 1118ms (compile: 1085ms, proxy.ts: 13ms, render: 19ms)
+ GET /api/pricing 200 in 1138ms (compile: 8ms, proxy.ts: 1108ms, render: 22ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.1s (compile: 1086ms, proxy.ts: 13ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.2s (compile: 3ms, proxy.ts: 1108ms, render: 7.1s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/login/route.ts:27:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/login 200 in 609ms (compile: 229ms, proxy.ts: 8ms, render: 372ms)
+ GET /api/notifications?perPage=20 200 in 514ms (compile: 479ms, proxy.ts: 16ms, render: 19ms)
+ GET /api/subscriptions 200 in 519ms (compile: 479ms, proxy.ts: 16ms, render: 24ms)
+ GET /api/dashboard 200 in 520ms (compile: 479ms, proxy.ts: 16ms, render: 25ms)
+ GET /api/pricing 200 in 30ms (compile: 13ms, proxy.ts: 5ms, render: 12ms)
+ GET /api/subscriptions 200 in 16ms (compile: 3ms, proxy.ts: 5ms, render: 8ms)
+ GET /api/pricing 200 in 69ms (compile: 41ms, proxy.ts: 15ms, render: 13ms)
+ GET /api/pricing 200 in 71ms (compile: 38ms, proxy.ts: 18ms, render: 16ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 20ms, proxy.ts: 17ms, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 22ms, proxy.ts: 15ms, render: 7.1s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/ai/chat/route.ts:36:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/ai/chat 200 in 42s (compile: 1404ms, proxy.ts: 6ms, render: 41s)
+ POST /api/ai/chat 200 in 9.9s (compile: 2ms, proxy.ts: 5ms, render: 9.9s)
+ GET / 200 in 315ms (compile: 70ms, proxy.ts: 5ms, render: 240ms)
+ GET /api/pricing 200 in 1164ms (compile: 1137ms, proxy.ts: 9ms, render: 17ms)
+ GET /api/pricing 200 in 1162ms (compile: 1131ms, proxy.ts: 12ms, render: 19ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.2s (compile: 1137ms, proxy.ts: 9ms, render: 7.0s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 8.2s (compile: 1131ms, proxy.ts: 12ms, render: 7.0s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/auth/signup/route.ts:31:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/auth/signup 201 in 1020ms (compile: 659ms, proxy.ts: 5ms, render: 356ms)
+ GET /api/notifications?perPage=20 200 in 1290ms (compile: 1264ms, proxy.ts: 6ms, render: 20ms)
+ GET /api/subscriptions 200 in 1291ms (compile: 1264ms, proxy.ts: 6ms, render: 20ms)
+ GET /api/dashboard 200 in 1294ms (compile: 1265ms, proxy.ts: 6ms, render: 23ms)
+ GET /api/pricing 200 in 42ms (compile: 18ms, proxy.ts: 17ms, render: 7ms)
+ GET /api/pricing 200 in 43ms (compile: 18ms, proxy.ts: 17ms, render: 8ms)
+ GET /api/pricing 200 in 45ms (compile: 18ms, proxy.ts: 17ms, render: 9ms)
+ GET /api/subscriptions 200 in 14ms (compile: 2ms, proxy.ts: 6ms, render: 5ms)
+ POST /api/payfast/checkout 404 in 7.3s (compile: 275ms, proxy.ts: 4ms, render: 7.0s)
+ GET /api/subscriptions 200 in 19ms (compile: 7ms, proxy.ts: 4ms, render: 7ms)
+ POST /api/subscriptions 400 in 14ms (compile: 1731µs, proxy.ts: 4ms, render: 9ms)
+ GET /api/pricing 200 in 15ms (compile: 6ms, proxy.ts: 4ms, render: 5ms)
+ GET /api/pricing 200 in 10ms (compile: 1915µs, proxy.ts: 4ms, render: 4ms)
+ POST /api/subscriptions 201 in 21ms (compile: 1899µs, proxy.ts: 4ms, render: 15ms)
+ GET /api/dashboard 200 in 37ms (compile: 7ms, proxy.ts: 4ms, render: 26ms)
+ GET / 200 in 305ms (compile: 71ms, proxy.ts: 6ms, render: 228ms)
+ GET /api/auth/verify 200 in 1278ms (compile: 1265ms, proxy.ts: 3ms, render: 10ms)
+ GET /api/notifications?perPage=20 200 in 429ms (compile: 402ms, proxy.ts: 12ms, render: 16ms)
+ GET /api/subscriptions 200 in 435ms (compile: 402ms, proxy.ts: 12ms, render: 21ms)
+ GET /api/dashboard 200 in 436ms (compile: 403ms, proxy.ts: 12ms, render: 22ms)
+ GET /api/subscriptions 200 in 15ms (compile: 1733µs, proxy.ts: 4ms, render: 9ms)
+ GET /api/subscriptions 200 in 24ms (compile: 3ms, proxy.ts: 9ms, render: 13ms)
+Documents list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/documents?perPage=50 500 in 7.7s (compile: 643ms, proxy.ts: 16ms, render: 7.1s)
+ GET /api/dashboard 200 in 255ms (compile: 238ms, proxy.ts: 4ms, render: 14ms)
+ GET / 200 in 388ms (compile: 102ms, proxy.ts: 240ms, render: 47ms)
+ GET / 200 in 300ms (compile: 72ms, proxy.ts: 188ms, render: 40ms)
+ GET / 200 in 199ms (compile: 1972µs, proxy.ts: 5ms, render: 192ms)
+ GET /api/auth/verify 200 in 1341ms (compile: 1323ms, proxy.ts: 4ms, render: 15ms)
+ GET /api/notifications?perPage=20 200 in 1015ms (compile: 914ms, proxy.ts: 80ms, render: 21ms)
+ GET /api/dashboard 200 in 1017ms (compile: 914ms, proxy.ts: 80ms, render: 24ms)
+ GET /api/subscriptions 200 in 1019ms (compile: 914ms, proxy.ts: 80ms, render: 25ms)
+ GET / 200 in 343ms (compile: 62ms, proxy.ts: 6ms, render: 275ms)
+ GET / 200 in 36ms (compile: 2ms, proxy.ts: 6ms, render: 28ms)
+ GET / 200 in 57ms (compile: 3ms, proxy.ts: 7ms, render: 46ms)
+ GET / 200 in 63ms (compile: 3ms, proxy.ts: 7ms, render: 53ms)
+ GET /api/pricing 200 in 2.3s (compile: 2.3s, proxy.ts: 6ms, render: 11ms)
+ GET /api/pricing 200 in 113ms (compile: 8ms, proxy.ts: 99ms, render: 7ms)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 11.1s (compile: 1744ms, proxy.ts: 2.3s, render: 7.1s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/articles?limit=20 200 in 7.1s (compile: 2ms, proxy.ts: 5ms, render: 7.1s)
+[RateLimit] DB check failed, using in-memory fallback: Error: Supabase not configured
+    at RateLimiter.check (src/lib/security.ts:47:49)
+    at checkRateLimit (src/lib/middleware.ts:172:32)
+    at POST (src/app/api/ai/chat/route.ts:36:44)
+  45 |     // Cache miss or expired — check DB
+  46 |     try {
+> 47 |       if (!isSupabaseConfigured() || !db) throw new Error('Supabase not configured');
+     |                                                 ^
+  48 |       const [ip, endpoint] = key.split(':');
+  49 |       const { data: dbEntry } = await db
+  50 |         .from('rate_limit_logs')
+ POST /api/ai/chat 200 in 1709ms (compile: 763ms, proxy.ts: 5ms, render: 942ms)
+ GET /api/pricing 200 in 18ms (compile: 8ms, proxy.ts: 4ms, render: 5ms)
+ GET /api/pricing 200 in 10ms (compile: 2ms, proxy.ts: 4ms, render: 4ms)
+ GET /api/articles?limit=20 200 in 5.2s (compile: 7ms, proxy.ts: 5ms, render: 5.2s)
+Articles query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET / 200 in 278ms (compile: 61ms, proxy.ts: 5ms, render: 212ms)
+ GET / 200 in 33ms (compile: 2ms, proxy.ts: 4ms, render: 27ms)
+ GET / 200 in 484ms (compile: 13ms, proxy.ts: 63ms, render: 407ms)
+ GET / 200 in 31ms (compile: 4ms, proxy.ts: 4ms, render: 22ms)
+ GET / 200 in 356ms (compile: 22ms, proxy.ts: 23ms, render: 311ms)
+ GET / 200 in 34ms (compile: 6ms, proxy.ts: 9ms, render: 19ms)
+ GET / 200 in 41ms (compile: 3ms, proxy.ts: 4ms, render: 34ms)
+ GET / 200 in 338ms (compile: 81ms, proxy.ts: 212ms, render: 45ms)
+ GET / 200 in 28ms (compile: 5ms, proxy.ts: 5ms, render: 17ms)
+ GET / 200 in 43ms (compile: 4ms, proxy.ts: 22ms, render: 17ms)
+ GET / 200 in 174ms (compile: 3ms, proxy.ts: 5ms, render: 166ms)
+ GET / 200 in 47ms (compile: 5ms, proxy.ts: 6ms, render: 36ms)
+ GET / 200 in 32ms (compile: 5ms, proxy.ts: 8ms, render: 20ms)
+ POST /api/auth/login 200 in 2.3s (compile: 2.0s, proxy.ts: 5ms, render: 324ms)
+ GET / 200 in 166ms (compile: 58ms, proxy.ts: 75ms, render: 34ms)
+ GET /api/pricing 200 in 269ms (compile: 255ms, proxy.ts: 4ms, render: 10ms)
+ GET / 200 in 85ms (compile: 49ms, proxy.ts: 5ms, render: 32ms)
+ POST /api/auth/login 200 in 324ms (compile: 6ms, proxy.ts: 4ms, render: 313ms)
+ POST /api/auth/login 200 in 306ms (compile: 2ms, proxy.ts: 5ms, render: 299ms)
+ GET /api/dashboard 200 in 719ms (compile: 700ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 82ms (compile: 48ms, proxy.ts: 5ms, render: 29ms)
+ GET / 200 in 216ms (compile: 2ms, proxy.ts: 5ms, render: 209ms)
+ GET /api/auth/verify 200 in 263ms (compile: 246ms, proxy.ts: 7ms, render: 10ms)
+ GET / 200 in 105ms (compile: 47ms, proxy.ts: 4ms, render: 53ms)
+ GET /api/dashboard 200 in 31ms (compile: 8ms, proxy.ts: 10ms, render: 13ms)
+ GET /api/notifications?perPage=20 200 in 513ms (compile: 488ms, proxy.ts: 10ms, render: 16ms)
+ GET /api/subscriptions 200 in 517ms (compile: 487ms, proxy.ts: 10ms, render: 20ms)
+ GET / 200 in 112ms (compile: 49ms, proxy.ts: 7ms, render: 55ms)
+ GET / 200 in 136ms (compile: 2ms, proxy.ts: 6ms, render: 128ms)
+ GET /api/pricing 200 in 1198ms (compile: 1170ms, proxy.ts: 15ms, render: 13ms)
+ GET /api/articles?limit=20 200 in 1204ms (compile: 1178ms, proxy.ts: 12ms, render: 14ms)
+ GET /api/articles?limit=20 200 in 1205ms (compile: 1178ms, proxy.ts: 13ms, render: 15ms)
+ GET /api/pricing 200 in 1206ms (compile: 1178ms, proxy.ts: 12ms, render: 16ms)
+ GET / 200 in 112ms (compile: 49ms, proxy.ts: 4ms, render: 58ms)
+ GET / 200 in 196ms (compile: 5ms, proxy.ts: 6ms, render: 185ms)
+ GET /api/articles?limit=20 200 in 30ms (compile: 6ms, proxy.ts: 13ms, render: 10ms)
+ GET /api/pricing 200 in 40ms (compile: 6ms, proxy.ts: 26ms, render: 8ms)
+ GET /api/articles?limit=20 200 in 53ms (compile: 4ms, proxy.ts: 37ms, render: 12ms)
+ GET /api/pricing 200 in 55ms (compile: 10ms, proxy.ts: 37ms, render: 8ms)
+ POST /api/auth/login 200 in 1788ms (compile: 1448ms, proxy.ts: 9ms, render: 330ms)
+ GET /api/notifications?perPage=20 200 in 679ms (compile: 648ms, proxy.ts: 7ms, render: 23ms)
+ GET /api/subscriptions 200 in 682ms (compile: 649ms, proxy.ts: 7ms, render: 26ms)
+ GET /api/dashboard 200 in 684ms (compile: 649ms, proxy.ts: 7ms, render: 28ms)
+ GET /api/pricing 200 in 19ms (compile: 7ms, proxy.ts: 5ms, render: 7ms)
+ GET /api/subscriptions 200 in 22ms (compile: 1949µs, proxy.ts: 11ms, render: 10ms)
+ GET /api/articles?limit=20 200 in 43ms (compile: 15ms, proxy.ts: 9ms, render: 19ms)
+ GET /api/articles?limit=20 200 in 45ms (compile: 15ms, proxy.ts: 9ms, render: 21ms)
+ GET /api/pricing 200 in 46ms (compile: 28ms, proxy.ts: 9ms, render: 10ms)
+ GET /api/pricing 200 in 48ms (compile: 27ms, proxy.ts: 9ms, render: 11ms)
+ GET /dashboard 404 in 1210ms (compile: 1024ms, proxy.ts: 5ms, render: 182ms)
+ GET /api/auth/verify 200 in 1324ms (compile: 1310ms, proxy.ts: 4ms, render: 10ms)
+ GET / 200 in 334ms (compile: 98ms, proxy.ts: 6ms, render: 229ms)
+ GET /api/auth/verify 200 in 14ms (compile: 3ms, proxy.ts: 6ms, render: 5ms)
+ GET /api/notifications?perPage=20 200 in 622ms (compile: 596ms, proxy.ts: 8ms, render: 18ms)
+ GET /api/subscriptions 200 in 627ms (compile: 596ms, proxy.ts: 8ms, render: 22ms)
+ GET /api/dashboard 200 in 628ms (compile: 597ms, proxy.ts: 8ms, render: 23ms)
+ POST /api/auth/signout 200 in 381ms (compile: 363ms, proxy.ts: 6ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 758ms (compile: 724ms, proxy.ts: 19ms, render: 15ms)
+ GET /api/pricing 200 in 760ms (compile: 724ms, proxy.ts: 19ms, render: 16ms)
+ GET /api/pricing 200 in 761ms (compile: 724ms, proxy.ts: 20ms, render: 18ms)
+ GET /api/articles?limit=20 200 in 771ms (compile: 733ms, proxy.ts: 19ms, render: 19ms)
+ GET / 200 in 200ms (compile: 37ms, proxy.ts: 5ms, render: 158ms)
+ GET /api/articles?limit=20 200 in 37ms (compile: 9ms, proxy.ts: 13ms, render: 15ms)
+ GET /api/articles?limit=20 200 in 39ms (compile: 9ms, proxy.ts: 14ms, render: 17ms)
+ GET /api/pricing 200 in 40ms (compile: 19ms, proxy.ts: 13ms, render: 8ms)
+ GET /api/pricing 200 in 40ms (compile: -393µs, proxy.ts: 37ms, render: 4ms)
+ POST /api/auth/login 200 in 1994ms (compile: 1686ms, proxy.ts: 4ms, render: 304ms)
+ GET /api/notifications?perPage=20 200 in 47ms (compile: 21ms, proxy.ts: 6ms, render: 20ms)
+ GET /api/subscriptions 200 in 49ms (compile: 29ms, proxy.ts: 6ms, render: 14ms)
+ GET /api/dashboard 200 in 59ms (compile: 9ms, proxy.ts: 6ms, render: 44ms)
+ GET / 200 in 170ms (compile: 36ms, proxy.ts: 4ms, render: 129ms)
+ GET / 200 in 536ms (compile: 81ms, proxy.ts: 201ms, render: 254ms)
+ GET / 200 in 333ms (compile: 3ms, proxy.ts: 296ms, render: 34ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 5ms, render: 27ms)
+ GET / 200 in 39ms (compile: 2ms, proxy.ts: 5ms, render: 32ms)
+ GET /api/pricing 200 in 1743ms (compile: 1726ms, proxy.ts: 6ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 2.9s (compile: 1123ms, proxy.ts: 1735ms, render: 10ms)
+ GET /api/pricing 200 in 101ms (compile: 6ms, proxy.ts: 89ms, render: 6ms)
+ GET /api/articles?limit=20 200 in 11ms (compile: 1904µs, proxy.ts: 5ms, render: 4ms)
+ GET / 200 in 304ms (compile: 66ms, proxy.ts: 6ms, render: 232ms)
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+ GET / 404 in 387ms (compile: 64ms, proxy.ts: 194ms, render: 129ms)
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+ GET / 200 in 334ms (compile: 85ms, proxy.ts: 10ms, render: 238ms)
+ GET / 200 in 49ms (compile: 3ms, proxy.ts: 6ms, render: 40ms)
+ GET / 200 in 75ms (compile: 5ms, proxy.ts: 9ms, render: 62ms)
+○ Compiling /api/pricing ...
+ GET /api/pricing 200 in 3.4s (compile: 3.4s, proxy.ts: 8ms, render: 21ms)
+Health check DB error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/health 503 in 7.9s (compile: 791ms, proxy.ts: 67ms, render: 7.0s)
+ GET /api/pricing 200 in 15ms (compile: 5ms, proxy.ts: 4ms, render: 5ms)
+ POST /api/auth/login 401 in 603ms (compile: 291ms, proxy.ts: 4ms, render: 308ms)
+ POST /api/auth/signup 201 in 599ms (compile: 290ms, proxy.ts: 4ms, render: 305ms)
+ POST /api/auth/login 200 in 307ms (compile: 6ms, proxy.ts: 5ms, render: 296ms)
+ GET /api/auth/verify 200 in 308ms (compile: 293ms, proxy.ts: 4ms, render: 10ms)
+Auto-confirm error: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at POST (src/app/api/auth/auto-confirm/route.ts:113:37)
+  111 |     // to prevent abuse of this endpoint for confirming old accounts
+  112 |     const THIRTY_MINUTES = 30 * 60 * 1000;
+> 113 |     const localUser = await db.user.findFirst({
+      |                                     ^
+  114 |       where: {
+  115 |         OR: [
+  116 |           { id: user_id || undefined },
+ POST /api/auth/auto-confirm 500 in 927ms (compile: 798ms, proxy.ts: 5ms, render: 125ms)
+ POST /api/auth/auto-confirm 200 in 73ms (compile: 45ms, proxy.ts: 7ms, render: 21ms)
+ POST /api/auth/login 200 in 307ms (compile: 5ms, proxy.ts: 5ms, render: 297ms)
+prisma:error 
+Invalid `prisma.user.findUnique()` invocation:
+
+{
+  where: {
+    id: undefined,
+?   email?: String,
+?   AND?: UserWhereInput | UserWhereInput[],
+?   OR?: UserWhereInput[],
+?   NOT?: UserWhereInput | UserWhereInput[],
+?   password?: StringFilter | String,
+?   full_name?: StringFilter | String,
+?   phone?: StringNullableFilter | String | Null,
+?   avatar_url?: StringNullableFilter | String | Null,
+?   role?: StringFilter | String,
+?   department?: StringNullableFilter | String | Null,
+?   id_number?: StringNullableFilter | String | Null,
+?   company?: StringNullableFilter | String | Null,
+?   address?: JsonNullableFilter,
+?   practice_number?: StringNullableFilter | String | Null,
+?   bar_admission_date?: DateTimeNullableFilter | DateTime | Null,
+?   specialization?: JsonNullableFilter,
+?   hourly_rate?: FloatNullableFilter | Float | Null,
+?   bio?: StringNullableFilter | String | Null,
+?   is_active?: BoolFilter | Boolean,
+?   email_verified?: BoolFilter | Boolean,
+?   popi_consent?: BoolFilter | Boolean,
+?   password_expires_at?: DateTimeNullableFilter | DateTime | Null,
+?   last_password_change?: DateTimeNullableFilter | DateTime | Null,
+?   last_login_at?: DateTimeNullableFilter | DateTime | Null,
+?   created_at?: DateTimeFilter | DateTime,
+?   updated_at?: DateTimeFilter | DateTime,
+?   client_profile?: ClientNullableScalarRelationFilter | ClientWhereInput | Null,
+?   cases_as_attorney?: CaseListRelationFilter,
+?   documents_uploaded?: DocumentListRelationFilter,
+?   messages_sent?: MessageListRelationFilter,
+?   messages_received?: MessageListRelationFilter,
+?   tasks_assigned?: TaskListRelationFilter,
+?   tasks_created?: TaskListRelationFilter,
+?   timeline_events?: CaseTimelineListRelationFilter,
+?   consultations_as_client?: ConsultationListRelationFilter,
+?   consultations_as_attorney?: ConsultationListRelationFilter,
+?   privileged_notes?: PrivilegedNoteListRelationFilter,
+?   consent_logs?: ConsentLogListRelationFilter,
+?   notifications?: NotificationListRelationFilter,
+?   audit_logs?: AuditLogListRelationFilter,
+?   intake_submissions?: IntakeSubmissionListRelationFilter,
+?   ai_analyses_requested?: AiAnalysisListRelationFilter
+  },
+  select: {
+    id: true,
+    email: true,
+    full_name: true,
+    phone: true,
+    role: true,
+    department: true,
+    id_number: true,
+    avatar_url: true,
+    is_active: true,
+    email_verified: true,
+    popi_consent: true,
+    created_at: true,
+    updated_at: true
+  }
+}
+
+Argument `where` of type UserWhereUniqueInput needs at least one of `id` or `email` arguments. Available options are marked with ?.
+Profile fetch error: Error [PrismaClientValidationError]: 
+Invalid `prisma.user.findUnique()` invocation:
+
+{
+  where: {
+    id: undefined,
+?   email?: String,
+?   AND?: UserWhereInput | UserWhereInput[],
+?   OR?: UserWhereInput[],
+?   NOT?: UserWhereInput | UserWhereInput[],
+?   password?: StringFilter | String,
+?   full_name?: StringFilter | String,
+?   phone?: StringNullableFilter | String | Null,
+?   avatar_url?: StringNullableFilter | String | Null,
+?   role?: StringFilter | String,
+?   department?: StringNullableFilter | String | Null,
+?   id_number?: StringNullableFilter | String | Null,
+?   company?: StringNullableFilter | String | Null,
+?   address?: JsonNullableFilter,
+?   practice_number?: StringNullableFilter | String | Null,
+?   bar_admission_date?: DateTimeNullableFilter | DateTime | Null,
+?   specialization?: JsonNullableFilter,
+?   hourly_rate?: FloatNullableFilter | Float | Null,
+?   bio?: StringNullableFilter | String | Null,
+?   is_active?: BoolFilter | Boolean,
+?   email_verified?: BoolFilter | Boolean,
+?   popi_consent?: BoolFilter | Boolean,
+?   password_expires_at?: DateTimeNullableFilter | DateTime | Null,
+?   last_password_change?: DateTimeNullableFilter | DateTime | Null,
+?   last_login_at?: DateTimeNullableFilter | DateTime | Null,
+?   created_at?: DateTimeFilter | DateTime,
+?   updated_at?: DateTimeFilter | DateTime,
+?   client_profile?: ClientNullableScalarRelationFilter | ClientWhereInput | Null,
+?   cases_as_attorney?: CaseListRelationFilter,
+?   documents_uploaded?: DocumentListRelationFilter,
+?   messages_sent?: MessageListRelationFilter,
+?   messages_received?: MessageListRelationFilter,
+?   tasks_assigned?: TaskListRelationFilter,
+?   tasks_created?: TaskListRelationFilter,
+?   timeline_events?: CaseTimelineListRelationFilter,
+?   consultations_as_client?: ConsultationListRelationFilter,
+?   consultations_as_attorney?: ConsultationListRelationFilter,
+?   privileged_notes?: PrivilegedNoteListRelationFilter,
+?   consent_logs?: ConsentLogListRelationFilter,
+?   notifications?: NotificationListRelationFilter,
+?   audit_logs?: AuditLogListRelationFilter,
+?   intake_submissions?: IntakeSubmissionListRelationFilter,
+?   ai_analyses_requested?: AiAnalysisListRelationFilter
+  },
+  select: {
+    id: true,
+    email: true,
+    full_name: true,
+    phone: true,
+    role: true,
+    department: true,
+    id_number: true,
+    avatar_url: true,
+    is_active: true,
+    email_verified: true,
+    popi_consent: true,
+    created_at: true,
+    updated_at: true
+  }
+}
+
+Argument `where` of type UserWhereUniqueInput needs at least one of `id` or `email` arguments. Available options are marked with ?.
+    at async GET (src/app/api/auth/profile/route.ts:48:23)
+  46 |     }
+  47 |
+> 48 |     const localUser = await db.user.findUnique({
+     |                       ^
+  49 |       where: { id: auth.userId },
+  50 |       select: {
+  51 |         id: true, {
+  clientVersion: '6.19.2'
+}
+ GET /api/auth/profile 500 in 420ms (compile: 280ms, proxy.ts: 4ms, render: 135ms)
+ POST /api/auth/login 200 in 361ms (compile: 44ms, proxy.ts: 5ms, render: 313ms)
+ GET /api/auth/profile 200 in 19ms (compile: 6ms, proxy.ts: 4ms, render: 9ms)
+ GET / 200 in 289ms (compile: 66ms, proxy.ts: 7ms, render: 215ms)
+ GET /api/pricing 200 in 684ms (compile: 666ms, proxy.ts: 8ms, render: 10ms)
+ GET /api/articles?limit=20 200 in 690ms (compile: 670ms, proxy.ts: 9ms, render: 12ms)
+ GET /api/pricing 200 in 18ms (compile: 4ms, proxy.ts: 8ms, render: 7ms)
+ GET /api/articles?limit=20 200 in 20ms (compile: 7ms, proxy.ts: 8ms, render: 5ms)
+ GET / 200 in 100ms (compile: 61ms, proxy.ts: 7ms, render: 31ms)
+ POST /api/auth/signup 201 in 1198ms (compile: 885ms, proxy.ts: 5ms, render: 308ms)
+ GET /api/notifications?perPage=20 200 in 622ms (compile: 589ms, proxy.ts: 7ms, render: 27ms)
+ GET /api/subscriptions 200 in 624ms (compile: 589ms, proxy.ts: 7ms, render: 28ms)
+ GET /api/dashboard 200 in 627ms (compile: 589ms, proxy.ts: 7ms, render: 30ms)
+ GET / 200 in 67ms (compile: 37ms, proxy.ts: 4ms, render: 27ms)
+ POST /api/auth/signout 200 in 549ms (compile: 508ms, proxy.ts: 12ms, render: 29ms)
+ POST /api/auth/login 200 in 712ms (compile: 389ms, proxy.ts: 5ms, render: 318ms)
+ GET /api/notifications?perPage=20 200 in 716ms (compile: 686ms, proxy.ts: 8ms, render: 22ms)
+ GET /api/subscriptions 200 in 718ms (compile: 687ms, proxy.ts: 8ms, render: 23ms)
+ GET /api/dashboard 200 in 721ms (compile: 687ms, proxy.ts: 8ms, render: 26ms)
+ GET /api/pricing 200 in 326ms (compile: 306ms, proxy.ts: 11ms, render: 10ms)
+ GET /api/pricing 200 in 327ms (compile: 306ms, proxy.ts: 11ms, render: 11ms)
+ GET /api/pricing 200 in 328ms (compile: 306ms, proxy.ts: 11ms, render: 12ms)
+ GET /api/subscriptions 200 in 16ms (compile: 5ms, proxy.ts: 4ms, render: 7ms)
+ GET / 200 in 343ms (compile: 72ms, proxy.ts: 6ms, render: 265ms)
+ GET / 200 in 40ms (compile: 3ms, proxy.ts: 10ms, render: 27ms)
+ GET / 200 in 39ms (compile: 3ms, proxy.ts: 4ms, render: 32ms)
+ GET / 200 in 40ms (compile: 2ms, proxy.ts: 4ms, render: 33ms)
+ GET / 200 in 35ms (compile: 2ms, proxy.ts: 4ms, render: 30ms)
+ GET / 200 in 40ms (compile: 2ms, proxy.ts: 7ms, render: 31ms)
+ POST /api/auth/login 200 in 2.1s (compile: 1543ms, proxy.ts: 199ms, render: 317ms)
+ POST /api/auth/login 200 in 367ms (compile: 3ms, proxy.ts: 70ms, render: 295ms)
+ POST /api/auth/login 200 in 299ms (compile: 1861µs, proxy.ts: 5ms, render: 292ms)
+ POST /api/auth/login 200 in 303ms (compile: 1955µs, proxy.ts: 4ms, render: 296ms)
+ POST /api/auth/login 200 in 299ms (compile: 1850µs, proxy.ts: 5ms, render: 293ms)
+ POST /api/auth/login 429 in 10ms (compile: 1787µs, proxy.ts: 5ms, render: 3ms)
+CRM overview error: TypeError: _lib_db__WEBPACK_IMPORTED_MODULE_0__.db.from is not a function
+    at GET (src/app/api/crm/route.ts:38:10)
+  36 |     ] = await Promise.all([
+  37 |       // Total users
+> 38 |       db.from('profiles').select('*', { count: 'exact', head: true }),
+     |          ^
+  39 |
+  40 |       // Active subscriptions
+  41 |       db.from('user_subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+ GET /api/crm 500 in 931ms (compile: 839ms, proxy.ts: 4ms, render: 87ms)
+CRM overview error: TypeError: _lib_db__WEBPACK_IMPORTED_MODULE_0__.db.from is not a function
+    at GET (src/app/api/crm/route.ts:38:10)
+  36 |     ] = await Promise.all([
+  37 |       // Total users
+> 38 |       db.from('profiles').select('*', { count: 'exact', head: true }),
+     |          ^
+  39 |
+  40 |       // Active subscriptions
+  41 |       db.from('user_subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+ GET /api/crm 500 in 69ms (compile: 1883µs, proxy.ts: 5ms, render: 62ms)
+ GET /api/crm 401 in 11ms (compile: 1763µs, proxy.ts: 4ms, render: 5ms)
+ POST /api/auth/login 200 in 318ms (compile: 7ms, proxy.ts: 5ms, render: 307ms)
+CRM overview error: TypeError: _lib_db__WEBPACK_IMPORTED_MODULE_0__.db.from is not a function
+    at GET (src/app/api/crm/route.ts:38:10)
+  36 |     ] = await Promise.all([
+  37 |       // Total users
+> 38 |       db.from('profiles').select('*', { count: 'exact', head: true }),
+     |          ^
+  39 |
+  40 |       // Active subscriptions
+  41 |       db.from('user_subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+ GET /api/crm 500 in 71ms (compile: 1806µs, proxy.ts: 4ms, render: 65ms)
+ GET / 200 in 491ms (compile: 75ms, proxy.ts: 191ms, render: 226ms)
+ POST /api/auth/login 200 in 1797ms (compile: 1451ms, proxy.ts: 6ms, render: 340ms)
+ POST /api/auth/login 200 in 361ms (compile: 2ms, proxy.ts: 69ms, render: 290ms)
+ POST /api/auth/login 200 in 357ms (compile: 3ms, proxy.ts: 7ms, render: 348ms)
+ GET /api/crm 200 in 341ms (compile: 307ms, proxy.ts: 4ms, render: 30ms)
+ GET /api/crm 200 in 19ms (compile: 1750µs, proxy.ts: 4ms, render: 13ms)
+ GET /api/crm 403 in 13ms (compile: 1857µs, proxy.ts: 5ms, render: 6ms)
+ POST /api/auth/login 200 in 319ms (compile: 8ms, proxy.ts: 5ms, render: 306ms)
+ GET /api/crm/users 200 in 304ms (compile: 277ms, proxy.ts: 5ms, render: 21ms)
+ POST /api/auth/login 200 in 316ms (compile: 8ms, proxy.ts: 5ms, render: 303ms)
+ GET /api/crm/users 200 in 14ms (compile: 1844µs, proxy.ts: 5ms, render: 7ms)
+ GET / 200 in 290ms (compile: 78ms, proxy.ts: 6ms, render: 206ms)
+ GET /api/pricing 200 in 2.8s (compile: 2.8s, proxy.ts: 13ms, render: 10ms)
+ GET /api/articles?limit=20 200 in 2.8s (compile: 2.8s, proxy.ts: 7ms, render: 11ms)
+ GET /api/pricing 200 in 13ms (compile: 2ms, proxy.ts: 5ms, render: 5ms)
+ GET /api/articles?limit=20 200 in 14ms (compile: 5ms, proxy.ts: 6ms, render: 4ms)
+ POST /api/auth/login 200 in 318ms (compile: 6ms, proxy.ts: 6ms, render: 306ms)
+ GET /api/notifications?perPage=20 200 in 1184ms (compile: 1139ms, proxy.ts: 27ms, render: 18ms)
+ GET /api/subscriptions 200 in 1186ms (compile: 1140ms, proxy.ts: 27ms, render: 19ms)
+ GET /api/dashboard 200 in 1192ms (compile: 1140ms, proxy.ts: 27ms, render: 25ms)
+ GET / 200 in 228ms (compile: 52ms, proxy.ts: 6ms, render: 170ms)
+ GET /api/auth/verify 200 in 507ms (compile: 495ms, proxy.ts: 4ms, render: 8ms)
+ GET /api/notifications?perPage=20 200 in 48ms (compile: 18ms, proxy.ts: 7ms, render: 23ms)
+ GET /api/subscriptions 200 in 49ms (compile: 27ms, proxy.ts: 7ms, render: 15ms)
+ GET /api/dashboard 200 in 55ms (compile: 9ms, proxy.ts: 7ms, render: 40ms)
+ GET / 200 in 174ms (compile: 35ms, proxy.ts: 6ms, render: 133ms)
+ GET /api/articles?limit=20 200 in 43ms (compile: 10ms, proxy.ts: 6ms, render: 27ms)
+ GET /api/pricing 200 in 47ms (compile: 28ms, proxy.ts: 6ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 21ms (compile: 4ms, proxy.ts: 10ms, render: 8ms)
+ GET /api/pricing 200 in 26ms (compile: 7ms, proxy.ts: 10ms, render: 9ms)
+ POST /api/auth/login 200 in 317ms (compile: 5ms, proxy.ts: 5ms, render: 307ms)
+ GET /api/notifications?perPage=20 200 in 22ms (compile: 5ms, proxy.ts: 6ms, render: 10ms)
+ GET /api/subscriptions 200 in 24ms (compile: 8ms, proxy.ts: 6ms, render: 10ms)
+ GET /api/dashboard 200 in 36ms (compile: 3ms, proxy.ts: 6ms, render: 27ms)
+ GET / 200 in 41ms (compile: 3ms, proxy.ts: 5ms, render: 33ms)
+ GET /api/articles?limit=20 200 in 36ms (compile: 13ms, proxy.ts: 16ms, render: 7ms)
+ GET /api/pricing 200 in 39ms (compile: 14ms, proxy.ts: 16ms, render: 8ms)
+ GET /api/pricing 200 in 40ms (compile: 14ms, proxy.ts: 16ms, render: 10ms)
+ GET /api/articles?limit=20 200 in 42ms (compile: 19ms, proxy.ts: 16ms, render: 7ms)
+ POST /api/auth/login 200 in 304ms (compile: 2ms, proxy.ts: 5ms, render: 297ms)
+ GET /api/notifications?perPage=20 200 in 25ms (compile: 5ms, proxy.ts: 7ms, render: 13ms)
+ GET /api/subscriptions 200 in 26ms (compile: 9ms, proxy.ts: 7ms, render: 10ms)
+ GET /api/dashboard 200 in 36ms (compile: 3ms, proxy.ts: 7ms, render: 27ms)
+ GET / 200 in 71ms (compile: 8ms, proxy.ts: 5ms, render: 59ms)
+ GET / 200 in 35ms (compile: 3ms, proxy.ts: 6ms, render: 26ms)
+ GET / 200 in 37ms (compile: 2ms, proxy.ts: 4ms, render: 30ms)
+ GET / 200 in 46ms (compile: 8ms, proxy.ts: 8ms, render: 30ms)
+ GET / 200 in 427ms (compile: 73ms, proxy.ts: 190ms, render: 163ms)
+ GET / 200 in 32ms (compile: 2ms, proxy.ts: 4ms, render: 26ms)
+ GET / 200 in 47ms (compile: 2ms, proxy.ts: 4ms, render: 41ms)
+ GET / 200 in 40ms (compile: 3ms, proxy.ts: 5ms, render: 32ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 5ms, render: 27ms)
+ GET / 200 in 417ms (compile: 162ms, proxy.ts: 9ms, render: 247ms)
+ GET / 200 in 262ms (compile: 77ms, proxy.ts: 5ms, render: 180ms)
+ GET / 200 in 56ms (compile: 1849µs, proxy.ts: 6ms, render: 48ms)
+ GET /api/pricing 200 in 3.2s (compile: 3.2s, proxy.ts: 8ms, render: 22ms)
+ GET /api/articles?limit=20 200 in 3.2s (compile: 3.2s, proxy.ts: 8ms, render: 23ms)
+ GET /api/pricing 200 in 76ms (compile: 3ms, proxy.ts: 67ms, render: 6ms)
+ GET /api/articles?limit=20 200 in 77ms (compile: 5ms, proxy.ts: 67ms, render: 4ms)
+ GET /?v=login 200 in 85ms (compile: 60ms, proxy.ts: 5ms, render: 20ms)
+ POST /api/auth/login 401 in 982ms (compile: 947ms, proxy.ts: 4ms, render: 31ms)
+ POST /api/auth/login 200 in 320ms (compile: 5ms, proxy.ts: 7ms, render: 308ms)
+○ Compiling /api/subscriptions ...
+ GET /api/subscriptions 200 in 3.2s (compile: 3.2s, proxy.ts: 6ms, render: 20ms)
+ GET /api/notifications?perPage=20 200 in 3.2s (compile: 3.2s, proxy.ts: 6ms, render: 21ms)
+ GET /?v=cases 200 in 99ms (compile: 70ms, proxy.ts: 7ms, render: 22ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 620ms (compile: 582ms, proxy.ts: 9ms, render: 29ms)
+ GET /?v=cases 200 in 91ms (compile: 46ms, proxy.ts: 6ms, render: 40ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 17ms (compile: 3ms, proxy.ts: 6ms, render: 8ms)
+ GET /?v=documents 200 in 27ms (compile: 4ms, proxy.ts: 5ms, render: 18ms)
+ GET /?v=documents 200 in 89ms (compile: 48ms, proxy.ts: 6ms, render: 36ms)
+Documents list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/documents?perPage=50 500 in 8.3s (compile: 1228ms, proxy.ts: 7ms, render: 7.1s)
+ GET /?v=leads 200 in 42ms (compile: 10ms, proxy.ts: 10ms, render: 22ms)
+ GET /api/leads?page=1&perPage=10 200 in 1003ms (compile: 973ms, proxy.ts: 10ms, render: 20ms)
+ GET /?v=leads 200 in 114ms (compile: 58ms, proxy.ts: 12ms, render: 44ms)
+ GET /?v=home 200 in 31ms (compile: 3ms, proxy.ts: 8ms, render: 20ms)
+ GET /api/articles?limit=20 200 in 2.8s (compile: 2.7s, proxy.ts: 24ms, render: 15ms)
+ GET /api/pricing 200 in 2.8s (compile: 2.7s, proxy.ts: 24ms, render: 16ms)
+ GET /api/pricing 200 in 2.8s (compile: 2.7s, proxy.ts: 24ms, render: 17ms)
+ GET /api/articles?limit=20 200 in 2.8s (compile: 2.8s, proxy.ts: 12ms, render: 19ms)
+ GET / 200 in 73ms (compile: 52ms, proxy.ts: 4ms, render: 16ms)
+ GET /api/dashboard 200 in 666ms (compile: 622ms, proxy.ts: 5ms, render: 39ms)
+ GET /api/articles?limit=20 200 in 65ms (compile: 19ms, proxy.ts: 15ms, render: 31ms)
+ GET /api/articles?limit=20 200 in 69ms (compile: 19ms, proxy.ts: 16ms, render: 35ms)
+ GET /api/pricing 200 in 72ms (compile: 38ms, proxy.ts: 16ms, render: 19ms)
+ GET /api/pricing 200 in 75ms (compile: 38ms, proxy.ts: 16ms, render: 22ms)
+ GET /?v=cases 200 in 305ms (compile: 50ms, proxy.ts: 4ms, render: 250ms)
+ GET /api/auth/verify 200 in 355ms (compile: 334ms, proxy.ts: 11ms, render: 10ms)
+ GET /api/notifications?perPage=20 200 in 668ms (compile: 640ms, proxy.ts: 9ms, render: 19ms)
+ GET /api/subscriptions 200 in 670ms (compile: 640ms, proxy.ts: 9ms, render: 20ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 671ms (compile: 641ms, proxy.ts: 9ms, render: 22ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 14ms (compile: 1920µs, proxy.ts: 5ms, render: 8ms)
+ GET /?v=cases 200 in 355ms (compile: 109ms, proxy.ts: 204ms, render: 42ms)
+ GET /api/notifications?perPage=20 200 in 796ms (compile: 756ms, proxy.ts: 7ms, render: 33ms)
+ GET /api/subscriptions 200 in 797ms (compile: 756ms, proxy.ts: 7ms, render: 34ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 799ms (compile: 757ms, proxy.ts: 7ms, render: 35ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 371ms (compile: 8ms, proxy.ts: 349ms, render: 14ms)
+ GET /api/notifications?perPage=20 200 in 372ms (compile: 11ms, proxy.ts: 349ms, render: 12ms)
+ GET /api/subscriptions 200 in 373ms (compile: 13ms, proxy.ts: 349ms, render: 11ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 106ms (compile: 19ms, proxy.ts: 76ms, render: 11ms)
+ GET /api/notifications?perPage=20 200 in 107ms (compile: 21ms, proxy.ts: 76ms, render: 10ms)
+ GET /api/subscriptions 200 in 109ms (compile: 23ms, proxy.ts: 77ms, render: 10ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 15ms (compile: 1652µs, proxy.ts: 7ms, render: 7ms)
+ GET /?v=login 200 in 345ms (compile: 60ms, proxy.ts: 7ms, render: 279ms)
+ GET /api/auth/verify 200 in 662ms (compile: 630ms, proxy.ts: 7ms, render: 25ms)
+ GET /api/notifications?perPage=20 200 in 98ms (compile: 9ms, proxy.ts: 6ms, render: 83ms)
+ GET /api/subscriptions 200 in 99ms (compile: 20ms, proxy.ts: 7ms, render: 73ms)
+ GET / 200 in 101ms (compile: 74ms, proxy.ts: 6ms, render: 22ms)
+ GET /api/dashboard 200 in 2.1s (compile: 2.1s, proxy.ts: 5ms, render: 32ms)
+ GET /?v=login 200 in 216ms (compile: 38ms, proxy.ts: 5ms, render: 173ms)
+ POST /api/auth/login 200 in 1252ms (compile: 926ms, proxy.ts: 4ms, render: 321ms)
+ GET /api/notifications?perPage=20 200 in 79ms (compile: 11ms, proxy.ts: 7ms, render: 62ms)
+ GET /api/subscriptions 200 in 81ms (compile: 19ms, proxy.ts: 7ms, render: 55ms)
+ GET / 200 in 82ms (compile: 61ms, proxy.ts: 6ms, render: 15ms)
+ GET /api/dashboard 200 in 30ms (compile: 7ms, proxy.ts: 7ms, render: 16ms)
+ GET / 200 in 181ms (compile: 4ms, proxy.ts: 7ms, render: 170ms)
+ GET / 200 in 53ms (compile: 4ms, proxy.ts: 6ms, render: 43ms)
+○ Compiling /api/pricing ...
+ GET /api/pricing 200 in 5.0s (compile: 5.0s, proxy.ts: 11ms, render: 14ms)
+ GET /api/articles?limit=20 200 in 5.0s (compile: 5.0s, proxy.ts: 11ms, render: 15ms)
+ GET /api/pricing 200 in 13ms (compile: 2ms, proxy.ts: 6ms, render: 5ms)
+ GET /api/articles?limit=20 200 in 14ms (compile: 5ms, proxy.ts: 6ms, render: 4ms)
+ GET /?v=login 200 in 93ms (compile: 65ms, proxy.ts: 6ms, render: 22ms)
+ POST /api/auth/login 200 in 657ms (compile: 334ms, proxy.ts: 5ms, render: 317ms)
+ GET / 200 in 95ms (compile: 65ms, proxy.ts: 6ms, render: 23ms)
+ GET /api/subscriptions 200 in 1386ms (compile: 1349ms, proxy.ts: 7ms, render: 30ms)
+ GET /api/notifications?perPage=20 200 in 1387ms (compile: 1350ms, proxy.ts: 7ms, render: 31ms)
+ GET /api/dashboard 200 in 700ms (compile: 595ms, proxy.ts: 84ms, render: 21ms)
+ GET /?v=cases 200 in 87ms (compile: 67ms, proxy.ts: 5ms, render: 14ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 1257ms (compile: 1238ms, proxy.ts: 6ms, render: 14ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 13ms (compile: 2ms, proxy.ts: 4ms, render: 7ms)
+ GET /?v=documents 200 in 69ms (compile: 50ms, proxy.ts: 4ms, render: 15ms)
+ GET /?v=tasks 200 in 71ms (compile: 51ms, proxy.ts: 4ms, render: 16ms)
+Documents list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/documents?perPage=50 500 in 8.2s (compile: 1139ms, proxy.ts: 4ms, render: 7.1s)
+Tasks list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/tasks?perPage=50 500 in 7.7s (compile: 635ms, proxy.ts: 6ms, render: 7.0s)
+ GET /?v=home 200 in 101ms (compile: 75ms, proxy.ts: 6ms, render: 20ms)
+ GET /api/articles?limit=20 200 in 811ms (compile: 786ms, proxy.ts: 9ms, render: 16ms)
+ GET /api/pricing 200 in 816ms (compile: 791ms, proxy.ts: 7ms, render: 18ms)
+ GET /api/pricing 200 in 814ms (compile: 787ms, proxy.ts: 9ms, render: 19ms)
+ GET /api/articles?limit=20 200 in 818ms (compile: 791ms, proxy.ts: 7ms, render: 20ms)
+ GET / 200 in 84ms (compile: 60ms, proxy.ts: 6ms, render: 18ms)
+ GET /api/dashboard 200 in 45ms (compile: 11ms, proxy.ts: 13ms, render: 22ms)
+ GET /api/articles?limit=20 200 in 30ms (compile: 5ms, proxy.ts: 10ms, render: 15ms)
+ GET /api/articles?limit=20 200 in 32ms (compile: 5ms, proxy.ts: 10ms, render: 16ms)
+ GET /api/pricing 200 in 33ms (compile: 13ms, proxy.ts: 10ms, render: 10ms)
+ GET /api/pricing 200 in 35ms (compile: 13ms, proxy.ts: 10ms, render: 12ms)
+ GET /?v=analytics 200 in 284ms (compile: 12ms, proxy.ts: 5ms, render: 267ms)
+ GET /api/auth/verify 200 in 1247ms (compile: 1233ms, proxy.ts: 5ms, render: 10ms)
+ GET /api/dashboard 200 in 40ms (compile: 9ms, proxy.ts: 7ms, render: 24ms)
+ GET /api/subscriptions 200 in 626ms (compile: 593ms, proxy.ts: 7ms, render: 25ms)
+ GET /api/notifications?perPage=20 200 in 627ms (compile: 593ms, proxy.ts: 7ms, render: 26ms)
+ GET /?v=cases 200 in 111ms (compile: 73ms, proxy.ts: 11ms, render: 28ms)
+○ Compiling /api/cases ...
+ GET /api/cases?page=1&perPage=10&search= 200 in 3.7s (compile: 3.7s, proxy.ts: 6ms, render: 33ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 14ms (compile: 2ms, proxy.ts: 4ms, render: 8ms)
+ GET /?v=documents 200 in 92ms (compile: 65ms, proxy.ts: 6ms, render: 21ms)
+Documents list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/documents?perPage=50 500 in 8.3s (compile: 1210ms, proxy.ts: 8ms, render: 7.1s)
+ GET / 200 in 77ms (compile: 56ms, proxy.ts: 4ms, render: 16ms)
+ GET /api/dashboard 200 in 3.1s (compile: 3.0s, proxy.ts: 4ms, render: 31ms)
+ GET /?v=tasks 200 in 76ms (compile: 56ms, proxy.ts: 4ms, render: 16ms)
+Tasks list query error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND vnatrtecthnifiahkojd.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n' +
+    '    at GetAddrInfoReqWrap.callbackTrampoline (node:internal/async_hooks:130:17)',
+  hint: '',
+  code: ''
+}
+ GET /api/tasks?perPage=50 500 in 8.3s (compile: 1236ms, proxy.ts: 4ms, render: 7.0s)
+ GET / 200 in 91ms (compile: 66ms, proxy.ts: 5ms, render: 20ms)
+ GET /api/dashboard 200 in 44ms (compile: 12ms, proxy.ts: 6ms, render: 26ms)
+ GET / 200 in 277ms (compile: 5ms, proxy.ts: 9ms, render: 263ms)
+ GET / 200 in 38ms (compile: 3ms, proxy.ts: 4ms, render: 31ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 4ms, render: 27ms)
+ GET / 200 in 46ms (compile: 2ms, proxy.ts: 4ms, render: 40ms)
+ GET /api/pricing 200 in 2.8s (compile: 2.8s, proxy.ts: 4ms, render: 8ms)
+ GET /api/articles?limit=20 200 in 1196ms (compile: 1118ms, proxy.ts: 59ms, render: 18ms)
+ GET /api/pricing 200 in 80ms (compile: 6ms, proxy.ts: 70ms, render: 4ms)
+ GET /api/articles?limit=20 200 in 10ms (compile: 1853µs, proxy.ts: 4ms, render: 4ms)
+ GET / 200 in 309ms (compile: 64ms, proxy.ts: 5ms, render: 241ms)
+ GET / 200 in 26ms (compile: 3ms, proxy.ts: 5ms, render: 19ms)
+ GET / 200 in 37ms (compile: 2ms, proxy.ts: 4ms, render: 30ms)
+ GET / 200 in 22ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 4ms, render: 28ms)
+ GET / 200 in 43ms (compile: 2ms, proxy.ts: 5ms, render: 36ms)
+ GET / 200 in 35ms (compile: 2ms, proxy.ts: 4ms, render: 29ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 14ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 4ms, render: 27ms)
+ GET / 200 in 23ms (compile: 4ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET / 200 in 86ms (compile: 3ms, proxy.ts: 10ms, render: 73ms)
+ GET /api/articles?limit=20 200 in 28ms (compile: 7ms, proxy.ts: 7ms, render: 14ms)
+ GET /api/pricing 200 in 30ms (compile: 11ms, proxy.ts: 7ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 16ms (compile: 3ms, proxy.ts: 6ms, render: 7ms)
+ GET /api/pricing 200 in 18ms (compile: 6ms, proxy.ts: 6ms, render: 6ms)
+ GET / 200 in 34ms (compile: 3ms, proxy.ts: 4ms, render: 27ms)
+ GET /?v=login 200 in 26ms (compile: 3ms, proxy.ts: 6ms, render: 17ms)
+ GET /api/articles?limit=20 200 in 18ms (compile: 3ms, proxy.ts: 7ms, render: 7ms)
+ GET /api/pricing 200 in 19ms (compile: 7ms, proxy.ts: 8ms, render: 5ms)
+ GET /api/pricing 200 in 14ms (compile: 3ms, proxy.ts: 5ms, render: 6ms)
+ GET /api/articles?limit=20 200 in 15ms (compile: 5ms, proxy.ts: 5ms, render: 5ms)
+ GET /?v=home 200 in 21ms (compile: 2ms, proxy.ts: 6ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 29ms (compile: 7ms, proxy.ts: 12ms, render: 11ms)
+ GET /api/articles?limit=20 200 in 31ms (compile: 6ms, proxy.ts: 12ms, render: 13ms)
+ GET /api/pricing 200 in 34ms (compile: 14ms, proxy.ts: 12ms, render: 8ms)
+ GET /api/pricing 200 in 38ms (compile: 19ms, proxy.ts: 14ms, render: 5ms)
+ GET /?v=login 200 in 22ms (compile: 2ms, proxy.ts: 5ms, render: 15ms)
+○ Compiling /api/auth/login ...
+ POST /api/auth/login 200 in 5.2s (compile: 4.9s, proxy.ts: 5ms, render: 322ms)
+ GET / 200 in 509ms (compile: 78ms, proxy.ts: 7ms, render: 425ms)
+ GET /api/subscriptions 200 in 2.2s (compile: 2.2s, proxy.ts: 7ms, render: 32ms)
+ GET /api/notifications?perPage=20 200 in 2.2s (compile: 2.2s, proxy.ts: 7ms, render: 33ms)
+ GET /api/dashboard 200 in 1373ms (compile: 1237ms, proxy.ts: 116ms, render: 20ms)
+ GET /?v=cases 200 in 98ms (compile: 73ms, proxy.ts: 4ms, render: 21ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 1267ms (compile: 1240ms, proxy.ts: 4ms, render: 22ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 15ms (compile: 4ms, proxy.ts: 5ms, render: 6ms)
+ GET /?v=documents 200 in 77ms (compile: 57ms, proxy.ts: 5ms, render: 16ms)
+ GET /api/documents?perPage=50 200 in 1203ms (compile: 1176ms, proxy.ts: 7ms, render: 21ms)
+ GET /?v=documents 200 in 92ms (compile: 53ms, proxy.ts: 6ms, render: 33ms)
+ GET / 200 in 20ms (compile: 2ms, proxy.ts: 4ms, render: 14ms)
+ GET /?v=tasks 200 in 25ms (compile: 4ms, proxy.ts: 8ms, render: 13ms)
+ GET /api/tasks?perPage=50 200 in 1195ms (compile: 1169ms, proxy.ts: 5ms, render: 20ms)
+ GET /?v=tasks 200 in 97ms (compile: 54ms, proxy.ts: 5ms, render: 38ms)
+ GET / 200 in 21ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET /?v=leads 200 in 29ms (compile: 2ms, proxy.ts: 5ms, render: 22ms)
+ GET /api/leads?page=1&perPage=10 200 in 650ms (compile: 606ms, proxy.ts: 14ms, render: 30ms)
+ GET /?v=consultations 200 in 82ms (compile: 58ms, proxy.ts: 5ms, render: 19ms)
+ GET /api/consultations?perPage=50 200 in 626ms (compile: 597ms, proxy.ts: 4ms, render: 25ms)
+ GET /?v=consultations 200 in 96ms (compile: 53ms, proxy.ts: 5ms, render: 37ms)
+ GET / 200 in 22ms (compile: 2ms, proxy.ts: 4ms, render: 15ms)
+ GET /?v=staff 200 in 24ms (compile: 4ms, proxy.ts: 6ms, render: 14ms)
+ GET /api/staff?perPage=100 200 in 631ms (compile: 598ms, proxy.ts: 6ms, render: 27ms)
+ GET /?v=staff 200 in 129ms (compile: 54ms, proxy.ts: 8ms, render: 67ms)
+ GET / 200 in 24ms (compile: 3ms, proxy.ts: 5ms, render: 17ms)
+ GET /?v=org-chart 200 in 19ms (compile: 3ms, proxy.ts: 4ms, render: 12ms)
+ GET /api/staff?perPage=100 200 in 34ms (compile: 3ms, proxy.ts: 8ms, render: 22ms)
+ GET /?v=analytics 200 in 21ms (compile: 3ms, proxy.ts: 5ms, render: 14ms)
+ GET /api/dashboard 200 in 668ms (compile: 627ms, proxy.ts: 13ms, render: 28ms)
+ GET /?v=subscriptions 200 in 96ms (compile: 70ms, proxy.ts: 6ms, render: 20ms)
+ GET /api/subscriptions?admin=true&perPage=100 200 in 366ms (compile: 351ms, proxy.ts: 4ms, render: 10ms)
+ GET /api/subscriptions?admin=true&perPage=100 200 in 13ms (compile: 1876µs, proxy.ts: 4ms, render: 8ms)
+ GET /?v=pricing 200 in 302ms (compile: 60ms, proxy.ts: 10ms, render: 233ms)
+ GET /api/auth/verify 200 in 1237ms (compile: 1215ms, proxy.ts: 4ms, render: 19ms)
+ GET /api/subscriptions 200 in 28ms (compile: 11ms, proxy.ts: 8ms, render: 9ms)
+ GET /api/pricing 200 in 1296ms (compile: 1276ms, proxy.ts: 8ms, render: 12ms)
+ GET /api/notifications?perPage=20 200 in 1299ms (compile: 1276ms, proxy.ts: 8ms, render: 16ms)
+ GET /api/subscriptions 200 in 17ms (compile: 7ms, proxy.ts: 4ms, render: 7ms)
+ GET /?v=home 200 in 82ms (compile: 60ms, proxy.ts: 4ms, render: 18ms)
+ GET /api/pricing 200 in 44ms (compile: 10ms, proxy.ts: 25ms, render: 9ms)
+ GET /api/articles?limit=20 200 in 1638ms (compile: 1593ms, proxy.ts: 25ms, render: 20ms)
+ GET /api/articles?limit=20 200 in 1638ms (compile: 17ms, proxy.ts: 1611ms, render: 10ms)
+ GET /api/pricing 200 in 1640ms (compile: 24ms, proxy.ts: 1611ms, render: 4ms)
+ GET /api/pricing 200 in 14ms (compile: 3ms, proxy.ts: 4ms, render: 7ms)
+ GET /api/subscriptions 200 in 23ms (compile: 10ms, proxy.ts: 5ms, render: 8ms)
+ GET /api/articles?limit=20 200 in 26ms (compile: 4ms, proxy.ts: 12ms, render: 10ms)
+ GET /api/articles?limit=20 200 in 29ms (compile: 4ms, proxy.ts: 13ms, render: 12ms)
+ GET /api/pricing 200 in 30ms (compile: 9ms, proxy.ts: 13ms, render: 9ms)
+ GET /api/pricing 200 in 32ms (compile: 9ms, proxy.ts: 13ms, render: 11ms)
+ GET /?v=analytics 200 in 290ms (compile: 58ms, proxy.ts: 4ms, render: 227ms)
+ GET /api/auth/verify 200 in 21ms (compile: 9ms, proxy.ts: 6ms, render: 6ms)
+ GET /api/notifications?perPage=20 200 in 45ms (compile: 18ms, proxy.ts: 11ms, render: 16ms)
+ GET /api/subscriptions 200 in 48ms (compile: 23ms, proxy.ts: 12ms, render: 13ms)
+ GET /api/dashboard 200 in 424ms (compile: 398ms, proxy.ts: 10ms, render: 16ms)
+ GET /?v=cases 200 in 200ms (compile: 57ms, proxy.ts: 5ms, render: 137ms)
+ GET /api/auth/verify 200 in 22ms (compile: 8ms, proxy.ts: 5ms, render: 9ms)
+ GET /api/notifications?perPage=20 200 in 44ms (compile: 14ms, proxy.ts: 9ms, render: 21ms)
+ GET /api/subscriptions 200 in 45ms (compile: 23ms, proxy.ts: 9ms, render: 12ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 415ms (compile: 381ms, proxy.ts: 9ms, render: 25ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 14ms (compile: 1910µs, proxy.ts: 4ms, render: 8ms)
+ POST /api/auth/signout 200 in 387ms (compile: 370ms, proxy.ts: 5ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 37ms (compile: 13ms, proxy.ts: 7ms, render: 16ms)
+ GET /api/pricing 200 in 39ms (compile: 24ms, proxy.ts: 7ms, render: 8ms)
+ GET /api/articles?limit=20 200 in 50ms (compile: 3ms, proxy.ts: 39ms, render: 8ms)
+ GET /api/pricing 200 in 52ms (compile: 7ms, proxy.ts: 39ms, render: 6ms)
+ GET /?v=login 200 in 81ms (compile: 60ms, proxy.ts: 5ms, render: 16ms)
+ POST /api/auth/login 200 in 689ms (compile: 360ms, proxy.ts: 5ms, render: 325ms)
+ GET /api/notifications?perPage=20 200 in 103ms (compile: 11ms, proxy.ts: 7ms, render: 85ms)
+ GET /api/subscriptions 200 in 105ms (compile: 20ms, proxy.ts: 7ms, render: 78ms)
+ GET / 200 in 110ms (compile: 82ms, proxy.ts: 7ms, render: 22ms)
+ GET /api/dashboard 200 in 31ms (compile: 9ms, proxy.ts: 5ms, render: 17ms)
+ POST /api/auth/signout 200 in 18ms (compile: 5ms, proxy.ts: 6ms, render: 7ms)
+ GET /api/articles?limit=20 200 in 41ms (compile: 11ms, proxy.ts: 8ms, render: 22ms)
+ GET /api/articles?limit=20 200 in 43ms (compile: 10ms, proxy.ts: 9ms, render: 24ms)
+ GET /api/pricing 200 in 45ms (compile: 25ms, proxy.ts: 8ms, render: 11ms)
+ GET /api/pricing 200 in 46ms (compile: 25ms, proxy.ts: 9ms, render: 13ms)
+ GET /?v=login 200 in 33ms (compile: 5ms, proxy.ts: 7ms, render: 21ms)
+ POST /api/auth/login 200 in 311ms (compile: 2ms, proxy.ts: 5ms, render: 304ms)
+ GET /api/notifications?perPage=20 200 in 44ms (compile: 17ms, proxy.ts: 16ms, render: 11ms)
+ GET / 200 in 50ms (compile: 17ms, proxy.ts: 7ms, render: 25ms)
+ GET /api/subscriptions 200 in 48ms (compile: 20ms, proxy.ts: 17ms, render: 11ms)
+ GET /api/dashboard 200 in 16ms (compile: 1701µs, proxy.ts: 5ms, render: 9ms)
+ POST /api/auth/signout 200 in 21ms (compile: 5ms, proxy.ts: 5ms, render: 10ms)
+ GET /api/articles?limit=20 200 in 31ms (compile: 5ms, proxy.ts: 12ms, render: 14ms)
+ GET /api/articles?limit=20 200 in 34ms (compile: 4ms, proxy.ts: 13ms, render: 17ms)
+ GET /api/pricing 200 in 36ms (compile: 13ms, proxy.ts: 13ms, render: 10ms)
+ GET /api/pricing 200 in 39ms (compile: 13ms, proxy.ts: 13ms, render: 13ms)
+ GET /?v=login 200 in 37ms (compile: 3ms, proxy.ts: 13ms, render: 20ms)
+ POST /api/auth/login 200 in 318ms (compile: 5ms, proxy.ts: 8ms, render: 305ms)
+ GET /api/notifications?perPage=20 200 in 50ms (compile: 7ms, proxy.ts: 16ms, render: 27ms)
+ GET /api/subscriptions 200 in 51ms (compile: 9ms, proxy.ts: 16ms, render: 25ms)
+ GET / 200 in 52ms (compile: 19ms, proxy.ts: 16ms, render: 18ms)
+ GET /api/dashboard 200 in 25ms (compile: 1731µs, proxy.ts: 8ms, render: 15ms)
+ GET /?v=cases 200 in 33ms (compile: 7ms, proxy.ts: 7ms, render: 19ms)
+ GET /api/cases?page=1&perPage=10&search= 200 in 34ms (compile: 10ms, proxy.ts: 11ms, render: 14ms)
+ GET /?v=documents 200 in 31ms (compile: 2ms, proxy.ts: 14ms, render: 15ms)
+○ Compiling /api/documents ...
+ GET /api/documents?perPage=50 200 in 3.6s (compile: 3.6s, proxy.ts: 9ms, render: 20ms)
+ GET /?v=tasks 200 in 108ms (compile: 77ms, proxy.ts: 4ms, render: 26ms)
+ GET /api/tasks?perPage=50 200 in 1226ms (compile: 1198ms, proxy.ts: 5ms, render: 24ms)
+ GET / 200 in 83ms (compile: 63ms, proxy.ts: 4ms, render: 16ms)
+○ Compiling /api/dashboard ...
+ GET /api/dashboard 200 in 3.2s (compile: 3.2s, proxy.ts: 5ms, render: 33ms)
+ GET /?v=cases 200 in 169ms (compile: 66ms, proxy.ts: 78ms, render: 26ms)
+ GET /?v=leads 200 in 170ms (compile: 66ms, proxy.ts: 78ms, render: 26ms)
+ GET /api/leads?page=1&perPage=10 200 in 2.1s (compile: 2.1s, proxy.ts: 6ms, render: 14ms)
+ GET /?v=analytics 200 in 141ms (compile: 62ms, proxy.ts: 64ms, render: 16ms)
+ GET /api/dashboard 200 in 29ms (compile: 8ms, proxy.ts: 5ms, render: 15ms)
+○ Compiling /api/auth/login ...
+ POST /api/auth/login 200 in 4.0s (compile: 3.7s, proxy.ts: 4ms, render: 323ms)
+ GET /api/subscriptions?admin=true&perPage=100 200 in 1824ms (compile: 1797ms, proxy.ts: 4ms, render: 22ms)
+ GET /api/subscriptions 401 in 11ms (compile: 1987µs, proxy.ts: 4ms, render: 5ms)
+ GET /api/cases?page=1&perPage=10&search= 401 in 1006ms (compile: 985ms, proxy.ts: 4ms, render: 18ms)
+ GET /api/documents?perPage=50 401 in 1092ms (compile: 1079ms, proxy.ts: 4ms, render: 9ms)
+ GET /?v=subscriptions 200 in 414ms (compile: 92ms, proxy.ts: 6ms, render: 316ms)
+ GET / 200 in 49ms (compile: 5ms, proxy.ts: 18ms, render: 26ms)
+ GET / 200 in 45ms (compile: 2ms, proxy.ts: 4ms, render: 39ms)
+○ Compiling /api/pricing ...
+ GET /api/pricing 200 in 5.0s (compile: 5.0s, proxy.ts: 7ms, render: 27ms)
+ GET /api/articles?limit=20 200 in 5.0s (compile: 5.0s, proxy.ts: 6ms, render: 28ms)
+ GET /api/pricing 200 in 18ms (compile: 2ms, proxy.ts: 9ms, render: 7ms)
+ GET /api/articles?limit=20 200 in 19ms (compile: 6ms, proxy.ts: 9ms, render: 4ms)
+ GET /api/articles?limit=20 200 in 19ms (compile: 5ms, proxy.ts: 9ms, render: 5ms)
+ GET /api/pricing 200 in 13ms (compile: 2ms, proxy.ts: 6ms, render: 5ms)
+ GET /api/articles?limit=20 200 in 12ms (compile: 2ms, proxy.ts: 6ms, render: 4ms)
+ GET /api/pricing 200 in 9ms (compile: 1708µs, proxy.ts: 4ms, render: 4ms)
+ GET /?v=login 200 in 96ms (compile: 60ms, proxy.ts: 5ms, render: 31ms)
+ POST /api/auth/login 200 in 324ms (compile: 7ms, proxy.ts: 4ms, render: 312ms)
+ GET / 200 in 140ms (compile: 7ms, proxy.ts: 6ms, render: 127ms)
+○ Compiling /api/subscriptions ...
+ GET /api/subscriptions 200 in 4.7s (compile: 4.7s, proxy.ts: 6ms, render: 18ms)
+ GET /api/notifications?perPage=20 200 in 4.7s (compile: 4.7s, proxy.ts: 6ms, render: 19ms)
+ GET /api/dashboard 200 in 2.6s (compile: 2.5s, proxy.ts: 93ms, render: 23ms)
+ GET /?v=subscriptions 200 in 2.1s (compile: 59ms, proxy.ts: 4ms, render: 2.0s)
+ GET /api/auth/verify 200 in 2.8s (compile: 2.7s, proxy.ts: 7ms, render: 28ms)
+ GET /api/subscriptions?admin=true&perPage=100 200 in 33ms (compile: 8ms, proxy.ts: 7ms, render: 17ms)
+ GET /api/subscriptions 200 in 35ms (compile: 8ms, proxy.ts: 8ms, render: 19ms)
+ GET /api/notifications?perPage=20 200 in 36ms (compile: 19ms, proxy.ts: 8ms, render: 10ms)
+ GET /api/subscriptions?admin=true&perPage=100 200 in 11ms (compile: 2ms, proxy.ts: 3ms, render: 5ms)
+ GET / 200 in 306ms (compile: 74ms, proxy.ts: 193ms, render: 39ms)
+ GET / 200 in 141ms (compile: 88ms, proxy.ts: 7ms, render: 47ms)
+ GET / 200 in 290ms (compile: 6ms, proxy.ts: 10ms, render: 274ms)
+ GET / 200 in 279ms (compile: 2ms, proxy.ts: 251ms, render: 26ms)
+ GET / 200 in 33ms (compile: 2ms, proxy.ts: 4ms, render: 27ms)
+ GET / 200 in 34ms (compile: 2ms, proxy.ts: 5ms, render: 27ms)
+ GET /api/pricing 200 in 2.5s (compile: 2.4s, proxy.ts: 5ms, render: 12ms)
+ GET /api/articles?limit=20 200 in 3.4s (compile: 3.1s, proxy.ts: 321ms, render: 30ms)
+ GET /api/pricing 200 in 123ms (compile: 7ms, proxy.ts: 111ms, render: 5ms)
+ GET /api/articles?limit=20 200 in 12ms (compile: 1999µs, proxy.ts: 5ms, render: 5ms)
+ GET / 200 in 329ms (compile: 76ms, proxy.ts: 194ms, render: 59ms)
+ GET / 200 in 147ms (compile: 89ms, proxy.ts: 10ms, render: 48ms)
+○ Compiling /api/pricing ...
+ GET /api/pricing 200 in 4.4s (compile: 4.4s, proxy.ts: 5ms, render: 31ms)
+⚠ Server is approaching the used memory threshold, restarting...
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.11.223:3000
+- Environments: .env
+
+✓ Starting...
+✓ Ready in 1695ms
+○ Compiling / ...
+ GET /api/articles?limit=20 200 in 13.2s (compile: 12.5s, proxy.ts: 271ms, render: 415ms)
+ GET / 200 in 832ms (compile: 3ms, proxy.ts: 788ms, render: 40ms)
+ GET /api/articles?limit=20 200 in 14ms (compile: 3ms, proxy.ts: 6ms, render: 6ms)
+ GET /api/pricing 200 in 369ms (compile: 343ms, proxy.ts: 6ms, render: 19ms)
+ GET /api/articles?limit=20 200 in 16ms (compile: 6ms, proxy.ts: 5ms, render: 5ms)
+ GET /api/pricing 200 in 12ms (compile: 2ms, proxy.ts: 5ms, render: 5ms)
+⨯ ./src/components/dashboard/AttorneyDashboard.tsx
+Error: 
+
+Caused by:
+    0: Failed to read source code from /home/z/my-project/src/components/dashboard/AttorneyDashboard.tsx
+    1: No such file or directory (os error 2)
+
+Import trace for requested module:
+./src/components/dashboard/AttorneyDashboard.tsx
+./src/components/HomePageClient.tsx
+⚠ Blocked cross-origin request from preview-chat-ef25ef42-5616-496d-9b3b-1fd0dbbba81f.space-z.ai to /_next/* resource. To allow this, configure "allowedDevOrigins" in next.config
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+⨯ ./src/components/dashboard/AttorneyDashboard.tsx
+Error: 
+
+Caused by:
+    0: Failed to read source code from /home/z/my-project/src/components/dashboard/AttorneyDashboard.tsx
+    1: No such file or directory (os error 2)
+
+Import trace for requested module:
+./src/components/dashboard/AttorneyDashboard.tsx
+./src/components/HomePageClient.tsx
+ GET / 200 in 179ms (compile: 115ms, proxy.ts: 12ms, render: 52ms)
+ GET / 200 in 27ms (compile: 3ms, proxy.ts: 6ms, render: 17ms)
+ GET / 200 in 31ms (compile: 8ms, proxy.ts: 6ms, render: 17ms)
+ GET / 200 in 29ms (compile: 3ms, proxy.ts: 10ms, render: 16ms)
+ GET / 200 in 318ms (compile: 3ms, proxy.ts: 7ms, render: 308ms)
+ GET / 200 in 60ms (compile: 4ms, proxy.ts: 9ms, render: 47ms)
+ GET /api/articles?limit=20 200 in 141ms (compile: 112ms, proxy.ts: 12ms, render: 17ms)
+ GET /api/pricing 200 in 156ms (compile: 132ms, proxy.ts: 18ms, render: 6ms)
+ GET /api/articles?limit=20 200 in 22ms (compile: 3ms, proxy.ts: 11ms, render: 8ms)
+ GET /api/pricing 200 in 25ms (compile: 7ms, proxy.ts: 11ms, render: 6ms)
+ GET / 200 in 36ms (compile: 2ms, proxy.ts: 5ms, render: 28ms)
+ GET /api/articles?limit=20 200 in 11ms (compile: 2ms, proxy.ts: 4ms, render: 5ms)
+ GET /api/pricing 200 in 11ms (compile: 1907µs, proxy.ts: 5ms, render: 4ms)
+ GET /api/articles?limit=20 200 in 11ms (compile: 2ms, proxy.ts: 4ms, render: 5ms)
+ GET /api/pricing 200 in 9ms (compile: 1776µs, proxy.ts: 4ms, render: 4ms)
+ GET /?v=login 200 in 28ms (compile: 4ms, proxy.ts: 5ms, render: 19ms)
+ POST /api/auth/login 200 in 2.2s (compile: 1907ms, proxy.ts: 6ms, render: 323ms)
+ GET / 200 in 116ms (compile: 82ms, proxy.ts: 7ms, render: 27ms)
+ GET /api/subscriptions 200 in 799ms (compile: 770ms, proxy.ts: 7ms, render: 22ms)
+ GET /api/notifications?perPage=20 200 in 801ms (compile: 771ms, proxy.ts: 7ms, render: 23ms)
+ GET /api/dashboard 200 in 824ms (compile: 657ms, proxy.ts: 123ms, render: 44ms)
+ POST /api/auth/signout 200 in 1058ms (compile: 1030ms, proxy.ts: 5ms, render: 24ms)
+ GET /api/articles?limit=20 200 in 926ms (compile: 815ms, proxy.ts: 96ms, render: 15ms)
+ GET /api/pricing 200 in 928ms (compile: 816ms, proxy.ts: 96ms, render: 16ms)
+ GET /api/pricing 200 in 929ms (compile: 816ms, proxy.ts: 96ms, render: 17ms)
+ GET /api/articles?limit=20 200 in 930ms (compile: 816ms, proxy.ts: 96ms, render: 18ms)
+ GET /?v=login 200 in 130ms (compile: 93ms, proxy.ts: 7ms, render: 30ms)
+ POST /api/auth/login 200 in 328ms (compile: 10ms, proxy.ts: 8ms, render: 310ms)
+ GET /api/notifications?perPage=20 200 in 49ms (compile: 11ms, proxy.ts: 19ms, render: 19ms)
+ GET /api/subscriptions 200 in 68ms (compile: 21ms, proxy.ts: 20ms, render: 27ms)
+ GET / 200 in 70ms (compile: 32ms, proxy.ts: 19ms, render: 19ms)
+ GET /api/dashboard 200 in 32ms (compile: 8ms, proxy.ts: 4ms, render: 21ms)
+ GET /?v=consultations 200 in 26ms (compile: 7ms, proxy.ts: 7ms, render: 13ms)
+ GET /api/consultations?perPage=50 200 in 1299ms (compile: 1266ms, proxy.ts: 6ms, render: 27ms)
+ GET /?v=staff 200 in 84ms (compile: 63ms, proxy.ts: 5ms, render: 17ms)
+ GET /api/staff?perPage=100 200 in 666ms (compile: 611ms, proxy.ts: 7ms, render: 48ms)
+ GET /?v=org-chart 200 in 84ms (compile: 64ms, proxy.ts: 4ms, render: 16ms)
+ GET /api/staff?perPage=100 200 in 23ms (compile: 3ms, proxy.ts: 10ms, render: 9ms)
+ GET /sign-in 404 in 1863ms (compile: 1567ms, proxy.ts: 5ms, render: 291ms)
+ GET /api/auth/verify 200 in 372ms (compile: 357ms, proxy.ts: 4ms, render: 11ms)
+ GET / 200 in 378ms (compile: 61ms, proxy.ts: 4ms, render: 312ms)
+ GET / 200 in 24ms (compile: 7ms, proxy.ts: 5ms, render: 12ms)
+ GET / 200 in 41ms (compile: 3ms, proxy.ts: 8ms, render: 31ms)
+ GET /api/pricing 200 in 1349ms (compile: 1321ms, proxy.ts: 7ms, render: 22ms)
+ GET /api/articles?limit=20 200 in 1399ms (compile: 1325ms, proxy.ts: 51ms, render: 23ms)
+ GET /api/auth/verify 200 in 120ms (compile: 6ms, proxy.ts: 107ms, render: 7ms)
+ GET /api/notifications?perPage=20 200 in 984ms (compile: 956ms, proxy.ts: 8ms, render: 19ms)
+ GET /api/subscriptions 200 in 985ms (compile: 957ms, proxy.ts: 8ms, render: 20ms)
+ GET /api/dashboard 200 in 994ms (compile: 957ms, proxy.ts: 8ms, render: 28ms)
+ GET /api/articles?limit=20 200 in 138ms (compile: 7ms, proxy.ts: 118ms, render: 13ms)
+ GET /api/pricing 200 in 140ms (compile: 16ms, proxy.ts: 118ms, render: 5ms)
+ GET / 200 in 410ms (compile: 72ms, proxy.ts: 6ms, render: 332ms)
+ GET /api/articles?limit=20 200 in 43ms (compile: 14ms, proxy.ts: 16ms, render: 13ms)
+ GET /api/pricing 200 in 44ms (compile: 20ms, proxy.ts: 16ms, render: 8ms)
+ GET /api/articles?limit=20 200 in 50ms (compile: 20ms, proxy.ts: 20ms, render: 9ms)
+ GET /api/pricing 200 in 52ms (compile: 24ms, proxy.ts: 21ms, render: 7ms)
+ GET /?v=login 200 in 32ms (compile: 5ms, proxy.ts: 11ms, render: 17ms)
+ POST /api/auth/login 200 in 926ms (compile: 600ms, proxy.ts: 7ms, render: 319ms)
+ GET /api/notifications?perPage=20 200 in 107ms (compile: 14ms, proxy.ts: 8ms, render: 85ms)
+ GET / 200 in 110ms (compile: 72ms, proxy.ts: 8ms, render: 31ms)
+ GET /api/subscriptions 200 in 112ms (compile: 87ms, proxy.ts: 13ms, render: 13ms)
+ GET /api/dashboard 200 in 23ms (compile: 8ms, proxy.ts: 4ms, render: 11ms)
+ GET /api/dashboard 200 in 19ms (compile: 3ms, proxy.ts: 5ms, render: 11ms)
+ GET /?v=messages 200 in 23ms (compile: 6ms, proxy.ts: 5ms, render: 12ms)
+ GET /api/messages?perPage=50 200 in 860ms (compile: 825ms, proxy.ts: 7ms, render: 27ms)
+ GET /api/messages?perPage=50 200 in 16ms (compile: 2ms, proxy.ts: 6ms, render: 8ms)
+ GET /?v=consultations 200 in 77ms (compile: 57ms, proxy.ts: 5ms, render: 15ms)
+ GET /api/consultations?perPage=50 200 in 979ms (compile: 958ms, proxy.ts: 8ms, render: 14ms)
+ GET / 200 in 367ms (compile: 94ms, proxy.ts: 229ms, render: 44ms)
+ GET / 200 in 157ms (compile: 112ms, proxy.ts: 5ms, render: 40ms)
+ GET /api/articles?limit=20 200 in 715ms (compile: 692ms, proxy.ts: 10ms, render: 13ms)
+ GET /api/pricing 200 in 1219ms (compile: 1069ms, proxy.ts: 126ms, render: 25ms)
+ GET /api/articles?limit=20 200 in 147ms (compile: 6ms, proxy.ts: 135ms, render: 5ms)
+ GET /api/pricing 200 in 12ms (compile: 2ms, proxy.ts: 5ms, render: 5ms)
+ GET / 200 in 414ms (compile: 74ms, proxy.ts: 10ms, render: 329ms)
+ GET /api/articles?limit=20 200 in 59ms (compile: 8ms, proxy.ts: 8ms, render: 42ms)
+ GET /api/pricing 200 in 64ms (compile: 46ms, proxy.ts: 11ms, render: 7ms)
+ GET /api/articles?limit=20 200 in 25ms (compile: 8ms, proxy.ts: 10ms, render: 7ms)
+ GET /api/pricing 200 in 29ms (compile: 10ms, proxy.ts: 12ms, render: 7ms)
+ GET / 200 in 38ms (compile: 3ms, proxy.ts: 5ms, render: 30ms)
+ GET /api/pricing 200 in 16ms (compile: 3ms, proxy.ts: 6ms, render: 7ms)
+ GET /api/articles?limit=20 200 in 17ms (compile: 6ms, proxy.ts: 6ms, render: 5ms)
+ GET /api/articles?limit=20 200 in 15ms (compile: 4ms, proxy.ts: 7ms, render: 4ms)
+ GET /api/pricing 200 in 17ms (compile: 7ms, proxy.ts: 6ms, render: 4ms)
+ GET /?v=login 200 in 34ms (compile: 4ms, proxy.ts: 10ms, render: 20ms)
+ POST /api/auth/login 200 in 2.0s (compile: 1701ms, proxy.ts: 5ms, render: 323ms)
+ GET / 200 in 112ms (compile: 81ms, proxy.ts: 7ms, render: 25ms)
+ GET /api/subscriptions 200 in 732ms (compile: 699ms, proxy.ts: 7ms, render: 26ms)
+ GET /api/notifications?perPage=20 200 in 736ms (compile: 700ms, proxy.ts: 7ms, render: 30ms)
+ GET /api/dashboard 200 in 777ms (compile: 623ms, proxy.ts: 112ms, render: 41ms)
+ POST /api/auth/signout 200 in 831ms (compile: 798ms, proxy.ts: 8ms, render: 25ms)
+ GET /signin 404 in 306ms (compile: 43ms, proxy.ts: 6ms, render: 257ms)
+ GET /api/auth/verify 200 in 744ms (compile: 724ms, proxy.ts: 4ms, render: 16ms)
+ GET / 200 in 419ms (compile: 68ms, proxy.ts: 10ms, render: 341ms)
+ GET /api/auth/verify 200 in 18ms (compile: 5ms, proxy.ts: 5ms, render: 8ms)
+ GET /api/notifications?perPage=20 200 in 694ms (compile: 662ms, proxy.ts: 6ms, render: 26ms)
+ GET /api/subscriptions 200 in 698ms (compile: 662ms, proxy.ts: 6ms, render: 29ms)
+ GET /api/dashboard 200 in 709ms (compile: 663ms, proxy.ts: 6ms, render: 40ms)
+ GET / 200 in 409ms (compile: 73ms, proxy.ts: 8ms, render: 328ms)
+ GET /api/articles?limit=20 200 in 1896ms (compile: 1854ms, proxy.ts: 27ms, render: 15ms)
+ GET /api/pricing 200 in 1898ms (compile: 1855ms, proxy.ts: 27ms, render: 16ms)
+ GET /api/articles?limit=20 200 in 1912ms (compile: 1874ms, proxy.ts: 21ms, render: 17ms)
+ GET /api/pricing 200 in 1883ms (compile: 1171µs, proxy.ts: 1879ms, render: 4ms)
+ GET /?v=login 200 in 82ms (compile: 62ms, proxy.ts: 5ms, render: 15ms)
+ POST /api/auth/login 200 in 704ms (compile: 376ms, proxy.ts: 5ms, render: 323ms)
+ GET /api/notifications?perPage=20 200 in 34ms (compile: 9ms, proxy.ts: 6ms, render: 19ms)
+ GET /api/subscriptions 200 in 35ms (compile: 19ms, proxy.ts: 6ms, render: 10ms)
+ GET / 200 in 109ms (compile: 87ms, proxy.ts: 6ms, render: 16ms)
+ GET /api/dashboard 200 in 30ms (compile: 8ms, proxy.ts: 4ms, render: 18ms)
+ GET / 200 in 229ms (compile: 2ms, proxy.ts: 8ms, render: 219ms)

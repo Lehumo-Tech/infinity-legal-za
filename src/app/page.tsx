@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import HomePageClient from '@/components/HomePageClient';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   keywords: [
     'legal services south africa',
     'law firm management',
-    'attorney',
+    'legal advisor',
     'conveyancing',
     'labour law',
     'CCMA',
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
     'criminal defence',
     'estate planning',
     'corporate commercial',
-    'candidate attorney',
+    'candidate legal advisor',
     'legal tech',
   ],
   alternates: {
@@ -64,5 +65,9 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <HomePageClient />;
+  return (
+    <Suspense>
+      <HomePageClient />
+    </Suspense>
+  );
 }

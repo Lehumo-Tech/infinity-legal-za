@@ -500,7 +500,7 @@ export async function GET(request: NextRequest) {
       </div>
       <p>
         Security is a foundational pillar of the Infinity Legal ZA platform. The system implements
-        defence-in-depth with multiple security layers protecting client data, attorney work-product,
+        defence-in-depth with multiple security layers protecting client data, legal advisor work-product,
         and firm operations.
       </p>
 
@@ -661,10 +661,10 @@ export async function GET(request: NextRequest) {
           The Workbench is the primary landing page for authenticated users, providing an at-a-glance overview of the firm's operations.
         </p>
         <ul style="margin-left:1.25rem; font-size:0.82rem; color:var(--gray-700);">
-          <li><strong>Key Statistics:</strong> Total cases, active cases, pending cases, closed cases, total leads, new leads, total documents, pending tasks, overdue tasks, total clients, total attorneys, total revenue</li>
+          <li><strong>Key Statistics:</strong> Total cases, active cases, pending cases, closed cases, total leads, new leads, total documents, pending tasks, overdue tasks, total clients, total legal advisors, total revenue</li>
           <li><strong>Quick Actions:</strong> Create new case, add lead, schedule consultation, upload document, create task</li>
           <li><strong>Case Distribution Charts:</strong> Cases by type (11 categories), cases by status (7 statuses), leads by source (7 sources)</li>
-          <li><strong>Recent Activity:</strong> Latest 5 cases and 5 leads with client/attorney details</li>
+          <li><strong>Recent Activity:</strong> Latest 5 cases and 5 leads with client/legal advisor details</li>
         </ul>
       </div>
 
@@ -681,7 +681,7 @@ export async function GET(request: NextRequest) {
           <li><strong>Type Filtering:</strong> Filter by 11 case types (family law, criminal defence, civil litigation, conveyancing, estate planning, corporate/commercial, debt collection, immigration, labour law, personal injury, other)</li>
           <li><strong>Status Workflow:</strong> intake &rarr; pending_review &rarr; active &rarr; on_hold &rarr; settled &rarr; closed &rarr; archived</li>
           <li><strong>Urgency Levels:</strong> low, medium, high, critical</li>
-          <li><strong>Assignments:</strong> Lead attorney, support paralegal, client association</li>
+          <li><strong>Assignments:</strong> Lead legal advisor, support paralegal, client association</li>
           <li><strong>High-Risk Detection:</strong> Automated flagging for cases involving serious crimes</li>
         </ul>
       </div>
@@ -737,13 +737,13 @@ export async function GET(request: NextRequest) {
       <div class="card" style="margin-bottom:1.25rem;">
         <h4 style="color:var(--navy); margin-bottom:0.5rem;">5.5 &nbsp; Consultations</h4>
         <p style="font-size:0.85rem; color:var(--gray-700); margin-bottom:0.5rem;">
-          Scheduling and management of client-attorney consultations across multiple meeting formats.
+          Scheduling and management of client-legal advisor consultations across multiple meeting formats.
         </p>
         <ul style="margin-left:1.25rem; font-size:0.82rem; color:var(--gray-700);">
           <li><strong>Scheduling:</strong> Date, time, and duration (default 60 min) with case association</li>
           <li><strong>Meeting Types:</strong> In-person, Video Call, Phone Call</li>
           <li><strong>Status Tracking:</strong> scheduled &rarr; confirmed &rarr; completed / cancelled / no_show</li>
-          <li><strong>Notes:</strong> Consultation notes with attorney-only visibility</li>
+          <li><strong>Notes:</strong> Consultation notes with legal advisor-only visibility</li>
         </ul>
       </div>
 
@@ -771,7 +771,7 @@ export async function GET(request: NextRequest) {
         <ul style="margin-left:1.25rem; font-size:0.82rem; color:var(--gray-700);">
           <li><strong>Staff Directory:</strong> Full listing with role, department, bar number, and hire date</li>
           <li><strong>Org Structure:</strong> Supervisor/supervisee hierarchy traversal</li>
-          <li><strong>Attorney Profiles:</strong> LPC number, specializations, hourly rate, availability status, verification</li>
+          <li><strong>Legal Advisor Profiles:</strong> LPC number, specializations, hourly rate, availability status, verification</li>
           <li><strong>Department Filter:</strong> 12 departments (management, litigation, conveyancing, family law, corporate, criminal law, estate planning, consulting, HR, finance, IT, administration)</li>
           <li><strong>Availability Status:</strong> available, busy, on_leave, unavailable</li>
         </ul>
@@ -842,7 +842,7 @@ export async function GET(request: NextRequest) {
           <tr><td>Finance Manager</td><td>60</td><td>Finance</td><td>4</td></tr>
           <tr><td>Consultant</td><td>55</td><td>Consulting</td><td>4</td></tr>
           <tr><td>Paralegal</td><td>50</td><td>Litigation</td><td>6</td></tr>
-          <tr><td>Candidate Attorney</td><td>45</td><td>Litigation</td><td>5</td></tr>
+          <tr><td>Candidate Legal Advisor</td><td>45</td><td>Litigation</td><td>5</td></tr>
           <tr><td>Office Administrator</td><td>40</td><td>Administration</td><td>3</td></tr>
           <tr><td>Receptionist</td><td>30</td><td>Administration</td><td>2</td></tr>
           <tr><td>Client</td><td>10</td><td>&mdash;</td><td>3</td></tr>
@@ -885,10 +885,10 @@ export async function GET(request: NextRequest) {
       <table>
         <thead><tr><th>Group</th><th>Roles</th></tr></thead>
         <tbody>
-          <tr><td>Legal Staff</td><td>Associate, Paralegal, Candidate Attorney</td></tr>
+          <tr><td>Legal Staff</td><td>Associate, Paralegal, Candidate Legal Advisor</td></tr>
           <tr><td>Officers</td><td>Legal Officer, Supervising Officer</td></tr>
           <tr><td>Directors</td><td>Managing Director, Senior Partner</td></tr>
-          <tr><td>Portal Staff</td><td>Associate, Paralegal, Legal Officer, Supervising Officer, Candidate Attorney</td></tr>
+          <tr><td>Portal Staff</td><td>Associate, Paralegal, Legal Officer, Supervising Officer, Candidate Legal Advisor</td></tr>
           <tr><td>Admin Staff</td><td>Managing Director, Senior Partner, Systems Admin</td></tr>
           <tr><td>All Staff</td><td>14 roles (excluding Client and Guest)</td></tr>
         </tbody>
@@ -1196,7 +1196,7 @@ export async function GET(request: NextRequest) {
           <tr><td>Session Security</td><td>30-minute inactivity timeout, JWT with 24-hour expiry</td></tr>
           <tr><td>Input Sanitization</td><td>XSS payload stripping and HTML entity encoding for all user inputs</td></tr>
           <tr><td>Intake Consent</td><td>Client intake forms require explicit consent and POPIA acknowledgement</td></tr>
-          <tr><td>Privileged Notes</td><td>Three-tier visibility controls (officer_only, managing_partner_only, attorney_client) protecting attorney-client privilege</td></tr>
+          <tr><td>Privileged Notes</td><td>Three-tier visibility controls (officer_only, managing_partner_only, attorney_client) protecting legal advisor-client privilege</td></tr>
           <tr><td>High-Risk Detection</td><td>Automated flagging of cases involving serious crimes for enhanced data protection</td></tr>
         </tbody>
       </table>

@@ -1,19 +1,25 @@
 /**
  * AI Chat API - POST /api/ai/chat
- * Uses the new LLM service with provider fallback
- * 
+ *
+ * PUBLIC endpoint — no authentication required.
+ * Uses the LLM service with provider fallback.
+ *
  * Supports multi-turn conversations with session tracking.
- * All LLM calls go through the unified provider layer with
- * automatic failover between free providers.
- * 
- * Auth is optional — unauthenticated visitors can use the chat
- * with stricter rate limiting (5 messages per session).
+ * Rate limiting is enforced for all users, with stricter
+ * limits for anonymous (unauthenticated) visitors.
+ *
+ * Anonymous users: 10 messages per minute
+ * Authenticated users: 20 messages per minute
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { legalChat, clearLegalChat } from '@/lib/llm-service';
 import { checkRateLimit, requireAuth } from '@/lib/middleware';
-import { aiChatRateLimiter } from '@/lib/security';
+import { aiChatRateLimiter, RateLimiter } from '@/lib/security';
+import { db } from '@/lib/db';
+
+// Stricter rate limiter for anonymous users
+const anonymousChatRateLimiter = new RateLimiter(10, 60000); // 10 messages per minute for anonymous
 
 // ============================================
 // POST HANDLER - Send message to AI chat
@@ -21,16 +27,25 @@ import { aiChatRateLimiter } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth is optional — allow anonymous access with stricter limits
+    // Auth is optional — allow anonymous access
     const authResult = await requireAuth(request);
     const isAuthenticated = authResult.authenticated;
 
     // Rate limiting — stricter for anonymous users
-    const rateResult = await checkRateLimit(request, aiChatRateLimiter);
+    const limiter = isAuthenticated ? aiChatRateLimiter : anonymousChatRateLimiter;
+    const rateResult = await checkRateLimit(request, limiter);
     if (!rateResult.allowed) {
       return NextResponse.json(
-        { success: false, error: 'Rate limit exceeded. Please wait a moment before sending another message.' },
-        { status: 429 }
+        {
+          success: false,
+          error: isAuthenticated
+            ? 'Rate limit exceeded. Please wait a moment before sending another message.'
+            : 'Rate limit exceeded for anonymous users. Please sign up for higher limits, or wait a moment before trying again.',
+        },
+        {
+          status: 429,
+          headers: rateResult.headers || {},
+        }
       );
     }
 
@@ -51,7 +66,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sid = sessionId || (isAuthenticated ? `user-${authResult.user?.id}` : `anon-${Date.now()}`);
+    // Generate or use existing session ID
+    const sid = sessionId || (isAuthenticated ? `user-${authResult.user?.userId}` : `anon-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
     // Use the LLM service with provider fallback
     const result = await legalChat(message.trim(), {
@@ -60,15 +76,41 @@ export async function POST(request: NextRequest) {
       maxTokens: 2048,
     });
 
+    // Log chat usage for analytics (non-blocking)
+    try {
+      const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+      await db.auditLog.create({
+        data: {
+          user_id: isAuthenticated ? authResult.user?.userId : null,
+          action: 'AI_CHAT_MESSAGE',
+          resource_type: 'ai_chat',
+          resource_id: sid,
+          details: {
+            message_length: message.length,
+            provider: result.provider,
+            tokens_used: result.tokensUsed,
+            cached: result.cached,
+            authenticated: isAuthenticated,
+          },
+          ip_address: ip,
+          user_agent: request.headers.get('user-agent') || undefined,
+        },
+      });
+    } catch {
+      // Silently fail - don't block the chat response
+    }
+
     return NextResponse.json({
       success: true,
       data: result.content,
       meta: {
+        sessionId: sid,
         provider: result.provider,
         model: result.model,
         tokensUsed: result.tokensUsed,
         cached: result.cached,
         responseTimeMs: result.responseTimeMs,
+        isAuthenticated,
       },
     });
   } catch (error: unknown) {

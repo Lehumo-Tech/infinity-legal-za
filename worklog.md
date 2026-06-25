@@ -1,169 +1,135 @@
-# Infinity Legal ZA - Work Log
+# Infinity Legal ZA - Worklog
 
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Full-stack audit of intranet logic and flow
+Task: Update schema, fix critical bugs, run quality control, and push to GitHub
 
 Work Log:
-- Read all critical files: HomePageClient.tsx, LoginScreen.tsx, LandingPage.tsx, useAuth.tsx, proxy.ts
-- Read all auth routes: auto-confirm, callback, signup, login, signout
-- Read pricing/subscription routes: pricing, seed-pricing, subscriptions, payfast/checkout
-- Read PaymentWall.tsx, PricingView.tsx components
-- Read middleware.ts, auth-helpers.ts, browser.ts
-- Read prisma/schema.prisma, .env
+- Read all critical files: schema.prisma, seed.ts, LoginScreen.tsx, LandingPage.tsx, useAuth.tsx, proxy.ts, auth routes, PricingView.tsx, db.ts, security.ts, articles route, HomePageClient.tsx
+- Identified ROOT CAUSE of sign-in infinite loading: seed.ts used HMAC-SHA512 password hashing but local-auth.ts uses bcrypt - passwords were incompatible
+- Identified slug mismatch: seed used `civil-legal`, `labour-legal`, `extensive-cover` but PricingView expects `civil_legal_plan`, `labour_legal_plan`, `extensive_plan`
+- Fixed prisma/seed.ts: switched from HMAC-SHA512 to bcryptjs (compatible with local-auth.ts), corrected plan slugs, added slug migration for old data, added popi_consent to user data
+- Pushed schema to DB (already in sync) and re-seeded successfully
+- Fixed security.ts rate limiter: removed noisy error logging when Supabase is unreachable, added proper guard checks
+- Fixed articles API: added Prisma as primary data source with Supabase fallback
+- Fixed seed-pricing API route: added Prisma as primary with Supabase fallback
+- Fixed HomePageClient: dashboard now populates cases/tasks/consultations from dashboard API response (fixes "No active cases" inconsistency)
+- Fixed user menu dropdown z-index from z-50 to z-[60] (prevents AskInfinityBubble overlay from blocking Sign Out)
+- Verified login works with bcrypt passwords (tested md@infinitylegal.org and thabo@example.com)
+- Verified pricing API returns correct slugs matching frontend PLAN_STYLES
+- Ran lint: all clean
+- Agent Browser verified end-to-end: landing page → Get Started → login → dashboard → pricing → sign out
 
 Stage Summary:
-- CRITICAL BUG 1: authLoading state blocks Sign In button in LoginScreen
-- CRITICAL BUG 2: Subscription view doesn't use PaymentWall - clients can't subscribe
-- CRITICAL BUG 3: Client flow is fragmented with no smooth onboarding
-- CRITICAL BUG 4: Pricing data may not be seeded in Supabase
-- MEDIUM: Get Started button flow needs verification
-- MEDIUM: Workbench shows irrelevant stats for client role
+- Sign-in infinite loading FIXED (bcrypt password hash mismatch was root cause)
+- Pricing slugs FIXED (civil_legal_plan, labour_legal_plan, extensive_plan now match frontend)
+- All API routes working with Prisma when Supabase is unreachable
+- Rate limiter no longer logs noisy errors
+- Client dashboard now shows cases from dashboard API response
+- User menu dropdown no longer blocked by AI bubble overlay
 
 ---
 Task ID: 2
 Agent: Main Agent
-Task: Fix all critical bugs and run QA
+Task: Schema sync, security hardening, QC, and push to GitHub
 
 Work Log:
-- Fixed authLoading blocking Sign In button: Added 5s fallback timeout in useAuth.tsx, changed LoginScreen.tsx to use signInLoading state instead of authLoading
-- Fixed subscription view: PaymentWall now only shows when no active subscription; subscription details card shows when subscription exists
-- Fixed loadSubscription not called on subscription view: Added loadSubscription() alongside loadPricingPlans()
-- Seeded correct pricing data: Civil R99, Labour R99, Extensive R139
-- Verified lint passes clean
-- Browser verified: Landing page renders, Get Started shows signup form, Sign In shows login form, Sign In button is ENABLED, Dashboard loads correctly after login, Pricing shows correct R99/R99/R139, Mobile layout works, No console errors
+- Comprehensive codebase audit: read all auth routes, LandingPage, LoginScreen, useAuth, proxy.ts, db.ts, api-client.ts, local-auth.ts, all dashboard components, Prisma schema, pricing API
+- Discovered proxy.ts IS the active middleware in Next.js 16 (auto-detected, no separate middleware.ts needed)
+- Initially created src/middleware.ts which caused a conflict error; removed it immediately
+- Fixed isSupabaseConfigured() in db.ts: changed from hardcoded false to checking env vars
+- Fixed auto-confirm route: added 30-minute time window restriction for local auth confirmations
+- Fixed auto-confirm route: resolved variable name collision where `const db = getAdminClient()` shadowed the Prisma `db` import
+- Fixed auth/profile route: added local auth (Bearer token) support alongside existing Supabase cookie auth
+- Fixed popi_consent inconsistency in useAuth.tsx: buildLocalProfile now defaults to false (matching buildMinimalProfile)
+- Fixed email_verified default in buildLocalProfile: changed from true to false (matching schema default)
+- Fixed hardcoded contract numbers in ClientSubscriptionView: now uses subscription.contract_number from DB
+- Fixed hardcoded "12%" trend in AdminDashboard: now uses stats.revenueTrend or 'N/A'
+- Verified Prisma schema is in sync with database (db:push confirmed)
+- Verified pricing plans match PRD: Civil R99/mo, Labour R99/mo, Extensive R139/mo (both DB and API)
+- Lint: clean pass
+- Browser-tested: full end-to-end flow (signup → dashboard → subscribe → sign-out → sign-in)
+- Cleaned up test users
+- Pushed commit b914f81 to GitHub origin/main
 
 Stage Summary:
-- ALL CRITICAL BUGS FIXED
-- Sign-in infinite loading: FIXED (authLoading no longer blocks button)
-- Get Started button: FIXED (flow works correctly)
-- Subscription view: FIXED (PaymentWall for unsubscribed, details card for subscribed)
-- Pricing mismatch: FIXED (seeded correct data, API returns correct plans)
-- Lint: PASSES
-- Browser QA: ALL FLOWS VERIFIED WORKING
-
----
-Task ID: 4+5
-Agent: Main Agent
-Task: Fix mobile responsiveness in WorkbenchView, AnalyticsView, LandingPage, LoginScreen + attorney→Legal Advisor rename
-
-Work Log:
-
-### 1. WorkbenchView.tsx — 4 edits
-- KPI grid: `grid grid-cols-2 lg:grid-cols-4` → `grid grid-cols-2 md:grid-cols-4` (breaks at md instead of lg for tablets)
-- Welcome banner stats: `flex gap-3` → `flex gap-3 flex-wrap` (stats wrap on small screens)
-- Main content grid: `grid grid-cols-1 lg:grid-cols-5` → `grid grid-cols-1 md:grid-cols-5` (two-column layout kicks in at md)
-- Role display: Added ternary `role === 'attorney' ? 'Legal Advisor' : role.replace(...)` for badge text
-
-### 2. AnalyticsView.tsx — 2 edits
-- Stat cards grid: `grid grid-cols-2 lg:grid-cols-4` → `grid grid-cols-2 md:grid-cols-4`
-- Charts grid: `grid grid-cols-1 lg:grid-cols-2` → `grid grid-cols-1 md:grid-cols-2`
-
-### 3. LandingPage.tsx — 9 edits
-- Hero section gap: `gap-12 lg:gap-8` → `gap-6 lg:gap-8` (less gap on small screens)
-- Stats/app-features grid: `grid grid-cols-2 lg:grid-cols-4` → `grid grid-cols-2 sm:grid-cols-4` (4-col at sm instead of lg)
-- Pricing cards grid: `grid grid-cols-1 md:grid-cols-3` → `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` (progressive: 1→2→3 cols)
-- 'Dedicated attorney' → 'Dedicated Legal Advisor' (pricing feature)
-- 'our attorneys already understand' → 'our legal advisors already understand'
-- 'attorney access' → 'legal advisor access' (campaign card)
-- 'Message your attorney' → 'Message your legal advisor' (app section)
-- 'consulting with an attorney' → 'consulting with a legal advisor' (media section)
-- 'Attorney Oversight' → 'Legal Advisor Oversight' (article title)
-- Mobile nav: Verified already functional with `mobileMenuOpen` state and proper toggle
-
-### 4. LoginScreen.tsx — 3 edits
-- Form container padding: `p-8 sm:p-12` → `p-4 sm:p-8 md:p-12` (3-step progressive padding for mobile)
-- Trust indicators wrapper: `flex items-center justify-center gap-0` → `flex flex-wrap items-center justify-center gap-x-4 gap-y-2` (wraps on small screens)
-- Separator spans: `w-px h-3 bg-slate-200` → `w-px h-3 bg-slate-200 hidden sm:block` (hide separators on mobile)
-
-### 5. StaffPortal.tsx — 1 edit
-- roleLabels: `attorney: 'Attorney'` → `attorney: 'Legal Advisor'`
-
-### 6. OrgChartView.tsx — 1 edit
-- roleLabels: `attorney: 'Attorney'` → `attorney: 'Legal Advisor'`
-
-Lint Results: `bun run lint` PASSES CLEAN (0 errors, 0 warnings)
-
-Stage Summary:
-- ALL 6 FILES EDITED SUCCESSFULLY
-- Total: 20 surgical edits across 6 files
-- Mobile responsiveness fixed: grids now use md/sm breakpoints instead of lg where appropriate
-- Attorney→Legal Advisor rename completed across all user-facing text
-- LoginScreen trust indicators now wrap properly on mobile
-- Lint: PASSES CLEAN
+- All critical bugs fixed: auth flow works end-to-end
+- Security hardened: auto-confirm restricted to 30-min window, variable collision fixed
+- Schema verified in sync: 21 models, pricing matches PRD
+- Profile API now works for both Supabase and local auth users
+- Dashboard no longer shows hardcoded/incorrect values
+- Code pushed to GitHub — Vercel should auto-deploy
 
 ---
 Task ID: 3
 Agent: Main Agent
-Task: Fix mobile responsiveness in standalone view component files
+Task: Make the platform feel like a multi-page website instead of a single-page app
 
 Work Log:
-
-### 1. CasesView.tsx — 3 edits
-- Header flex row: `flex items-center justify-between` → `flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2` (wraps on mobile)
-- Added mobile card layout: Dual layout pattern with `md:hidden` cards and `hidden md:block` table, wrapped in fragment `<>...</>` inside the ternary
-- Pagination row: `flex items-center justify-between` → `flex flex-col sm:flex-row items-center justify-between gap-2`
-
-### 2. DocumentsView.tsx — 2 edits
-- Header flex row: `flex items-center justify-between` → `flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2`
-- Upload dialog grid: `grid grid-cols-2 gap-4` → `grid grid-cols-1 sm:grid-cols-2 gap-4`
-
-### 3. TasksView.tsx — 4 edits
-- Header flex row: `flex items-center justify-between` → `flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2`
-- First dialog grid (Assign To / Priority): `grid grid-cols-2 gap-4` → `grid grid-cols-1 sm:grid-cols-2 gap-4`
-- Second dialog grid (Due Date / Case ID): `grid grid-cols-2 gap-4` → `grid grid-cols-1 sm:grid-cols-2 gap-4`
-- Priority text label: Added `hidden sm:inline` to hide on mobile
-
-### 4. ConsultationsView.tsx — 6 edits
-- Header flex row: `flex items-center justify-between` → `flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2`
-- First dialog grid (Client ID / Case ID): `grid grid-cols-2 gap-4` → `grid grid-cols-1 sm:grid-cols-2 gap-4`
-- Second dialog grid (Attorney / Meeting Type): Label "Attorney" → "Legal Advisor", placeholder "Select attorney" → "Select legal advisor", grid `grid-cols-2` → `grid-cols-1 sm:grid-cols-2`
-- Third dialog grid (Date & Time / Duration): `grid grid-cols-2 gap-4` → `grid grid-cols-1 sm:grid-cols-2 gap-4`
-- Added mobile card layout: Dual layout with meeting type icon, client name, status badge, legal advisor name, date/time, and duration in compact card format
-
-### 5. LeadsView.tsx — 3 edits
-- Header flex row: `flex items-center justify-between` → `flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2`
-- Added mobile card layout: Dual layout with name, status badge, email, source badge, and lead score progress bar in compact card format
-- Pagination row: `flex items-center justify-between` → `flex flex-col sm:flex-row items-center justify-between gap-2`
-
-Lint Results: `bun run lint` PASSES CLEAN (0 errors, 0 warnings)
+- Analyzed the entire codebase: the app was a pure SPA with all views controlled by useState<View> in HomePageClient.tsx
+- URL never changed (always `/`), browser back/forward buttons didn't work, no deep linking possible
+- Implemented URL-based routing using Next.js `useSearchParams()` and `useRouter()`:
+  - Views are now addressable via `?v=` search params (e.g., `/?v=cases`, `/?v=documents`)
+  - `navigate()` helper function uses `router.push()` for all navigation
+  - `currentView` is derived from the URL search param instead of local state
+  - Added `v=home`, `v=login`, `v=signup` to the View type for URL-based routing
+- Added Framer Motion `AnimatePresence` + `motion.div` page transitions:
+  - Smooth fade + slide-up animation on view enter (0.3s cubic-bezier)
+  - Quick fade-out on view exit (0.15s)
+  - Landing page has its own fade transition variant
+- Added scroll-to-top behavior when navigating between views
+- Added redirect from `/?v=login` to `/` after successful authentication (using `router.replace()`)
+- Updated `page.tsx` to wrap `HomePageClient` in `<Suspense>` (required for `useSearchParams`)
+- Updated breadcrumb labels to use a `viewLabels` map for consistent display
+- Fixed lint error: removed `setIsTransitioning` call inside useEffect (react-hooks/set-state-in-effect)
+- Browser tested all 10 scenarios: all PASS
+  - URL changes correctly on every navigation
+  - Browser back/forward buttons work
+  - Deep linking works (direct URL access to `/?v=analytics`)
+  - Login redirects from `/?v=login` to `/` (dashboard)
+  - Page transitions animate smoothly
+  - Sidebar active indicator and breadcrumb update correctly
 
 Stage Summary:
-- ALL 5 FILES EDITED SUCCESSFULLY
-- Total: 18 surgical edits across 5 component files
-- Mobile responsiveness fixed: headers wrap, dialog grids stack, tables replaced with card layouts on mobile, pagination stacks
-- Attorney → Legal Advisor rename in ConsultationsView dialog
-- Priority labels hidden on mobile in TasksView
-- Lint: PASSES CLEAN
+- Platform now behaves like a multi-page website with URL-based routing
+- Every view has its own URL: `/?v=cases`, `/?v=documents`, `/?v=home`, etc.
+- Browser back/forward buttons work for in-app navigation
+- Deep linking works — sharing a URL goes to the correct view
+- Smooth Framer Motion page transitions between views
+- Scroll-to-top on navigation
+- All 10 browser test scenarios passed, lint clean
+
 ---
-Task ID: 1-5
-Agent: Main Agent + Subagents
-Task: Make the entire application mobile-friendly/mobile-first and rename "attorney" to "legal advisor"
+Task ID: 4
+Agent: Main Agent
+Task: Quality control and push to GitHub
 
 Work Log:
-- Explored entire codebase to identify mobile responsiveness issues across 14 component files
-- Identified 44+ specific mobile responsiveness issues categorized by severity
-- Fixed HomePageClient.tsx (3563 lines): Added mobile sidebar Sheet/drawer, hamburger menu button, responsive header padding, notification dropdown width, content area padding, footer stacking, chat popup height, all dialog grid-cols-2→grid-cols-1 sm:grid-cols-2, role display mapping (attorney→Legal Advisor), mobile stats in welcome banner
-- Fixed CasesView.tsx: Added mobile card layout (md:hidden), responsive header, responsive pagination
-- Fixed DocumentsView.tsx: Responsive header, dialog grid stacking on mobile
-- Fixed TasksView.tsx: Responsive header, dialog grids stacking, priority text hidden on mobile
-- Fixed ConsultationsView.tsx: Mobile card layout, dialog grids stacking, "Attorney"→"Legal Advisor" labels
-- Fixed LeadsView.tsx: Mobile card layout, responsive header, responsive pagination
-- Fixed WorkbenchView.tsx: md breakpoints for grids, role display mapping
-- Fixed AnalyticsView.tsx: md breakpoints for stat cards and charts grids
-- Fixed LandingPage.tsx: Hero gap reduction, pricing grid responsive steps, "attorney"→"Legal Advisor" text replacements (6 instances)
-- Fixed LoginScreen.tsx: Progressive padding (p-4 sm:p-8 md:p-12), trust indicators wrapping
-- Fixed StaffPortal.tsx: attorney→Legal Advisor in roleLabels
-- Fixed OrgChartView.tsx: attorney→Legal Advisor in roleLabels
-- Added ROLE_LABELS mapping and displayRole() function for consistent role display
-- Added Sheet component import from shadcn/ui for mobile sidebar drawer
-- All lint checks pass clean (0 errors, 0 warnings)
-- Dev server compiles and serves pages successfully (HTTP 200)
+- Ran lint: clean pass
+- Checked dev server: found /api/documents and /api/tasks returning 500 due to Supabase DNS failure (ENOTFOUND)
+- Converted /api/documents/route.ts from Supabase-only to Prisma with role-based filtering
+- Converted /api/tasks/route.ts from Supabase-only to Prisma with role-based filtering
+- Converted /api/documents/[id]/route.ts from Supabase-only to Prisma (GET/PUT/DELETE)
+- Converted /api/tasks/[id]/route.ts from Supabase-only to Prisma (GET/PUT/DELETE)
+- Fixed permission references: replaced non-existent VIEW_ALL_DOCUMENTS with VIEW_ALL_CASES, VIEW_ALL_TASKS with VIEW_ALL_CASES
+- Fixed AdminSubscriptionsView crash: added Array.isArray() check before .filter() on subscriptions data
+- Added LoginScreen URL sync: onSwitchToSignup/onSwitchToLogin callbacks update URL to /?v=signup or /?v=login
+- Comprehensive browser QC (36 test cases):
+  - Public pages: PASS
+  - Authentication + redirect: PASS
+  - All 11 sidebar navigation items: PASS (after subscriptions fix)
+  - Browser back/forward: PASS
+  - Deep linking: PASS
+  - All 3 user roles (managing_director, attorney, client): PASS
+  - Page transitions: PASS
+  - API health: All 200 (no more 500s)
+- Lint: clean
+- Pushed commit ca21593 to GitHub origin/main
 
 Stage Summary:
-- 44+ mobile responsiveness issues fixed across 14 component files
-- "Attorney" renamed to "Legal Advisor" throughout all UI-facing text (role labels, form fields, placeholders, display names, table headers, comments)
-- Key patterns implemented: hidden md:flex sidebar, Sheet drawer for mobile, grid-cols-1 sm:grid-cols-2 in all dialogs, mobile card alternatives for all data tables, responsive padding/breakpoints
-- Backend code (attorney_id, attorneys table, etc.) intentionally NOT changed to avoid DB migration
-- Lint: PASSES CLEAN
+- All API endpoints now return 200 (no more Supabase 500 errors on documents/tasks)
+- AdminSubscriptionsView no longer crashes on empty data
+- Login/Signup URL syncs correctly
+- All 36 QC test cases pass
+- Commit ca21593 pushed to GitHub

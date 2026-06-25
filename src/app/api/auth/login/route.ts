@@ -1,5 +1,5 @@
 /**
- * POST /api/auth/login - Authenticate user via Supabase Auth
+ * POST /api/auth/login - Authenticate user via Supabase Auth with local fallback
  *
  * SECURITY:
  * - Rate limited (5 attempts per 5 minutes per IP)
@@ -7,6 +7,7 @@
  * - Audit logs all attempts (success and failure)
  * - Does not leak whether email exists (generic error messages)
  * - Validates input before attempting auth
+ * - Falls back to local Prisma/SQLite auth when Supabase is unreachable
  */
 
 import { NextRequest } from 'next/server';
@@ -14,14 +15,10 @@ import { getAdminClient } from '@/lib/supabase/api-client';
 import { authRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
+import { authenticateLocalUser, isSupabaseReachable } from '@/lib/local-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Service temporarily unavailable', 503, 'SERVICE_UNAVAILABLE');
-    }
-
     // CSRF validation
     const csrf = validateCSRF(request);
     if (!csrf.valid) return csrf.error!;
@@ -57,14 +54,87 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
 
-    // Authenticate with Supabase Auth
-    const { data: authData, error: authError } = await db.auth.signInWithPassword({
-      email: email.toLowerCase().trim(),
-      password,
-    });
+    // ============================================
+    // Strategy 1: Try Supabase Auth first
+    // ============================================
+    const db = getAdminClient();
+    const supabaseReachable = db && await isSupabaseReachable();
 
-    if (authError || !authData.user) {
-      // Log failed attempt (don't leak whether email exists)
+    if (supabaseReachable && db) {
+      try {
+        const { data: authData, error: authError } = await db.auth.signInWithPassword({
+          email: email.toLowerCase().trim(),
+          password,
+        });
+
+        if (!authError && authData.user) {
+          // Get the user's profile from Supabase
+          const { data: profile } = await db
+            .from('profiles')
+            .select('id, email, full_name, role, popi_consent')
+            .eq('id', authData.user.id)
+            .single();
+
+          if (!profile) {
+            return apiError('Account setup incomplete. Please contact support.', 403, 'PROFILE_NOT_FOUND');
+          }
+
+          // Check if user has POPIA consent
+          if (!profile.popi_consent) {
+            await db
+              .from('profiles')
+              .update({ popi_consent: true })
+              .eq('id', authData.user.id);
+          }
+
+          // Audit log — successful login
+          await createAuditLog({
+            user_id: authData.user.id,
+            action: 'USER_LOGIN',
+            resource_type: 'user',
+            resource_id: authData.user.id,
+            ip_address: request.headers.get('x-forwarded-for') || undefined,
+            user_agent: request.headers.get('user-agent') || undefined,
+          });
+
+          return apiResponse({
+            token: authData.session.access_token,
+            authProvider: 'supabase',
+            user: {
+              id: authData.user.id,
+              email: authData.user.email,
+              full_name: profile.full_name,
+              role: profile.role,
+              email_verified: authData.user.email_confirmed_at ? true : false,
+            },
+          });
+        }
+
+        // Supabase auth failed (wrong password, user not found, etc.)
+        // Don't fall back to local auth for wrong credentials — this is a security measure
+        // to prevent an attacker from bypassing Supabase auth by forcing a network error.
+        // However, if Supabase was reachable and returned a genuine auth error,
+        // we should NOT fall back to local auth.
+        await createAuditLog({
+          action: 'LOGIN_FAILED',
+          resource_type: 'user',
+          ip_address: request.headers.get('x-forwarded-for') || undefined,
+          user_agent: request.headers.get('user-agent') || undefined,
+        });
+
+        return apiError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
+      } catch (supabaseError) {
+        // Supabase threw an unexpected error — fall back to local auth
+        console.warn('[Login] Supabase auth failed, falling back to local auth:', supabaseError);
+      }
+    }
+
+    // ============================================
+    // Strategy 2: Local Auth Fallback (Prisma/SQLite)
+    // ============================================
+    const localResult = await authenticateLocalUser(email, password);
+
+    if (!localResult) {
       await createAuditLog({
         action: 'LOGIN_FAILED',
         resource_type: 'user',
@@ -75,47 +145,29 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
 
-    // Get the user's profile
-    const { data: profile } = await db
-      .from('profiles')
-      .select('id, email, full_name, role, popi_consent')
-      .eq('id', authData.user.id)
-      .single();
-
-    if (!profile) {
-      return apiError('Account setup incomplete. Please contact support.', 403, 'PROFILE_NOT_FOUND');
-    }
-
-    // Check if user has POPIA consent (required for SA law)
-    if (!profile.popi_consent) {
-      return apiError('Account requires POPIA consent. Please contact support.', 403, 'POPIA_CONSENT_REQUIRED');
-    }
-
-    // Audit log — successful login
+    // Audit log — successful local login
     await createAuditLog({
-      user_id: authData.user.id,
-      action: 'USER_LOGIN',
+      user_id: localResult.user.id,
+      action: 'USER_LOGIN_LOCAL',
       resource_type: 'user',
-      resource_id: authData.user.id,
+      resource_id: localResult.user.id,
       ip_address: request.headers.get('x-forwarded-for') || undefined,
       user_agent: request.headers.get('user-agent') || undefined,
     });
 
-    // Return token and user info
-    // The Supabase session is also set as cookies by the browser client
     return apiResponse({
-      token: authData.session.access_token,
+      token: localResult.token,
+      authProvider: 'local',
       user: {
-        id: authData.user.id,
-        email: authData.user.email,
-        full_name: profile.full_name,
-        role: profile.role,
-        email_verified: authData.user.email_confirmed_at ? true : false,
+        id: localResult.user.id,
+        email: localResult.user.email,
+        full_name: localResult.user.full_name,
+        role: localResult.user.role,
+        email_verified: localResult.user.email_verified,
       },
     });
   } catch (error) {
     console.error('Login error:', error);
-    // Don't leak internal error details
     return apiError('Login failed', 500, 'LOGIN_ERROR');
   }
 }

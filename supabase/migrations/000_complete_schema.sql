@@ -1367,17 +1367,15 @@ VALUES
   ('Nurturing', 'nurturing', 'Lead is being nurtured', 7, '#6B7280', FALSE)
 ON CONFLICT (slug) DO NOTHING;
 
--- Pricing plans
+-- Pricing plans (correct pricing matching frontend: Civil R99, Labour R99, Extensive R139)
 INSERT INTO public.pricing_plans (name, slug, description, price_monthly, price_annual, currency, features, is_popular, is_active, sort_order)
 VALUES
-  ('Free Consultation', 'free-consultation', 'Initial 30-minute consultation at no charge', 0, 0, 'ZAR',
-    '["30-minute consultation","Basic legal guidance","Referral to specialist"]'::JSONB, FALSE, TRUE, 1),
-  ('Starter', 'starter', 'For individuals with simple legal needs', 1500, 15000, 'ZAR',
-    '["1 case management","Document review (5 docs)","Email support","Basic AI intake","48hr response time"]'::JSONB, FALSE, TRUE, 2),
-  ('Professional', 'professional', 'For ongoing legal matters', 4500, 45000, 'ZAR',
-    '["Up to 3 cases","Unlimited document review","Priority email and phone support","AI intake and analysis","24hr response time","Dedicated attorney","Monthly case review"]'::JSONB, TRUE, TRUE, 3),
-  ('Enterprise', 'enterprise', 'For businesses with complex needs', 12000, 120000, 'ZAR',
-    '["Unlimited cases","Unlimited document review","24/7 priority support","Full AI suite","4hr response time","Dedicated legal team","Weekly strategy sessions","Corporate compliance support"]'::JSONB, FALSE, TRUE, 4)
+  ('Civil Legal Plan', 'civil_legal_plan', 'For civil disputes and general legal matters.', 99, 999, 'ZAR',
+    '["Unlimited civil consultations","Document review & drafting","Court representation","AI case analysis","Email support"]'::JSONB, FALSE, TRUE, 1),
+  ('Labour Legal Plan', 'labour_legal_plan', 'For workplace and employment matters.', 99, 999, 'ZAR',
+    '["Unlimited labour consultations","CCMA representation","Employment contract review","Dismissal advice","Priority support"]'::JSONB, TRUE, TRUE, 2),
+  ('Extensive Plan', 'extensive_plan', 'Complete legal coverage across all practice areas.', 139, 1399, 'ZAR',
+    '["All Civil & Labour features","Family law consultations","Criminal defence advice","Estate planning","24/7 priority support","Dedicated attorney"]'::JSONB, FALSE, TRUE, 3)
 ON CONFLICT (slug) DO NOTHING;
 
 -- CRM dashboard widgets

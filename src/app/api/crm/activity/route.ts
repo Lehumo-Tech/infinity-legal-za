@@ -1,5 +1,6 @@
 /**
  * GET /api/crm/activity - Paginated activity log with filter
+ * Rewritten from Supabase to Prisma/SQLite.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,40 +9,40 @@ import { requireAuth, apiError, getPaginationParams, createPaginationResult } fr
 
 export async function GET(request: NextRequest) {
   try {
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
-    const adminRoles = ['managing_director', 'admin', 'systems_admin'];
+    const adminRoles = ['managing_director', 'systems_admin'];
     if (!adminRoles.includes(auth.user.role)) {
       return apiError('Insufficient privileges', 403, 'ROLE_FORBIDDEN');
     }
 
-    const { page, perPage, from, to } = getPaginationParams(request);
+    const { page, perPage } = getPaginationParams(request);
     const action = request.nextUrl.searchParams.get('action') || 'all';
 
-    // Build query
-    let query = db
-      .from('audit_logs')
-      .select('id, created_at, user_id, action, resource_type, resource_id, details, user:profiles!audit_logs_user_id_fkey(full_name)', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, to);
+    const skip = (page - 1) * perPage;
 
+    // Build where clause
+    const where: Record<string, unknown> = {};
     if (action !== 'all') {
-      query = query.eq('action', action);
+      where.action = action;
     }
 
-    const { data, count, error } = await query;
+    // Fetch paginated audit logs with user relation
+    const [data, total] = await Promise.all([
+      db.auditLog.findMany({
+        where,
+        skip,
+        take: perPage,
+        orderBy: { created_at: 'desc' },
+        include: {
+          user: { select: { full_name: true } },
+        },
+      }),
+      db.auditLog.count({ where }),
+    ]);
 
-    if (error) {
-      console.error('CRM activity query error:', error);
-      return apiError('Failed to fetch activity log', 500, 'ACTIVITY_FETCH_ERROR');
-    }
-
-    const activityEntries = (data || []).map((entry: any) => ({
+    const activityEntries = data.map((entry) => ({
       id: entry.id,
       created_at: entry.created_at,
       user_id: entry.user_id,
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: activityEntries,
-      pagination: createPaginationResult(count || 0, page, perPage),
+      pagination: createPaginationResult(total, page, perPage),
     });
   } catch (error) {
     console.error('CRM activity error:', error);

@@ -1,26 +1,22 @@
 /**
- * GET/POST /api/leads - List/Create leads with pagination via Supabase
+ * GET/POST /api/leads - List/Create leads via Prisma/SQLite
+ * Since the Prisma schema uses IntakeSubmission as the leads model,
+ * we query IntakeSubmission where status != 'draft' as leads.
+ * Admin-only access for GET, open for POST (from AI intake form).
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { isValidEmail, sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Valid enum values per Supabase schema
-const VALID_SOURCES = ['website', 'referral', 'social_media', 'google_ads', 'walk_in', 'phone', 'email', 'partner', 'event', 'other'];
-const VALID_STATUSES = ['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'nurturing'];
-const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'intellectual_property', 'tax', 'personal_injury', 'debt_recovery', 'other'];
+// Valid enum values per Prisma schema
+const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'tax', 'personal_injury', 'debt_recovery', 'other'];
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -28,60 +24,72 @@ export async function GET(request: NextRequest) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    const { page, perPage, from, to } = getPaginationParams(request);
+    const { page, perPage } = getPaginationParams(request);
     const url = new URL(request.url);
 
     const status = url.searchParams.get('status');
-    const source = url.searchParams.get('source');
+    const case_type = url.searchParams.get('case_type');
     const search = url.searchParams.get('search');
 
-    // Build Supabase query — leads has `assigned_to` FK to profiles(id)
-    const selectFields = '*, assigned_to_profile:profiles!leads_assigned_to_fkey(id, full_name, email)';
+    // Build where clause — leads are non-draft intake submissions
+    const where: Record<string, unknown> = {
+      status: { not: 'draft' },
+    };
 
-    let query = db.from('leads').select(selectFields, { count: 'exact' });
+    if (status) where.status = status;
+    if (case_type) where.case_type = case_type;
 
-    // Apply filters
-    if (status) query = query.eq('status', status);
-    if (source) query = query.eq('source', source);
-
-    // Search across multiple fields — leads has first_name, last_name (not name)
+    // Search in case_description and personal_info
     if (search) {
-      query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,description.ilike.%${search}%`);
+      where.OR = [
+        { case_description: { contains: search } },
+        { ai_summary: { contains: search } },
+      ];
     }
 
-    // Apply pagination and ordering
-    const result = await query
-      .order('created_at', { ascending: false })
-      .range(from, to);
+    const [submissions, total] = await Promise.all([
+      db.intakeSubmission.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        skip: (page - 1) * perPage,
+        take: perPage,
+        include: {
+          client: { include: { user: { select: { full_name: true, email: true } } } },
+          case: { select: { case_ref: true, title: true } },
+          reviewer: { select: { full_name: true, email: true } },
+        },
+      }),
+      db.intakeSubmission.count({ where }),
+    ]);
 
-    if (result.error) {
-      console.error('Leads query error:', result.error);
-      return apiError('Failed to load leads', 500, 'LEADS_ERROR');
-    }
-
-    const total = result.count || 0;
-
-    const formattedLeads = (result.data || []).map((l: any) => ({
-      id: l.id,
-      first_name: l.first_name,
-      last_name: l.last_name,
-      name: `${l.first_name || ''} ${l.last_name || ''}`.trim(),
-      email: l.email,
-      phone: l.phone,
-      company: l.company,
-      source: l.source,
-      status: l.status,
-      case_type: l.case_type,
-      description: l.description,
-      estimated_value: l.estimated_value,
-      lead_score: l.lead_score,
-      assigned_to: l.assigned_to,
-      notes: l.notes,
-      tags: l.tags,
-      created_at: l.created_at,
-      updated_at: l.updated_at,
-      assigned_to_profile: l.assigned_to_profile,
-    }));
+    const formattedLeads = submissions.map((sub) => {
+      const personalInfo = (sub.personal_info || {}) as Record<string, unknown>;
+      return {
+        id: sub.id,
+        first_name: (personalInfo.full_name as string || '').split(' ')[0] || '',
+        last_name: (personalInfo.full_name as string || '').split(' ').slice(1).join(' ') || '',
+        name: (personalInfo.full_name as string || '').trim() || 'Unknown',
+        email: personalInfo.email || '',
+        phone: personalInfo.phone || '',
+        source: 'website',
+        status: sub.status,
+        case_type: sub.case_type,
+        description: sub.case_description,
+        estimated_value: sub.estimated_value,
+        urgency: sub.urgency,
+        lead_score: sub.ai_confidence ? Math.round(sub.ai_confidence * 100) : null,
+        ai_summary: sub.ai_summary,
+        assigned_to: sub.reviewed_by,
+        notes: sub.review_notes,
+        tags: sub.ai_recommendations,
+        created_at: sub.created_at,
+        updated_at: sub.updated_at,
+        submitted_at: sub.submitted_at,
+        client: sub.client?.user ? { full_name: sub.client.user.full_name, email: sub.client.user.email } : null,
+        case: sub.case ? { case_ref: sub.case.case_ref, title: sub.case.title } : null,
+        reviewer: sub.reviewer ? { full_name: sub.reviewer.full_name, email: sub.reviewer.email } : null,
+      };
+    });
 
     return apiResponse({
       data: formattedLeads,
@@ -95,11 +103,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -108,10 +111,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { first_name, last_name, email, phone, source, case_type, description, estimated_value, company } = body;
+    const { first_name, last_name, email, phone, case_type, description, estimated_value, urgency } = body;
 
-    if (!first_name || !last_name || !email || !source) {
-      return apiError('First name, last name, email, and source are required', 400, 'MISSING_FIELDS');
+    if (!first_name || !last_name || !email) {
+      return apiError('First name, last name, and email are required', 400, 'MISSING_FIELDS');
     }
 
     // Validate email format
@@ -119,46 +122,49 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid email format', 400, 'INVALID_EMAIL');
     }
 
-    // Validate source enum
-    if (!VALID_SOURCES.includes(source)) {
-      return apiError(`Invalid source. Must be one of: ${VALID_SOURCES.join(', ')}`, 400, 'INVALID_SOURCE');
-    }
-
     // Validate case_type if provided
     if (case_type && !VALID_CASE_TYPES.includes(case_type)) {
       return apiError(`Invalid case_type. Must be one of: ${VALID_CASE_TYPES.join(', ')}`, 400, 'INVALID_CASE_TYPE');
     }
 
-    const { data: lead, error: insertError } = await db
-      .from('leads')
-      .insert({
-        first_name: sanitizeString(first_name),
-        last_name: sanitizeString(last_name),
-        email: email.toLowerCase(),
-        phone: phone ? sanitizeString(phone) : null,
-        company: company ? sanitizeString(company) : null,
-        source,
-        case_type: case_type || null,
-        description: description ? sanitizeString(description) : null,
-        estimated_value: estimated_value || null,
-        status: 'new',
-      })
-      .select()
-      .single();
+    // Try to find or create a client for this lead
+    let clientId: string | null = null;
+    const existingUser = await db.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+      include: { client_profile: true },
+    });
 
-    if (insertError || !lead) {
-      console.error('Create lead insert error:', insertError);
-      return apiError('Failed to create lead', 500, 'CREATE_LEAD_ERROR');
+    if (existingUser?.client_profile) {
+      clientId = existingUser.client_profile.id;
     }
+
+    const fullName = `${first_name} ${last_name}`.trim();
+
+    const submission = await db.intakeSubmission.create({
+      data: {
+        client_id: clientId,
+        case_type: case_type || null,
+        case_description: description ? sanitizeString(description) : null,
+        estimated_value: estimated_value || null,
+        urgency: urgency || 'medium',
+        personal_info: {
+          full_name: sanitizeString(fullName),
+          email: email.toLowerCase().trim(),
+          phone: phone ? sanitizeString(phone) : null,
+        },
+        status: 'submitted',
+        submitted_at: new Date(),
+      },
+    });
 
     await createAuditLog({
       user_id: auth.user.userId,
       action: 'CREATE_LEAD',
       resource_type: 'lead',
-      resource_id: lead.id,
+      resource_id: submission.id,
     });
 
-    return apiResponse(lead, 201);
+    return apiResponse(submission, 201);
   } catch (error) {
     console.error('Create lead error:', error);
     return apiError('Failed to create lead', 500, 'CREATE_LEAD_ERROR');

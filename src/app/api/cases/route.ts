@@ -1,89 +1,143 @@
 /**
- * GET/POST /api/cases - List/Create cases with pagination via Supabase
+ * GET/POST /api/cases - List/Create cases with pagination via Prisma/SQLite
+ * Role-based filtering:
+ * - Clients see only their own cases
+ * - Attorneys see cases assigned to them
+ * - Admins/managing_director see all cases
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
-import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Valid enum values per Supabase schema
-const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'intellectual_property', 'tax', 'personal_injury', 'debt_recovery', 'other'];
+// Valid enum values per Prisma schema
+const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'tax', 'personal_injury', 'debt_recovery', 'other'];
 const VALID_STATUSES = ['intake', 'review', 'active', 'on_hold', 'closed', 'archived'];
+
+/**
+ * Generate a unique case reference in format INF-YYYYMM-XXXXX
+ */
+async function generateCaseRef(): Promise<string> {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const prefix = `INF-${year}${month}`;
+
+  // Find the highest existing case_ref with this prefix
+  const existingCases = await db.case.findMany({
+    where: { case_ref: { startsWith: prefix } },
+    select: { case_ref: true },
+    orderBy: { case_ref: 'desc' },
+    take: 1,
+  });
+
+  let nextNum = 1;
+  if (existingCases.length > 0) {
+    const lastRef = existingCases[0].case_ref;
+    const lastNum = parseInt(lastRef.split('-').pop() || '0', 10);
+    nextNum = lastNum + 1;
+  }
+
+  return `${prefix}-${String(nextNum).padStart(5, '0')}`;
+}
 
 // GET - List cases with pagination and filters
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
-    const { page, perPage, from, to } = getPaginationParams(request);
+    const { page, perPage } = getPaginationParams(request);
     const url = new URL(request.url);
 
     const status = url.searchParams.get('status');
     const case_type = url.searchParams.get('case_type');
     const search = url.searchParams.get('search');
+    const urgency = url.searchParams.get('urgency');
 
-    // Build Supabase query — attorney_id FK references attorneys(id), attorneys.id → profiles(id)
-    const selectFields = '*, client:profiles!cases_client_id_fkey(id, full_name, email), attorney:attorneys!cases_attorney_id_fkey(profile:profiles(full_name, email))';
+    const role = auth.user.role as RoleKey;
+    const canViewAll = hasPermission(role, PERMISSIONS.VIEW_ALL_CASES);
 
-    let query = db.from('cases').select(selectFields, { count: 'exact' });
+    // Build where clause
+    const where: Record<string, unknown> = {};
+
+    // Role-based filtering
+    if (!canViewAll) {
+      // Client: find their client profile first, then filter by client_id
+      const clientProfile = await db.client.findUnique({
+        where: { user_id: auth.user.userId },
+      });
+      if (clientProfile) {
+        where.client_id = clientProfile.id;
+      } else {
+        // Attorney: see cases assigned to them
+        const isAttorney = ['attorney', 'associate', 'candidate_attorney'].includes(role);
+        if (isAttorney) {
+          where.attorney_id = auth.user.userId;
+        } else {
+          // No access to any cases
+          return apiResponse({
+            data: [],
+            pagination: createPaginationResult(0, page, perPage),
+          });
+        }
+      }
+    }
 
     // Apply filters
-    if (status) query = query.eq('status', status);
-    if (case_type) query = query.eq('case_type', case_type);
+    if (status) where.status = status;
+    if (case_type) where.case_type = case_type;
+    if (urgency) where.urgency = urgency;
 
-    // Search across multiple fields
+    // Search across title, case_ref, description
     if (search) {
-      query = query.or(`title.ilike.%${search}%,case_ref.ilike.%${search}%,description.ilike.%${search}%`);
+      where.OR = [
+        { title: { contains: search } },
+        { case_ref: { contains: search } },
+        { description: { contains: search } },
+      ];
     }
 
-    // Non-admin users can only see their own cases
-    if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      query = query.eq('client_id', auth.user.userId);
-    }
+    const [cases, total] = await Promise.all([
+      db.case.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        skip: (page - 1) * perPage,
+        take: perPage,
+        include: {
+          client: { include: { user: { select: { id: true, full_name: true, email: true } } } },
+          attorney: { select: { id: true, full_name: true, email: true, role: true } },
+        },
+      }),
+      db.case.count({ where }),
+    ]);
 
-    // Apply pagination and ordering
-    const result = await query
-      .order('created_at', { ascending: false })
-      .range(from, to);
-
-    if (result.error) {
-      console.error('Cases query error:', result.error);
-      return apiError('Failed to load cases', 500, 'CASES_ERROR');
-    }
-
-    const total = result.count || 0;
-
-    const formattedCases = (result.data || []).map((c: any) => ({
+    const formattedCases = cases.map((c) => ({
       id: c.id,
       case_ref: c.case_ref,
+      case_number: c.case_number,
       title: c.title,
       description: c.description,
       case_type: c.case_type,
+      urgency: c.urgency,
       status: c.status,
       client_id: c.client_id,
       attorney_id: c.attorney_id,
       opposing_party: c.opposing_party,
       court_name: c.court_name,
-      case_number: c.case_number,
       jurisdiction: c.jurisdiction,
       estimated_value: c.estimated_value,
       retainer_amount: c.retainer_amount,
       next_deadline: c.next_deadline,
       notes: c.notes,
       tags: c.tags,
+      is_high_risk: c.is_high_risk,
       created_at: c.created_at,
       updated_at: c.updated_at,
-      client: c.client,
-      lead_attorney: c.attorney?.profile || null,
+      client: c.client?.user ? { id: c.client.user.id, full_name: c.client.user.full_name, email: c.client.user.email } : null,
+      lead_attorney: c.attorney ? { id: c.attorney.id, full_name: c.attorney.full_name, email: c.attorney.email } : null,
     }));
 
     return apiResponse({
@@ -99,11 +153,6 @@ export async function GET(request: NextRequest) {
 // POST - Create new case
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -112,7 +161,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, case_type, client_id, estimated_value, opposing_party, court_name, jurisdiction, notes } = body;
+    const { title, description, case_type, client_id, estimated_value, opposing_party, court_name, jurisdiction, notes, urgency } = body;
 
     if (!title || !case_type || !client_id) {
       return apiError('Title, case type, and client are required', 400, 'MISSING_FIELDS');
@@ -129,60 +178,66 @@ export async function POST(request: NextRequest) {
       return apiError(`Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`, 400, 'INVALID_STATUS');
     }
 
+    // Validate urgency if provided
+    if (urgency && !['low', 'medium', 'high', 'critical'].includes(urgency)) {
+      return apiError('Invalid urgency level', 400, 'INVALID_URGENCY');
+    }
+
     // Validate client exists
-    const { data: clientExists } = await db
-      .from('profiles')
-      .select('id')
-      .eq('id', client_id)
-      .single();
+    const clientExists = await db.client.findUnique({ where: { id: client_id } });
     if (!clientExists) {
       return apiError('Client not found', 404, 'CLIENT_NOT_FOUND');
     }
 
-    // Sanitize string inputs
-    const sanitizedTitle = sanitizeString(title);
-    const sanitizedDescription = description ? sanitizeString(description) : null;
+    // Generate unique case reference
+    const caseRef = await generateCaseRef();
 
-    // Resolve attorney_id: look up the attorney record for the current user
+    // Determine attorney_id: if the creator is an attorney, assign to them
     let attorneyId: string | null = null;
-    const { data: attorneyRecord } = await db
-      .from('attorneys')
-      .select('id')
-      .eq('id', auth.user.userId)
-      .single();
-    if (attorneyRecord) {
-      attorneyId = attorneyRecord.id;
+    const creatorRole = auth.user.role as RoleKey;
+    if (['attorney', 'associate', 'candidate_attorney'].includes(creatorRole)) {
+      attorneyId = auth.user.userId;
+    } else if (body.attorney_id) {
+      // Validate attorney exists
+      const attorneyExists = await db.user.findUnique({
+        where: { id: body.attorney_id, role: { in: ['attorney', 'associate', 'candidate_attorney'] } },
+      });
+      if (attorneyExists) {
+        attorneyId = body.attorney_id;
+      }
     }
 
-    const { data: newCase, error: insertError } = await db
-      .from('cases')
-      .insert({
-        title: sanitizedTitle,
-        description: sanitizedDescription,
+    const newCase = await db.case.create({
+      data: {
+        case_ref: caseRef,
+        title,
+        description: description || null,
         case_type,
         status,
+        urgency: urgency || 'medium',
         client_id,
         attorney_id: attorneyId,
         estimated_value: estimated_value || null,
-        opposing_party: opposing_party ? sanitizeString(opposing_party) : null,
-        court_name: court_name ? sanitizeString(court_name) : null,
-        jurisdiction: jurisdiction ? sanitizeString(jurisdiction) : null,
-        notes: notes ? sanitizeString(notes) : null,
-      })
-      .select()
-      .single();
+        opposing_party: opposing_party || null,
+        court_name: court_name || null,
+        jurisdiction: jurisdiction || null,
+        notes: notes || null,
+      },
+      include: {
+        client: { include: { user: { select: { full_name: true, email: true } } } },
+        attorney: { select: { full_name: true, email: true } },
+      },
+    });
 
-    if (insertError || !newCase) {
-      console.error('Create case insert error:', insertError);
-      return apiError('Failed to create case', 500, 'CREATE_CASE_ERROR');
-    }
-
-    // Create timeline entry — schema uses event_type, event_description, performed_by
-    await db.from('case_timeline').insert({
-      case_id: newCase.id,
-      event_type: 'CASE_CREATED',
-      event_description: 'Case created and assigned',
-      performed_by: auth.user.userId,
+    // Create timeline entry
+    await db.caseTimeline.create({
+      data: {
+        case_id: newCase.id,
+        event_type: 'CASE_CREATED',
+        event_description: 'Case created and assigned',
+        performed_by: auth.user.userId,
+        is_system_event: false,
+      },
     });
 
     await createAuditLog({

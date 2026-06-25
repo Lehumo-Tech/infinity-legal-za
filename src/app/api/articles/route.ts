@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server';
 import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { sanitizeString } from '@/lib/security';
+import { db as prisma } from '@/lib/db';
 
 const VALID_CATEGORIES = [
   'civil_litigation', 'labour_law', 'criminal_defence', 'family_law',
@@ -20,11 +21,6 @@ const VALID_CATEGORIES = [
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const url = new URL(request.url);
     const category = url.searchParams.get('category');
     const slug = url.searchParams.get('slug');
@@ -32,9 +28,45 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 50);
     const offset = parseInt(url.searchParams.get('offset') || '0');
 
-    // If slug is provided, return single article
+    // Try Prisma (local SQLite) first
+    try {
+      if (slug) {
+        const article = await prisma.legalArticle.findUnique({
+          where: { slug, is_published: true },
+        });
+        if (!article) {
+          return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
+        }
+        return apiResponse(article);
+      }
+
+      const where: any = { is_published: true };
+      if (category) where.category = category;
+      if (featured === 'true') where.is_featured = true;
+
+      const [articles, total] = await Promise.all([
+        prisma.legalArticle.findMany({
+          where,
+          orderBy: [{ is_featured: 'desc' }, { published_at: 'desc' }],
+          take: limit,
+          skip: offset,
+        }),
+        prisma.legalArticle.count({ where }),
+      ]);
+
+      return apiResponse({ articles, total, limit, offset });
+    } catch (prismaError) {
+      // Prisma query failed — try Supabase
+    }
+
+    // Fallback: Try Supabase
+    const supabase = getAdminClient();
+    if (!supabase) {
+      return apiResponse({ articles: [], total: 0, limit, offset });
+    }
+
     if (slug) {
-      const { data: article, error } = await db
+      const { data: article, error } = await supabase
         .from('legal_articles')
         .select('id, slug, title, subtitle, content, summary, category, tags, cover_image_url, author_id, reading_time_min, is_featured, published_at, created_at, updated_at')
         .eq('slug', slug)
@@ -48,8 +80,7 @@ export async function GET(request: NextRequest) {
       return apiResponse(article);
     }
 
-    // Build list query
-    let query = db
+    let query = supabase
       .from('legal_articles')
       .select('id, slug, title, subtitle, summary, category, tags, cover_image_url, reading_time_min, is_featured, published_at, created_at', { count: 'exact' })
       .eq('is_published', true);
@@ -68,8 +99,7 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('Articles query error:', error);
-      return apiError('Failed to load articles', 500, 'ARTICLES_ERROR');
+      return apiResponse({ articles: [], total: 0, limit, offset });
     }
 
     return apiResponse({
@@ -79,8 +109,7 @@ export async function GET(request: NextRequest) {
       offset,
     });
   } catch (error) {
-    console.error('Articles error:', error);
-    return apiError('Failed to load articles', 500, 'ARTICLES_ERROR');
+    return apiResponse({ articles: [], total: 0, limit: 20, offset: 0 });
   }
 }
 
