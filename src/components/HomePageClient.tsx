@@ -49,7 +49,7 @@ import { useAuth } from '@/hooks/useAuth';
 // ============================================
 // TYPES
 // ============================================
-type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart' | 'subscription';
+type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart' | 'subscription' | 'communications';
 type UserRole = 'managing_director' | 'admin' | 'attorney' | 'paralegal' | 'systems_admin' | 'client';
 
 // Role display mapping — attorney shows as "Legal Advisor" in UI

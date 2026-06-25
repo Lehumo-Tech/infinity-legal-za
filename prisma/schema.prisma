@@ -55,6 +55,7 @@ model User {
   audit_logs            AuditLog[]
   intake_submissions    IntakeSubmission[]     @relation("IntakeReviewer")
   ai_analyses_requested AiAnalysis[]
+  communication_logs  CommunicationLog[]
 
   @@index([role])
   @@index([email])
@@ -637,6 +638,67 @@ model AdminSession {
   @@index([token])
   @@index([user_id])
   @@index([expires_at])
+}
+
+// ============================================
+// COMMUNICATION LOGS (Email + SMS tracking)
+// ============================================
+
+model CommunicationLog {
+  id             String   @id @default(uuid())
+  user_id        String?
+  recipient_email String?
+  recipient_phone String?
+  recipient_name String?
+  /// CHECK: email | sms
+  channel        String
+  /// CHECK: welcome | verification | consultation_reminder | case_update | payment_confirmation | marketing | notification | custom
+  category       String   @default("custom")
+  subject        String?
+  content        String
+  /// CHECK: pending | sent | delivered | failed | bounced
+  status         String   @default("pending")
+  provider_id    String?  // External provider message ID (Resend/Twilio)
+  provider       String?  // resend | twilio | simulated
+  error_message  String?
+  metadata       Json?
+  sent_at        DateTime?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user User? @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([channel])
+  @@index([status])
+  @@index([category])
+  @@index([created_at])
+}
+
+// ============================================
+// EMAIL TEMPLATES
+// ============================================
+
+model EmailTemplate {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  /// CHECK: email | sms
+  channel     String   @default("email")
+  /// CHECK: welcome | verification | consultation_reminder | case_update | payment_confirmation | marketing | notification | custom
+  category    String   @default("custom")
+  subject     String?  // Email subject line (null for SMS)
+  body_html   String?  // HTML template for emails
+  body_text   String?  // Plain text template (for SMS or email fallback)
+  variables   Json?    // Available template variables
+  is_active   Boolean  @default(true)
+  is_system   Boolean  @default(false) // System templates cannot be deleted
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([name])
+  @@index([channel])
+  @@index([category])
+  @@index([is_active])
 }
 
 // ============================================
