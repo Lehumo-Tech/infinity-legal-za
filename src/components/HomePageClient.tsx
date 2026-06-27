@@ -44,6 +44,7 @@ import { toast } from 'sonner';
 import { LandingPage } from '@/components/LandingPage';
 import { LoginScreen } from '@/components/LoginScreen';
 import { PaymentWall } from '@/components/PaymentWall';
+import { CommunicationsView } from '@/components/CommunicationsView';
 import { useAuth } from '@/hooks/useAuth';
 
 // ============================================
@@ -412,6 +413,7 @@ export default function HomePageClient() {
       items.push({ id: 'documents', label: 'My Documents', icon: FileText, group: 'My Legal' });
       items.push({ id: 'tasks', label: 'My Tasks', icon: CheckCircle2, group: 'My Legal' });
       items.push({ id: 'subscription', label: subscription ? 'My Plan' : 'Subscribe', icon: subscription ? Crown : Zap, group: 'Plan' });
+      items.push({ id: 'communications', label: 'Messages', icon: Mail, group: 'Plan' });
     } else {
       // STAFF NAVIGATION
       items.push({ id: 'cases', label: 'Cases', icon: FolderKanban, group: 'Practice' });
@@ -434,6 +436,7 @@ export default function HomePageClient() {
       }
 
       items.push({ id: 'pricing', label: 'Pricing', icon: DollarSign, group: 'More' });
+      items.push({ id: 'communications', label: 'Communications', icon: Mail, group: 'More' });
     }
 
     return items;
@@ -803,6 +806,7 @@ export default function HomePageClient() {
           {currentView === 'org-chart' && <OrgChartView staff={staff} />}
           {currentView === 'analytics' && <AnalyticsView token={token} stats={stats} />}
           {currentView === 'pricing' && <PricingView plans={pricingPlans} onSubscribe={(planId) => setCurrentView('subscription')} onLoginClick={() => {}} isAuthenticated={true} />}
+          {currentView === 'communications' && <CommunicationsView token={token} user={user} staff={staff} />}
           {(currentView === 'subscription') && (
             <div className="space-y-6">
               {subscription ? (

@@ -18,7 +18,7 @@ import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF }
 import { sendEmail, isEmailConfigured } from '@/lib/email-service';
 import { sendSms, isSmsConfigured, formatSaPhone } from '@/lib/sms-service';
 import { renderEmailTemplate, renderSmsTemplate } from '@/lib/communication-templates';
-import { communicationsRateLimiter } from '@/lib/middleware';
+import { communicationsRateLimiter } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {

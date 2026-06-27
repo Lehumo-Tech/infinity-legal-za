@@ -20,6 +20,9 @@ import { signupRateLimiter, isValidEmail, sanitizeString } from '@/lib/security'
 import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF } from '@/lib/middleware';
 import { createAuditLog, logConsent } from '@/lib/audit';
 import { createLocalUser, isSupabaseReachable } from '@/lib/local-auth';
+import { sendEmail } from '@/lib/email-service';
+import { sendSms, formatSaPhone } from '@/lib/sms-service';
+import { renderEmailTemplate, renderSmsTemplate } from '@/lib/communication-templates';
 
 export async function POST(request: NextRequest) {
   try {
@@ -162,6 +165,38 @@ export async function POST(request: NextRequest) {
             user_agent: userAgent,
           });
 
+          // Send welcome email + SMS (fire-and-forget, don't block signup)
+          const welcomeVars = {
+            full_name: sanitizedName,
+            first_name: sanitizedName.split(' ')[0],
+            email: email.toLowerCase().trim(),
+            phone: phone ? sanitizeString(phone.trim()) : '',
+          };
+          const welcomeEmail = renderEmailTemplate('welcome', welcomeVars);
+          if (welcomeEmail) {
+            sendEmail({
+              to: email.toLowerCase().trim(),
+              subject: welcomeEmail.subject,
+              html: welcomeEmail.html,
+              text: welcomeEmail.text,
+              category: 'welcome',
+              userId: authData.user.id,
+              recipientName: sanitizedName,
+            }).catch(err => console.error('[Signup] Welcome email failed:', err));
+          }
+          if (phone && formatSaPhone(phone)) {
+            const smsText = renderSmsTemplate('welcome', welcomeVars);
+            if (smsText) {
+              sendSms({
+                to: phone,
+                message: smsText,
+                category: 'welcome',
+                userId: authData.user.id,
+                recipientName: sanitizedName,
+              }).catch(err => console.error('[Signup] Welcome SMS failed:', err));
+            }
+          }
+
           // Sign In to Get Token
           const { data: signInData, error: signInError } = await db.auth.signInWithPassword({
             email: email.toLowerCase().trim(),
@@ -226,6 +261,38 @@ export async function POST(request: NextRequest) {
       ip_address: ipAddress,
       user_agent: userAgent,
     });
+
+    // Send welcome email + SMS (fire-and-forget, don't block signup)
+    const localWelcomeVars = {
+      full_name: sanitizedName,
+      first_name: sanitizedName.split(' ')[0],
+      email: email.toLowerCase().trim(),
+      phone: phone ? sanitizeString(phone.trim()) : '',
+    };
+    const localWelcomeEmail = renderEmailTemplate('welcome', localWelcomeVars);
+    if (localWelcomeEmail) {
+      sendEmail({
+        to: email.toLowerCase().trim(),
+        subject: localWelcomeEmail.subject,
+        html: localWelcomeEmail.html,
+        text: localWelcomeEmail.text,
+        category: 'welcome',
+        userId: localResult.user.id,
+        recipientName: sanitizedName,
+      }).catch(err => console.error('[Signup/Local] Welcome email failed:', err));
+    }
+    if (phone && formatSaPhone(phone)) {
+      const localSmsText = renderSmsTemplate('welcome', localWelcomeVars);
+      if (localSmsText) {
+        sendSms({
+          to: phone,
+          message: localSmsText,
+          category: 'welcome',
+          userId: localResult.user.id,
+          recipientName: sanitizedName,
+        }).catch(err => console.error('[Signup/Local] Welcome SMS failed:', err));
+      }
+    }
 
     return apiResponse({
       token: localResult.token,
