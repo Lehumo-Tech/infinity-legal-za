@@ -1,18 +1,11 @@
 ▲ Next.js 16.1.3 (webpack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.6.50:3000
+- Network:       http://21.0.8.45:3000
 - Environments: .env
 
 ✓ Starting...
-✓ Ready in 1449ms
+✓ Ready in 1381ms
 ○ Compiling / ...
-Request timed out after 3000ms
-
-Retrying 1/3...
- GET / 200 in 48ms (compile: 3ms, proxy.ts: 13ms, render: 32ms)
-[Email/Resend] API error: {
-  statusCode: 403,
-  name: 'validation_error',
-  message: 'You can only send testing emails to your own email address (jaytmokwena@gmail.com). To send emails to other recipients, please verify a domain at resend.com/domains, and change the `from` address to an email using this domain.'
-}
- POST /api/communications/send 500 in 2.1s (compile: 984ms, proxy.ts: 5ms, render: 1130ms)
+ GET / 200 in 505ms (compile: 4ms, proxy.ts: 467ms, render: 34ms)
+ GET / 200 in 34ms (compile: 3ms, proxy.ts: 4ms, render: 27ms)
+ GET /api/communications/status 200 in 2.6s (compile: 2.6s, proxy.ts: 4ms, render: 42ms)

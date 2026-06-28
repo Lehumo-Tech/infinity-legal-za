@@ -2,23 +2,16 @@
 bun install v1.3.14 (0d9b296a)
 No packages! Deleted empty lockfile
 
-[6.00ms] done
+[19.00ms] done
 [pocketbase-service] Running bun run dev...
 $ bun --hot index.ts
-56 |     pbProcess = null;
-57 |   });
-58 | }
-59 | 
-60 | // Health check endpoint (simple HTTP server)
-61 | const healthServer = Bun.serve({
-                              ^
-error: Failed to start server. Is port 8091 in use?
- syscall: "listen",
-   errno: 0,
-    code: "EADDRINUSE"
-
-      at /home/z/my-project/mini-services/pocketbase-service/i[PB-Service] Serror: script "dev" was terminated by signal SIGTERM (Polite quit request)
-igration 1779219268_created_case_timeline.js: fields: (1: (collectionId: The relation collection doesn't exist..).).
+[PB-Service] Health endpoint on port 8091
+[PB-Service] Starting PocketBase on 0.0.0.0:8090...
+[PocketBase] Error: Failed to apply migration 1779219268_created_case_timeline.js: fields: (1: (collectionId: The relation collection doesn't exist..).).
+[PB-Service] Process exited with code 0, signal null
+[PB-Service] Restarting... (attempt 1/10)
+[PB-Service] Starting PocketBase on 0.0.0.0:8090...
+[PocketBase] Error: Failed to apply migration 1779219268_created_case_timeline.js: fields: (1: (collectionId: The relation collection doesn't exist..).).
 [PB-Service] Process exited with code 0, signal null
 [PB-Service] Restarting... (attempt 2/10)
 [PB-Service] Starting PocketBase on 0.0.0.0:8090...
