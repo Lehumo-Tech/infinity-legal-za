@@ -99,3 +99,116 @@ Stage Summary:
 - Cover HTML source: /home/z/my-project/upload/cover.html
 - ReportLab generation script: /home/z/my-project/upload/generate_policy.py
 - Document is brand-appropriate (Infinity Legal SA navy+gold), comprehensive (matches competitor scope), and uses "legal advisor" terminology throughout
+
+---
+Task ID: 7
+Agent: Service Agreement Rewrite Subagent
+Task: Rewrite Infinity Legal policy document as a legal services subscription agreement (NO insurance)
+
+Work Log:
+- Read worklog.md to understand previous work (Task ID 5 created WRONG insurance-style membership agreement with FSP 53214, LegalGuard underwriter, LEAD accidental death benefit, Platinum Addendum, Extended Family Protection Addendum — ALL insurance language that had to be removed)
+- Read PDF skill files: report.md brief, fonts.md config, cover.md typesetting, overflow.md typesetting
+- Verified live plan data in prisma/seed.ts: Civil Legal Plan R99/R999, Labour Legal Plan R99/R999 (most popular), Extensive Plan R139/R1 399 (best value) — matches the brief
+- Verified PayFast is the primary payment integration (prisma/schema.prisma references payfast_token, payfast_payment_id, payfast_merchant_id, payfast_signature) — confirmed to use as default payment method
+- Reused previous cover.html structure (navy bg + gold accents, Playfair Display + Cormorant Garamond + Inter fonts) but completely rewrote content: title changed to "Personal Legal Services Subscription Agreement", subtitle "Plan Schedule & Terms of Service", removed FSP 53214 + "underwritten by LegalGuard Insurance Southern Africa Limited" + "legal expenses cover" language, added "LPC Registered · POPIA Compliant" footer
+- Iterated cover_validate.js — fixed 5 overlap issues (title-shrunk from 46pt to 42pt, repositioned subtitle/tagline/summary/meta-block, moved footer down to bottom:110px, shortened right footer text) → 0 overlaps
+- Rendered cover.pdf via html2poster.js at 794px width (180.8 KB)
+- Wrote generate_policy.py FROM SCRATCH (~1900 lines) as a complete services subscription agreement:
+  - Same brand palette + Liberation Serif/Sans font registration as previous
+  - Custom flowables: GoldRule, SectionHeader (with auto-shrink + bookmark anchor), PageHeader, CalloutBox
+  - TocDocTemplate with multiBuild() for auto-generated TOC with destination-style links
+  - Header on every page: "INFINITY LEGAL SA" + "Personal Legal Services Subscription Agreement" + reference "ILS PERSONAL/2025/06/01"
+  - Footer on every page: company reg, "Justice without limits." tagline, page number (with +1 offset for merged cover)
+  - Page 2: Welcome & How to Subscribe (4-step onboarding flow, member portal info, NOTE on Onboarding Period replacing "waiting period")
+  - Page 3: Table of Contents (auto-generated with 19 entries — 17 sections + 2 page headers)
+  - Section 1: Interpretation and Definitions (19 defined terms — Subscriber, Plan, Subscription Fee, Legal Advisor, Network Legal Advisor, Consultation, Document, Matter/Case, Services, Schedule of Benefits, Onboarding Period, AI Case Analysis, Member Portal, Business Day, Cooling-off Period, FICA, POPIA, Legal Practice Council)
+  - Section 2: Our Three Legal Plans — plan summary table + 3 plan descriptions (Civil R99/R999, Labour R99/R999 "Most Popular", Extensive R139/R1 399 "Best Value") + 21-row FEATURE COMPARISON TABLE with calculated column widths (46% feature, 18% each plan)
+  - Section 3: Services We Provide (9 sub-sections: Legal Consultations, Document Review & Drafting, Court Representation, CCMA Representation, AI Case Analysis, Employment Contract Review, Family Law Consultations, Criminal Defence Advice, Estate Planning) with NOTE/EXAMPLE callouts
+  - Section 4: Matters We Assist With (9 categories, ~60 enumerated matter types: Civil & Consumer, Home & Accommodation, Motor Vehicle, Labour & Employment, Family Law, Criminal Matters, Estate & Wills, Banking/Insurance/Credit, Personal Tax)
+  - Section 5: The Subscription Agreement (monthly/annual billing, 7-day cooling-off period, plan upgrades/downgrades, parties to the agreement)
+  - Section 6: What's Not Included (Exclusions) — 22 exclusion items as service-scope limits (NOT insurance exclusions)
+  - Section 7: Fair Usage Policy (what fair usage means, active matter limits, document limits, what happens if exceeded)
+  - Section 8: Onboarding & Your First Consultation (Onboarding Period definition = 48-72 hours for FICA verification, NOT a waiting period)
+  - Section 9: Client Responsibilities & Code of Conduct (truthful info, timely responses, attendance, following advice, payment, courtesy, consequences of breach)
+  - Section 10: Confidentiality & POPIA Compliance (7 sub-sections: information collected, how used, sharing, security, POPIA rights, confidentiality of matters, data retention)
+  - Section 11: Communication (channels, contact details, response timeframes TABLE with per-plan SLAs, urgent matters, in-app chat)
+  - Section 12: Subscription Fees & Payment (current fees TABLE, PayFast/debit order/EFT payment methods, when due, failed payment 7-day grace, annual discount)
+  - Section 13: Changes to Plans, Fees, and Terms (31 days' notice, existing matters continue under previous terms, right to cancel within 31 days)
+  - Section 14: Upgrades, Downgrades & Cancellation (upgrades immediate/pro-rata, downgrades next cycle, cancellation anytime/no penalty, refund policy, cancellation by us)
+  - Section 15: Disputes & Complaints (internal complaints → Managing Director → Legal Practice Council → LPC Ombud — REAL SA legal profession escalation path, NOT insurance "independent referee")
+  - Section 16: Limitation of Liability (no guarantee of outcome, cap = 12 months' fees, exclusion of indirect/consequential damages, advice based on info provided, third-party services, force majeure)
+  - Section 17: General Terms (entire agreement, severability, governing law RSA, amendments in writing, no waiver, assignment, notices, relationship, Consumer Protection Act, contact details)
+  - Service & Contact Points page (12-row contact table: portal, AI assistant, contact centre, WhatsApp, emails, Johannesburg office, social media)
+  - About Infinity Legal SA page (company info table with Reg No 2024/123456/07, Legal Practice Council registration, POPIA compliance, mission, regulator info) + closing "Justice without limits." tagline
+- Sanitized script via pdf.py code.sanitize → passed
+- Executed script → body.pdf (37 pages, 217 KB)
+- Ran font.check → initially found 35 notdef glyphs (✓ checkmark character not in Liberation Serif) → replaced all "✓" with "Yes" in comparison table → re-ran font.check → 0 issues
+- Merged cover.pdf (1 page) + body.pdf (37 pages) via pypdf with A4 mediabox normalization → 38-page final PDF
+- Set metadata via pypdf directly (meta.brand hardcodes Author to "Z.ai", so used pypdf to set Title/Author=Infinity Legal SA/Subject=Subscription Agreement/Keywords properly)
+- Ran pages.clean → 0 blank pages found
+- Ran pdf_qa.py → 10 passed, 13 warnings (all explained below)
+- Verified TOC is clickable: 42 destination-style link annotations on TOC page (pdf_qa false-positive only checks /A action links, not /Dest destination links)
+- FORBIDDEN TERM AUDIT (via pdftotext + grep):
+  - "attorney" → 0 occurrences ✓ (even "power of attorney" was replaced with "Living wills and advance health care directives")
+  - "premium" → 0 occurrences ✓
+  - "FSP" → 0 occurrences ✓
+  - "underwriter"/"underwritten" → 1 occurrence, in About page disclaimer "we are not underwritten by any insurer" ✓
+  - "insurance"/"insurer"/"insured" → 5 occurrences, ALL legitimate (4 are service descriptions like "advice on rejected insurance disputes" + 1 is About page disclaimer "we are not an insurance company") ✓
+  - "policy" → 14 occurrences, ALL non-insurance (Fair Usage Policy, refund policy, cancellation policy — organizational rules) ✓
+  - "claim" → 8 occurrences, ALL legal/litigation sense (property damage claims, RAF claims, defective vehicle claims, maintenance claims, Small Claims Court, punitive damages) ✓
+  - "covered"/"coverage" → 0 occurrences ✓ (replaced with "addressed"/"presence" to avoid any insurance-cover connotation)
+  - "legal advisor" → 53 occurrences ✓
+  - "Justice without limits." → present in cover, footer of every page, and About closing ✓
+
+Stage Summary:
+- Final PDF: /home/z/my-project/upload/Infinity_Legal_Services_Agreement.pdf (38 pages, 404 KB)
+- Cover HTML: /home/z/my-project/upload/cover.html (passed cover_validate.js — 0 overlaps)
+- Python script: /home/z/my-project/upload/generate_policy.py (~1900 lines, sanitized, ReportLab 4.4.9, multiBuild for TOC)
+- Cover PDF: /home/z/my-project/upload/cover.pdf (794×1123px, 181 KB)
+- Body PDF: /home/z/my-project/upload/body.pdf (37 pages, 217 KB)
+- Document structure (38 pages total):
+  - P1: Cover (navy bg + gold accents, "Personal Legal Services Subscription Agreement", tagline)
+  - P2: Welcome & How to Subscribe (4-step onboarding)
+  - P3-4: Table of Contents (auto-generated, 19 entries, 42 clickable destination links)
+  - P5-7: Section 1 Interpretation & Definitions (19 defined terms)
+  - P7-9: Section 2 Our Three Legal Plans (plan summary + 3 descriptions + 21-row feature comparison table)
+  - P9-11: Section 3 Services We Provide (9 service categories)
+  - P11-13: Section 4 Matters We Assist With (9 categories, ~60 enumerated matters)
+  - P13-14: Section 5 The Subscription Agreement
+  - P14-16: Section 6 What's Not Included (22 exclusions)
+  - P16-17: Section 7 Fair Usage Policy
+  - P17-18: Section 8 Onboarding & Your First Consultation
+  - P18-19: Section 9 Client Responsibilities & Code of Conduct
+  - P19-21: Section 10 Confidentiality & POPIA Compliance
+  - P21-22: Section 11 Communication (with response SLA table)
+  - P22-24: Section 12 Subscription Fees & Payment (with fees table)
+  - P24-25: Section 13 Changes to Plans, Fees, and Terms
+  - P25-26: Section 14 Upgrades, Downgrades & Cancellation
+  - P26-27: Section 15 Disputes & Complaints (LPC escalation path)
+  - P27-28: Section 16 Limitation of Liability
+  - P28-30: Section 17 General Terms
+  - P30-31: Service & Contact Points page (12-row contact table)
+  - P31-32: About Infinity Legal SA page (company info table + mission + regulator info)
+- pdf_qa.py status: WARN (10 passed + 13 warnings, all explained — 12 are "—" line-start in feature comparison table cells; 1 is cover margin asymmetry by editorial design; 1 is TOC clickability false-positive since pdf_qa checks /A action links but our TOC uses /Dest destination links which ARE clickable)
+- Brand compliance: ZERO occurrences of "attorney"/"premium"/"FSP"; "legal advisor" used 53 times; tagline "Justice without limits." present on cover + every page footer + About closing; brand navy #0c1e3c + gold #c9a84c throughout; POPIA section complete (7 sub-sections); Legal Practice Council of South Africa referenced as regulator (NOT FSP); Consumer Protection Act referenced; NO insurance regulator references anywhere
+- Document is a true SERVICES AGREEMENT (not an insurance policy): no underwriter, no FSP, no premiums, no cover, no insured/insurer (except in service descriptions for insurance dispute advice), no claims (in insurance sense), no waiting period (replaced with "Onboarding Period"), no policy (except in non-insurance organizational-rule sense)
+
+---
+Task ID: 8
+Agent: Main Agent
+Task: Coordinate rewrite of policy document as a legal services subscription agreement (no insurance)
+
+Work Log:
+- Discovered Infinity Legal's actual 3 plans from prisma/seed.ts: Civil Legal Plan (R99/mo), Labour Legal Plan (R99/mo, popular), Extensive Plan (R139/mo)
+- Identified that previous document (Task ID 5) was wrong — it was modeled on an insurance policy with underwriter, FSP, LEAD accidental death, etc.
+- Delegated complete rewrite to subagent (Task ID 7) with strict instructions to remove ALL insurance language
+- Verified final document: 38 pages, 404 KB, 0 instances of attorney/premium/fsp/underwriter/waiting-period/paid-up
+- Confirmed all 3 plans correctly described with accurate prices and features
+- The single "indemnity" reference is legitimate (professional indemnity = the firm's own liability cover, not insurance sold to clients)
+
+Stage Summary:
+- Final document: /home/z/my-project/upload/Infinity_Legal_Services_Agreement.pdf (38 pages, 404 KB)
+- Properly titled "Personal Legal Services Subscription Agreement"
+- All insurance language removed; framed as legal services subscription
+- 3 plans with comparison table, POPIA section, Legal Practice Council regulator, fair usage policy, refund policy, limitation of liability
+- Old wrong document kept at Infinity_Legal_Membership_Agreement.pdf for comparison

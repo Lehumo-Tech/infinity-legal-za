@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """
-Infinity Legal SA - Personal Legal Membership Agreement
+Infinity Legal SA - Personal Legal Services Subscription Agreement
 Body PDF generator (ReportLab).
 
-This script builds the body of the policy document. The cover is rendered
-separately as HTML -> PDF and merged afterwards via pypdf.
+This script builds the body of a legal-services subscription agreement. The
+cover is rendered separately as HTML -> PDF and merged afterwards via pypdf.
+
+Infinity Legal SA is a legal SERVICES company, NOT an insurance company.
+This document contains NO insurance terminology (no premium, no cover, no
+insured, no claim, no underwriter, no FSP, no policy, no waiting period).
+It uses "legal advisor" terminology throughout (never "attorney").
 
 Brand:
   - Primary Navy  #0c1e3c   (section headings, primary text)
@@ -37,26 +42,25 @@ from reportlab.platypus import (
 from reportlab.platypus.tableofcontents import TableOfContents
 
 # ---------------------------------------------------------------------------
-# Brand palette (overrides auto-generated cascade palette — brand colours win)
+# Brand palette
 # ---------------------------------------------------------------------------
-NAVY        = colors.HexColor('#0c1e3c')   # primary navy
-NAVY_DARK   = colors.HexColor('#081428')   # darkest navy (body text)
-NAVY_LIGHT  = colors.HexColor('#132d52')   # lighter navy
-NAVY_700    = colors.HexColor('#1a3358')   # navy 700
-NAVY_50     = colors.HexColor('#f0f4f8')   # navy tint (callout bg)
-NAVY_100    = colors.HexColor('#dbe4ed')   # navy 100 (table stripe)
-NAVY_200    = colors.HexColor('#b8c9dc')   # navy 200 (borders)
+NAVY        = colors.HexColor('#0c1e3c')
+NAVY_DARK   = colors.HexColor('#081428')
+NAVY_LIGHT  = colors.HexColor('#132d52')
+NAVY_700    = colors.HexColor('#1a3358')
+NAVY_50     = colors.HexColor('#f0f4f8')
+NAVY_100    = colors.HexColor('#dbe4ed')
+NAVY_200    = colors.HexColor('#b8c9dc')
 
-GOLD        = colors.HexColor('#c9a84c')   # accent gold
-GOLD_DARK   = colors.HexColor('#a88832')   # gold dark
-GOLD_LIGHT  = colors.HexColor('#dfc475')   # gold light
-GOLD_50     = colors.HexColor('#fdf8ed')   # gold tint
+GOLD        = colors.HexColor('#c9a84c')
+GOLD_DARK   = colors.HexColor('#a88832')
+GOLD_LIGHT  = colors.HexColor('#dfc475')
+GOLD_50     = colors.HexColor('#fdf8ed')
 
 TEXT_PRIMARY = NAVY_DARK
 TEXT_MUTED   = colors.HexColor('#5a6a82')
 BORDER       = colors.HexColor('#c5d1e0')
 
-# Aliases for table styling
 TABLE_HEADER_BG    = NAVY
 TABLE_HEADER_TEXT  = colors.white
 TABLE_ROW_EVEN     = colors.white
@@ -164,13 +168,23 @@ TABLE_HEADER = ParagraphStyle(
     'TableHeader', fontName='LibSans-Bold', fontSize=9.5, leading=12,
     textColor=colors.white, alignment=TA_LEFT,
 )
+TABLE_HEADER_CENTER = ParagraphStyle(
+    'TableHeaderCenter', fontName='LibSans-Bold', fontSize=9.5, leading=12,
+    textColor=colors.white, alignment=TA_CENTER,
+)
 TABLE_CELL = ParagraphStyle(
     'TableCell', fontName='LibSerif', fontSize=9.5, leading=12.5,
     textColor=NAVY_DARK, alignment=TA_LEFT,
 )
-TABLE_CELL_NUM = ParagraphStyle(
-    'TableCellNum', fontName='LibSans-Bold', fontSize=9.5, leading=12.5,
-    textColor=NAVY, alignment=TA_CENTER,
+TABLE_CELL_CENTER = ParagraphStyle(
+    'TableCellCenter', parent=TABLE_CELL, alignment=TA_CENTER,
+)
+TABLE_CELL_BOLD = ParagraphStyle(
+    'TableCellBold', fontName='LibSans-Bold', fontSize=9.5, leading=12.5,
+    textColor=NAVY, alignment=TA_LEFT,
+)
+TABLE_CELL_BOLD_CENTER = ParagraphStyle(
+    'TableCellBoldCenter', parent=TABLE_CELL_BOLD, alignment=TA_CENTER,
 )
 
 TOC_HEADING = ParagraphStyle(
@@ -199,21 +213,17 @@ REG_BODY = ParagraphStyle(
     'RegBody', parent=BODY, fontSize=9.5, leading=13.5, alignment=TA_LEFT,
 )
 
-
 # ---------------------------------------------------------------------------
 # Custom flowables
 # ---------------------------------------------------------------------------
 class GoldRule(Flowable):
-    """A thin gold horizontal rule with optional navy section number tag."""
-    def __init__(self, width=None, thickness=2.0, color=GOLD,
-                 label=None, label_color=NAVY):
+    """A thin gold horizontal rule."""
+    def __init__(self, width=None, thickness=2.0, color=GOLD):
         super().__init__()
         self.width = width
         self.thickness = thickness
         self.color = color
-        self.label = label
-        self.label_color = label_color
-        self.height = thickness + (12 if label else 0)
+        self.height = thickness
 
     def wrap(self, availWidth, availHeight):
         self._w = self.width or availWidth
@@ -221,15 +231,9 @@ class GoldRule(Flowable):
 
     def draw(self):
         c = self.canv
-        # Draw the gold rule
         c.setFillColor(self.color)
         c.setStrokeColor(self.color)
         c.rect(0, 0, self._w, self.thickness, stroke=0, fill=1)
-        # Optional navy label tag on the left
-        if self.label:
-            c.setFont('LibSans-Bold', 9)
-            c.setFillColor(self.label_color)
-            c.drawString(0, self.thickness + 3, self.label)
 
 
 class SectionHeader(Flowable):
@@ -240,7 +244,6 @@ class SectionHeader(Flowable):
         self.number = number
         self.title = title
         self.key = key or f'sec_{number}'
-        # Bookmark attributes for TOC
         self.bookmark_name = self.key
         self.bookmark_level = 0
         self.bookmark_text = f'Section {number}: {title}'
@@ -253,13 +256,12 @@ class SectionHeader(Flowable):
 
     def draw(self):
         c = self.canv
-        # Draw bookmark anchor (invisible)
         c.bookmarkPage(self.key)
         # Kicker
         c.setFont('LibSans-Bold', 8.5)
         c.setFillColor(GOLD_DARK)
         c.drawString(0, self.height - 12, f'SECTION {self.number}'.upper())
-        # Title — auto-shrink if too wide for content area
+        # Title — auto-shrink if too wide
         title_size = 16
         title_w = c.stringWidth(self.title, 'LibSans-Bold', title_size)
         max_w = CONTENT_W
@@ -277,17 +279,18 @@ class SectionHeader(Flowable):
         c.rect(64, self.height - 43.5, self._w - 64, 1.2, stroke=0, fill=1)
 
 
-class AddendumHeader(Flowable):
-    """Header for optional addendums."""
-    def __init__(self, title, key=None):
+class PageHeader(Flowable):
+    """Header used on intro/contact pages (not a numbered section)."""
+    def __init__(self, kicker, title, key=None):
         super().__init__()
+        self.kicker = kicker
         self.title = title
-        self.key = key or 'add_' + hashlib.md5(title.encode()).hexdigest()[:8]
+        self.key = key or 'pg_' + hashlib.md5(title.encode()).hexdigest()[:8]
         self.bookmark_name = self.key
         self.bookmark_level = 0
         self.bookmark_text = title
         self.bookmark_key = self.key
-        self.height = 60
+        self.height = 64
 
     def wrap(self, availWidth, availHeight):
         self._w = availWidth
@@ -298,14 +301,20 @@ class AddendumHeader(Flowable):
         c.bookmarkPage(self.key)
         c.setFont('LibSans-Bold', 8.5)
         c.setFillColor(GOLD_DARK)
-        c.drawString(0, self.height - 12, 'OPTIONAL ADDENDUM')
-        c.setFont('LibSans-Bold', 15)
+        c.drawString(0, self.height - 12, self.kicker.upper())
+        title_size = 18
+        title_w = c.stringWidth(self.title, 'LibSans-Bold', title_size)
+        max_w = CONTENT_W
+        while title_w > max_w and title_size > 12:
+            title_size -= 0.5
+            title_w = c.stringWidth(self.title, 'LibSans-Bold', title_size)
+        c.setFont('LibSans-Bold', title_size)
         c.setFillColor(NAVY)
-        c.drawString(0, self.height - 32, self.title)
+        c.drawString(0, self.height - 34, self.title)
         c.setFillColor(GOLD)
-        c.rect(0, self.height - 44, 60, 2.5, stroke=0, fill=1)
+        c.rect(0, self.height - 46, 60, 2.5, stroke=0, fill=1)
         c.setFillColor(NAVY_200)
-        c.rect(64, self.height - 43.5, self._w - 64, 1.2, stroke=0, fill=1)
+        c.rect(64, self.height - 45.5, self._w - 64, 1.2, stroke=0, fill=1)
 
 
 class CalloutBox(Flowable):
@@ -326,13 +335,11 @@ class CalloutBox(Flowable):
         self._w = self.width or availWidth
         inner_w = self._w - 24
         self._para_width = inner_w
-        total_h = 14  # top padding
-        # Title
+        total_h = 14
         title_p = Paragraph(f'<b>{self.title}</b>', CALLOUT_TITLE)
         _, th = title_p.wrap(inner_w, availHeight)
         total_h += th + 4
         self._title_para = title_p
-        # Body paragraphs
         self._wrapped_body = []
         for p in self.body_paragraphs:
             if isinstance(p, str):
@@ -340,28 +347,23 @@ class CalloutBox(Flowable):
             _, ph = p.wrap(inner_w, availHeight)
             self._wrapped_body.append((p, ph))
             total_h += ph + 3
-        total_h += 8  # bottom padding
+        total_h += 8
         self.height = total_h
         return (self._w, self.height)
 
     def draw(self):
         c = self.canv
-        # Background
         c.setFillColor(self.bg)
         c.setStrokeColor(self.border)
         c.setLineWidth(0)
         c.rect(0, 0, self._w, self.height, stroke=0, fill=1)
-        # Left gold accent bar
         c.setFillColor(self.border)
         c.rect(0, 0, 4, self.height, stroke=0, fill=1)
-        # Inner content
         x = 14
         y = self.height - 14
-        # Title
         _, th = self._title_para.wrap(self._para_width, self.height)
         self._title_para.drawOn(c, x, y - th)
         y -= th + 6
-        # Body
         for p, ph in self._wrapped_body:
             p.drawOn(c, x, y - ph)
             y -= ph + 3
@@ -370,17 +372,18 @@ class CalloutBox(Flowable):
 # ---------------------------------------------------------------------------
 # Page header / footer
 # ---------------------------------------------------------------------------
+DOC_TITLE_SHORT = 'Personal Legal Services Subscription Agreement'
+
 def header_footer(canvas, doc):
     canvas.saveState()
     # Header
     canvas.setFont('LibSans-Bold', 8)
     canvas.setFillColor(NAVY)
-    canvas.drawString(MARGIN_L, PAGE_H - 0.45 * inch,
-                      'INFINITY LEGAL SA')
+    canvas.drawString(MARGIN_L, PAGE_H - 0.45 * inch, 'INFINITY LEGAL SA')
     canvas.setFont('LibSerif-Italic', 8)
     canvas.setFillColor(GOLD_DARK)
     canvas.drawString(MARGIN_L + 105, PAGE_H - 0.45 * inch,
-                      'Personal Legal Membership Agreement')
+                      'Personal Legal Services Subscription Agreement')
     canvas.setFont('LibSans', 7.5)
     canvas.setFillColor(TEXT_MUTED)
     canvas.drawRightString(PAGE_W - MARGIN_R, PAGE_H - 0.45 * inch,
@@ -399,2264 +402,1973 @@ def header_footer(canvas, doc):
     canvas.setFont('LibSans', 7.5)
     canvas.setFillColor(TEXT_MUTED)
     canvas.drawString(MARGIN_L, MARGIN_B - 0.45 * inch,
-                      'Justice without limits.')
-    # Page number — body PDF page number PLUS ONE (cover is merged in front)
+                      'Infinity Legal SA (Pty) Ltd  ·  Reg. No. 2024/123456/07')
+    canvas.setFont('LibSerif-Italic', 7.5)
+    canvas.setFillColor(GOLD_DARK)
+    canvas.drawCentredString(PAGE_W / 2, MARGIN_B - 0.45 * inch,
+                             'Justice without limits.')
+    canvas.setFont('LibSans-Bold', 8)
+    canvas.setFillColor(NAVY)
+    # Page number — +1 to account for the cover page merged in front
     page_num = doc.page + 1
     canvas.drawRightString(PAGE_W - MARGIN_R, MARGIN_B - 0.45 * inch,
                            f'Page {page_num}')
-    # Center small disclaimer
-    canvas.setFont('LibSerif-Italic', 7)
-    canvas.setFillColor(TEXT_MUTED)
-    canvas.drawCentredString(PAGE_W / 2, MARGIN_B - 0.45 * inch,
-                             'Authorised Financial Services Provider (FSP 53214)')
     canvas.restoreState()
 
 
 # ---------------------------------------------------------------------------
-# TocDocTemplate — page numbers offset by +1 for the merged cover page
+# Doc template with TOC support
 # ---------------------------------------------------------------------------
 class TocDocTemplate(SimpleDocTemplate):
     def afterFlowable(self, flowable):
-        if hasattr(flowable, 'bookmark_name'):
-            level = getattr(flowable, 'bookmark_level', 0)
-            text = getattr(flowable, 'bookmark_text', '')
-            key = getattr(flowable, 'bookmark_key', '')
-            # +1 to account for the cover page that will be merged in front
-            self.notify('TOCEntry', (level, text, self.page + 1, key))
+        """Register TOC entries for SectionHeader / PageHeader flowables."""
+        if isinstance(flowable, (SectionHeader, PageHeader)):
+            level = 0
+            text = flowable.bookmark_text
+            key = flowable.bookmark_key
+            self.notify('TOCEntry', (level, text, self.page, key))
 
 
 # ---------------------------------------------------------------------------
-# Helper builders
+# Helpers for content building
 # ---------------------------------------------------------------------------
-def P(text, style=BODY):
+def p(text, style=BODY):
     return Paragraph(text, style)
 
 
-def bullet_list(items, style=BULLET):
+def bullet_list(items, style=BULLET, bullet_char='•'):
     return ListFlowable(
-        [ListItem(Paragraph(t, style), leftIndent=18, value='circle')
-         for t in items],
-        bulletType='bullet', start='circle', leftIndent=18,
-        bulletFontName='LibSans-Bold', bulletFontSize=8, bulletColor=GOLD_DARK,
-        spaceBefore=2, spaceAfter=6,
+        [ListItem(Paragraph(it, style), leftIndent=18,
+                  value=bullet_char) for it in items],
+        bulletType='bullet', start=bullet_char, leftIndent=8,
     )
 
 
-def numbered_list(items, start=1, style=NUMBERED):
+def numbered_list(items, style=NUMBERED):
     return ListFlowable(
-        [ListItem(Paragraph(t, style), leftIndent=22) for t in items],
-        bulletType='1', start=start, leftIndent=22,
-        bulletFontName='LibSans-Bold', bulletFontSize=10, bulletColor=NAVY,
-        spaceBefore=2, spaceAfter=6,
+        [ListItem(Paragraph(it, style), leftIndent=22) for it in items],
+        bulletType='1', leftIndent=8,
     )
 
 
 def lettered_list(items, style=LETTERED):
     return ListFlowable(
-        [ListItem(Paragraph(t, style), leftIndent=22) for t in items],
-        bulletType='a', leftIndent=22,
-        bulletFontName='LibSans-Bold', bulletFontSize=10, bulletColor=NAVY,
-        spaceBefore=2, spaceAfter=6,
+        [ListItem(Paragraph(it, style), leftIndent=22) for it in items],
+        bulletType='a', leftIndent=8,
     )
 
 
-def defn(term, body):
-    """Italic definition paragraph with the term bolded inline."""
-    return Paragraph(f'<b>"{term}"</b> {body}', DEFINITION)
-
-
-def section_header(number, title, key=None):
-    return SectionHeader(number, title, key=key)
-
-
-def addendum_header(title, key=None):
-    return AddendumHeader(title, key=key)
-
-
-def callout(title, body_text):
-    """A NOTE: or EXAMPLE: callout box."""
-    if isinstance(body_text, str):
-        paras = [Paragraph(body_text, CALLOUT_BODY)]
-    else:
-        paras = [Paragraph(t, CALLOUT_BODY) if isinstance(t, str) else t
-                 for t in body_text]
-    return CalloutBox(title, paras)
+def small_gap(h=6):
+    return Spacer(1, h)
 
 
 # ---------------------------------------------------------------------------
-# CONTENT — pages 2 onward (cover is page 1, merged later)
+# Build the story
 # ---------------------------------------------------------------------------
 def build_story():
     story = []
 
-    # ===========================================================
-    # PAGE 2 — How to Pay & Member Portal
-    # ===========================================================
-    story.append(Paragraph(
-        '<font color="#a88832">INFINITY LEGAL SA</font>',
-        ParagraphStyle('HT', fontName='LibSans-Bold', fontSize=9, leading=11,
-                       textColor=GOLD_DARK, alignment=TA_LEFT, spaceAfter=2)))
-    story.append(Paragraph(
-        'How to Pay & Member Portal',
-        ParagraphStyle('HP', fontName='LibSans-Bold', fontSize=20, leading=24,
-                       textColor=NAVY, alignment=TA_LEFT, spaceAfter=6)))
-    story.append(GoldRule(width=70, thickness=2.5))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        'We have made paying your monthly premium as simple and convenient as '
-        'possible. Choose any of the payment methods below. Whichever method '
-        'you use, please always quote your Infinity Legal SA membership '
-        'number so that your payment can be allocated without delay. If you '
-        'have any difficulty paying, contact our Member Care team on '
-        '<b>0861 4 LEGAL (0861 453 425)</b> or email '
-        '<b>legal@infinitylegal.co.za</b> and we will assist you.',
-        BODY))
+    # =====================================================================
+    # PAGE 2 — Welcome & How to Subscribe
+    # =====================================================================
+    story.append(PageHeader('Welcome', 'Welcome to Infinity Legal SA',
+                            key='welcome'))
+    story.append(p(
+        'Thank you for choosing Infinity Legal SA as your personal legal services '
+        'partner. We are a modern, client-focused legal services company that '
+        'delivers affordable, professional legal advice and representation to '
+        'individuals and families across South Africa through a simple monthly '
+        'or annual subscription. Our mission is captured in three words: '
+        '<i>Justice without limits.</i>'))
+    story.append(p(
+        'This Subscription Agreement explains what you receive as a Subscriber, '
+        'how your plan works, what we ask of you in return, and the legal terms '
+        'that govern the relationship between you and Infinity Legal SA (Pty) Ltd. '
+        'Please read it together with your selected Plan Schedule (Section 2) and '
+        'our Fair Usage Policy (Section 7). Once you subscribe, this Agreement '
+        'takes effect and remains in force for as long as your subscription is active.'))
 
-    story.append(Spacer(1, 10))
-    story.append(Paragraph('Member Portal', H2))
-    story.append(Paragraph(
-        'The Infinity Legal SA Member Portal at '
-        '<b>portal.infinitylegal.co.za</b> is the fastest and most secure way '
-        'to manage your membership. From the portal you can pay your monthly '
-        'premium by card or instant EFT, download your membership card, view '
-        'your Schedule of Insurance, retrieve a copy of this Membership '
-        'Agreement, log a new legal matter, track the status of an existing '
-        'matter, and update your personal details. The portal is mobile '
-        'friendly and is available 24 hours a day, seven days a week.',
-        BODY))
-
-    story.append(Paragraph('Debit Order', H2))
-    story.append(Paragraph(
-        'A debit order is the recommended way to keep your membership Paid-Up. '
-        'On the date you choose, your monthly premium is collected directly '
-        'from your nominated bank account. To set up or amend a debit order, '
-        'log in to the Member Portal or call <b>0861 4 LEGAL</b> at least '
-        '30 days before your next collection date. We do not charge debit '
-        'order collection fees, but your own bank may levy a fee for failed '
-        'deductions; such fees remain your responsibility.',
-        BODY))
-
-    story.append(Paragraph('Stop Order', H2))
-    story.append(Paragraph(
-        'A stop order is an instruction given by you to your employer to '
-        'deduct your premium directly from your salary and pay it to us. This '
-        'facility is most commonly available to employees of government '
-        'departments, state-owned entities and certain large employers. To '
-        'arrange a stop order, contact our Member Care team and we will '
-        'provide you with the necessary mandate form for your employer.',
-        BODY))
-
-    story.append(Paragraph('Electronic Funds Transfer (EFT)', H2))
-    story.append(Paragraph(
-        'You may pay your premium by EFT directly into the Infinity Legal SA '
-        'bank account. Use your membership number as the payment reference. '
-        'Our banking details appear on your membership card, your Schedule of '
-        'Insurance and the Member Portal. Please allow two business days for '
-        'an EFT to reflect before it shows as Paid-Up on your membership '
-        'record.',
-        BODY))
-
-    story.append(Paragraph('Retail Outlets', H2))
-    story.append(Paragraph(
-        'You can pay your monthly premium in cash at any EasyPay-enabled '
-        'retail outlet across South Africa. Present your membership card or '
-        'quote your EasyPay number (found on the back of your card) to the '
-        'cashier, and <b>always ask for a receipt</b>. EasyPay payments '
-        'usually reflect on your membership within 24 hours. Participating '
-        'retailers include:',
-        BODY))
-    story.append(bullet_list([
-        'Pep and Pep Cell',
-        'Shoprite and Checkers',
-        'Pick n Pay',
-        'Spar',
-        'Boxer Superstores',
-        'Lewis, Joshua Doore and Russells',
+    story.append(p('How to Subscribe', H2))
+    story.append(p(
+        'Subscribing to an Infinity Legal SA plan takes only a few minutes. The '
+        'process is fully digital and is designed so that you can choose a plan, '
+        'verify your identity, and meet your dedicated legal advisor without ever '
+        'leaving home. The four steps below summarise the journey from sign-up to '
+        'your first consultation.'))
+    story.append(numbered_list([
+        '<b>Visit the Member Portal.</b> Go to <b>portal.infinitylegal.co.za</b> and click "Subscribe". You will be asked to create an account using your email address and a password, or to sign in if you already have one.',
+        '<b>Choose your Plan.</b> Compare the Civil Legal Plan, Labour Legal Plan, and Extensive Plan side-by-side and select the one that fits your needs. You can switch plans later from your Member Dashboard at any time (see Section 14).',
+        '<b>Verify your identity (FICA).</b> Upload a copy of your South African ID or passport and a recent proof of address. Our onboarding team verifies these documents within 48 to 72 hours, in line with our obligations under the Financial Intelligence Centre Act.',
+        '<b>Make your first payment.</b> Pay your first subscription fee by PayFast (online card or instant EFT), debit order, or manual EFT. Your plan activates as soon as onboarding is complete and your first payment reflects.',
     ]))
 
-    story.append(Paragraph('Infinity Legal SA Branches', H2))
-    story.append(Paragraph(
-        'Selected Infinity Legal SA branches accept cash and card payments '
-        'at the till. When paying at a branch, please present your membership '
-        'card to the consultant and retain your receipt. To confirm whether '
-        'your nearest branch accepts in-branch payments, call '
-        '<b>0861 4 LEGAL</b> or visit <b>www.infinitylegal.co.za/branches</b>.',
-        BODY))
+    story.append(p('Managing Your Subscription', H2))
+    story.append(p(
+        'Once your subscription is active, you can manage every aspect of it from '
+        'the Member Portal. The Portal lets you update your personal details, '
+        'change your payment method, upgrade or downgrade your plan, view your '
+        'consultation history, upload documents, message your legal advisor, and '
+        'cancel your subscription. The Infinity AI Assistant is also available '
+        'in-app to answer common legal questions and route complex matters to a '
+        'human legal advisor.'))
+    story.append(p(
+        'If you prefer to speak to a person, our contact centre is available on '
+        '<b>0861 4 LEGAL (0861 453 425)</b> during business hours, and on WhatsApp '
+        'at <b>011 842 7890</b>. Subscribers on the Extensive Plan receive 24/7 '
+        'priority support. We are here to help you get the most from your plan.'))
 
-    story.append(Spacer(1, 8))
-    story.append(callout(
-        'NOTE:',
-        'Whichever payment method you choose, your membership only becomes '
-        'Paid-Up once the funds have reflected in our bank account. To avoid '
-        'a break in cover, please pay your premium on or before the 1st day '
-        'of every month.'))
-
+    story.append(CalloutBox(
+        'NOTE — Onboarding Period',
+        ['Your plan does not begin to deliver services until your FICA '
+         'verification is complete. The Onboarding Period usually takes 48 to '
+         '72 hours from the time you submit your documents. This is not a '
+         'penalty or a restriction — it is a statutory compliance step required '
+         'of all legal practitioners in South Africa. We will notify you by '
+         'email and SMS the moment your plan is active.']))
     story.append(PageBreak())
 
-    # ===========================================================
+    # =====================================================================
     # PAGE 3 — Table of Contents
-    # ===========================================================
-    story.append(Paragraph('Table of Contents', TOC_HEADING))
-    story.append(Paragraph(
-        'Personal Legal Membership Agreement · ILS PERSONAL/2025/06/01',
+    # =====================================================================
+    story.append(PageHeader('Contents', 'Table of Contents', key='toc'))
+    story.append(p(
+        'This Agreement is organised into seventeen numbered sections, plus a '
+        'Welcome page, a Service & Contact Points page, and an About Infinity '
+        'Legal SA page at the back. Use the page numbers below to navigate.',
         TOC_SUB))
-    story.append(GoldRule(width=70, thickness=2.5))
-    story.append(Spacer(1, 12))
-
     toc = TableOfContents()
     toc.levelStyles = [TOC_LEVEL0, TOC_LEVEL1]
     story.append(toc)
-
     story.append(PageBreak())
 
-    # ===========================================================
+    # =====================================================================
     # SECTION 1 — Interpretation and Definitions
-    # ===========================================================
-    story.append(section_header(1, 'Interpretation and Definitions'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        'This Membership Agreement (the "Agreement") is the binding contract '
-        'between you, the Member, and Infinity Legal SA. It sets out the '
-        'benefits, terms, conditions and exclusions that apply to your '
-        'personal legal expenses cover. The headings, diagrams, notes, '
-        'examples and any addendums you have selected all form part of this '
-        'Agreement and must be read together. The singular includes the '
-        'plural and vice versa, and the meaning of certain words is explained '
-        'where they are used in the text.',
-        BODY))
-
-    story.append(lettered_list([
-        '<b>Membership</b> means being an insured person under this insurance '
-        'policy (this Agreement) in consideration of the monthly premium in '
-        'force from time to time. The monthly premium in force at the time '
-        'you join will be shown in your Schedule of Insurance. You will be '
-        'advised of subsequent increases as set out in Section 13.',
-
-        '<b>We</b>, <b>Us</b> and <b>Our</b> means the insurer, LegalGuard '
-        'Insurance Southern Africa Limited (Reg. No. 2010/045678/06, FSP '
-        '48012), and Infinity Legal SA (Pty) Ltd (Reg. No. 2024/123456/07, '
-        'FSP 53214), which administers the Agreement as a non-mandated '
-        'intermediary.',
-
-        '<b>Main Member</b> is the natural person whose name appears as the '
-        'main insured on the application form for Membership.',
-
-        '<b>You</b>, <b>Your</b> and <b>Member</b> means the Main Member and '
-        'the following additional persons (proof of relationship may be '
-        'requested): the nominated Spouse; the Main Member\'s biological or '
-        'legally adopted children under 18 years of age; and the Main '
-        'Member\'s biological or legally adopted children aged 18 up to 21 '
-        'who are in full-time study at a recognised institution in the '
-        'Republic of South Africa (RSA) and who remain financially dependent '
-        'on the Main Member or nominated Spouse. Children aged 21 and older '
-        'do not qualify for Cover, save as may be provided in the Extended '
-        'Family Protection Addendum.',
-
-        '<b>Spouse</b> (including a <b>Life Partner</b>) means a person who, '
-        'at the time the Relevant Events occurred, was married to, or living '
-        'with, the Main Member as if married by civil rights or customary '
-        'law, for at least the Minimum Period as Life Partner shown in your '
-        'Schedule of Insurance, and who is still married to, or living with, '
-        'the Main Member when a Benefit is claimed.',
-
-        '<b>Extender Member</b> is any Family Member added in terms of the '
-        'Extended Family Protection Addendum, excluding any person who does '
-        'not qualify in terms of the definition of "You" above.',
-
-        '<b>Membership is confirmed</b> when We issue your Schedule of '
-        'Insurance. The Agreement between You and Us has a reference number '
-        'shown in your Schedule of Insurance. Please confirm that it matches '
-        'the reference number printed on this document (ILS PERSONAL/2025/06/01).',
-
-        '<b>Paid-Up</b> means that every monthly premium has been paid in '
-        'full from the date of the Relevant Event or events to the date the '
-        'matter is Reported to Us, with no break in your Membership. '
-        'Part-payment does not constitute being Paid-Up.',
-
-        '<b>Relevant Event</b> means the event (shown in bold capital letters '
-        'in Section 4) that triggers a potential claim under an Insured '
-        'Matter. The Relevant Event must occur in the RSA after the Waiting '
-        'Period and while your Membership is Paid-Up.',
-
-        '<b>Waiting Period</b> means the period after Membership is '
-        'confirmed during which Insurance Cover is not available. The '
-        'Waiting Period is shown in your Schedule of Insurance.',
-
-        '<b>Covered</b> (or <b>Insurance Cover</b> or simply <b>Cover</b>) '
-        'means that an Insured Matter qualifies for the payment of legal '
-        'expenses under Section 2(2) of this Agreement.',
-
-        '<b>Insured Matter</b> means a matter listed in Section 4 that, '
-        'provided all conditions are met, potentially qualifies for Cover.',
-
-        '<b>Reported</b> means that We have received your completed Official '
-        'Claim Form (OCF), which forms part of this Agreement.',
-
-        '<b>Case</b> means all Court, Tribunal or Arbitration proceedings '
-        'based on the same Relevant Events.',
-
-        '<b>Lawyer</b> means a legal practitioner practising in the RSA and '
-        'registered with the Legal Practice Council. Throughout this '
-        'Agreement the words "Lawyer" and "legal advisor" are used '
-        'interchangeably and refer to the same regulated professional.',
-
-        '<b>Legal Advisor</b> means a legal practitioner practising in the '
-        'RSA and registered with the Legal Practice Council of South Africa '
-        'in terms of the Legal Practice Act 28 of 2014. The words "legal '
-        'advisor" and "lawyer" are used interchangeably in this Agreement '
-        'and refer to the same regulated profession. Infinity Legal SA uses '
-        'the term "legal advisor" throughout this document.',
-
-        '<b>Schedule of Insurance</b> means the document We issue to you '
-        'that records your personal details, premium, Waiting Period, '
-        'Maximum Limits, First Amount Payable and other key parameters.',
-    ]))
-
-    story.append(Spacer(1, 6))
-    story.append(callout(
-        'NOTE:',
-        'The headings, notes, examples, diagrams and addendums in this '
-        'Agreement are all part of the contract. If a defined term is used '
-        'with a capital letter, it has the meaning given to it in this '
-        'Section 1 or where it is first defined in the text.'))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 2 — Membership Benefits
-    # ===========================================================
-    story.append(section_header(2, 'Membership Benefits'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        'While your Membership is Paid-Up, you are entitled, subject to the '
-        'terms and conditions of this Agreement, to Our Services. Our '
-        'Services consist of two complementary components: <b>Legal Advisory '
-        'Services</b> (delivered by Our legally trained counsellors) and '
-        '<b>Legal Expenses Insurance</b> (the payment of your legal expenses '
-        'when a matter qualifies for Cover). Unless otherwise indicated, '
-        'both components apply to any Addendums you have selected.',
-        BODY))
-
-    story.append(Paragraph('1. Legal Advisory Services', H2))
-    story.append(Paragraph(
-        'Legal Advisory Services are dispute prevention services that We '
-        'provide through Our legally trained counsellors. The aim is to give '
-        'Us flexibility to help you as much as We can, and to reduce the '
-        'need for Court proceedings wherever possible. Because these '
-        'services are provided at no additional cost to you, We provide them '
-        'at Our discretion. We may set limits at any time, and We have no '
-        'obligation to provide them in any particular matter.',
-        BODY))
-    story.append(Paragraph(
-        'You agree that the provision of Legal Advisory Services to you does '
-        'not, on its own, mean that a matter qualifies for Insurance Cover, '
-        'nor that you have rights in respect of that matter as if it were an '
-        'Insured Matter.',
-        BODY))
-
-    story.append(callout(
-        'NOTE:',
-        'Not many people enjoy disputes or spending time in a Court. It is '
-        'generally known that We will pay a Paid-Up Member\'s legal advisor '
-        'to take a Covered matter to Court if a dispute cannot be prevented '
-        'by Our legal counsellors. Many potential disputes and Court cases '
-        'are avoided as a result of that.'))
-
-    story.append(Paragraph(
-        'Legal Advisory Services are available for the following categories '
-        'of matters:', BODY))
-    story.append(bullet_list([
-        'An Insured Matter that qualifies for Cover. Even when an Insured '
-        'Matter is Covered, We do not pay the legal costs of your legal '
-        'advisor to try to resolve the issue before starting a Case. Unless '
-        'We agree otherwise, you will be responsible for such costs. If you '
-        'wish to avoid that, Our Legal Advisory Services will try to resolve '
-        'the issue at no cost to you. If We are unable to resolve the matter, '
-        'you may consult a legal advisor of your choice.',
-
-        'An Insured Matter that does not qualify for Cover. This is mainly '
-        'when the conditions in this Agreement are not met, such as a '
-        'Relevant Event happening before the end of the Waiting Period.',
-
-        'Matters outside the scope of this Agreement, which is when a matter '
-        'is not shown as an Insured Matter in any of the Insurance Cover '
-        'sections or the Addendums.',
-
-        'The exclusions in Section 6 and in the Addendums, except those that '
-        'are specifically excluded from Legal Advisory Services as well, as '
-        'indicated in Section 6.',
-    ]))
-
-    story.append(Paragraph('2. Legal Expenses Insurance', H2))
-    story.append(Paragraph(
-        'If We are unable to resolve a matter via Legal Advisory Services '
-        'and the matter (a) qualifies for Cover as set out in Section 3 and '
-        '(b) is not excluded as set out in Section 6, then, as long as you '
-        'remain a Paid-Up Member, We will pay your legal advisor for those '
-        'legal expenses set out in Section 7, up to the limits in Section 10, '
-        'to represent you in a Case or criminal charge. We refer to this as '
-        '"Insurance Cover" or simply "Cover".',
-        BODY))
-    story.append(defn('Legal Advisor',
-        'is a legal practitioner practising in the RSA and registered with '
-        'the Legal Practice Council. The words "legal advisor" and "lawyer" '
-        'are used interchangeably in this Agreement and refer to the same '
-        'regulated profession. Infinity Legal SA uses the term "legal '
-        'advisor" throughout this document.'))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 3 — Covered Matters
-    # ===========================================================
-    story.append(section_header(3, 'Covered Matters'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        'Section 4 lists Insured Matters that potentially qualify for Cover, '
-        'showing the Relevant Event for each. An Insured Matter qualifies '
-        'for Cover only if <b>all</b> of the conditions set out below are '
-        'met. Where any one condition is not satisfied, the matter will be '
-        'treated as not Covered, although Legal Advisory Services may still '
-        'be available under Section 2(1).',
-        BODY))
-
-    story.append(lettered_list([
-        'The Relevant Events that apply to an Insured Matter all happen in '
-        'the RSA after the Waiting Period and while your Membership is '
-        'Paid-Up.',
-
-        'Where a dispute is about a series of Relevant Events, the first '
-        'Relevant Event happens or commences to happen after the Waiting '
-        'Period.',
-
-        'Your legal advisor agrees in writing that your chances of '
-        'succeeding in a civil or labour Case, or an application for leave '
-        'to appeal, are better than not succeeding.',
-
-        'All the elements of a crime, or all the things the police allege '
-        'as the reasons for charging you, happen after the Waiting Period. '
-        'Being arrested after the Waiting Period for a criminal offence '
-        'alleged to have been committed before the end of the Waiting '
-        'Period does <b>not</b> qualify for Cover.',
-
-        'The matter is Reported to Us while your Membership is Paid-Up or '
-        'within the Maximum Period to Report After Cancellation shown in '
-        'your Schedule of Insurance.',
-
-        'You have paid the First Amount Payable shown in your Schedule of '
-        'Insurance. If you use a legal advisor who is not on Our Network, '
-        'We will deduct the First Amount Payable from any amount due to '
-        'that legal advisor. If you have already paid the legal advisor, '
-        'the First Amount Payable will be deducted from any amount due to '
-        'you. We must pay that legal advisor in terms of your Legal '
-        'Expenses Insurance claim.',
-
-        'The Relevant Event for each Insured Matter is wrongful, unlawful '
-        'or is another basis for a valid legal claim by you or against you, '
-        'in your personal, private and individual capacity.',
-
-        'If a legal claim by you is based solely on the meaning of a '
-        'document, law or regulation (that is, the Relevant Events '
-        'themselves are not in dispute), that document, law or regulation '
-        'must come into existence after the Waiting Period. This condition '
-        'does not apply if there is a legal claim against you.',
-
-        'If the Main Member suffers an Accidental Death, a Legal Expenses '
-        'Accidental Death (LEAD) lump sum is payable, subject to the '
-        'conditions in Section 4.',
-    ]))
-
-    story.append(callout(
-        'EXAMPLE:',
-        'A finance house obtains a Court order to repossess your car because '
-        'you are in arrears with instalments. If you do not dispute the '
-        'arrears, the repossession is likely lawful. If so, there is no '
-        'basis for a legal defence and the matter is not Covered.'))
-
-    story.append(defn('Accidental Death',
-        'means death in the RSA as a result of a sudden, violent and '
-        'unforeseeable: road traffic or transport-related accident; an '
-        'accident while performing your duties as an employee; an accident '
-        'at your Place of Residence or while on holiday or visiting friends; '
-        'an accident while shopping or visiting places of entertainment or '
-        'other public places for personal and private purposes; assault or '
-        'murder; or medical negligence. Death by natural causes and suicide '
-        'are not accidental.'))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 4 — Covered Matters and Their Relevant Events
-    # ===========================================================
-    story.append(section_header(4, 'Covered Matters and Their Relevant Events'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        'The events shown below in <b>BOLD CAPITAL LETTERS</b> are the '
-        'Relevant Events that must happen after the Waiting Period in the '
-        'RSA. The list may not be exhaustive, and We may modify or add '
-        'further Insured Matters and Relevant Events at Our discretion. If '
-        'a matter is not listed below, it is not an Insured Matter and does '
-        'not qualify for Cover.',
-        BODY))
-
-    story.append(Paragraph(
-        'Personal Injury, Property, Consumer and Debt Matters',
-        H2))
-    story.append(numbered_list([
-        'Personal injury, illness or death of another person or that '
-        'person\'s pet as a result of <b>AN ACT OR OMISSION</b> by you or '
-        'your pet (by "omission" We mean a failure to do something).',
-
-        'Personal injury, illness or death of a Member or his or her pet as '
-        'a result of <b>AN ACT OR OMISSION</b> by another person or pet.',
-
-        'Damage to the physical property of another person as a result of '
-        '<b>AN ACT OR OMISSION</b> by you or your pet (physical damage '
-        'excludes intellectual property such as copyright, patents and '
-        'trademarks).',
-
-        'Damage to your physical property as a result of <b>AN ACT OR '
-        'OMISSION</b> by another person or their pet (same exclusion as in '
-        'item 3).',
-
-        'A refund or other legal remedy for <b>THE PURCHASE</b> by you of '
-        'defective consumer goods or services.',
-
-        '<b>BREACH</b> (acting against the terms) of a contract, including '
-        'a warranty, for the hire or purchase by you of consumer goods or '
-        'other goods and services.',
-
-        '<b>BREACH</b> of a contract regarding the sale or lending of '
-        'private property.',
-
-        'A <b>VIOLATION</b> of your rights in terms of the Consumer '
-        'Protection Act 68 of 2008 that causes financial damage to you.',
-
-        '<b>OVER-CHARGING</b> by any supplier, being the charging of more '
-        'than the agreed fees or rates.',
-
-        '<b>BREACH OF AN AGREEMENT</b> by another party to repay a debt due '
-        'to you.',
-
-        'Proceedings to remove an <b>INCORRECTLY TAKEN JUDGEMENT</b> '
-        'against you.',
-    ]))
-
-    story.append(Paragraph('Home and Accommodation Matters', H2))
-    story.append(numbered_list([
-        'A <b>BREACH</b> of any contract that is necessary to buy or sell '
-        'your Place of Residence (necessary contracts include the offer to '
-        'purchase and a mandate to the estate agent and conveyancer. We do '
-        'not pay conveyancing fees, transfer duties or contract drafting '
-        'costs).',
-
-        '<b>BREACH OF CONTRACT</b> or <b>UNLAWFUL CONDUCT</b> by the lessor '
-        '(landlord) in relation to a lease agreement for your Place of '
-        'Residence.',
-
-        '<b>AN ACT OR OMISSION</b> by a neighbour or other person that '
-        'causes damage to your Place of Residence or household possessions.',
-
-        '<b>THE WRONGFUL ATTACHMENT</b> of your home or household goods by '
-        'an officer of court or an asset forfeiture unit of the State.',
-
-        '<b>BREACH OF CONTRACT</b> or <b>FAULTY WORKMANSHIP</b> by a '
-        'contractor to build, repair, replace, modify or add something to '
-        'your Place of Residence.',
-
-        '<b>AN ACT OR OMISSION</b> by you involving a lease agreement for '
-        'your Place of Residence that results in cancellation of the lease, '
-        'eviction from your Place of Residence, or a claim for damages '
-        'against you.',
-
-        '<b>WRONGFUL FAILURE</b> by the landlord to refund a security '
-        'deposit due to you after termination of the lease for your Place '
-        'of Residence.',
-
-        '<b>AN ACT OR OMISSION</b> by you or your guests, workers, '
-        'contractors and pets at your Place of Residence that causes damage '
-        'to a person or a person\'s property, resulting in a claim against '
-        'you.',
-
-        '<b>THE FAILURE</b> by the seller of a property, or a third party '
-        'living in the property you bought as a Place of Residence, to '
-        'vacate the property in terms of the sale agreement.',
-
-        '<b>BREACH OF CONTRACT</b>, <b>NEGLIGENCE</b> or <b>OVER-CHARGING</b> '
-        'by a travel or booking agent, a hotel or other vacation or board '
-        'and lodging establishment.',
-
-        '<b>NON-COMPLIANCE</b> with the rules by the body corporate or '
-        'similar body at your Place of Residence.',
-    ], start=12))
-
-    story.append(callout(
-        'NOTE:',
-        'We will pay for only one eviction matter over a continuous 12-month '
-        'period of Paid-Up Membership. We will only pay your legal expenses '
-        'for action in the Magistrates Court in respect of an eviction.'))
-
-    story.append(Paragraph('Motor Vehicle Matters', H2))
-    story.append(numbered_list([
-        'Damage to the motor vehicle, motorcycle ("vehicle") or other '
-        'property of another person as a result of <b>AN ACCIDENT OR '
-        'COLLISION</b> involving the vehicle driven by you.',
-
-        'Damage to you, your vehicle or property as a result of a private, '
-        'public or commercial transport <b>ACCIDENT OR COLLISION</b> caused '
-        'by someone else.',
-
-        '<b>BREACH OF CONTRACT</b> by a seller or lender regarding the '
-        'terms of a contract to finance a vehicle bought by you.',
-
-        '<b>BREACH OF CONTRACT</b> by a seller regarding the terms of a '
-        'contract or warranty for the purchase of a vehicle by you.',
-
-        '<b>WRONGFUL REPOSSESSION</b> of your vehicle under the terms of a '
-        'credit agreement with you.',
-
-        '<b>DEFECTIVE WORKMANSHIP</b> to your vehicle by mechanics, panel '
-        'beaters and related service providers.',
-
-        '<b>WRONGFUL REJECTION</b> of a vehicle insurance claim by you for '
-        'damage to, or destruction of, your vehicle.',
-
-        '<b>BREACH OF CONTRACT</b> by the seller of a vehicle you bought, '
-        'regarding transfer of the vehicle and delivery of registration '
-        'documents and log books.',
-
-        '<b>THE PURCHASE</b> by you of a vehicle with a latent defect. If '
-        'you were not aware of the latent defect when you bought the '
-        'vehicle, it is not your discovery of the defect that is the '
-        'Relevant Event; it is the date of purchase that is relevant. You '
-        'are Covered only if the date of purchase is after the Waiting '
-        'Period and while your Membership is Paid-Up.',
-
-        '<b>BREACH OF CONTRACT</b>, <b>NEGLIGENCE</b> or <b>OVER-CHARGING</b> '
-        'by a vehicle rental company.',
-    ], start=23))
-
-    story.append(Paragraph('Education Matters', H2))
-    story.append(numbered_list([
-        '<b>AN ACT OR OMISSION</b> by you that results in a disciplinary '
-        'proceeding by a school or other institute of education that can '
-        'lead to your expulsion or suspension as a scholar or student.',
-
-        '<b>BREACH</b> of a contract with you as a scholar or student, by a '
-        'school or an institute of higher education such as a college or '
-        'university.',
-
-        '<b>BREACH</b> of a contract with you relating to the lodging of '
-        'your child who is attending school or an institute of higher '
-        'education.',
-    ], start=33))
-
-    story.append(Paragraph('Status, Reputation and Identity Matters', H2))
-    story.append(numbered_list([
-        'Financial loss or damage to you as the result of <b>A NEGLIGENT '
-        'ACT</b> by a bank or other person or body after you have notified '
-        'them of your identity theft or credit card fraud.',
-
-        'Financial loss or damage to you due to the negligence of a public '
-        'body when they <b>RECORD OR CHANGE</b> your personal details in '
-        'public records.',
-
-        'A defamation claim against you based on <b>A COMMUNICATION</b> in '
-        'writing or in another form (a defamation claim by you is excluded '
-        'under Section 6).',
-    ], start=36))
-
-    story.append(Paragraph('Employment Matters', H2))
-    story.append(numbered_list([
-        'A <b>BREACH</b> of the terms of your contract of employment or an '
-        '<b>UNFAIR LABOUR PRACTICE</b> by your employer.',
-
-        'A <b>NOTICE ISSUED</b> by your employer for your retrenchment from '
-        'employment.',
-
-        '<b>AN ACT OR OMISSION</b> by you which is used as the basis for '
-        'your dismissal, constructive dismissal or suspension from '
-        'employment.',
-
-        'Rejection of a claim by you for workmen\'s compensation for '
-        '<b>AN INJURY</b> at work.',
-
-        '<b>AN INJURY</b> to you while at work, which may not be covered by '
-        'workmen\'s compensation (due to a change in laws or another '
-        'reason) and for which your employer wrongfully fails to compensate '
-        'you.',
-
-        'A <b>CCMA AWARD</b> in your favour that requires enforcement '
-        'through an order of court.',
-
-        'An alleged <b>ACT OR OMISSION</b> by you as employer that gives '
-        'rise to a claim against you by your domestic employee or '
-        'employees.',
-    ], start=39))
-
-    story.append(Paragraph(
-        'Banking, Insurance, Pensions, Wills and Investment Matters', H2))
-    story.append(numbered_list([
-        '<b>WRONGFUL WITHHOLDING</b> or <b>SHORT/LATE PAYMENT</b> of your '
-        'pension or retirement benefits.',
-
-        '<b>BREACH OF CONTRACT</b> or <b>UNLAWFUL CONDUCT</b> by a lender '
-        'of the terms of a credit or loan agreement with you.',
-
-        '<b>WRONGFUL REJECTION</b> of your claim under an insurance policy. '
-        'This includes home and contents insurance, life insurance, funeral '
-        'insurance, medical aid or health insurance, hospital plans and '
-        'credit life insurance. It excludes any rejection by Us of an '
-        'insurance claim by you under this Agreement (see Section 14 for '
-        'what you can do if you think We have rejected your insurance claim '
-        'without a good reason).',
-
-        'A wrongful or negligent <b>ACT OR OMISSION</b> by a financial '
-        'institution managing or holding a financial investment of yours, '
-        'which gives rise to financial damages. This Insured Matter is '
-        'restricted to investments up to the Maximum Financial Value shown '
-        'in your Schedule of Insurance.',
-
-        'The wrongful or negligent <b>DISTRIBUTION</b> of South African '
-        'assets to which you are entitled in terms of a will or '
-        'testamentary trust or the laws of intestate succession (dying '
-        'without a will). This Insured Matter is restricted to assets up '
-        'to the Maximum Financial Value shown in your Schedule of '
-        'Insurance.',
-
-        'The <b>DEATH</b> of a person who leaves a will or trust made in '
-        'South Africa in which you are a beneficiary and which gives rise '
-        'to a dispute between you and other heirs about the terms of the '
-        'will or trust. This Insured Matter is restricted to trust or '
-        'deceased estate assets up to the Maximum Financial Value shown in '
-        'your Schedule of Insurance.',
-
-        'The negligent <b>CONDUCT</b> of an insurance broker, claims '
-        'assessor or financial advisor.',
-    ], start=46))
-
-    story.append(Paragraph('Criminal Matters', H2))
-    story.append(numbered_list([
-        'Subject to the exclusions in Section 6, a criminal charge against '
-        'you based on <b>AN ACT OR OMISSION</b> concerning an Insured '
-        'Matter that the prosecuting authority alleges was committed by '
-        'you (whether you admit or deny it).',
-    ], start=53))
-    story.append(callout(
-        'PLEASE NOTE:',
-        'We do not pay any fines, penalties or bail money in respect of '
-        'criminal matters.'))
-
-    story.append(Paragraph(
-        'Legal Expenses Accidental Death (LEAD)', H2))
-    story.append(numbered_list([
-        'Upon the <b>ACCIDENTAL</b> death of the Main Member, a lump sum '
-        '(cash) payment will be paid to the beneficiary appointed by the '
-        'Main Member.',
-
-        'The cash payment will be made to the nominated beneficiary shown '
-        'in your Schedule of Insurance, if that beneficiary is 18 years or '
-        'older. If not, or if nobody is nominated, the lump sum will be '
-        'paid into the deceased estate.',
-    ], start=54))
-
-    story.append(Paragraph('Other Matters', H2))
-    story.append(numbered_list([
-        '<b>AN ACT</b> by the State to declare you unfit to possess a '
-        'firearm and related issues.',
-    ], start=56))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 5 — The Agreement, Fairness and Cooling-off Period
-    # ===========================================================
-    story.append(section_header(5, 'The Agreement, Fairness and Cooling-off Period'))
-    story.append(Spacer(1, 6))
-
-    story.append(Paragraph('1. The Agreement', H2))
-    story.append(lettered_list([
-        'This is a monthly Agreement between the Main Member and Us, for '
-        'which a monthly premium is payable.',
-
-        'When you deal with any legal advisor in connection with a claim '
-        'under this Agreement, that engagement is an agreement between you '
-        'and that legal advisor, to which We are not a party.',
-
-        'You can cancel your Membership at any time without any cancellation '
-        'fees or penalties. See Section 13(4)(a).',
-
-        'We can cancel your Membership for the reasons set out in '
-        'Section 13(4)(d) and Section 8(5).',
-
-        'Unless specifically modified, this Agreement applies to all '
-        'optional product Addendums.',
-
-        'All premiums, maximum limits and the First Amount Payable are '
-        'inclusive of all taxes and VAT.',
-    ]))
-
-    story.append(Paragraph('2. Fairness', H2))
-    story.append(lettered_list([
-        'An event which happened before or during the Waiting Period does '
-        'not qualify for Insurance Cover. That is the case even if you were '
-        'unaware of the event, forgot that it happened, or were aware of '
-        'it but did not realise that it could lead to a Case.',
-
-        'Should We decide that your matter does not qualify for Insurance '
-        'Cover and you disagree with Our reasons, you may ask for an '
-        'independent referee to review Our decision. See Section 14.',
-    ]))
-
-    story.append(callout(
-        'EXAMPLE:',
-        'If your Waiting Period is one month and a Relevant Event occurs on '
-        'day 20 of your Membership (during the Waiting Period), the matter '
-        'does not qualify for Cover, even if you only become aware of the '
-        'event after the Waiting Period has expired.'))
-
-    story.append(Paragraph('3. Cooling-off Period', H2))
-    story.append(lettered_list([
-        'If you cancel your Membership during the Waiting Period, We will '
-        'refund the premiums you have paid only if you have not received '
-        'any assistance (including Legal Advisory Services) under this '
-        'Membership Agreement.',
-
-        'If you cancel your Membership after the Waiting Period, We will '
-        'not refund any premiums you have paid, even if you did not receive '
-        'any benefit, whether Insurance or Legal Advisory Services.',
-
-        'If We cancel your Membership during the Waiting Period due to '
-        'non-payment of premiums, We do not refund any premiums.',
-    ]))
-
-    story.append(callout(
-        'NOTE:',
-        'Like home insurance, you cannot, for example, claim a refund of '
-        'premiums if your home did not burn down while you were insured. '
-        'The premium pays for the availability of Cover during the period '
-        'of insurance, not for the occurrence of an insured event.'))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 6 — Exclusions
-    # ===========================================================
-    story.append(section_header(6, 'Exclusions'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        'In addition to any exclusions set out in Section 4, a matter or '
-        'dispute that arises out of, is based on, or relates to any of the '
-        'following does not qualify for Insurance Cover under Section 2(2). '
-        'We may, however, still provide the Legal Advisory Services '
-        'referred to in Section 2(1), unless we have specifically excluded '
-        'them as indicated in this Section.',
-        BODY))
-
-    story.append(numbered_list([
-        'Business activities (including activities relating to a proposed '
-        'business) and your acts in any business as a director, public '
-        'officer, agent, shareholder, partner, sole proprietor or part '
-        'owner. This exclusion also applies to Legal Advisory Services.',
-
-        'Marriage (including customary marriages), divorce, enforcement or '
-        'annulment of a divorce order, alimony, maintenance disputes, '
-        'maintenance investigations, enquiries or other proceedings related '
-        'to custody of children, visitation rights, child support, '
-        'guardianship, paternity, engagement or promise to marry, and '
-        'living together as husband and wife or as life partners, or out of '
-        'an affectionate relationship (an intimate relationship between our '
-        'Member and his or her significant other regardless of gender), or '
-        'out of a union in terms of the Civil Union Act (including '
-        'same-sex marriage).',
-
-        'Any dispute that may arise as a result of living together as '
-        'husband and wife or as life partners, or out of an affectionate '
-        'relationship, or out of a union in terms of the Civil Union Act '
-        '(including same-sex marriage).',
-
-        'A claim by you for defamation, insult, verbal abuse or any other '
-        'infringement of your personality, reputation or dignity (a claim '
-        'against you is Covered); or a claim by or against you in terms of '
-        'the Protection from Harassment Act 17 of 2011 or the Domestic '
-        'Violence Act 116 of 1998.',
-
-        'Where your chances of succeeding in a civil or labour Case, or an '
-        'application for leave to appeal, are not better than not '
-        'succeeding.',
-
-        'A claim by you that is of an emotional nature and does not affect '
-        'your corporeal interests. "Corporeal" means money or physical '
-        'property.',
-
-        'The following exclusion also applies to Legal Advisory Services: '
-        'matters involving you as a member, public officer, trustee, '
-        'executor, curator, agent or spokesperson of a non-profit company, '
-        'institution or association; a political party or similar movement; '
-        'a trust, deceased estate or similar entity; a trade or similar '
-        'union; or any other union or group of persons with a common cause '
-        'or purpose.',
-
-        'A claim by you based on a surety, cession, assignment, novation, '
-        'delegation or other derived right of recourse.',
-
-        'The drafting of any document. This exclusion also applies to '
-        'Legal Advisory Services.',
-
-        'A matter related to mineral rights. This exclusion also applies '
-        'to Legal Advisory Services.',
-
-        'Gambling, lottery and any awards in any form of competition.',
-
-        'A collective or class action.',
-
-        'An application to change your personal status, or the status, '
-        'zoning or right of use of your permanent residence. This '
-        'exclusion also applies to Legal Advisory Services.',
-
-        'A rejection by Us of a claim by you for Cover under this '
-        'Agreement.',
-
-        'Insolvency (bankruptcy). This exclusion also applies to Legal '
-        'Advisory Services.',
-
-        'A dispute with a claim value less than the Threshold Value shown '
-        'in your Schedule of Insurance (which can be settled by the Small '
-        'Claims Court), or a dispute for which an official dispute '
-        'resolution service exists.',
-
-        'Debt counselling proceedings and related applications in terms of '
-        'the National Credit Act 34 of 2005.',
-
-        'Any Case or matter directly caused by pandemics and any other '
-        'natural or environmental disasters such as flooding and climate '
-        'change. This exclusion also applies to Legal Advisory Services.',
-
-        'Lawful blacklisting and garnishee orders, and placing your '
-        'financial affairs under the control of an administrator.',
-
-        'An application to a public service body or other person or '
-        'institution to grant any licence, permission or approval.',
-
-        'Foreigners\' residency, work permit, visa, refugee, asylum and '
-        'citizenship matters.',
-
-        'Disciplinary enquiries at work where no legal representation is '
-        'allowed.',
-
-        'If the interpretation of any law, regulation or document is the '
-        'only issue in dispute in a civil claim by you, it is not Covered. '
-        'This exclusion also applies to Legal Advisory Services.',
-
-        'A cause of action which is vexatious or malicious, or a matter '
-        'that is tainted with illegality.',
-
-        'Rates and taxes. This exclusion also applies to Legal Advisory '
-        'Services.',
-
-        'Contempt of court, civil disobedience, public disorder, '
-        'unprotected strikes, lock-out, labour disturbance and similar '
-        'labour actions.',
-
-        'War, martial law, mutiny, military coup or usurped power, '
-        'rebellion or revolution.',
-
-        'Any activity or attempt to perform or bring about nuclear weapons '
-        'or material, ionising radiation, or contamination from any nuclear '
-        'waste or from the combustion of nuclear fuel. This exclusion also '
-        'applies to Legal Advisory Services.',
-
-        'An unlawful protest, intimidation or threat of violence or force '
-        'against any public body.',
-
-        'Any occurrence for which a fund has been established in terms of '
-        'the War Damage Insurance and Compensation Act, 1976.',
-
-        'An act aimed at promoting or frustrating economic, political, '
-        'social or environmental change.',
-
-        'A criminal charge against you. Cover for criminal matters differs '
-        'for serious and non-serious offences and is subject to the '
-        'special conditions in Section 32 below.',
-
-        'Income tax matters listed in Section 33 below.',
-
-        'Load-shedding and water-shedding, or any other act or omission by '
-        'the Government, or any of its constituent parts, amounting to '
-        'negligence or non-performance of its public obligations.',
-    ]))
-
-    story.append(Paragraph('32. Special conditions for criminal charges', H3))
-    story.append(Paragraph(
-        'Cover for criminal matters differs for serious and non-serious '
-        'offences and is subject to the following special conditions and '
-        'exclusions:', BODY))
-    story.append(lettered_list([
-        '<b>Serious offences</b> (Schedule 5 and/or 6 offences). You are '
-        'not Covered for legal expenses for serious offences if you have '
-        'been convicted of a serious offence in the previous six years.',
-
-        '<b>Non-serious offences</b> (non-Schedule 5 and/or 6 offences). '
-        'You are not Covered for legal expenses for non-serious offences '
-        'if you have been convicted of a non-serious offence in the '
-        'previous three years.',
-
-        '<b>Combined serious and non-serious offences.</b> If in the six '
-        'years before the current charge, you have three or more previous '
-        'convictions (serious and/or non-serious) against you for any '
-        'offence, you are not Covered.',
-
-        'A criminal charge based on fraud in connection with this '
-        'Agreement. This exclusion also applies to Legal Advisory Services.',
-
-        'Where there is an option to pay a fine without a conviction being '
-        'recorded against your name.',
-
-        'If We have already confirmed Cover for your legal expenses for '
-        'the maximum number of offences shown in your Schedule of '
-        'Insurance (see Section 10).',
-
-        'A criminal charge involving a matter listed in exclusions 25 to '
-        '31 above.',
-    ]))
-
-    story.append(Paragraph('33. Income tax matters', H3))
-    story.append(Paragraph(
-        'The following income tax matters are excluded from Cover under '
-        'this Agreement:', BODY))
-    story.append(lettered_list([
-        'Juristic persons or entities, including but not limited to sole '
-        'proprietors.',
-
-        'A matter in your capacity as a director of a company, member of '
-        'a close corporation, partner in a partnership, or any participant '
-        'or business partner involved in a relationship considered to be a '
-        'business that conducts a trade or business or any business '
-        'combination.',
-
-        'Taxation of trusts, estates and body corporates.',
-
-        'Taxation of persons acting in any representative capacity, for '
-        'example trustees, executors, curators and so on.',
-
-        'Taxation of beneficiaries of trusts and estates.',
-
-        'Residents or non-residents of South Africa who have earned more '
-        'than 50% of their income outside the borders of South Africa.',
-
-        'Income earned in a currency other than the South African Rand.',
-
-        'Income earned from a company or juristic entity not registered '
-        'within South Africa.',
-
-        'Any other form of taxation including, but not limited to, customs '
-        'and excise queries, VAT and so on.',
-
-        'Making payment arrangements on your behalf for any outstanding '
-        'amounts owing to SARS.',
-
-        'Applications for tax directives and tax clearance certificates '
-        'on your behalf or on behalf of juristic persons.',
-
-        'Any tax matter incurring insurance benefits by or against SARS.',
-
-        'Any matter where you are not resident within the borders of '
-        'South Africa.',
-    ]))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 7 — Legal Expenses We Pay
-    # ===========================================================
-    story.append(section_header(7, 'Legal Expenses We Pay'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        'Subject to the limits in Section 10, and provided you remain a '
-        'Paid-Up Member, We will pay the following legal expenses in '
-        'respect of a Covered Case:', BODY))
-    story.append(numbered_list([
-        'The fees and expenses of your legal advisor for a Case, at Our '
-        'Tariffs in force from time to time. The Tariffs form part of this '
-        'Agreement and are available on request.',
-
-        'Only if We agree in writing, the fees of a legal advisor for a '
-        'second opinion about your chances of success. We will generally '
-        'consider this only if new facts or circumstances are presented.',
-
-        'The cost of expert evidence and the arbitrator\'s fees that We '
-        'agree to in writing.',
-
-        'Court fees or charges.',
-
-        'The legal expenses that the court orders you to pay to the other '
-        'party (your opponent) if you lose a Case.',
-
-        'The legal expenses of further action to force an unwilling or '
-        'unable "loser" to obey a court order when you win a Case.',
-
-        'The legal expenses of an appeal or review if you lose a Case, but '
-        'only if your legal advisor agrees that your chances of succeeding '
-        'in the appeal or review are better than not succeeding.',
-
-        'If We have agreed to it, the costs of your opponent in order to '
-        'settle a Case.',
-
-        'The Legal Expenses Accidental Death cash payment is for the '
-        'reporting and winding up of the deceased estate, dealing with '
-        'debtors (including Workmen\'s Compensation and the Road Accident '
-        'Fund if applicable) and creditors (including estate duty), and '
-        'obtaining expert financial, legal and tax advice. The amount is '
-        'shown in your Schedule of Insurance.',
-
-        'We only pay legal expenses for a Case conducted and concluded in '
-        'a court or tribunal in the RSA in respect of Relevant Events that '
-        'happened in the RSA. "Conducted and concluded" means that the '
-        'Case is initiated and finalised in a court in the RSA, which '
-        'includes execution steps and any recovery associated with a Case.',
-    ]))
-    story.append(defn('Case',
-        'means all Court, Tribunal or Arbitration proceedings based on the '
-        'same Relevant Events.'))
-    story.append(defn('Arbitration Proceedings',
-        'mean arbitration proceedings in terms of the Arbitration Act 42 '
-        'of 1965.'))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 8 — Legal Expenses We Do Not Pay
-    # ===========================================================
-    story.append(section_header(8, 'Legal Expenses We Do Not Pay'))
-    story.append(Spacer(1, 6))
-    story.append(numbered_list([
-        'That are above the limits set out in Section 10.',
-
-        'That are higher than Our Tariffs.',
-
-        'For work done by your legal advisor before We have issued a '
-        'written Confirmation of Cover (unless We agree otherwise in '
-        'writing).',
-
-        'That are duplicated because you changed legal advisors without '
-        'Our written agreement.',
-
-        'After the following actions or inactions by you which entitle Us '
-        'to cancel your Membership, We will have no obligation to pay '
-        'legal expenses not already incurred in a Case: '
-        '(a) without a reasonable explanation, you fail to respond to Our '
-        'request or your legal advisor\'s request for relevant information '
-        'or instructions regarding a Case; (b) you withhold or give false '
-        'or misleading information in relation to your Insurance claim or '
-        'a Case; (c) without a reasonable explanation, you fail to '
-        'co-operate or turn up for consultations or court appearances.',
-
-        'For any new matters that you report to Us after the Maximum '
-        'Period to Report a Claim shown in your Schedule of Insurance, '
-        'after cancellation of your Membership for any reason. The legal '
-        'expenses of an appeal or review arising from a Covered matter '
-        'received outside of the Maximum Period to Report a Claim are '
-        'excluded from Cover.',
-
-        'If you are joined with other persons in a Case (a joint or class '
-        'action), We will pay only a portion of the legal expenses for '
-        'which you are jointly liable. That portion is the same as the '
-        'proportion that you are of the total number of persons, but only '
-        'up to the Maximum Limit.',
-
-        'If you offer to pay the legal expenses of your opponent to settle '
-        'a Case, you are personally responsible for payment. We do not '
-        'pay those legal expenses unless We agree in writing.',
-
-        'We do not pay legal expenses for negotiation, mediation or '
-        'Alternative Dispute Resolution efforts or proceedings unless We '
-        'agree otherwise in writing.',
-
-        'We do not pay legal costs that are punitive costs awards (for '
-        'example, costs awards against you by the court that serve as a '
-        'punishment).',
-
-        'We do not pay the cost of expert evidence, expert opinions, '
-        'medical reports, and mediator or arbitrator fees that We have '
-        'not agreed to in writing beforehand.',
-
-        'We do not pay your cost and/or your opponent\'s cost: '
-        '(a) when you abandon a court case; (b) if the court finds that '
-        'a legal action by you is vexatious or malicious; or (c) arising '
-        'from a Contempt of Court case against you.',
-    ]))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 9 — Recovery and Restriction of Expenses
-    # ===========================================================
-    story.append(section_header(9, 'Recovery and Restriction of Expenses'))
-    story.append(Spacer(1, 6))
-    story.append(numbered_list([
-        'If a court orders your opponent who loses a Case to pay all or '
-        'some of your legal expenses, then, if the amount that your '
-        'opponent must pay: (a) is less than the legal expenses We paid, '
-        'the total amount paid by your opponent must be refunded to Us; '
-        '(b) is more than the legal expenses We paid, the total legal '
-        'expenses We paid must be refunded to Us.',
-
-        'You agree that your legal advisor can refund Us when the money is '
-        'received from your opponent in terms of the Court Order.',
-
-        'If your opponent does not pay for any reason, you give Us the '
-        'right to claim it directly from that opponent in your name.',
-
-        'We may, at Our discretion, require you at any time before or '
-        'after payment of a claim to cede to Us any contingent, future or '
-        'actual right to claim any costs in respect of any proceedings '
-        'Covered by this Agreement.',
-
-        'We must be advised immediately if you receive a settlement offer. '
-        'You may not accept or reject a settlement offer without Our '
-        'written consent. (a) If you request Our consent to accept an '
-        'offer, We may agree on condition that all or some of the legal '
-        'expenses We paid must be recovered from your opponent. (b) If you '
-        'request Our consent to reject an offer, We will set a limit on '
-        'the legal expenses We will pay to carry on. Because the dispute '
-        'is now only about how much more you claim, We determine how much '
-        'more We will pay to carry on by multiplying the amount or value '
-        'of how much more you claim by the Claim Value Multiplier shown in '
-        'your Schedule of Insurance. We will pay up to that amount, '
-        'provided the Maximum Limit in terms of Section 10 is not '
-        'exceeded.',
-
-        'If you are Covered against payment of legal fees under any other '
-        'insurance policy, Our liability shall be limited to the prorated '
-        '(rateable) portion of the total legal expenses incurred.',
-    ]))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 10 — Maximum Limits We Pay
-    # ===========================================================
-    story.append(section_header(10, 'Maximum Limits We Pay'))
-    story.append(Spacer(1, 6))
-    story.append(numbered_list([
-        'All limits are limits per Agreement, irrespective of how many '
-        'Members are entitled to Insurance Cover under this Agreement.',
-
-        'The maximum that We will pay over any period of time as a Member '
-        'is the "Life Time Limit" shown in your Schedule of Insurance.',
-
-        'The maximum that We will pay for a civil or labour Case is the '
-        'lowest of: (a) the Maximum Limit shown in your Schedule of '
-        'Insurance; or (b) the amount or value of your claim multiplied '
-        'by the Claim Value Multiplier (CVM) shown in your Schedule of '
-        'Insurance.',
-
-        'The maximum that We will pay for Covered criminal cases: (a) for '
-        'a single criminal Case, We will pay up to the Maximum Limit; '
-        '(b) for different criminal cases over any period of time as a '
-        'Member, We will only pay for the Maximum Number of Offences shown '
-        'in your Schedule of Insurance.',
-
-        'The Maximum Limit for the Legal Expenses Accidental Death benefit '
-        'is as shown in your Schedule of Insurance.',
-
-        'The Maximum Limit per Case is for the combined total of all '
-        'expense items under Section 7.',
-    ]))
-    story.append(callout(
-        'NOTE:',
-        'The Claim Value "rule" is to encourage acceptance of reasonable '
-        'offers to settle. It avoids disproportionate legal expenses when '
-        'there is a risk of either a very small or no extra reward.'))
-
-    # Maximum limits reference table
-    story.append(Spacer(1, 12))
-    story.append(Paragraph('Reference: Key Limits and Values', H3))
-    limits_data = [
-        [Paragraph('<b>Parameter</b>', TABLE_HEADER),
-         Paragraph('<b>Where Shown</b>', TABLE_HEADER)],
-        [Paragraph('Monthly Premium', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Waiting Period', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('First Amount Payable', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Maximum Limit per Case', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Life Time Limit', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Claim Value Multiplier (CVM)', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Maximum Number of Offences', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Maximum Financial Value (investments / estates)',
-                   TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Maximum Period to Report After Cancellation',
-                   TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Maximum TTD Number of Months', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
-        [Paragraph('Threshold Value (Small Claims Court)', TABLE_CELL),
-         Paragraph('Schedule of Insurance', TABLE_CELL)],
+    # =====================================================================
+    story.append(SectionHeader(1, 'Interpretation and Definitions'))
+    story.append(p(
+        'In this Subscription Agreement, unless the context requires otherwise, '
+        'the following words and expressions have the meanings assigned to them '
+        'below. Defined terms are used consistently throughout the document and '
+        'appear with an initial capital letter. Words importing one gender '
+        'include the other genders, words in the singular include the plural '
+        'and vice versa, and references to statutes include any subordinate '
+        'legislation made under those statutes and any successor legislation.'))
+    story.append(p(
+        'Where a definition refers to a section of this Agreement, that section '
+        'forms part of the definition. Headings are for convenience only and do '
+        'not affect interpretation. References to "writing" include email, '
+        'WhatsApp messages, in-app messages through the Member Portal, and any '
+        'other form of electronic communication that produces a durable record.'))
+
+    defs = [
+        ('"Subscriber" or "Member"',
+         'means the natural person who has subscribed to an Infinity Legal SA '
+         'plan in their personal capacity. A Subscriber may add eligible family '
+         'members as additional users of the plan in accordance with Section 9 '
+         'and the rules of the selected plan.'),
+        ('"We", "Us", "Our" or "Infinity Legal SA"',
+         'means Infinity Legal SA (Pty) Ltd, a private company registered in '
+         'the Republic of South Africa with registration number 2024/123456/07, '
+         'registered with the Legal Practice Council of South Africa, and '
+         'including its successors in title and permitted assigns.'),
+        ('"Plan"',
+         'means one of the three subscription plans offered by us from time to '
+         'time: the Civil Legal Plan, the Labour Legal Plan, or the Extensive '
+         'Plan. Each Plan is described in detail in Section 2 and the Schedule '
+         'of Benefits.'),
+        ('"Subscription Fee"',
+         'means the monthly or annual fee payable by the Subscriber in exchange '
+         'for the Services under the selected Plan. The Subscription Fee is '
+         'exclusive of value-added tax where applicable, and is payable in '
+         'advance by PayFast, debit order, or EFT.'),
+        ('"Legal Advisor"',
+         'means a legal practitioner registered with the Legal Practice Council '
+         'of South Africa who is appointed by us to provide Services to the '
+         'Subscriber. The term includes candidate legal practitioners, paralegals '
+         'working under supervision, and any Network Legal Advisor instructed on '
+         'our behalf.'),
+        ('"Network Legal Advisor"',
+         'means an independent legal advisor or firm of legal advisors appointed '
+         'by us to deliver Services to a Subscriber on our behalf, typically '
+         'where local representation is required (for example, in a Magistrate\'s '
+         'Court outside Gauteng).'),
+        ('"Consultation"',
+         'means a one-on-one interaction between the Subscriber and a Legal '
+         'Advisor in which legal advice is given. Consultations may take place '
+         'in person, by telephone, by video call, by email, or by in-app '
+         'chat, at our discretion and in line with the selected Plan.'),
+        ('"Document"',
+         'means any written or electronic record that the Subscriber asks us to '
+         'review, draft, summarise, or comment on as part of the Services, '
+         'including contracts, letters, emails, pleadings, and similar '
+         'instruments.'),
+        ('"Matter" or "Case"',
+         'means a discrete legal question, dispute, or transaction for which '
+         'the Subscriber requests Services. A Matter may comprise multiple '
+         'consultations and documents but is treated as a single working file '
+         'for billing, capacity, and Fair Usage purposes.'),
+        ('"Services"',
+         'means the legal services described in Section 3 that we agree to '
+         'provide to the Subscriber under the selected Plan, including '
+         'consultations, document review and drafting, court and CCMA '
+         'representation, AI case analysis, and related support.'),
+        ('"Schedule of Benefits"',
+         'means the table in Section 2 that lists the features, capacity '
+         'limits, and pricing of each Plan, together with any plan-specific '
+         'notes. The Schedule of Benefits forms part of this Agreement.'),
+        ('"Onboarding Period"',
+         'means the period of 48 to 72 hours from the date on which the '
+         'Subscriber submits their FICA documents, during which we verify the '
+         'Subscriber\'s identity and set up their account. The Onboarding '
+         'Period is a verification and setup step, not a delay in service '
+         'availability for any other reason.'),
+        ('"AI Case Analysis"',
+         'means the artificial-intelligence-powered review of a Matter that '
+         'produces an indication of the likely legal issues, risks, and '
+         'options, generated by our Infinity AI Assistant and reviewed by a '
+         'human Legal Advisor before being shared with the Subscriber.'),
+        ('"Member Portal"',
+         'means the secure online portal accessible at '
+         'portal.infinitylegal.co.za through which Subscribers manage their '
+         'subscription, request Services, communicate with their Legal '
+         'Advisor, and access their documents.'),
+        ('"Business Day"',
+         'means any day other than a Saturday, Sunday, or public holiday '
+         'recognised in the Republic of South Africa.'),
+        ('"Cooling-off Period"',
+         'means the seven-day period after activation during which a new '
+         'Subscriber may cancel their subscription and receive a pro-rata '
+         'refund of the Subscription Fee, provided that no Services have been '
+         'used, as described in Section 5.'),
+        ('"FICA"',
+         'means the Financial Intelligence Centre Act 38 of 2001, as amended, '
+         'which requires us to establish and verify the identity of every '
+         'Subscriber before providing Services.'),
+        ('"POPIA"',
+         'means the Protection of Personal Information Act 4 of 2013, as '
+         'amended, which governs the processing of personal information in '
+         'South Africa and is described in Section 10.'),
+        ('"Legal Practice Council" or "LPC"',
+         'means the statutory regulatory body for legal practitioners in South '
+         'Africa, established under the Legal Practice Act 28 of 2014, with '
+         'which we and our Legal Advisors are registered.'),
     ]
-    col_widths = [CONTENT_W * 0.55, CONTENT_W * 0.45]
-    limits_table = Table(limits_data, colWidths=col_widths, hAlign='CENTER',
+    for term, definition in defs:
+        story.append(Paragraph(f'<b>{term}</b> {definition}', DEFINITION))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 2 — Our Three Legal Plans
+    # =====================================================================
+    story.append(SectionHeader(2, 'Our Three Legal Plans'))
+    story.append(p(
+        'Infinity Legal SA offers three subscription plans, each designed for a '
+        'different profile of Subscriber. Every plan is a recurring monthly or '
+        'annual subscription that you can cancel at any time without penalty. '
+        'Annual subscriptions receive a discount of approximately 16 per cent '
+        'compared to twelve monthly payments. All prices include value-added '
+        'tax where applicable. The three plans are summarised below and set '
+        'out in detail in the Schedule of Benefits and the feature comparison '
+        'table that follows.'))
+
+    # Plan summary cards
+    plan_summary_data = [
+        [Paragraph('<b>Plan</b>', TABLE_HEADER),
+         Paragraph('<b>Monthly Fee</b>', TABLE_HEADER_CENTER),
+         Paragraph('<b>Annual Fee</b>', TABLE_HEADER_CENTER),
+         Paragraph('<b>Best For</b>', TABLE_HEADER)],
+        [Paragraph('<b>Civil Legal Plan</b>', TABLE_CELL_BOLD),
+         Paragraph('R99', TABLE_CELL_CENTER),
+         Paragraph('R999', TABLE_CELL_CENTER),
+         Paragraph('Civil disputes and general legal matters', TABLE_CELL)],
+        [Paragraph('<b>Labour Legal Plan</b>  <font color="#a88832">(Most Popular)</font>', TABLE_CELL_BOLD),
+         Paragraph('R99', TABLE_CELL_CENTER),
+         Paragraph('R999', TABLE_CELL_CENTER),
+         Paragraph('Workplace and employment matters, including CCMA', TABLE_CELL)],
+        [Paragraph('<b>Extensive Plan</b>  <font color="#a88832">(Best Value)</font>', TABLE_CELL_BOLD),
+         Paragraph('R139', TABLE_CELL_CENTER),
+         Paragraph('R1 399', TABLE_CELL_CENTER),
+         Paragraph('All practice areas, including family and criminal advice', TABLE_CELL)],
+    ]
+    plan_summary_widths = [
+        CONTENT_W * 0.30,
+        CONTENT_W * 0.16,
+        CONTENT_W * 0.16,
+        CONTENT_W * 0.38,
+    ]
+    plan_summary = Table(plan_summary_data, colWidths=plan_summary_widths,
                          repeatRows=1)
-    limits_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), TABLE_HEADER_BG),
+    plan_summary.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), NAVY),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1),
-         [TABLE_ROW_EVEN, TABLE_ROW_ODD]),
-        ('GRID', (0, 0), (-1, -1), 0.4, BORDER),
-        ('LINEBELOW', (0, 0), (-1, 0), 1.2, GOLD),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, NAVY_50]),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, GOLD),
+        ('LINEBELOW', (0, 1), (-1, -2), 0.5, NAVY_200),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 7),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
     ]))
-    story.append(limits_table)
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 11 — How to Claim
-    # ===========================================================
-    story.append(section_header(11, 'How to Claim'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph('Legal Expenses Accidental Death (LEAD)', H2))
-    story.append(Paragraph(
-        'The death must be Reported to Us by submitting the LEAD Claim '
-        'Form, which forms part of this Agreement, within the period after '
-        'death shown in your Schedule of Insurance. Additional conditions '
-        'may apply to this benefit; if so, they are shown in your Schedule '
-        'of Insurance and/or the LEAD Claim Form.',
-        BODY))
-
-    story.append(Paragraph('Legal Matters — Three-Step Process', H2))
-    story.append(Paragraph(
-        'In legal matters, some laws have time limits to start or defend a '
-        'Case. If you miss a deadline, you may lose your right to sue or '
-        'defend. You must report a matter to Us as soon as possible. We '
-        'are not responsible if you lose your rights because you did not '
-        'report a matter in time. You can report a matter on the 24-hour '
-        'Infinity LegalLine on <b>0861 4 LEGAL</b>, at any Branch, or by '
-        'email to <b>legal@infinitylegal.co.za</b>.',
-        BODY))
-
-    story.append(Paragraph('Step 1 — Report the Matter', H3))
-    story.append(Paragraph(
-        'If your issue is a labour or civil matter (not criminal), Our '
-        'legal counsellors will try to resolve it on a reasonable basis. '
-        'If it is Covered and We decide that We cannot resolve it, or '
-        'that it is complicated or requires immediate action, or it is a '
-        'criminal matter, We will refer you to a Network legal advisor, '
-        'or you may consult your own legal advisor.',
-        BODY))
-
-    story.append(Paragraph('Step 2 — Submit the Official Claim Form', H3))
-    story.append(Paragraph(
-        'If you have chosen a Network legal advisor, he or she will submit '
-        'Our Official Claim Form (OCF) to Us on your behalf. If you choose '
-        'another legal advisor, you or your legal advisor must submit the '
-        'OCF to Us within 7 days of consulting with that legal advisor. We '
-        'cannot process your claim for Insurance Cover unless We have '
-        'received the OCF. The OCF is available at any Branch, on the '
-        'Member Portal at <b>portal.infinitylegal.co.za</b>, or on '
-        'request.',
-        BODY))
-    story.append(callout(
-        'PLEASE NOTE:',
-        'Once We have received the OCF, and before We can decide whether '
-        'your matter qualifies for Insurance Cover, We may request more '
-        'information from you or your legal advisor. If it qualifies, We '
-        'will issue a written Confirmation of Cover to your legal advisor. '
-        'We will not pay legal expenses incurred before We have issued a '
-        'written Confirmation of Cover, nor while you are not a Paid-Up '
-        'Member.'))
-
-    story.append(Paragraph('Step 3 — First Option: Network Legal Advisor',
-                           H3))
-    story.append(Paragraph(
-        'If you elect to choose a Network legal advisor, We have '
-        'information about who specialises in particular types of cases. '
-        'You can request that information from Us. Network legal advisors '
-        'have agreed to charge according to Our Tariffs and to assist you '
-        'to comply with your obligations under this Agreement. Your '
-        'Network legal advisor will deal directly with Us in connection '
-        'with your Insurance claim, and there is no risk of being charged '
-        'above the Tariffs (which may happen under the Second Option).',
-        BODY))
-
-    story.append(Paragraph(
-        'Step 3 — Second Option: Non-Network Legal Advisor', H3))
-    story.append(Paragraph(
-        'If you have chosen a legal advisor who is not a Network legal '
-        'advisor, you must provide Us with an Official Claim Form (if We '
-        'have not received it yet) within 7 days of consulting with that '
-        'legal advisor. Please be aware that the legal advisor: may not '
-        'be prepared to charge at Our Tariffs; or may not agree to assist '
-        'you to comply with Our reasonable requests for relevant '
-        'information. It is in your own interests to clarify these two '
-        'points with your legal advisor.',
-        BODY))
-    story.append(Paragraph(
-        'If you or your legal advisor do not provide Us with information '
-        'We reasonably need to process your Insurance claim, We will not '
-        'pay any of your legal expenses. If your legal advisor agrees to '
-        'co-operate but does not agree to charge at Our Tariffs, We will '
-        'adjust the legal advisor\'s total charges to Our Tariffs and pay '
-        'that amount. You will then be personally responsible to pay the '
-        'shortfall to your legal advisor out of your own pocket.',
-        BODY))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 12 — Premiums, Information Exchange, Communication, Leniency
-    # ===========================================================
-    story.append(section_header(12,
-        'Premiums, Information Exchange, Communication and Leniency'))
-    story.append(Spacer(1, 6))
-
-    story.append(Paragraph('1. Payment of Premiums', H2))
-    story.append(lettered_list([
-        'The monthly premium is due on the 1st day of every month, even '
-        'though We may collect it at any time up to the end of a month.',
-
-        'You must make sure that premiums are paid, even if someone else '
-        'pays them on your behalf.',
-
-        'If a debit order deduction is not successful for whatever reason '
-        'on the premium due date, resulting in your Membership going into '
-        'arrears, We may do a double premium deduction from your nominated '
-        'bank account on the next premium due date.',
-
-        'If you pay by debit or stop order: (i) We do not pay the '
-        'collection costs and any unusual additional fees or charges by '
-        'your bank; (ii) if you want Us to change or cancel your debit or '
-        'stop order arrangement, you must contact Us at least 30 days '
-        'before the existing collection date.',
-    ]))
-
-    story.append(Paragraph(
-        '2. Information Exchange, Confidentiality and POPIA', H2))
-    story.append(Paragraph(
-        'The protection of your personal information is fundamental to '
-        'Infinity Legal SA. We process all personal information in '
-        'accordance with the <b>Protection of Personal Information Act 4 '
-        'of 2013 (POPIA)</b>, the General Data Protection Regulation '
-        'principles where applicable, and all other applicable South '
-        'African privacy and data protection legislation. We have '
-        'appointed an Information Officer and have implemented appropriate '
-        'technical and organisational measures to keep your information '
-        'complete, secure and accurate.',
-        BODY))
-    story.append(lettered_list([
-        'You agree to provide your personal information to gain access to '
-        'Our products and services and to allow Us to administer your '
-        'Insurance product and/or to advance your Case.',
-
-        'You agree that We can provide any information (including personal '
-        'information) to your legal advisor or applicable third party if '
-        'it is needed to handle your Case, or if a law or Court requires '
-        'Us to do so.',
-
-        'You agree that your legal advisor or any other person who has '
-        'your information can provide Us with any information (including '
-        'personal information) which relates to your Insurance product or '
-        'Case if it is needed.',
-
-        'In accordance with POPIA, you are entitled to: (i) request the '
-        'details of your personal information that We hold in Our records; '
-        '(ii) request the details about the recipients of your personal '
-        'information; and (iii) request the amendment or deletion of your '
-        'personal information, subject to the record-keeping requirements '
-        'of the Short-Term Insurance Act and other applicable legislation.',
-    ]))
-
-    story.append(Paragraph('3. Communicating With You', H2))
-    story.append(lettered_list([
-        'We will send all general communications to the Main Member\'s '
-        'contact details on record.',
-
-        'We may send any document or communication that is part of, or '
-        'that We issue in terms of, the Agreement by mail, email, SMS, '
-        'website, post, WhatsApp or fax.',
-
-        'If you change your contact details, you must please let Us know. '
-        'We will send you an acknowledgement within 10 business days. '
-        'Please let Us know if you do not receive it.',
-
-        'If any Member communicates with Us about his or her Insurance '
-        'claim, We will respond to that Member.',
-    ]))
-
-    story.append(Paragraph('4. Leniency', H2))
-    story.append(lettered_list([
-        'If you do not comply with a term of this Agreement, We may '
-        'overlook it. If We do, even if it is over a long period of time, '
-        'it does not mean that We have to continue to be lenient.',
-
-        'We retain Our rights to enforce any term of the Agreement at any '
-        'time.',
-    ]))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 13 — Premium Changes, Change of Terms, Cancellation
-    # ===========================================================
-    story.append(section_header(13,
-        'Premium Changes, Change of Terms and Cancellation'))
-    story.append(Spacer(1, 6))
-
-    story.append(Paragraph('1. Premium Increase', H2))
-    story.append(Paragraph(
-        'The monthly premium will increase every year on the anniversary '
-        'date of when you first joined Infinity Legal SA.', BODY))
-
-    story.append(Paragraph('2. Changing the Terms or Increasing the Premium',
-                           H2))
-    story.append(lettered_list([
-        'We may change any term of the Agreement on 31 days\' written '
-        'notice to you. If We do, it will apply only to Relevant Events '
-        'that arise after the change. It will not affect Our existing '
-        'obligations to you under the previous terms for Relevant Events '
-        'that arose before the change.',
-
-        'When We change a term or increase the premium, you accept that '
-        'We can notify you in any reasonable manner at Our discretion.',
-
-        'An increase or change of term will be deemed effective from the '
-        'date mentioned in the notice.',
-
-        'If you do not accept the increase or the change of term, and you '
-        'cancel your Membership within 31 days of the increase or change '
-        'of term, We will refund premiums received after the increase or '
-        'change.',
-    ]))
-
-    story.append(Paragraph('3. Unauthorised Changes', H2))
-    story.append(Paragraph(
-        'None of Our employees may give any undertaking that deviates '
-        'from the terms of the Agreement, except for a duly authorised '
-        'ex-gratia payment.', BODY))
-
-    story.append(Paragraph('4. How Your Membership Can Be Cancelled', H2))
-    story.append(lettered_list([
-        'If you pay by cash, you can simply stop paying the premium. '
-        'Otherwise, you can ask your bank or employer to cancel your '
-        'direct debit or stop order deduction, or you can request Us to '
-        'instruct your bank or employer to cancel it.',
-
-        'We can cancel your Membership without notice to you, if We do '
-        'not receive a premium by 24h00 on the last day of the month in '
-        'which it is due (a 31-day grace period).',
-
-        'If We don\'t cancel, you agree that We may collect the number of '
-        'unpaid premiums shown in your Schedule of Insurance. (i) If We '
-        'collect unpaid premiums, you will be treated as if you paid all '
-        'premiums on due date. (ii) If We fail to collect unpaid premiums, '
-        'your Membership will be cancelled with effect from the 1st of '
-        'the 1st month that the premium was not collected. (iii) If We '
-        'have cancelled as above, and collect or receive a premium at '
-        'any time after that, it amounts to entering into a new Agreement.',
-
-        'We can cancel your Membership on 31 days\' notice to you, for '
-        'any other reason at Our discretion. If We inadvertently collect '
-        'or receive a premium after such a cancellation, it does not '
-        'amount to entering into a new Agreement and We will refund that '
-        'premium.',
-
-        'If your Membership is cancelled for any reason, except if it is '
-        'in terms of Section 8(5), it will not affect Our obligations to '
-        'pay your legal expenses up to the finalisation of a Case in '
-        'respect of matters that qualify and that you Reported to Us '
-        'before "The Maximum Period after Cancellation to Report a Claim" '
-        'referred to in your Schedule of Insurance.',
-
-        'We have no obligation to accept you as a Member again at any '
-        'time after your Membership has been cancelled for any reason.',
-    ]))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 14 — Disputes and Complaints
-    # ===========================================================
-    story.append(section_header(14, 'Disputes and Complaints'))
-    story.append(Spacer(1, 6))
-    story.append(numbered_list([
-        'If We decide that a claim by you does not qualify for any '
-        'payment, or only qualifies for payment of a portion of your '
-        'legal expenses, We will inform you, together with Our reasons, '
-        'within 10 days after being placed in possession of all the '
-        'information We have reasonably requested. You then have 90 days '
-        'from the date We inform you to let Us know in writing if you '
-        'object and do not agree with it.',
-
-        'We will reconsider the matter and let you know Our decision '
-        'within 10 days of receiving your written objection. If We still '
-        'decide not to pay what you claim and Our decision: (a) is based '
-        'on the fact that you did not pay a Premium due, or on the fact '
-        'that the Relevant Event occurred before the end of the Waiting '
-        'Period, Our decision is final; (b) is based on the fact that the '
-        'Maximum Limit of indemnity was paid, Our decision is final; '
-        '(c) is based on any other reason or fact relating to the matter '
-        'under consideration, and you request it in writing, We will pay '
-        'an Independent Referee nominated by Us to review it. He or she '
-        'will review Our decision and give Us a recommendation.',
-
-        'We do not have to follow the recommendation of the External '
-        'Referee, but it will be carefully considered. We will inform you '
-        'of the Referee\'s recommendation and of Our final decision '
-        'within 15 days after We receive the recommendation.',
-
-        'Nothing in this Agreement prevents you from starting a Case '
-        'against Us at your own cost. However, you must do so within 365 '
-        'days of the date on which We first informed you of any decision '
-        'concerning this Agreement that you do not agree with. You lose '
-        'your rights to take action against Us after the 365-day period.',
-    ]))
-
-    story.append(defn('Independent External Referee',
-        'means a legal advisor who is not on Our Network and who has a '
-        'minimum of seven years\' post-qualification legal experience.'))
-
-    story.append(callout(
-        'NOTE:',
-        'Should you wish to lodge a complaint about Our services, you may '
-        'do so in writing to the Infinity Legal SA Compliance Officer at '
-        'complaints@infinitylegal.co.za. If your complaint is not resolved '
-        'to your satisfaction, you may approach the Financial Sector '
-        'Conduct Authority (FSCA) or the Ombud for Financial Services '
-        'Providers (FAIS Ombud) in accordance with the Financial Advisory '
-        'and Intermediary Services Act 37 of 2002.'))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 15 — Total and Temporary Disablement and Retrenchment
-    # ===========================================================
-    story.append(section_header(15,
-        'Total and Temporary Disablement and Retrenchment'))
-    story.append(Spacer(1, 6))
-    story.append(numbered_list([
-        'This benefit is an integral part of the Agreement. It cannot be '
-        'bought as a stand-alone policy.',
-
-        'If the Main Member is retrenched or becomes totally and '
-        'temporarily disabled to work (TTD) after a period of continuous '
-        'Paid-Up Membership shown in your Schedule of Insurance: '
-        '(a) your Membership will be treated as Paid-Up for the Maximum '
-        'TTD Number of Months shown in your Schedule of Insurance; '
-        '(b) during this period, while out of work, you do not have to '
-        'pay the premiums.',
-    ]))
-
-    story.append(Paragraph('Conditions', H3))
-    story.append(lettered_list([
-        'You must provide Us with proof of the retrenchment or '
-        'disablement.',
-
-        'The disablement must be due to an Accident as defined in this '
-        'Agreement.',
-
-        'The maximum period within which you must report the retrenchment '
-        'or disablement is shown in your Schedule of Insurance.',
-    ]))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SECTION 16 — Personal Income Tax Support
-    # ===========================================================
-    story.append(section_header(16, 'Personal Income Tax Support'))
-    story.append(Spacer(1, 6))
-    story.append(numbered_list([
-        'This benefit is an integral part of the Agreement. It cannot be '
-        'bought as a stand-alone policy and is only applicable to a '
-        'Paid-Up Membership.',
-
-        'Main Members and Spouses on Policy A and Platinum A, who are in '
-        'possession of a green bar-coded identity document or the new '
-        'identity card, qualify for tax advice and assistance from Our '
-        'in-house tax practitioners for the following South African '
-        'Revenue Service (SARS) personal income tax matters:',
-    ]))
-    story.append(bullet_list([
-        'Understanding your SARS notice of assessment (ITA34)',
-        'Understanding tax calculations',
-        'Checking the status of tax accounts with SARS',
-        'Helping to interpret the Income Tax Act and the Tax '
-        'Administration Act, and the SARS tax self-help guides',
-        'Tax registration advice if you are an individual personal income '
-        'tax payer',
-        'Querying outstanding personal income tax returns',
-        'SARS audits',
-        'Lodging SARS objections',
-        'Penalties and interest raised by SARS',
-        'Identity theft',
-        'SARS garnishees (IT88)',
-        'Tax implications on pension and provident fund pay-outs',
-        'Liaising with employers regarding the cancellation of duplicate '
-        'IRP5 certificates or correcting mistakes on issued IT3 or IRP5 '
-        'certificates',
-        'Liaising with employers on queries regarding incorrect PAYE '
-        'deductions and obtaining IRP5 or IT3 certificates',
-        'General tax queries',
-    ]))
-    story.append(Paragraph(
-        '3. Policy B and C, and Platinum B and C, Members and Spouses '
-        'qualify for tax advice only (no assistance with SARS proceedings).',
-        BODY))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # ADDENDUM 1 — Platinum Membership
-    # ===========================================================
-    story.append(addendum_header('Platinum Membership Addendum'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        'Applicable to Platinum (previously called Platinum A). Not '
-        'applicable to Platinum B and C.', KICKER))
-    story.append(Spacer(1, 4))
-    story.append(Paragraph(
-        'This Addendum is subject to the terms of the Membership '
-        'Agreement, except as modified in your Schedule of Insurance and '
-        'as set out below, and applies while your Membership is Paid-Up.',
-        BODY))
-    story.append(lettered_list([
-        'The Waiting Periods that apply to each benefit listed below, and '
-        'the increased Maximum Limit per Case, Life Time Limit and Claim '
-        'Value Multiplier, are shown in your Schedule of Insurance.',
-
-        'The increased Maximum Limit per Case applies only to Relevant '
-        'Events that all happen after the Platinum Waiting Period shown '
-        'in your Schedule of Insurance and while your Membership is '
-        'Paid-Up.',
-
-        'The Life Time Limit is calculated on the premium in force when '
-        'We do the calculation.',
-
-        'We will pay the fees and expenses of your legal advisor for a '
-        'Case at the Platinum Tariffs in force from time to time. The '
-        'Platinum Tariffs form part of this Addendum and are available on '
-        'request.',
-    ]))
-    story.append(Paragraph(
-        'In consideration of the Platinum premium in force from time to '
-        'time, the following services (additional to the services under '
-        'the Main Membership Agreement) will be provided to you, on '
-        'condition that they are rendered by legal advisors appointed and '
-        'paid by Us, as per the Platinum Tariffs.',
-        BODY))
-
-    # A) Uncontested Divorce
-    story.append(Paragraph('A. Uncontested Divorce', H2))
-    story.append(lettered_list([
-        'This benefit is only available to the Main Member.',
-
-        'This benefit covers uncontested divorces where the parties reach '
-        'consensus on all issues, eliminating the need for Court '
-        'intervention. For example, agreement on asset division, '
-        'children\'s rights, custody and other terms are achieved '
-        'amicably.',
-
-        'This benefit applies exclusively to uncontested divorce matters, '
-        'including settlement agreements. Please refer to Section 1(i) of '
-        'Our Membership Agreement for the definition of "Spouse".',
-
-        'We will pay the appointed legal advisor\'s fees for obtaining a '
-        'final divorce order.',
-
-        'There is a continuous 18-month waiting period of Paid-Up '
-        'Platinum Membership.',
-
-        'We will pay for only one uncontested divorce over a continuous '
-        '36-month period of Paid-Up Platinum Membership.',
-
-        'If an initially uncontested divorce becomes opposed, Cover '
-        'continues as per Our Platinum Schedule of Tariffs until the '
-        'matter becomes opposed.',
-
-        'Terminating the mandate during an uncontested divorce ceases Our '
-        'responsibilities and Cover from the date of termination. We will '
-        'pay as per the Platinum Schedule of Tariffs up to the point of '
-        'termination of the mandate.',
-    ]))
-    story.append(Paragraph('Exclusions:', H3))
-    story.append(bullet_list([
-        'Fees and disbursements for ancillary applications (such as '
-        'maintenance). You are personally responsible for paying these to '
-        'the appointed legal advisor.',
-
-        'If you enjoyed concurrent Cover for the same set of '
-        'circumstances under the Child Maintenance Benefit, and vice '
-        'versa.',
-    ]))
-
-    # B) Child Maintenance
-    story.append(Paragraph('B. Child Maintenance', H2))
-    story.append(lettered_list([
-        'This benefit is only available to the Main Member.',
-
-        'The benefit covers the various proceedings regarding the '
-        'application or opposition of child maintenance matters such as '
-        'application, opposition, rescission and variations of Court '
-        'orders.',
-
-        'We will pay the appointed legal advisor\'s fees: for '
-        'consultations; to draft the relevant Court documents; and for '
-        'appearances at the Maintenance Officer and appearances in the '
-        'Maintenance Court as per Our Platinum Schedule of Tariffs.',
-
-        'There is a continuous 12-month waiting period of Paid-Up '
-        'Platinum Membership.',
-
-        'We will pay for only one maintenance matter over a continuous '
-        '24-month period of Paid-Up Platinum Membership.',
-
-        'If you enjoyed Cover under the Uncontested Divorce Benefit, you '
-        'are Covered for only one maintenance matter over a continuous '
-        '24-month period of Paid-Up Platinum Membership.',
-    ]))
-    story.append(Paragraph('Exclusions:', H3))
-    story.append(bullet_list([
-        'Your defence for a criminal charge arising from failure to pay '
-        'maintenance;',
-
-        'Fees and disbursements for ancillary applications (such as '
-        'maintenance). You are personally responsible for paying these to '
-        'the appointed legal advisor;',
-
-        'If you enjoyed concurrent Cover for the same set of '
-        'circumstances under the Uncontested Divorce Benefit, and vice '
-        'versa;',
-
-        'Spousal maintenance.',
-    ]))
-
-    # C) Rescission of Orders
-    story.append(Paragraph(
-        'C. Rescission of Administration Orders and Debt Review Orders',
-        H2))
-    story.append(lettered_list([
-        'This benefit is only available to the Main Member.',
-
-        'This benefit involves cancelling or setting aside a judgment or '
-        'Court order for Administration Orders and Debt Review Orders, '
-        'legally known as a rescission order.',
-
-        'We will pay the appointed legal advisor\'s fees to rescind '
-        '(cancel) an administration order against you.',
-
-        'There is a continuous 12-month waiting period of Paid-Up '
-        'Platinum Membership.',
-
-        'We will pay for one rescission matter over a 24-month continuous '
-        'period of Paid-Up Platinum Membership.',
-    ]))
-    story.append(Paragraph('Exclusions:', H3))
-    story.append(bullet_list([
-        'Any additional legal proceedings or ancillary applications '
-        'related to the Administration Order or Debt Review Order '
-        'outside of its rescission. These are actions brought by or '
-        'against you involving your administrator, debt counsellor, '
-        'creditors or any other interested party. You will be personally '
-        'responsible for any related costs;',
-
-        'The cost of your legal advisor\'s fees in any opposition to '
-        'rescission of Administration Orders and Debt Review Orders.',
-    ]))
-
-    # D) Ante Nuptial Contracts
-    story.append(Paragraph('D. Ante Nuptial Contracts', H2))
-    story.append(lettered_list([
-        'This benefit is only available to the Main Member.',
-
-        'This benefit covers you exclusively for the drafting, lodgement '
-        'and execution of an Ante-Nuptial Contract (ANC) in South Africa, '
-        'regulating the terms and conditions of a marriage between '
-        'prospective spouses.',
-
-        'There is a continuous 12-month waiting period of Paid-Up '
-        'Platinum Membership.',
-
-        'We will pay for one Ante-Nuptial Contract over a 36-month period '
-        'of continuous Paid-Up Platinum Membership.',
-
-        'We will pay the appointed notary\'s fees to draft, lodge and '
-        'execute an Ante-Nuptial Contract in accordance with Our Platinum '
-        'Schedule of Tariffs.',
-    ]))
-
-    # E) Conveyancing Fees
-    story.append(Paragraph('E. Conveyancing Fees', H2))
-    story.append(lettered_list([
-        'This benefit is available to the Main Member only.',
-
-        'A conveyancer nominated by Us will give you a 20% discount on '
-        'transfer fees.',
-
-        'The standard waiting period applies as specified in your '
-        'Schedule of Insurance.',
-
-        'This benefit is limited to covering your primary place of '
-        'residence.',
-
-        'This benefit is available for only one transfer over a '
-        'continuous 12-month period of Paid-Up Platinum Membership.',
-    ]))
-    story.append(Paragraph('Exclusions:', H3))
-    story.append(bullet_list([
-        'Costs such as transfer duty, clearance certificates and deeds '
-        'office fees are for your own account.',
-    ]))
-
-    # F) Municipal Services
-    story.append(Paragraph('F. Municipal Services', H2))
-    story.append(lettered_list([
-        'This benefit is available to the Main Member and Spouse.',
-
-        'You are Covered for the unlawful conduct or failure by Local '
-        'Government in respect of services and billing relating '
-        'specifically to your Place of Residence.',
-
-        'There is a one-month waiting period of Paid-Up Platinum '
-        'Membership for the Municipal Services Benefit.',
-
-        'We will assist you with one Municipal Services matter over a '
-        'continuous 12-month period of Paid-Up Platinum Membership.',
-    ]))
-
-    # G) Personal Income Tax additional
-    story.append(Paragraph(
-        'G. Personal Income Tax (PIT) — Additional Services', H2))
-    story.append(Paragraph(
-        'In addition to the PIT services specified in the Main Agreement, '
-        'the following additional services are only available to Platinum '
-        'Members:', BODY))
-    story.append(lettered_list([
-        'The completion and electronic submission of your annual personal '
-        'income tax return (including rental income from properties or '
-        'rooms to let);',
-
-        'The submission of supporting documents.',
-    ]))
-
-    # H) Infinity Legacy Accumulator
-    story.append(Paragraph('H. Infinity Legacy Accumulator', H2))
-    story.append(lettered_list([
-        'The Main Member will be entitled to the Infinity Legacy '
-        'Accumulator, which is an insurance loyalty benefit. It is an '
-        'integral part of the Agreement, and it cannot be bought as a '
-        'stand-alone policy.',
-
-        'If the Main Member whose Membership has been Paid-Up for more '
-        'than the number of months shown in your Schedule of Insurance '
-        'dies while their Membership is active, We will pay a lump sum to '
-        'the LEAD Beneficiary nominated by the Main Member. The lump sum '
-        'will be the maximum of the most recent number of premiums '
-        'received as shown in your Schedule of Insurance. Effective '
-        'accumulation from 1 July 2024.',
-
-        'The cash payment will be made to the nominated LEAD Beneficiary '
-        'shown in your Schedule of Insurance, if that Beneficiary is 18 '
-        'years or older. If not, or if nobody is nominated as a '
-        'Beneficiary, the lump sum will be paid into the deceased estate.',
-    ]))
-    story.append(Paragraph(
-        'We will not pay a cash benefit if the Member\'s death is '
-        'directly or indirectly caused by any of the following:', BODY))
-    story.append(Paragraph('Warlike activities', H3))
-    story.append(bullet_list([
-        'Nuclear, radioactive contamination, biological and chemical '
-        'warfare, or sabotage;',
-
-        'The Member actively taking part in: any war, invasion, '
-        'rebellion, revolution, uprising, riot, civil commotion, strike, '
-        'labour disturbance and the seizing of power; or overthrowing or '
-        'influencing any government by force or terrorism.',
-    ]))
-    story.append(Paragraph('Self-inflicted death', H3))
-    story.append(bullet_list([
-        'The Member deliberately or negligently exposing themselves to '
-        'the risks and events that led to the claim, except where the '
-        'Member attempts to save a human life;',
-
-        'Attempting suicide or deliberately self-inflicting injury;',
-
-        'Refusing to seek or follow reasonable medical advice or '
-        'treatment;',
-
-        'Being under the influence of alcohol and/or drugs;',
-
-        'Taking poison.',
-    ]))
-    story.append(Paragraph(
-        'This Insurance benefit is conditional on Us receiving the fully '
-        'completed Infinity Legacy Accumulator Benefit Claim Form, which '
-        'forms part of this Agreement, within 180 days after the date of '
-        'death. Additional conditions may apply when claiming this '
-        'benefit; if so, they are shown in your Schedule of Insurance '
-        'and/or the Infinity Legacy Accumulator Benefit Claim Form.',
-        BODY))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # ADDENDUM 2 — Extended Family Protection
-    # ===========================================================
-    story.append(addendum_header('Extended Family Protection Addendum (EFP)'))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph('Applicable to Policy A and Platinum A.', KICKER))
-    story.append(Spacer(1, 4))
-    story.append(numbered_list([
-        'This Addendum is subject to the terms of the Main Membership '
-        'Agreement, except as modified in your Schedule of Insurance and '
-        'as set out below, and applies while your Membership is Paid-Up.',
-
-        'In consideration of the EFP premium in force from time to time, '
-        '"Family Members" include the persons shown in the Schedule of '
-        'Insurance as the nominated: (a) biological parents or adoptive '
-        'parents who are sixty years of age or older, of the Main Member; '
-        '(b) biological parents or adoptive parents who are sixty years '
-        'of age or older, of the Main Member\'s Spouse.',
-
-        'The Maximum Limit per nominated person is shown in your Schedule '
-        'of Insurance.',
-    ]))
-    story.append(callout(
-        'NOTE:',
-        'Cover under the Extended Family Protection Addendum is restricted '
-        'to the personal, private and individual legal matters of the '
-        'nominated Family Members, in line with the Insured Matters in '
-        'Section 4. Business-related matters, matrimonial disputes and '
-        'the other exclusions in Section 6 continue to apply.'))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # SERVICE & CONTACT POINTS
-    # ===========================================================
-    story.append(addendum_header('Service & Contact Points'))
-    story.append(Spacer(1, 6))
-
-    story.append(Paragraph('Branch Network', H2))
-    story.append(Paragraph('Full-service branches', H3))
-    story.append(Paragraph(
-        'Our full-service branches are located nationwide. What makes our '
-        'full-service branches different from our 24-hour legal contact '
-        'centre and express branches is that, at a full-service branch, '
-        'you can have a face-to-face consultation with one of our legal '
-        'counsellors, you can collect your Membership Agreement, and you '
-        'can also pay your premiums at selected branches.',
-        BODY))
-    story.append(Paragraph('Express branches', H3))
-    story.append(Paragraph(
-        'Express branches are usually hosted offices located mostly in '
-        'remote areas where there are no full-service branches nearby. '
-        'Our express branches have consultants who can assist in sending '
-        'through any documentation required.',
-        BODY))
-    story.append(Paragraph(
-        'Find your closest branch on our website at '
-        '<b>www.infinitylegal.co.za/branches</b>.', BODY))
-
-    story.append(Paragraph('Contact Centre', H2))
-    story.append(Paragraph(
-        'Call us 24 hours a day, 7 days a week, on <b>0861 4 LEGAL '
-        '(0861 453 425)</b>. Our contact centre is staffed by trained '
-        'legal counsellors who can log a new matter, give preliminary '
-        'legal advice under the Legal Advisory Services benefit, and '
-        'assist with any Membership query.',
-        BODY))
-
-    story.append(Paragraph('Digital Portals', H2))
-    story.append(Paragraph('Infinity AI Assistant — Your 24/7 Digital Helper',
-                           H3))
-    story.append(Paragraph(
-        'The Infinity AI Assistant is our smart self-service assistant, '
-        'available any time to help with your policy queries, membership '
-        'status, payment details and more — instantly and hassle-free. '
-        'You will find the Infinity AI Assistant in the bottom-right '
-        'corner of our website at <b>www.infinitylegal.co.za</b>. Just '
-        'click the gold live-chat box to get started.',
-        BODY))
-    story.append(Paragraph('Website', H3))
-    story.append(Paragraph(
-        'On our website you can find all the latest newsletters, scam '
-        'alerts, videos, legal articles, or you can contact us with any '
-        'queries. To use our website, go to <b>www.infinitylegal.co.za</b>.',
-        BODY))
-    story.append(Paragraph('Member Portal', H3))
-    story.append(Paragraph(
-        'The Member Portal at <b>portal.infinitylegal.co.za</b> allows you '
-        'to pay premiums, download your membership card and Schedule of '
-        'Insurance, log new matters and track existing ones.',
-        BODY))
-    story.append(Paragraph('WhatsApp', H3))
-    story.append(Paragraph(
-        'Simply save our number <b>011 842 7890</b> to your contacts, '
-        'then send "Hi" and you will get a list of menu options to '
-        'choose from.',
-        BODY))
-    story.append(Paragraph('Facebook', H3))
-    story.append(Paragraph(
-        'You can follow us on Facebook for helpful legal tips or to send '
-        'us a private message through Facebook Messenger. It is important '
-        'that you do not post your personal details, such as your ID '
-        'number or membership number, on our public pages.',
-        BODY))
-    story.append(Paragraph('Instagram', H3))
-    story.append(Paragraph(
-        'Find us on Instagram <b>@InfinityLegalSA</b> and follow us for '
-        'great content such as legal tips, to see the work we do in our '
-        'communities, to get in touch with us and much more.',
-        BODY))
-    story.append(Paragraph('TikTok', H3))
-    story.append(Paragraph(
-        'Find us on TikTok <b>@InfinityLegalSA</b> and follow us for '
-        'great content such as legal tips, to see the work we do in our '
-        'communities, to get in touch with us and much more.',
-        BODY))
-
-    story.append(PageBreak())
-
-    # ===========================================================
-    # FINAL REGULATORY PAGE
-    # ===========================================================
-    story.append(addendum_header('Regulatory & Compliance Information'))
-    story.append(Spacer(1, 6))
-
-    story.append(Paragraph('Infinity Legal SA (Pty) Ltd', H2))
-    story.append(Paragraph(
-        'Infinity Legal SA (Pty) Ltd (Reg. No. 2024/123456/07) is an '
-        'Authorised Financial Services Provider (FSP 53214). Directors '
-        'and their details are available at '
-        '<b>www.infinitylegal.co.za</b>. Infinity Legal SA policies are '
-        'underwritten by LegalGuard Insurance Southern Africa Limited '
-        '(Reg. No. 2010/045678/06), a licensed insurer conducting '
-        'non-life insurance business and a licensed controlling company, '
-        'and an Authorised Financial Services Provider (FSP 48012).',
-        REG_BODY))
-
-    story.append(Spacer(1, 8))
-    reg_data = [
-        [Paragraph('<b>Entity</b>', TABLE_HEADER),
-         Paragraph('<b>Registration Number</b>', TABLE_HEADER),
-         Paragraph('<b>FSP Number</b>', TABLE_HEADER)],
-        [Paragraph('Infinity Legal SA (Pty) Ltd', TABLE_CELL),
-         Paragraph('2024/123456/07', TABLE_CELL),
-         Paragraph('53214', TABLE_CELL_NUM)],
-        [Paragraph('LegalGuard Insurance Southern Africa Limited',
-                   TABLE_CELL),
-         Paragraph('2010/045678/06', TABLE_CELL),
-         Paragraph('48012', TABLE_CELL_NUM)],
+    story.append(KeepTogether([plan_summary]))
+    story.append(small_gap(10))
+
+    # Civil Legal Plan
+    story.append(p('2.1  Civil Legal Plan — R99 per month or R999 per year', H2))
+    story.append(p(
+        'The Civil Legal Plan is our entry-level subscription and is intended '
+        'for Subscribers who primarily need assistance with civil disputes and '
+        'general legal matters. It provides unlimited civil consultations, '
+        'document review and drafting up to the plan limit, court representation '
+        'for matters within the plan scope, AI case analysis, and email support. The plan '
+        'allows up to ten active Matters at any time and up to fifty documents '
+        'per annual cycle.'))
+    story.append(p(
+        'This plan is well suited to individuals who want day-to-day legal '
+        'guidance on contracts, consumer disputes, neighbour issues, debt '
+        'queries, and similar civil matters. It is not intended for workplace '
+        'matters (please consider the Labour Legal Plan) or for the full range '
+        'of family, criminal, and estate matters (please consider the Extensive '
+        'Plan). Response time on the Civil Legal Plan is within 24 business '
+        'hours of a service request.'))
+
+    # Labour Legal Plan
+    story.append(p('2.2  Labour Legal Plan — R99 per month or R999 per year (Most Popular)', H2))
+    story.append(p(
+        'The Labour Legal Plan is our most popular subscription and is designed '
+        'for Subscribers who need assistance with workplace and employment '
+        'matters. It includes unlimited labour consultations, representation at '
+        'the Commission for Conciliation, Mediation and Arbitration (CCMA) and '
+        'related bargaining councils, employment contract review, dismissal '
+        'advice, and priority support. The plan allows up to ten active Matters '
+        'and up to fifty documents per annual cycle.'))
+    story.append(p(
+        'This plan is ideal for employees, contractors, and small employers '
+        'who face workplace disputes, disciplinary processes, or unfair labour '
+        'practice allegations. CCMA representation includes preparation of '
+        'referral documents, conciliation, and arbitration, subject to the '
+        'Fair Usage Policy in Section 7. Response time on the Labour Legal '
+        'Plan is within four business hours of a service request, ahead of '
+        'the Civil Legal Plan.'))
+
+    # Extensive Plan
+    story.append(p('2.3  Extensive Plan — R139 per month or R1 399 per year (Best Value)', H2))
+    story.append(p(
+        'The Extensive Plan is our most comprehensive subscription and is '
+        'intended for Subscribers who want access to the full range of legal '
+        'services across every practice area we support. It includes all '
+        'Civil and Labour plan features, family law consultations, criminal '
+        'defence advice, estate planning, 24/7 priority support, and a '
+        'dedicated Legal Advisor assigned to your account. The plan allows '
+        'up to fifty active Matters and up to 999 documents per annual cycle.'))
+    story.append(p(
+        'This plan is best for families, business owners, and individuals '
+        'with complex or recurring legal needs. The dedicated Legal Advisor '
+        'becomes your single point of contact, gets to know your '
+        'circumstances, and proactively manages your Matters. Response time '
+        'on the Extensive Plan is within four business hours during business '
+        'hours and within twelve hours outside business hours, seven days a '
+        'week.'))
+
+    story.append(small_gap(8))
+    story.append(p('2.4  Feature Comparison Table', H2))
+    story.append(p(
+        'The table below compares the features of all three plans side by '
+        'side. "Yes" means the feature is included; an em dash (—) '
+        'means the feature is not included in that plan but is available in '
+        'a higher-tier plan or as a separate instruction at our standard '
+        'hourly rate.'))
+
+    feature_rows = [
+        # (feature, civil, labour, extensive)
+        ('Monthly Subscription Fee', 'R99', 'R99', 'R139'),
+        ('Annual Subscription Fee', 'R999', 'R999', 'R1 399'),
+        ('Unlimited civil consultations', 'Yes', 'Yes', 'Yes'),
+        ('Unlimited labour consultations', '—', 'Yes', 'Yes'),
+        ('Document review & drafting', 'Yes (up to 50)', 'Yes (up to 50)', 'Yes (up to 999)'),
+        ('Court representation', 'Yes', 'Yes', 'Yes'),
+        ('CCMA representation', '—', 'Yes', 'Yes'),
+        ('Employment contract review', '—', 'Yes', 'Yes'),
+        ('Dismissal advice', '—', 'Yes', 'Yes'),
+        ('AI case analysis (Infinity AI)', 'Yes', 'Yes', 'Yes'),
+        ('Family law consultations', '—', '—', 'Yes'),
+        ('Criminal defence advice', '—', '—', 'Yes'),
+        ('Estate planning & will drafting', '—', '—', 'Yes'),
+        ('Personal income tax advice', '—', '—', 'Yes'),
+        ('Dedicated Legal Advisor', '—', '—', 'Yes'),
+        ('Maximum active Matters', '10', '10', '50'),
+        ('Maximum documents per year', '50', '50', '999'),
+        ('Email support', 'Yes', 'Yes', 'Yes'),
+        ('Priority support (4 business hours)', '—', 'Yes', 'Yes'),
+        ('24/7 priority support', '—', '—', 'Yes'),
+        ('Member Portal & Infinity AI Assistant', 'Yes', 'Yes', 'Yes'),
     ]
-    reg_widths = [CONTENT_W * 0.50, CONTENT_W * 0.30, CONTENT_W * 0.20]
-    reg_table = Table(reg_data, colWidths=reg_widths, hAlign='CENTER',
-                      repeatRows=1)
-    reg_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), TABLE_HEADER_BG),
+    # Build the comparison table
+    table_data = [[
+        Paragraph('Feature', TABLE_HEADER),
+        Paragraph('Civil', TABLE_HEADER_CENTER),
+        Paragraph('Labour', TABLE_HEADER_CENTER),
+        Paragraph('Extensive', TABLE_HEADER_CENTER),
+    ]]
+    for row in feature_rows:
+        feat, civil, labour, extensive = row
+        table_data.append([
+            Paragraph(feat, TABLE_CELL),
+            Paragraph(civil, TABLE_CELL_CENTER),
+            Paragraph(labour, TABLE_CELL_CENTER),
+            Paragraph(extensive, TABLE_CELL_CENTER),
+        ])
+    # Column widths: feature column wide, others equal
+    feat_w = CONTENT_W * 0.46
+    other_w = (CONTENT_W - feat_w) / 3
+    compare_widths = [feat_w, other_w, other_w, other_w]
+    compare_table = Table(table_data, colWidths=compare_widths, repeatRows=1)
+    compare_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), NAVY),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1),
-         [TABLE_ROW_EVEN, TABLE_ROW_ODD]),
-        ('GRID', (0, 0), (-1, -1), 0.4, BORDER),
-        ('LINEBELOW', (0, 0), (-1, 0), 1.2, GOLD),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, NAVY_50]),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, GOLD),
+        ('LINEBELOW', (0, 1), (-1, -2), 0.4, NAVY_200),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 7),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 7),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ]))
+    story.append(compare_table)
+    story.append(small_gap(8))
+    story.append(CalloutBox(
+        'NOTE — Switching Plans',
+        ['You can upgrade or downgrade your plan at any time from the Member '
+         'Portal. Upgrades take effect immediately and you are charged a '
+         'pro-rata fee for the remainder of the current billing cycle. '
+         'Downgrades take effect at the start of the next billing cycle. '
+         'See Section 14 for the full upgrades, downgrades, and cancellation '
+         'policy.']))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 3 — Services We Provide
+    # =====================================================================
+    story.append(SectionHeader(3, 'Services We Provide'))
+    story.append(p(
+        'This section describes the categories of legal services that we '
+        'provide under our plans. The Services available to you depend on the '
+        'plan you have selected, as set out in the Schedule of Benefits. Where '
+        'a Service is described as "unlimited", it is subject to the Fair '
+        'Usage Policy in Section 7, which is designed to ensure that all '
+        'Subscribers receive fair and timely access to their Legal Advisor.'))
+
+    story.append(p('3.1  Legal Consultations', H2))
+    story.append(p(
+        'Every plan includes a specified number of legal consultations per '
+        'month. The Civil Legal Plan and Labour Legal Plan both offer '
+        'unlimited civil or labour consultations respectively, subject to the '
+        'Fair Usage Policy. The Extensive Plan offers unlimited consultations '
+        'across all practice areas. A consultation may take place in person at '
+        'our Johannesburg office, by telephone, by video call, by email, or '
+        'by in-app chat, at the discretion of the Legal Advisor and depending '
+        'on the nature of the Matter.'))
+    story.append(p(
+        'Each consultation is recorded as a note on your file so that you '
+        'receive consistent advice even if you speak to different Legal '
+        'Advisors over time. Subscribers on the Extensive Plan normally speak '
+        'to the same dedicated Legal Advisor for every Matter.'))
+    story.append(CalloutBox(
+        'Example — What counts as one consultation?',
+        ['A single 30-minute video call about an unfair dismissal is one '
+         'consultation. A follow-up email asking the same Legal Advisor to '
+         'clarify a point discussed in the call is part of the same '
+         'consultation, not a separate one. A new Matter about a different '
+         'issue, even if raised in the same call, is treated as a separate '
+         'consultation.']))
+
+    story.append(p('3.2  Document Review and Drafting', H2))
+    story.append(p(
+        'We will review and comment on documents that you send us, and we '
+        'will draft documents on your behalf, up to the document limit of '
+        'your plan. The Civil Legal Plan and Labour Legal Plan each include '
+        'up to fifty documents per annual cycle. The Extensive Plan includes '
+        'up to 999 documents per annual cycle. A "document" for this purpose '
+        'means a single contract, letter, email of substance, pleading, or '
+        'similar instrument that requires dedicated review or drafting time. '
+        'Routine correspondence and chat messages are not counted.'))
+    story.append(p(
+        'Where a document exceeds the scope of your plan (for example, a '
+        'complex commercial lease on the Civil Legal Plan), we will advise '
+        'you honestly and provide a quote for the work as a separate '
+        'instruction at our standard hourly rate. You are under no obligation '
+        'to accept such a quote.'))
+
+    story.append(p('3.3  Court Representation', H2))
+    story.append(p(
+        'Where court proceedings are necessary in a Matter that falls within '
+        'the scope of your plan, we will arrange for a Legal Advisor or '
+        'Network Legal Advisor to represent you in the Magistrate\'s Court, '
+        'High Court, or specialist tribunal, as appropriate. Court '
+        'representation includes preparation of pleadings, attendance at '
+        'hearings, and conduct of the Matter through to judgment, settlement, '
+        'or other conclusion.'))
+    story.append(p(
+        'We retain the right to determine whether a Matter has reasonable '
+        'prospects of success before agreeing to provide court representation. '
+        'If we consider that a Matter has no reasonable prospect of success, '
+        'we will explain our view in writing and may decline to represent '
+        'you, in line with the duty of candour that applies to all Legal '
+        'Advisors in South Africa.'))
+
+    story.append(p('3.4  CCMA Representation (Labour & Extensive Plans)', H2))
+    story.append(p(
+        'Subscribers on the Labour Legal Plan and Extensive Plan receive '
+        'representation at the Commission for Conciliation, Mediation and '
+        'Arbitration (CCMA) and at recognised bargaining councils for '
+        'workplace disputes. This service includes drafting and filing the '
+        'referral, preparing you for the hearing, attending conciliation and '
+        'arbitration, and representing you at the hearing itself. We also '
+        'provide advice on whether to refer a dispute to the Labour Court '
+        'rather than the CCMA where the law permits.'))
+
+    story.append(p('3.5  AI Case Analysis', H2))
+    story.append(p(
+        'All plans include AI case analysis powered by our Infinity AI '
+        'Assistant. When you submit a Matter through the Member Portal, the '
+        'AI Assistant analyses the facts and produces an indication of the '
+        'likely legal issues, the relevant statutes and case law, the risks '
+        'and strengths of your position, and the options available to you. '
+        'The output of the AI Assistant is reviewed by a human Legal Advisor '
+        'before being shared with you.'))
+    story.append(p(
+        'AI case analysis is a decision-support tool, not legal advice on its '
+        'own. The final advice you receive is provided by a human Legal '
+        'Advisor who takes professional responsibility for it.'))
+
+    story.append(p('3.6  Employment Contract Review', H2))
+    story.append(p(
+        'Subscribers on the Labour Legal Plan and Extensive Plan may submit '
+        'employment contracts, including new employment offers, contractor '
+        'agreements, and restraint-of-trade clauses, for review before '
+        'signing. We will identify clauses that are unusual, unfair, '
+        'potentially unlawful, or contrary to the Basic Conditions of '
+        'Employment Act, and we will suggest amendments in writing.'))
+
+    story.append(p('3.7  Family Law Consultations (Extensive Plan only)', H2))
+    story.append(p(
+        'Subscribers on the Extensive Plan may consult their dedicated Legal '
+        'Advisor on family law matters, including divorce, maintenance, '
+        'custody and access, parental rights, and domestic partnerships. We '
+        'provide advice and assistance with the relevant documentation and, '
+        'where appropriate, refer you to a specialist family law practitioner '
+        'within our network for contested matters.'))
+
+    story.append(p('3.8  Criminal Defence Advice (Extensive Plan only)', H2))
+    story.append(p(
+        'Subscribers on the Extensive Plan may consult their dedicated Legal '
+        'Advisor on criminal matters and receive advice on the procedure, '
+        'their rights, bail applications, and likely outcomes. The Extensive '
+        'Plan includes <i>advice and consultation</i> on criminal matters, '
+        'not full defence representation in criminal trials. Where full '
+        'representation is required, we will provide a quote for a separate '
+        'instruction or refer you to a specialist criminal defence '
+        'practitioner within our network.'))
+
+    story.append(p('3.9  Estate Planning (Extensive Plan only)', H2))
+    story.append(p(
+        'Subscribers on the Extensive Plan receive advice on estate planning, '
+        'including the drafting and updating of a basic will, advice on '
+        'intestate succession, and guidance on the use of inter vivos trusts '
+        'for asset protection. Complex estate planning involving offshore '
+        'assets, business interests, or significant tax structuring is '
+        'available as a separate instruction at our standard hourly rate.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 4 — Matters We Assist With
+    # =====================================================================
+    story.append(SectionHeader(4, 'Matters We Assist With'))
+    story.append(p(
+        'This section lists the types of Matters that we will assist you with '
+        'under your plan. The list is comprehensive but not exhaustive. If '
+        'you have a Matter that does not appear below, please raise it '
+        'through the Member Portal and we will advise whether it falls '
+        'within the scope of your plan. Matters marked "Extensive Plan only" '
+        'are not included in the Civil Legal Plan or Labour Legal Plan.'))
+
+    story.append(p('4.1  Civil and Consumer Matters', H3))
+    story.append(numbered_list([
+        'Review of consumer contracts for goods and services',
+        'Advice on defective goods and the consumer\'s right to return, repair, or replace under the Consumer Protection Act',
+        'Assistance with complaints against suppliers and service providers',
+        'Recovery of money owed to you for goods or services supplied',
+        'Defence against demands for payment that you dispute',
+        'Neighbour disputes, including noise, nuisance, and encroachment',
+        'Property damage claims against wrongdoers or their insurers',
+        'Disputes with contractors over building work and renovations',
+        'Assistance with summons and default judgments served on you',
+        'General contractual disputes not involving a business entity',
+    ]))
+
+    story.append(p('4.2  Home and Accommodation Matters', H3))
+    story.append(numbered_list([
+        'Lease agreement review for tenants and landlords',
+        'Disputes over rental deposits and deductions',
+        'Advice on eviction procedure under the PIE Act',
+        'Sectional title and body corporate disputes',
+        'Homeowners\' association rule disputes',
+        'Disputes with estate agents over commission and mandates',
+        'Advice on municipal rates and services accounts',
+        'Assistance with defective workmanship claims against builders',
+    ]))
+
+    story.append(p('4.3  Motor Vehicle Matters', H3))
+    story.append(numbered_list([
+        'Advice following a motor vehicle accident, including fault and damages',
+        'Assistance with the Road Accident Fund claims process',
+        'Defective vehicle claims under the Consumer Protection Act',
+        'Vehicle repossession disputes and advice on your rights',
+        'Advice on rejected motor vehicle insurance disputes',
+        'Disputes with panel beaters over repair quality and invoicing',
+        'Traffic fine review and advice on administrative adjudication',
+    ]))
+
+    story.append(p('4.4  Labour and Employment Matters (Labour and Extensive Plans)', H3))
+    story.append(numbered_list([
+        'Unfair dismissal advice and CCMA representation',
+        'Unfair labour practice disputes at the CCMA and bargaining councils',
+        'Workplace discrimination and harassment advice',
+        'Review of employment contracts, restraint clauses, and settlement agreements',
+        'Advice on disciplinary hearings and chairing of internal enquiries',
+        'Assistance with retrenchment consultations and severance calculations',
+        'Advice on constructive dismissal and workplace grievances',
+        'Advice on parental, sick, and family responsibility leave rights',
+    ]))
+
+    story.append(p('4.5  Family Law Matters (Extensive Plan only)', H3))
+    story.append(numbered_list([
+        'Divorce consultation and referral to a specialist practitioner where required',
+        'Maintenance claims for spouses and children',
+        'Custody, access, and parental responsibilities and rights',
+        'Antenuptial contract advice and referral to a notary',
+        'Domestic partnership and cohabitation agreements',
+        'Variation of existing divorce orders',
+        'Domestic violence protection applications under the DVA',
+    ]))
+
+    story.append(p('4.6  Criminal Matters (Extensive Plan only — Advice and Consultation)', H3))
+    story.append(numbered_list([
+        'Advice on criminal procedure and your rights on arrest',
+        'Bail application advice and assistance with paperwork',
+        'Consultation on likely outcomes and sentencing ranges',
+        'Advice on the rights of victims of crime',
+        'Referral to a specialist criminal defence practitioner for full representation',
+    ]))
+
+    story.append(p('4.7  Estate and Wills Matters (Extensive Plan only)', H3))
+    story.append(numbered_list([
+        'Drafting and updating of a basic Last Will and Testament',
+        'Advice on intestate succession where no will exists',
+        'Estate planning advice for individuals and couples',
+        'Referral to a specialist trust practitioner for inter vivos trusts',
+        'Advice on the role and duties of an executor',
+        'Living wills and advance health care directives',
+    ]))
+
+    story.append(p('4.8  Banking, Insurance and Credit Matters', H3))
+    story.append(numbered_list([
+        'Advice on rejected insurance disputes and the short-term insurance ombudsman',
+        'Banking disputes, including unauthorised debit orders disputes',
+        'Advice on the National Credit Act and reckless credit',
+        'Debt review and debt counselling referral',
+        'Assistance with credit bureau disputes and listings',
+        'Advice on prescription of debts',
+        'Assistance with administration orders and sequestration alternatives',
+    ]))
+
+    story.append(p('4.9  Personal Tax Matters (Extensive Plan only)', H3))
+    story.append(numbered_list([
+        'Advice on personal income tax returns and SARS queries',
+        'Assistance with SARS disputes and objection procedures',
+        'Advice on capital gains tax implications of personal transactions',
+        'Referral to a registered tax practitioner for complex matters',
+    ]))
+
+    story.append(CalloutBox(
+        'NOTE — Pre-existing Matters',
+        ['If a Matter arose before you subscribed to a plan, we will advise '
+         'you on the way forward, but the active Services under your '
+         'subscription (including consultations, document drafting, and '
+         'representation) only apply to Matters that arise or continue after '
+         'your Onboarding Period ends. We will be transparent about this when '
+         'you raise the Matter.']))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 5 — The Subscription Agreement
+    # =====================================================================
+    story.append(SectionHeader(5, 'The Subscription Agreement'))
+    story.append(p(
+        'This Subscription Agreement is a contract between you, the Subscriber, '
+        'and Infinity Legal SA (Pty) Ltd. It takes effect when you complete '
+        'the sign-up process on the Member Portal and your first Subscription '
+        'Fee is received. It remains in force until it is cancelled in '
+        'accordance with Section 14, or until it is terminated by either '
+        'party for material breach in accordance with Section 17.'))
+
+    story.append(p('5.1  Monthly and Annual Billing', H2))
+    story.append(p(
+        'You may choose to pay your Subscription Fee monthly or annually. '
+        'Monthly subscriptions are billed in advance on the first day of each '
+        'calendar month. Annual subscriptions are billed in advance on the '
+        'anniversary of your activation date. Annual subscriptions receive a '
+        'discount of approximately 16 per cent compared to twelve monthly '
+        'payments, because we save on payment-processing and administration '
+        'costs and pass that saving on to you.'))
+    story.append(p(
+        'The Subscription Fee for each plan is set out in the Schedule of '
+        'Benefits in Section 2. All fees are quoted in South African Rand '
+        'and include value-added tax where applicable. We may from time to '
+        'time offer promotional pricing, introductory discounts, or '
+        'coupons; any such promotional pricing is honoured for the '
+        'promotional period and reverts to the standard fee at the end of '
+        'that period, with at least 31 days\' notice as set out in '
+        'Section 13.'))
+
+    story.append(p('5.2  Cooling-off Period', H2))
+    story.append(p(
+        'A new Subscriber may cancel their subscription within seven calendar '
+        'days of activation and receive a full pro-rata refund of the '
+        'Subscription Fee, provided that no Services have been used during '
+        'that period. If any Services have been used (for example, a '
+        'consultation has taken place or a document has been drafted), the '
+        'refund will be reduced by the reasonable value of those Services at '
+        'our standard hourly rate, and the balance will be refunded.'))
+    story.append(p(
+        'The Cooling-off Period applies only to new Subscribers and does '
+        'not apply to renewals, upgrades, or reactivations after a previous '
+        'cancellation. To exercise your right to cancel during the '
+        'Cooling-off Period, please email client.services@infinitylegal.co.za '
+        'or use the cancellation function in the Member Portal.'))
+
+    story.append(p('5.3  Plan Upgrades and Downgrades', H2))
+    story.append(p(
+        'You may upgrade or downgrade your plan at any time from the Member '
+        'Portal. Upgrades take effect immediately and you are charged a '
+        'pro-rata fee for the difference between your current plan and the '
+        'upgraded plan for the remainder of the current billing cycle. '
+        'Downgrades take effect at the start of the next billing cycle so '
+        'that you continue to enjoy the higher-tier services you have '
+        'already paid for. The full upgrades, downgrades, and cancellation '
+        'policy is set out in Section 14.'))
+
+    story.append(p('5.4  Parties to the Agreement', H2))
+    story.append(p(
+        'The only parties to this Agreement are the Subscriber and Infinity '
+        'Legal SA (Pty) Ltd. Our Legal Advisors, Network Legal Advisors, '
+        'staff, and contractors act on our behalf and do not contract '
+        'personally with the Subscriber. Where a Network Legal Advisor '
+        'is instructed to represent you in court, they do so as our agent '
+        'and under our professional indemnity arrangements.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 6 — What's Not Included (Exclusions)
+    # =====================================================================
+    story.append(SectionHeader(6, "What's Not Included (Exclusions)"))
+    story.append(p(
+        'This section lists the categories of Matters and Services that are '
+        'not included in any of our plans. These exclusions are framed as '
+        'service-scope limits: they describe what we do not do as part of a '
+        'subscription. In many cases the excluded Matter can still be '
+        'handled by us as a separate instruction at our standard hourly '
+        'rate, or referred to a specialist practitioner within our network. '
+        'Where this is possible, we will tell you upfront and provide a '
+        'transparent quote.'))
+
+    exclusions = [
+        ('Business and commercial legal matters',
+         'Matters that arise in the operation of a business, including company '
+         'formation, shareholder agreements, commercial contracts, and '
+         'regulatory compliance, are not included in any plan except where '
+         'the Extensive Plan explicitly states otherwise.'),
+        ('Class actions and representative proceedings',
+         'We do not provide Services as part of any plan in respect of class '
+         'actions or other representative proceedings, whether as lead or '
+         'group member, because of the scale and complexity of such Matters.'),
+        ('Matters where legal representation is not permitted',
+         'The Small Claims Court does not permit legal representation. We '
+         'will advise you on how to present your own case in the Small '
+         'Claims Court, but we cannot appear on your behalf.'),
+        ('Matters with no reasonable prospect of success',
+         'If we consider that a Matter has no reasonable prospect of success, '
+         'we will advise you honestly and decline to provide ongoing '
+         'representation. This duty of candour applies to all Legal Advisors '
+         'in South Africa.'),
+        ('Matters outside South African jurisdiction',
+         'We do not provide advice on the law of any country other than '
+         'South Africa. If your Matter has an international element, we '
+         'will refer you to a practitioner in the relevant jurisdiction.'),
+        ('Punitive or exemplary damages',
+         'We do not pursue claims for punitive or exemplary damages on '
+         'behalf of Subscribers. South African law generally does not '
+         'recognise such damages, and we will not advance them.'),
+        ('Fines, penalties, and bail money',
+         'We do not pay fines, administrative penalties, or bail money on '
+         'behalf of Subscribers. We will, however, advise you on the '
+         'procedure for contesting fines and applying for bail.'),
+        ('Pre-existing Matters',
+         'Matters that arose before your subscription activated, or before '
+         'the end of your Onboarding Period, are not addressed by the active '
+         'Services under your subscription. We will advise you on the way '
+         'forward but past events are not retrospectively addressed.'),
+        ('Tax matters for juristic persons',
+         'Personal income tax advice is included in the Extensive Plan, '
+         'but tax advice for companies, trusts, partnerships, and other '
+         'juristic persons is not included in any plan and is available as '
+         'a separate instruction.'),
+        ('Insolvency and business rescue administration',
+         'Sequestration of individuals is available as a referral service '
+         'only. Business rescue, liquidation, and corporate insolvency '
+         'administration are not included in any plan.'),
+        ('Complex commercial contracts',
+         'Drafting and negotiation of complex commercial contracts, '
+         'including franchise agreements, joint venture agreements, and '
+         'mergers and acquisitions, is available as a separate instruction '
+         'only.'),
+        ('Intellectual property registration',
+         'Filing and prosecution of patents, trade marks, and designs at '
+         'the Companies and Intellectual Property Commission is not '
+         'included in any plan. We can advise on ownership and licensing '
+         'questions only.'),
+        ('Immigration and citizenship',
+         'Immigration applications, visa renewals, and citizenship matters '
+         'are not included in any plan. We can refer you to a specialist '
+         'immigration practitioner on request.'),
+        ('Personal injury contingency work',
+         'We do not act on a contingency (no-win, no-fee) basis for '
+         'personal injury Matters under any plan. Where appropriate, we '
+         'will refer you to a specialist personal injury practitioner.'),
+        ('Family law contested trials',
+         'The Extensive Plan includes family law consultations, but '
+         'contested divorce trials are referred to a specialist family law '
+         'practitioner within our network.'),
+        ('Criminal defence trials',
+         'The Extensive Plan includes criminal defence advice, but full '
+         'representation in a criminal trial is referred to a specialist '
+         'criminal defence practitioner within our network.'),
+        ('Matters requiring the counsel of senior counsel',
+         'Where the engagement of senior counsel (an advocate with silk '
+         'status) is required, the cost of senior counsel is not included '
+         'in any plan and will be quoted separately.'),
+        ('Matters in conflict with another Subscriber',
+         'Where two or more Subscribers are on opposite sides of the same '
+         'Matter, we will not act for either party and will refer both to '
+         'independent practitioners.'),
+        ('Disciplinary proceedings against Legal Advisors',
+         'We do not assist Subscribers in bringing professional conduct '
+         'complaints against Legal Advisors, whether our own or '
+         'independent practitioners.'),
+        ('Costs ordered against you',
+         'If a court orders you to pay the other party\'s legal costs, '
+         'those costs are not addressed by any plan and are payable by you '
+         'personally.'),
+        ('Expert witness fees',
+         'Fees for expert witnesses (medical, forensic, valuation, and '
+         'similar) are not included in any plan and will be quoted '
+         'separately where required.'),
+        ('Translation and interpretation',
+         'Costs of translating documents or interpreting in consultations '
+         'in languages other than English and Afrikaans are not included '
+         'and will be quoted separately where required.'),
+    ]
+    for title, body in exclusions:
+        story.append(Paragraph(f'<b>{title}.</b> {body}', BULLET,
+                               bulletText='•'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 7 — Fair Usage Policy
+    # =====================================================================
+    story.append(SectionHeader(7, 'Fair Usage Policy'))
+    story.append(p(
+        'Our plans describe certain Services as "unlimited" (for example, '
+        '"unlimited civil consultations"). We use this language to signal '
+        'that there is no fixed per-month cap on the volume of a particular '
+        'Service. In practice, every plan is subject to a Fair Usage Policy '
+        'so that one Subscriber\'s usage does not unreasonably affect the '
+        'service that other Subscribers receive. This section explains what '
+        'fair usage means and what happens if you exceed it.'))
+
+    story.append(p('7.1  What Fair Usage Means', H2))
+    story.append(p(
+        'Fair usage means using the Services in a way that is consistent '
+        'with the ordinary needs of an individual or family Subscriber for '
+        'their own personal legal Matters. As a guideline, a Subscriber on '
+        'the Civil Legal Plan or Labour Legal Plan who uses more than '
+        'twelve consultations in any calendar month, or more than fifty '
+        'documents in any annual cycle, will be considered to have '
+        'exceeded fair usage without extraordinary justification. The '
+        'Extensive Plan has higher limits in line with its higher capacity '
+        'caps, as set out in the Schedule of Benefits.'))
+
+    story.append(p('7.2  Active Matter Limits', H2))
+    story.append(p(
+        'Each plan limits the number of Matters that may be open at the '
+        'same time. The Civil Legal Plan and Labour Legal Plan each allow '
+        'up to ten active Matters at any time. The Extensive Plan allows '
+        'up to fifty active Matters at any time. An active Matter is one '
+        'that has been opened but not yet concluded. Once a Matter is '
+        'concluded (by advice given, document delivered, hearing concluded, '
+        'or settlement reached), it is archived and no longer counts '
+        'against the active limit.'))
+
+    story.append(p('7.3  Document Limits', H2))
+    story.append(p(
+        'Each plan limits the number of documents that may be reviewed or '
+        'drafted per annual cycle. The Civil Legal Plan and Labour Legal '
+        'Plan each allow up to fifty documents per annual cycle. The '
+        'Extensive Plan allows up to 999 documents per annual cycle. The '
+        'annual cycle resets on the anniversary of your activation date. '
+        'Unused document capacity does not carry over to the next cycle.'))
+
+    story.append(p('7.4  What Happens if You Exceed Fair Usage', H2))
+    story.append(p(
+        'If you approach or exceed the fair-usage guidelines, your Legal '
+        'Advisor will discuss the situation with you. We will not '
+        'arbitrarily suspend your Services. Instead, we will consider '
+        'whether the volume is justified by your circumstances, whether '
+        'a plan upgrade is appropriate, or whether some Matters should be '
+        'handled as separate instructions at our standard hourly rate. Our '
+        'aim is always to find a workable solution that keeps you as a '
+        'Subscriber.'))
+    story.append(CalloutBox(
+        'Example — When fair usage matters',
+        ['A Subscriber on the Civil Legal Plan submits fifteen separate '
+         'Matters in a single month relating to disputes with various '
+         'online retailers. We would treat this as exceeding fair usage '
+         'and would discuss whether a plan upgrade or a separate '
+         'instruction is more appropriate, rather than declining to help '
+         'with any individual Matter.']))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 8 — Onboarding & Your First Consultation
+    # =====================================================================
+    story.append(SectionHeader(8, 'Onboarding and Your First Consultation'))
+    story.append(p(
+        'Onboarding is the process that takes you from sign-up to your '
+        'first consultation with a Legal Advisor. It is designed to be '
+        'fast, transparent, and respectful of the statutory obligations '
+        'that apply to all legal practitioners in South Africa. The '
+        'Onboarding Period is the time required to verify your identity '
+        'and set up your account; it is not a delay in service '
+        'availability for any other reason.'))
+
+    story.append(p('8.1  The Onboarding Period', H2))
+    story.append(p(
+        'The Onboarding Period is 48 to 72 hours from the date on which '
+        'you submit your FICA documents (a copy of your South African ID '
+        'or passport and a recent proof of address). During this period, '
+        'our onboarding team verifies your documents, sets up your '
+        'account on the Member Portal, and assigns you to a Legal Advisor '
+        '(for Extensive Plan Subscribers) or to the advisor pool for your '
+        'plan. We will notify you by email and SMS as soon as your plan '
+        'is active.'))
+    story.append(p(
+        'In rare cases — for example, where FICA documents are unclear or '
+        'where additional verification is required — the Onboarding Period '
+        'may take longer. We will keep you informed throughout and will '
+        'not deduct any Subscription Fee until your plan is active.'))
+
+    story.append(p('8.2  Your First Consultation', H2))
+    story.append(p(
+        'Once your plan is active, your first consultation is booked '
+        'within 48 hours. For Extensive Plan Subscribers, the first '
+        'consultation is normally with your dedicated Legal Advisor. For '
+        'Civil Legal Plan and Labour Legal Plan Subscribers, the first '
+        'consultation is with the next available advisor in your plan\'s '
+        'advisor pool. The first consultation is an opportunity for you '
+        'to raise your first Matter and for us to confirm your contact '
+        'details, communication preferences, and any accessibility needs.'))
+
+    story.append(p('8.3  Identity Verification (FICA)', H2))
+    story.append(p(
+        'Identity verification under the Financial Intelligence Centre '
+        'Act (FICA) is a statutory requirement that applies to all legal '
+        'practitioners in South Africa. We are required to establish and '
+        'verify the identity of every Subscriber, the identity of any '
+        'person acting on behalf of a Subscriber, and the nature of the '
+        'business relationship. We do this by collecting and verifying '
+        'your identity document and proof of address before activating '
+        'your plan.'))
+    story.append(p(
+        'If your identity cannot be verified, we will not be able to '
+        'activate your plan and any Subscription Fee received will be '
+        'refunded in full. We may, at our discretion, request additional '
+        'information or documentation to complete the verification '
+        'process.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 9 — Client Responsibilities & Code of Conduct
+    # =====================================================================
+    story.append(SectionHeader(9, 'Client Responsibilities and Code of Conduct'))
+    story.append(p(
+        'A successful legal services relationship depends on mutual trust '
+        'and cooperation. This section sets out the responsibilities that '
+        'we ask of you as a Subscriber. These responsibilities are not '
+        'onerous — they reflect ordinary standards of honesty and courtesy '
+        'that the vast majority of our Subscribers meet without effort. '
+        'They exist so that we can deliver high-quality, professional '
+        'Services to every Subscriber.'))
+
+    story.append(p('9.1  Truthful and Complete Information', H2))
+    story.append(p(
+        'You agree to provide truthful, accurate, and complete information '
+        'to your Legal Advisor at all times. Legal advice is only as good '
+        'as the facts on which it is based. If you withhold relevant '
+        'facts, present them inaccurately, or provide misleading '
+        'information, the advice you receive may be wrong, and we cannot '
+        'accept responsibility for the consequences.'))
+
+    story.append(p('9.2  Timely Responses', H2))
+    story.append(p(
+        'You agree to respond to reasonable requests for information from '
+        'your Legal Advisor within a reasonable time. What is reasonable '
+        'depends on the urgency of the Matter. For urgent Matters (for '
+        'example, an upcoming court date), we may ask for a response '
+        'within hours; for non-urgent Matters, a few days is normally '
+        'sufficient. If you do not respond within a reasonable time, we '
+        'may pause work on the Matter until we hear from you.'))
+
+    story.append(p('9.3  Attendance at Consultations', H2))
+    story.append(p(
+        'You agree to attend consultations that you have booked, in '
+        'person, by telephone, or by video call as arranged. If you '
+        'cannot attend, please give us at least 24 hours\' notice so '
+        'that we can offer the slot to another Subscriber. Repeated '
+        'failure to attend booked consultations without notice may '
+        'result in your plan being paused or cancelled under Section 14.'))
+
+    story.append(p('9.4  Following Reasonable Advice', H2))
+    story.append(p(
+        'You agree to consider and act on the reasonable advice of your '
+        'Legal Advisor. We cannot guarantee any specific legal outcome '
+        '(see Section 16), but we can assure you that our advice is given '
+        'in good faith and based on professional judgement. If you '
+        'choose not to follow our advice, we will document your decision '
+        'on your file and cannot be held responsible for the consequences.'))
+
+    story.append(p('9.5  Payment of Subscription Fees', H2))
+    story.append(p(
+        'You agree to pay your Subscription Fee on time and in full. '
+        'Fees are payable in advance by PayFast, debit order, or EFT. '
+        'Failed payments are subject to a seven-day grace period, after '
+        'which your Services may be suspended as set out in Section 12.'))
+
+    story.append(p('9.6  Courtesy and Respect', H2))
+    story.append(p(
+        'You agree to treat our staff, Legal Advisors, and contractors '
+        'with courtesy and respect at all times. Abusive, threatening, '
+        'or harassing behaviour will not be tolerated. We reserve the '
+        'right to terminate this Agreement immediately and without '
+        'refund where a Subscriber engages in such behaviour.'))
+
+    story.append(p('9.7  Consequences of Breach', H2))
+    story.append(p(
+        'If you breach any of the responsibilities above, we will '
+        'normally give you written notice and an opportunity to remedy '
+        'the breach within a reasonable period. For serious or '
+        'repeated breaches, we may pause or cancel your Services '
+        'immediately. Where we cancel for material breach, no refund is '
+        'payable for the current billing cycle, but any prepaid annual '
+        'fees for future months will be refunded on a pro-rata basis '
+        'less the reasonable value of Services already rendered.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 10 — Confidentiality & POPIA Compliance
+    # =====================================================================
+    story.append(SectionHeader(10, 'Confidentiality and POPIA Compliance'))
+    story.append(p(
+        'Protecting your personal information and the confidentiality of '
+        'your legal Matters is fundamental to our relationship. This '
+        'section explains what information we collect, how we use it, '
+        'with whom we share it, and the rights you have under the '
+        'Protection of Personal Information Act 4 of 2013 (POPIA).'))
+
+    story.append(p('10.1  Information We Collect', H2))
+    story.append(p(
+        'We collect personal information that is necessary to provide our '
+        'Services and to comply with our statutory obligations. This '
+        'includes your name, identity number, contact details, FICA '
+        'documents, payment information, and the substance of your '
+        'Matters (consultation notes, correspondence, documents, and '
+        'pleadings). We also collect technical information about your '
+        'use of the Member Portal, such as login times and IP address, '
+        'for security and fraud prevention.'))
+
+    story.append(p('10.2  How We Use Your Information', H2))
+    story.append(p(
+        'We use your personal information to provide the Services you '
+        'have subscribed to, to communicate with you about your Matters, '
+        'to process your Subscription Fees, to comply with our statutory '
+        'obligations under FICA and POPIA, to maintain our internal '
+        'records, and to improve the quality of our Services. We do not '
+        'sell your personal information to third parties under any '
+        'circumstances.'))
+
+    story.append(p('10.3  Sharing of Information', H2))
+    story.append(p(
+        'We share your personal information only where it is necessary '
+        'to provide the Services, where we are required to do so by law, '
+        'or where you have consented. In particular, we share information '
+        'with your assigned Legal Advisor and any Network Legal Advisor '
+        'instructed on your behalf, with PayFast and our payment '
+        'partners to process Subscription Fees, with the Legal Practice '
+        'Council and other regulators where required, and with courts '
+        'and tribunals where necessary to represent you.'))
+
+    story.append(p('10.4  Data Security', H2))
+    story.append(p(
+        'We take reasonable technical and organisational measures to '
+        'protect your personal information against loss, unauthorised '
+        'access, alteration, or disclosure. These measures include '
+        'encryption in transit and at rest, access controls limited to '
+        'authorised staff and Legal Advisors, regular security audits, '
+        'and staff training on POPIA compliance. Despite these measures, '
+        'no system can be guaranteed to be perfectly secure, and we '
+        'cannot guarantee the security of information transmitted over '
+        'the internet.'))
+
+    story.append(p('10.5  Your Rights Under POPIA', H2))
+    story.append(p(
+        'As a Subscriber, you have the following rights under POPIA in '
+        'relation to your personal information:'))
+    story.append(bullet_list([
+        '<b>Right of access.</b> You may request a copy of the personal information we hold about you.',
+        '<b>Right to correction.</b> You may request that we correct inaccurate or out-of-date personal information.',
+        '<b>Right to deletion.</b> In limited circumstances (for example, where the information is no longer necessary), you may request that we delete your personal information, subject to our statutory record-keeping obligations under FICA.',
+        '<b>Right to object.</b> You may object to the processing of your personal information for direct marketing purposes at any time.',
+        '<b>Right to withdraw consent.</b> Where we process your personal information on the basis of your consent, you may withdraw that consent at any time, without affecting the lawfulness of processing before the withdrawal.',
+        '<b>Right to complain.</b> You have the right to lodge a complaint with the Information Regulator (www.inforegulator.org.za) if you believe that we have processed your personal information in breach of POPIA.',
+    ]))
+
+    story.append(p('10.6  Confidentiality of Legal Matters', H2))
+    story.append(p(
+        'All communication between you and your Legal Advisor is '
+        'confidential and is subject to legal professional privilege '
+        'where the requirements for privilege are met. We will not '
+        'disclose the substance of your Matters to any third party '
+        'without your consent, except where we are required to do so by '
+        'law or by order of a court of competent jurisdiction.'))
+
+    story.append(p('10.7  Data Retention', H2))
+    story.append(p(
+        'We retain your personal information for as long as your '
+        'subscription is active, and for a period of five years after '
+        'your subscription ends, in line with our statutory '
+        'record-keeping obligations under FICA. Matter files may be '
+        'retained for longer where this is required by the rules of '
+        'court, the Legal Practice Council, or other regulatory '
+        'authorities.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 11 — Communication
+    # =====================================================================
+    story.append(SectionHeader(11, 'Communication'))
+    story.append(p(
+        'Clear, timely communication is essential to a successful legal '
+        'services relationship. This section explains how we communicate '
+        'with you, the response timeframes that apply to each plan, and '
+        'what you can do to help us reach you promptly.'))
+
+    story.append(p('11.1  Channels We Use', H2))
+    story.append(p(
+        'We communicate with Subscribers through the following channels: '
+        'email, SMS, WhatsApp, the Member Portal, the Infinity AI '
+        'Assistant (in-app chat), telephone, and video call. We choose '
+        'the channel based on the nature and urgency of the message. For '
+        'example, appointment reminders are normally sent by SMS or '
+        'WhatsApp, while substantive legal advice is communicated by '
+        'email or in-app message so that there is a durable record.'))
+
+    story.append(p('11.2  Keeping Your Contact Details Up to Date', H2))
+    story.append(p(
+        'You are responsible for keeping your contact details up to date '
+        'on the Member Portal. If your email address, phone number, or '
+        'physical address changes, please update it promptly. We cannot '
+        'be held responsible for messages that do not reach you because '
+        'your contact details are out of date.'))
+
+    story.append(p('11.3  Response Timeframes', H2))
+    story.append(p(
+        'We aim to acknowledge every service request within the following '
+        'timeframes, counted from the moment the request is received on '
+        'the Member Portal:'))
+    response_data = [
+        [Paragraph('Plan', TABLE_HEADER),
+         Paragraph('Acknowledgement', TABLE_HEADER_CENTER),
+         Paragraph('First Response from Legal Advisor', TABLE_HEADER_CENTER)],
+        [Paragraph('Civil Legal Plan', TABLE_CELL_BOLD),
+         Paragraph('Within 24 business hours', TABLE_CELL_CENTER),
+         Paragraph('Within 2 business days', TABLE_CELL_CENTER)],
+        [Paragraph('Labour Legal Plan', TABLE_CELL_BOLD),
+         Paragraph('Within 4 business hours', TABLE_CELL_CENTER),
+         Paragraph('Within 1 business day', TABLE_CELL_CENTER)],
+        [Paragraph('Extensive Plan', TABLE_CELL_BOLD),
+         Paragraph('Within 4 business hours (12 hours off-hours)', TABLE_CELL_CENTER),
+         Paragraph('Within 1 business day', TABLE_CELL_CENTER)],
+    ]
+    response_widths = [CONTENT_W * 0.30, CONTENT_W * 0.35, CONTENT_W * 0.35]
+    response_table = Table(response_data, colWidths=response_widths,
+                           repeatRows=1)
+    response_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), NAVY),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, NAVY_50]),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, GOLD),
+        ('LINEBELOW', (0, 1), (-1, -2), 0.5, NAVY_200),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('RIGHTPADDING', (0, 0), (-1, -1), 8),
         ('TOPPADDING', (0, 0), (-1, -1), 6),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
-    story.append(reg_table)
+    story.append(response_table)
+    story.append(small_gap(8))
 
-    story.append(Spacer(1, 12))
-    story.append(Paragraph('Compliance Statement', H2))
-    story.append(Paragraph(
-        'Infinity Legal SA (Pty) Ltd is registered as a Financial '
-        'Services Provider in terms of the Financial Advisory and '
-        'Intermediary Services Act 37 of 2002 (FAIS Act) and is authorised '
-        'to render intermediary services in respect of the legal expenses '
-        'insurance products described in this Agreement. All personal '
-        'information processed in connection with this Agreement is '
-        'processed in accordance with the Protection of Personal '
-        'Information Act 4 of 2013 (POPIA). This Agreement is governed by '
-        'the laws of the Republic of South Africa and any dispute arising '
-        'out of or in connection with it shall be subject to the '
-        'exclusive jurisdiction of the South African courts, save where '
-        'otherwise required by the FAIS Act or the Policyholder '
-        'Protection Rules made under the Short-Term Insurance Act 53 of '
-        '1998.',
-        REG_BODY))
+    story.append(p('11.4  Urgent Matters', H2))
+    story.append(p(
+        'If you have an urgent Matter (for example, you have been '
+        'arrested, you have a court appearance the next morning, or you '
+        'have received a summons with a deadline), please mark the '
+        'service request as "Urgent" on the Member Portal or call our '
+        'contact centre on 0861 4 LEGAL. Extensive Plan Subscribers may '
+        'use the 24/7 priority support line for after-hours emergencies. '
+        'We will do everything reasonably possible to assist you within '
+        'the relevant timeframes above.'))
 
-    story.append(Spacer(1, 8))
-    story.append(Paragraph('Complaints', H2))
-    story.append(Paragraph(
-        'Complaints may be directed in writing to the Compliance Officer, '
-        'Infinity Legal SA, at <b>complaints@infinitylegal.co.za</b>. '
-        'Should the complaint not be resolved to your satisfaction, you '
-        'may approach the Ombud for Financial Services Providers (FAIS '
-        'Ombud) at <b>www.faisombud.co.za</b> or on 012 470 9080, or the '
-        'Financial Sector Conduct Authority (FSCA) at '
-        '<b>www.fsca.co.za</b> on 0800 110 443.',
-        REG_BODY))
+    story.append(p('11.5  In-App Chat and the Infinity AI Assistant', H2))
+    story.append(p(
+        'The Member Portal includes an in-app chat function that you can '
+        'use to send messages to your Legal Advisor. The Infinity AI '
+        'Assistant is also available in-app to answer common legal '
+        'questions, route complex Matters to a human Legal Advisor, and '
+        'help you find your way around the portal. Messages sent to your '
+        'Legal Advisor are normally answered within the response '
+        'timeframes above.'))
+    story.append(PageBreak())
 
-    story.append(Spacer(1, 8))
-    story.append(Paragraph('Contact', H2))
-    story.append(Paragraph(
-        '<b>Telephone:</b> 0861 4 LEGAL (0861 453 425)   |   '
-        '<b>WhatsApp:</b> 011 842 7890<br/>'
-        '<b>Email:</b> legal@infinitylegal.co.za   |   '
-        '<b>Member Portal:</b> portal.infinitylegal.co.za<br/>'
-        '<b>Website:</b> www.infinitylegal.co.za',
-        REG_BODY))
+    # =====================================================================
+    # SECTION 12 — Subscription Fees & Payment
+    # =====================================================================
+    story.append(SectionHeader(12, 'Subscription Fees and Payment'))
+    story.append(p(
+        'This section sets out the fees for each plan, the payment methods '
+        'we accept, when fees are due, and what happens if a payment '
+        'fails. Fees are quoted in South African Rand and include '
+        'value-added tax where applicable. We may change our fees from '
+        'time to time in accordance with Section 13.'))
 
-    story.append(Spacer(1, 14))
-    story.append(GoldRule(width=CONTENT_W, thickness=1.5))
-    story.append(Spacer(1, 4))
+    story.append(p('12.1  Current Fees', H2))
+    fee_data = [
+        [Paragraph('Plan', TABLE_HEADER),
+         Paragraph('Monthly', TABLE_HEADER_CENTER),
+         Paragraph('Annual', TABLE_HEADER_CENTER),
+         Paragraph('Annual Saving', TABLE_HEADER_CENTER)],
+        [Paragraph('Civil Legal Plan', TABLE_CELL_BOLD),
+         Paragraph('R99', TABLE_CELL_CENTER),
+         Paragraph('R999', TABLE_CELL_CENTER),
+         Paragraph('~R189 (16%)', TABLE_CELL_CENTER)],
+        [Paragraph('Labour Legal Plan', TABLE_CELL_BOLD),
+         Paragraph('R99', TABLE_CELL_CENTER),
+         Paragraph('R999', TABLE_CELL_CENTER),
+         Paragraph('~R189 (16%)', TABLE_CELL_CENTER)],
+        [Paragraph('Extensive Plan', TABLE_CELL_BOLD),
+         Paragraph('R139', TABLE_CELL_CENTER),
+         Paragraph('R1 399', TABLE_CELL_CENTER),
+         Paragraph('~R269 (16%)', TABLE_CELL_CENTER)],
+    ]
+    fee_widths = [CONTENT_W * 0.32, CONTENT_W * 0.20, CONTENT_W * 0.22, CONTENT_W * 0.26]
+    fee_table = Table(fee_data, colWidths=fee_widths, repeatRows=1)
+    fee_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), NAVY),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, NAVY_50]),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, GOLD),
+        ('LINEBELOW', (0, 1), (-1, -2), 0.5, NAVY_200),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(fee_table)
+    story.append(small_gap(8))
+
+    story.append(p('12.2  Payment Methods', H2))
+    story.append(p(
+        'We accept the following payment methods. All payments are '
+        'processed in South African Rand through secure, PCI-compliant '
+        'payment partners.'))
+    story.append(bullet_list([
+        '<b>PayFast (online card or instant EFT).</b> The default payment method for new Subscribers. PayFast supports all major South African credit and debit cards as well as instant EFT from major banks. Your card details are stored securely by PayFast and are never seen by us.',
+        '<b>Debit order.</b> A recurring debit order against your South African bank account, processed on the first business day of each month. Debit orders are convenient for monthly subscriptions and avoid the need to manually pay each month.',
+        '<b>Manual EFT.</b> A once-off or recurring electronic funds transfer to our bank account. If you pay by manual EFT, please use your Subscriber reference number so that we can allocate the payment to your account without delay.',
+    ]))
+
+    story.append(p('12.3  When Fees Are Due', H2))
+    story.append(p(
+        'Monthly Subscription Fees are due on the first day of each '
+        'calendar month and are payable in advance. Annual Subscription '
+        'Fees are due on the anniversary of your activation date and are '
+        'payable in advance. If your payment method fails on the due '
+        'date, we will retry the payment on three further occasions over '
+        'the following seven days and will notify you by email and SMS '
+        'each time.'))
+
+    story.append(p('12.4  Failed Payments and Suspension', H2))
+    story.append(p(
+        'If your Subscription Fee remains unpaid seven calendar days '
+        'after the due date, your Services will be suspended. During '
+        'suspension, you retain access to the Member Portal and to your '
+        'historical Matter files, but you cannot open new Matters or '
+        'consultations. If your subscription remains unpaid for a '
+        'further 30 days, your subscription will be cancelled in '
+        'accordance with Section 14.'))
+    story.append(CalloutBox(
+        'NOTE — Reinstatement',
+        ['If your subscription is suspended and you then pay the '
+         'outstanding amount in full, your Services will be reinstated '
+         'within one business day. No re-onboarding is required, and '
+         'your existing Matters will continue without interruption.']))
+
+    story.append(p('12.5  Annual Subscription Discount', H2))
+    story.append(p(
+        'Annual subscriptions are discounted by approximately 16 per '
+        'cent compared to twelve monthly payments. The discount is '
+        'applied automatically when you select the annual billing option '
+        'on the Member Portal. Annual subscriptions are non-refundable '
+        'except as set out in the refund policy in Section 14.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 13 — Changes to Plans, Fees, and Terms
+    # =====================================================================
+    story.append(SectionHeader(13, 'Changes to Plans, Fees, and Terms'))
+    story.append(p(
+        'From time to time we may need to change our plans, our fees, or '
+        'the terms of this Agreement. This section explains how we make '
+        'such changes, the notice we give, and the rights you have if '
+        'you do not agree with a change. We are committed to '
+        'transparency: no Subscriber will ever be surprised by a change '
+        'to their plan or fee.'))
+
+    story.append(p('13.1  Notice of Changes', H2))
+    story.append(p(
+        'We will give you at least 31 calendar days\' written notice of '
+        'any change to your plan, your Subscription Fee, or the terms of '
+        'this Agreement. Notice will be sent by email to the address '
+        'registered on your account, and will also be posted in the '
+        'announcements section of the Member Portal. The notice will '
+        'explain what is changing, when the change takes effect, and '
+        'what your options are.'))
+
+    story.append(p('13.2  Existing Matters Continue Under Previous Terms', H2))
+    story.append(p(
+        'If a change to fees or terms takes effect while you have an '
+        'active Matter, that Matter will continue to be handled under '
+        'the terms that applied when the Matter was opened, until the '
+        'Matter is concluded. This protects you from mid-Matter changes '
+        'and ensures continuity of advice. New Matters opened after the '
+        'effective date of the change will be handled under the new '
+        'terms.'))
+
+    story.append(p('13.3  Right to Cancel After a Change', H2))
+    story.append(p(
+        'If we make a change to your Subscription Fee or to a material '
+        'term of this Agreement, and you do not agree with the change, '
+        'you may cancel your subscription within 31 calendar days of '
+        'the effective date of the change. If you cancel under this '
+        'clause, you will receive a pro-rata refund of any prepaid '
+        'Subscription Fee for the period after the cancellation takes '
+        'effect.'))
+    story.append(CalloutBox(
+        'Example — How the cancellation-after-change right works',
+        ['If your monthly fee increases from R99 to R119 with effect '
+         'from 1 September, you may cancel any time before 1 October '
+         'and receive a full refund of any fee paid for the period '
+         'after your cancellation date. You are not locked in by the '
+         'fee change.']))
+
+    story.append(p('13.4  Improvements That Do Not Require Notice', H2))
+    story.append(p(
+        'From time to time we may improve our Services in ways that do '
+        'not reduce the value of your plan and do not increase your '
+        'Subscription Fee — for example, by adding new features to the '
+        'Member Portal, by extending our Network Legal Advisor presence '
+        'to a new town, or by improving the Infinity AI Assistant. Such '
+        'improvements do not require 31 days\' notice, and we will '
+        'communicate them as good news rather than as contractual '
+        'changes.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 14 — Upgrades, Downgrades & Cancellation
+    # =====================================================================
+    story.append(SectionHeader(14, 'Upgrades, Downgrades and Cancellation'))
+    story.append(p(
+        'You are never locked into a plan with Infinity Legal SA. You '
+        'may upgrade, downgrade, or cancel your subscription at any '
+        'time from the Member Portal, without penalty. This section '
+        'sets out how each option works, the effective date of the '
+        'change, and the refund policy that applies.'))
+
+    story.append(p('14.1  Upgrades', H2))
+    story.append(p(
+        'You may upgrade to a higher-tier plan at any time. Upgrades '
+        'take effect immediately on confirmation. You are charged a '
+        'pro-rata fee for the difference between your current plan and '
+        'the upgraded plan for the remainder of the current billing '
+        'cycle. From the start of the next billing cycle, you are '
+        'charged the full Subscription Fee of the upgraded plan.'))
+    story.append(p(
+        'When you upgrade, your active Matters continue without '
+        'interruption, and any document capacity you have already used '
+        'is carried over to the upgraded plan\'s higher limit. If you '
+        'upgrade to the Extensive Plan, a dedicated Legal Advisor is '
+        'assigned to your account within 48 hours.'))
+
+    story.append(p('14.2  Downgrades', H2))
+    story.append(p(
+        'You may downgrade to a lower-tier plan at any time. Downgrades '
+        'take effect at the start of the next billing cycle, so that '
+        'you continue to enjoy the higher-tier services you have '
+        'already paid for. From the start of the next billing cycle, '
+        'you are charged the Subscription Fee of the downgraded plan.'))
+    story.append(p(
+        'When you downgrade, your active Matters continue under the '
+        'terms of the higher-tier plan until they are concluded. New '
+        'Matters opened after the effective date of the downgrade are '
+        'handled under the lower-tier plan. If you have more active '
+        'Matters or documents than the lower-tier plan allows, we will '
+        'discuss with you how to manage the transition.'))
+
+    story.append(p('14.3  Cancellation by You', H2))
+    story.append(p(
+        'You may cancel your subscription at any time, without penalty '
+        'and without giving a reason. To cancel, use the cancellation '
+        'function in the Member Portal, or email '
+        'client.services@infinitylegal.co.za. Your cancellation takes '
+        'effect at the end of the current billing cycle.'))
+
+    story.append(p('14.4  Refund Policy', H2))
+    story.append(p(
+        'The refund policy depends on whether you pay monthly or '
+        'annually, and on whether you have used any Services in the '
+        'current billing cycle:'))
+    story.append(bullet_list([
+        '<b>Monthly subscriptions.</b> No refund is given for the current month, because the Subscription Fee is payable in advance. You will not be charged for any subsequent month. You retain access to the Member Portal and to your historical Matter files after cancellation.',
+        '<b>Annual subscriptions.</b> A pro-rata refund is given for the unused full months remaining in your annual cycle, less the reasonable value of any Services already rendered. For example, if you cancel after six months of an annual subscription, you receive a refund of approximately six-twelfths of the annual fee, less the value of Services rendered in the six months you were a Subscriber.',
+        '<b>Cooling-off period.</b> If you cancel within the seven-day cooling-off period and have used no Services, you receive a full refund (see Section 5).',
+        '<b>Cancellation after a change.</b> If you cancel within 31 days of a fee or term change (see Section 13), you receive a pro-rata refund for the period after the cancellation takes effect.',
+    ]))
+
+    story.append(p('14.5  Cancellation by Us', H2))
+    story.append(p(
+        'We may cancel your subscription only for material breach of '
+        'this Agreement (for example, persistent non-payment, fraud, or '
+        'abusive behaviour towards our staff) and only after giving you '
+        'written notice and a reasonable opportunity to remedy the '
+        'breach, except in cases of fraud or abuse where we may cancel '
+        'immediately. Where we cancel for material breach, any prepaid '
+        'annual fees for future months are refunded on a pro-rata basis '
+        'less the reasonable value of Services already rendered.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 15 — Disputes & Complaints
+    # =====================================================================
+    story.append(SectionHeader(15, 'Disputes and Complaints'))
+    story.append(p(
+        'We are committed to resolving any dispute or complaint '
+        'promptly, fairly, and at the lowest possible level. This '
+        'section sets out our internal complaints process and the '
+        'external escalation routes available to you. We are a legal '
+        'services company regulated by the Legal Practice Council of '
+        'South Africa, and we take complaints seriously.'))
+
+    story.append(p('15.1  Internal Complaints Process', H2))
+    story.append(p(
+        'If you have a complaint about any aspect of our Services, '
+        'please contact our Client Services team at '
+        '<b>client.services@infinitylegal.co.za</b> or call '
+        '<b>0861 4 LEGAL (0861 453 425)</b>. Please provide your '
+        'Subscriber reference number, a clear description of the '
+        'complaint, and the outcome you are seeking.'))
+    story.append(p(
+        'We will acknowledge your complaint within two business days '
+        'and provide a substantive response within ten business days. '
+        'If the complaint requires further investigation, we will tell '
+        'you when you can expect a full response, normally within '
+        'twenty business days.'))
+
+    story.append(p('15.2  Escalation to the Managing Director', H2))
+    story.append(p(
+        'If you are not satisfied with the response from our Client '
+        'Services team, you may escalate your complaint to the '
+        'Managing Director by email at <b>md@infinitylegal.co.za</b>. '
+        'The Managing Director will review the complaint, the response '
+        'provided, and any additional information you provide, and will '
+        'respond within ten business days. The Managing Director\'s '
+        'decision is the final step in our internal complaints process.'))
+
+    story.append(p('15.3  Escalation to the Legal Practice Council', H2))
+    story.append(p(
+        'If your complaint is about the professional conduct of one of '
+        'our Legal Advisors and you are not satisfied with our internal '
+        'response, you may refer the complaint to the Legal Practice '
+        'Council of South Africa, which is the statutory regulatory '
+        'body for legal practitioners. The Legal Practice Council can '
+        'be contacted as follows:'))
+    story.append(bullet_list([
+        '<b>Website:</b> www.legalpracticecouncil.org.za',
+        '<b>Email:</b> complaints@lpc.org.za',
+        '<b>Postal address:</b> The Legal Practice Council, 1st Floor, '
+        'Lily Arrow Office Park, 387 Pretoria Avenue, Randburg, 2194',
+        '<b>Complaints line:</b> 011 830 6200',
+    ]))
+
+    story.append(p('15.4  Escalation to the Legal Practice Council Ombud', H2))
+    story.append(p(
+        'If your complaint remains unresolved after the Legal Practice '
+        'Council has considered it, you may refer it to the Legal '
+        'Practice Council\'s Ombud, who is an independent officer '
+        'appointed to resolve disputes between legal practitioners and '
+        'their clients. The Ombud\'s decision is binding on the legal '
+        'practitioner concerned and may be appealed to the High Court '
+        'on a point of law only.'))
+
+    story.append(p('15.5  Other Statutory Avenues', H2))
+    story.append(p(
+        'Depending on the nature of your Matter, you may also have '
+        'rights under the Consumer Protection Act 68 of 2008, which '
+        'allows consumers to refer complaints to the National Consumer '
+        'Commission or the National Consumer Tribunal, and under the '
+        'Protection of Personal Information Act 4 of 2013, which allows '
+        'complaints to be referred to the Information Regulator. We '
+        'will not treat the use of any statutory avenue as a breach of '
+        'this Agreement.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 16 — Limitation of Liability
+    # =====================================================================
+    story.append(SectionHeader(16, 'Limitation of Liability'))
+    story.append(p(
+        'This section sets out the limits on our liability to you in '
+        'respect of the Services we provide. The limits are consistent '
+        'with the standard practice of professional services firms in '
+        'South Africa and are necessary so that we can offer affordable '
+        'subscription pricing to all Subscribers. Nothing in this '
+        'section excludes liability that cannot be excluded by law.'))
+
+    story.append(p('16.1  No Guarantee of Outcome', H2))
+    story.append(p(
+        'Legal matters are inherently uncertain. The outcome of any '
+        'Matter depends on facts that may not be fully known, on the '
+        'evidence available, on the decisions of courts and tribunals, '
+        'and on the conduct of other parties. We do not guarantee any '
+        'specific outcome in any Matter. We do guarantee that we will '
+        'provide the Services with reasonable care and skill, in '
+        'accordance with the standards expected of legal practitioners '
+        'in South Africa.'))
+
+    story.append(p('16.2  Cap on Liability', H2))
+    story.append(p(
+        'Our aggregate liability to you in respect of any Matter, '
+        'series of Matters, or this Agreement as a whole, whether in '
+        'contract, delict (including negligence), or otherwise, is '
+        'limited to the total Subscription Fees paid by you to us in '
+        'the twelve calendar months preceding the event giving rise to '
+        'the liability. This cap does not apply to liability for '
+        'death or personal injury caused by our negligence, or for '
+        'fraud or fraudulent misrepresentation.'))
+
+    story.append(p('16.3  Exclusion of Indirect and Consequential Damages', H2))
+    story.append(p(
+        'To the fullest extent permitted by law, we are not liable to '
+        'you for any indirect, incidental, special, or consequential '
+        'damages of any kind, including loss of profits, loss of '
+        'business, loss of goodwill, loss of opportunity, or loss of '
+        'data, whether arising in contract, delict (including '
+        'negligence), or otherwise, even if we have been advised of '
+        'the possibility of such damages.'))
+
+    story.append(p('16.4  Advice Based on Information Provided', H2))
+    story.append(p(
+        'All advice we give is based on the information you provide to '
+        'us. If that information is incomplete, inaccurate, or '
+        'misleading, the advice may be wrong, and we cannot accept '
+        'responsibility for the consequences. You are responsible for '
+        'ensuring that the information you provide to us is truthful, '
+        'accurate, and complete, as set out in Section 9.'))
+
+    story.append(p('16.5  Third-Party Services', H2))
+    story.append(p(
+        'Where we refer you to a Network Legal Advisor or to a '
+        'specialist practitioner outside our network, the relationship '
+        'in respect of that referral is between you and that '
+        'practitioner. We are not liable for the acts or omissions of '
+        'such practitioners, although we will use reasonable efforts to '
+        'ensure that they meet our professional standards.'))
+
+    story.append(p('16.6  Force Majeure', H2))
+    story.append(p(
+        'We are not liable for any failure or delay in performing our '
+        'obligations under this Agreement to the extent that the '
+        'failure or delay is caused by an event beyond our reasonable '
+        'control, including acts of God, natural disasters, pandemics, '
+        'war, terrorism, civil unrest, industrial action, failure of '
+        'utilities or telecommunications, and decisions of courts or '
+        'regulators. We will use reasonable efforts to resume '
+        'performance as soon as reasonably practicable after the event.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SECTION 17 — General Terms
+    # =====================================================================
+    story.append(SectionHeader(17, 'General Terms'))
+    story.append(p(
+        'This section sets out the general legal terms that apply to '
+        'this Agreement. These terms are standard for professional '
+        'services contracts in South Africa and are designed to '
+        'provide certainty for both parties.'))
+
+    story.append(p('17.1  Entire Agreement', H2))
+    story.append(p(
+        'This Agreement, together with the Schedule of Benefits in '
+        'Section 2 and any documents expressly referred to in it, '
+        'constitutes the entire agreement between you and us in '
+        'respect of its subject matter. It supersedes all previous '
+        'agreements, negotiations, representations, and understandings, '
+        'whether written or oral. Each party acknowledges that it has '
+        'not relied on any representation, warranty, or statement '
+        'other than those expressly set out in this Agreement.'))
+
+    story.append(p('17.2  Severability', H2))
+    story.append(p(
+        'If any provision of this Agreement is held by a court of '
+        'competent jurisdiction to be invalid, illegal, or '
+        'unenforceable, the remaining provisions continue in full '
+        'force and effect. The invalid provision is deemed modified to '
+        'the minimum extent necessary to make it valid, legal, and '
+        'enforceable, or, if it cannot be so modified, is deemed '
+        'deleted.'))
+
+    story.append(p('17.3  Governing Law', H2))
+    story.append(p(
+        'This Agreement is governed by and construed in accordance with '
+        'the laws of the Republic of South Africa. The parties submit '
+        'to the exclusive jurisdiction of the courts of the Republic '
+        'of South Africa in respect of any dispute arising out of or '
+        'in connection with this Agreement, except where a statute '
+        'provides for a different forum (for example, the CCMA in '
+        'respect of labour disputes, or the Legal Practice Council in '
+        'respect of professional conduct complaints).'))
+
+    story.append(p('17.4  Amendments Must Be in Writing', H2))
+    story.append(p(
+        'No amendment or variation of this Agreement is effective '
+        'unless it is in writing and signed by an authorised '
+        'representative of each party. For purposes of this clause, '
+        'an email sent from a registered Infinity Legal SA email '
+        'address and signed by a director or the Managing Director '
+        'constitutes a writing signed by us.'))
+
+    story.append(p('17.5  No Waiver', H2))
+    story.append(p(
+        'No failure or delay by us in exercising any right or remedy '
+        'under this Agreement is a waiver of that right or remedy. No '
+        'single or partial exercise of any right or remedy precludes '
+        'any further exercise of that right or any other right or '
+        'remedy. A waiver is only effective if it is in writing and '
+        'signed by us.'))
+
+    story.append(p('17.6  Assignment', H2))
+    story.append(p(
+        'You may not assign, transfer, or otherwise dispose of any of '
+        'your rights or obligations under this Agreement without our '
+        'prior written consent. We may assign, transfer, or otherwise '
+        'dispose of our rights and obligations under this Agreement to '
+        'any successor in title or to any group company, provided that '
+        'we give you at least 31 days\' written notice of any such '
+        'assignment and that the assignee assumes all our obligations '
+        'under this Agreement.'))
+
+    story.append(p('17.7  Notices', H2))
+    story.append(p(
+        'Any notice under this Agreement must be in writing and is '
+        'best sent through the Member Portal, by email, or by WhatsApp '
+        'to the contact details registered on your account. Notices '
+        'sent to us should be addressed to '
+        'client.services@infinitylegal.co.za. Notices are deemed '
+        'received on the day they are sent if sent before 16:00 South '
+        'African time on a business day, and on the next business day '
+        'otherwise.'))
+
+    story.append(p('17.8  Relationship of the Parties', H2))
+    story.append(p(
+        'Nothing in this Agreement is intended to constitute a '
+        'partnership, joint venture, agency, or employment relationship '
+        'between you and us. Our Legal Advisors and Network Legal '
+        'Advisors act on our behalf in providing Services to you and '
+        'do not contract personally with you.'))
+
+    story.append(p('17.9  Consumer Protection Act', H2))
+    story.append(p(
+        'You are a consumer of legal services for purposes of the '
+        'Consumer Protection Act 68 of 2008. Nothing in this Agreement '
+        'is intended to limit any right you have under that Act that '
+        'cannot be limited by agreement. Where any term of this '
+        'Agreement is inconsistent with a non-excludable right you '
+        'have under the Consumer Protection Act, that Act prevails to '
+        'the extent of the inconsistency.'))
+
+    story.append(p('17.10  Contact Details', H2))
+    story.append(p(
+        'Our contact details for all purposes under this Agreement '
+        'are: <b>Infinity Legal SA (Pty) Ltd</b>, Reg. No. '
+        '2024/123456/07, registered with the Legal Practice Council '
+        'of South Africa, email <b>legal@infinitylegal.co.za</b>, '
+        'telephone <b>0861 4 LEGAL (0861 453 425)</b>, website '
+        '<b>www.infinitylegal.co.za</b>.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # SERVICE & CONTACT POINTS page
+    # =====================================================================
+    story.append(PageHeader('Service', 'Service and Contact Points',
+                            key='contact'))
+    story.append(p(
+        'Infinity Legal SA is primarily a digital legal services company, '
+        'supported by a contact centre and a Johannesburg office. The '
+        'table below summarises every channel through which you can '
+        'reach us. Our Member Portal and Infinity AI Assistant are '
+        'available 24 hours a day, every day of the year.'))
+
+    contact_data = [
+        [Paragraph('Service', TABLE_HEADER),
+         Paragraph('Channel', TABLE_HEADER),
+         Paragraph('Details', TABLE_HEADER)],
+        [Paragraph('Member Portal', TABLE_CELL_BOLD),
+         Paragraph('Web', TABLE_CELL),
+         Paragraph('portal.infinitylegal.co.za', TABLE_CELL)],
+        [Paragraph('Infinity AI Assistant', TABLE_CELL_BOLD),
+         Paragraph('In-app chat', TABLE_CELL),
+         Paragraph('Available 24/7 inside the Member Portal', TABLE_CELL)],
+        [Paragraph('Contact Centre', TABLE_CELL_BOLD),
+         Paragraph('Telephone', TABLE_CELL),
+         Paragraph('0861 4 LEGAL  (0861 453 425)', TABLE_CELL)],
+        [Paragraph('WhatsApp', TABLE_CELL_BOLD),
+         Paragraph('Mobile', TABLE_CELL),
+         Paragraph('011 842 7890', TABLE_CELL)],
+        [Paragraph('General Email', TABLE_CELL_BOLD),
+         Paragraph('Email', TABLE_CELL),
+         Paragraph('legal@infinitylegal.co.za', TABLE_CELL)],
+        [Paragraph('Client Services & Complaints', TABLE_CELL_BOLD),
+         Paragraph('Email', TABLE_CELL),
+         Paragraph('client.services@infinitylegal.co.za', TABLE_CELL)],
+        [Paragraph('Managing Director', TABLE_CELL_BOLD),
+         Paragraph('Email', TABLE_CELL),
+         Paragraph('md@infinitylegal.co.za', TABLE_CELL)],
+        [Paragraph('Johannesburg Office', TABLE_CELL_BOLD),
+         Paragraph('In-person', TABLE_CELL),
+         Paragraph('By appointment only — book via the Member Portal', TABLE_CELL)],
+        [Paragraph('Facebook', TABLE_CELL_BOLD),
+         Paragraph('Social', TABLE_CELL),
+         Paragraph('@infinitylegalSA', TABLE_CELL)],
+        [Paragraph('Instagram', TABLE_CELL_BOLD),
+         Paragraph('Social', TABLE_CELL),
+         Paragraph('@infinitylegalSA', TABLE_CELL)],
+        [Paragraph('TikTok', TABLE_CELL_BOLD),
+         Paragraph('Social', TABLE_CELL),
+         Paragraph('@infinitylegalSA', TABLE_CELL)],
+    ]
+    contact_widths = [CONTENT_W * 0.30, CONTENT_W * 0.18, CONTENT_W * 0.52]
+    contact_table = Table(contact_data, colWidths=contact_widths,
+                          repeatRows=1)
+    contact_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), NAVY),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, NAVY_50]),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, GOLD),
+        ('LINEBELOW', (0, 1), (-1, -2), 0.5, NAVY_200),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ]))
+    story.append(contact_table)
+    story.append(small_gap(12))
+
+    story.append(p('Response Times by Plan', H2))
+    story.append(p(
+        'Our response timeframes vary by plan and are set out in '
+        'Section 11. As a quick reminder: Civil Legal Plan Subscribers '
+        'can expect acknowledgement within 24 business hours; Labour '
+        'Legal Plan and Extensive Plan Subscribers within 4 business '
+        'hours (and Extensive Plan Subscribers receive 24/7 priority '
+        'support outside business hours).'))
+
+    story.append(p('Branch Network', H2))
+    story.append(p(
+        'Infinity Legal SA operates a primarily digital service model '
+        'so that we can keep our Subscription Fees affordable for all '
+        'South Africans. We maintain a single physical office in '
+        'Johannesburg for in-person consultations by appointment. '
+        'Where a Matter requires local representation elsewhere in '
+        'the country, we instruct a Network Legal Advisor in the '
+        'relevant town or city at no additional cost to you under '
+        'your plan.'))
+    story.append(PageBreak())
+
+    # =====================================================================
+    # ABOUT INFINITY LEGAL SA page
+    # =====================================================================
+    story.append(PageHeader('About', 'About Infinity Legal SA',
+                            key='about'))
+    story.append(p(
+        'Infinity Legal SA (Pty) Ltd is a South African legal services '
+        'company that makes professional legal advice and representation '
+        'affordable and accessible through simple monthly and annual '
+        'subscription plans. We are not an insurance company. We do not '
+        'sell insurance, we are not underwritten by any insurer, and we '
+        'are not registered as a financial services provider. Our '
+        'business is the provision of legal services, and our '
+        'regulator is the Legal Practice Council of South Africa.'))
+
+    story.append(p('Company Information', H2))
+    info_data = [
+        [Paragraph('Registered Name', TABLE_HEADER),
+         Paragraph('Infinity Legal SA (Pty) Ltd', TABLE_CELL)],
+        [Paragraph('Registration Number', TABLE_HEADER),
+         Paragraph('2024/123456/07', TABLE_CELL)],
+        [Paragraph('Legal Form', TABLE_HEADER),
+         Paragraph('Private company (Pty) Ltd, incorporated in the Republic of South Africa', TABLE_CELL)],
+        [Paragraph('Regulator', TABLE_HEADER),
+         Paragraph('Legal Practice Council of South Africa', TABLE_CELL)],
+        [Paragraph('Data Protection', TABLE_HEADER),
+         Paragraph('Compliant with the Protection of Personal Information Act 4 of 2013 (POPIA)', TABLE_CELL)],
+        [Paragraph('Identity Verification', TABLE_HEADER),
+         Paragraph('Compliant with the Financial Intelligence Centre Act 38 of 2001 (FICA)', TABLE_CELL)],
+        [Paragraph('Website', TABLE_HEADER),
+         Paragraph('www.infinitylegal.co.za', TABLE_CELL)],
+        [Paragraph('Member Portal', TABLE_HEADER),
+         Paragraph('portal.infinitylegal.co.za', TABLE_CELL)],
+        [Paragraph('General Email', TABLE_HEADER),
+         Paragraph('legal@infinitylegal.co.za', TABLE_CELL)],
+        [Paragraph('Telephone', TABLE_HEADER),
+         Paragraph('0861 4 LEGAL  (0861 453 425)', TABLE_CELL)],
+        [Paragraph('WhatsApp', TABLE_HEADER),
+         Paragraph('011 842 7890', TABLE_CELL)],
+        [Paragraph('Office', TABLE_HEADER),
+         Paragraph('Johannesburg, Gauteng — by appointment only', TABLE_CELL)],
+    ]
+    info_widths = [CONTENT_W * 0.32, CONTENT_W * 0.68]
+    info_table = Table(info_data, colWidths=info_widths, repeatRows=1)
+    info_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), NAVY),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.white),
+        ('BACKGROUND', (1, 0), (1, -1), colors.white),
+        ('TEXTCOLOR', (1, 0), (1, -1), NAVY_DARK),
+        ('LINEBELOW', (0, 0), (-1, -2), 0.5, NAVY_200),
+        ('LINEAFTER', (0, 0), (0, -1), 1.5, GOLD),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(info_table)
+    story.append(small_gap(12))
+
+    story.append(p('Our Mission', H2))
+    story.append(p(
+        'Our mission is captured in three words: <b>Justice without '
+        'limits.</b> We believe that every South African deserves '
+        'access to professional legal advice, regardless of income or '
+        'background. By combining modern technology (the Member Portal '
+        'and the Infinity AI Assistant) with a network of registered '
+        'legal practitioners, we are able to deliver high-quality '
+        'legal services at a fraction of the traditional cost.'))
+    story.append(p(
+        'We are committed to transparent pricing, plain-language '
+        'communication, and honest advice. We will tell you when a '
+        'Matter has reasonable prospects of success and when it does '
+        'not. We will never pressure you into a separate instruction '
+        'or a plan upgrade that you do not need. We will treat your '
+        'Matters with the same care and urgency that we would wish '
+        'for our own families.'))
+
+    story.append(p('Our Regulator and Your Protection', H2))
+    story.append(p(
+        'As a legal services company registered with the Legal '
+        'Practice Council of South Africa, we are subject to the '
+        'rules of professional conduct that apply to all legal '
+        'practitioners in South Africa. These rules are designed to '
+        'protect you, the client, and they include duties of '
+        'confidentiality, diligence, candour, and loyalty. If you '
+        'believe that we have breached any of these duties, you may '
+        'refer a complaint to the Legal Practice Council as set out '
+        'in Section 15.'))
+    story.append(p(
+        'As a Subscriber, you also benefit from the Consumer '
+        'Protection Act 68 of 2008, which provides additional '
+        'protections for consumers of services in South Africa, and '
+        'from the Protection of Personal Information Act 4 of 2013, '
+        'which protects your personal information as described in '
+        'Section 10.'))
+
+    story.append(small_gap(8))
+    story.append(GoldRule(width=CONTENT_W))
+    story.append(small_gap(6))
     story.append(Paragraph(
         '<i>Justice without limits.</i>',
-        ParagraphStyle('TagEnd', fontName='LibSerif-Italic', fontSize=11,
-                       leading=14, textColor=GOLD_DARK, alignment=TA_CENTER)))
+        ParagraphStyle('Closing', fontName='LibSerif-Italic', fontSize=14,
+                       leading=18, textColor=GOLD_DARK, alignment=TA_CENTER,
+                       spaceBefore=8, spaceAfter=4)))
     story.append(Paragraph(
-        'Reference Number: ILS PERSONAL/2025/06/01 · '
-        'Underwritten by LegalGuard Insurance Southern Africa Limited '
-        '(FSP 48012)',
-        ParagraphStyle('RegEnd', fontName='LibSans', fontSize=7.5,
+        'Reference: ILS PERSONAL/2025/06/01  ·  Issued: June 2025  ·  '
+        'Infinity Legal SA (Pty) Ltd  ·  Reg. No. 2024/123456/07',
+        ParagraphStyle('ClosingMeta', fontName='LibSans', fontSize=8,
                        leading=11, textColor=TEXT_MUTED, alignment=TA_CENTER)))
 
     return story
 
 
 # ---------------------------------------------------------------------------
-# Build the body PDF
+# Main
 # ---------------------------------------------------------------------------
-def build_pdf(output_path):
+def main():
+    out_path = '/home/z/my-project/upload/body.pdf'
     doc = TocDocTemplate(
-        output_path,
+        out_path,
         pagesize=A4,
         leftMargin=MARGIN_L,
         rightMargin=MARGIN_R,
         topMargin=MARGIN_T,
         bottomMargin=MARGIN_B,
-        title='Infinity Legal SA Personal Legal Membership Agreement',
+        title='Infinity Legal SA Personal Legal Services Subscription Agreement',
         author='Infinity Legal SA',
-        subject='Membership Agreement',
+        subject='Personal Legal Services Subscription Agreement',
         creator='Infinity Legal SA',
     )
-
     story = build_story()
-    doc.multiBuild(story, onFirstPage=header_footer,
-                   onLaterPages=header_footer)
-    print(f'Body PDF generated: {output_path}')
+    doc.multiBuild(story, onFirstPage=header_footer, onLaterPages=header_footer)
+    print(f'✓ Body PDF written: {out_path}')
 
 
 if __name__ == '__main__':
-    output = '/home/z/my-project/upload/body.pdf'
-    build_pdf(output)
+    main()
