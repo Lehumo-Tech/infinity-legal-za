@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Infinity Legal SA - Personal Legal Membership Agreement Cover</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @page { size: 794px 1123px; margin: 0; }
+    :root {
+      --navy:        #0c1e3c;
+      --navy-light:  #132d52;
+      --navy-dark:   #081428;
+      --gold:        #c9a84c;
+      --gold-light:  #dfc475;
+      --gold-dark:   #a88832;
+      --text-white:  #f5f7fa;
+      --text-muted:  #9aaabf;
+      --text-gold:   #c9a84c;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 794px;
+      height: 1123px;
+      background: var(--navy);
+      color: var(--text-white);
+      font-family: 'Inter', sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    @media screen {
+      html { height: auto; display: flex; justify-content: center; min-height: 100vh; background: #2a2a2a; }
+      body { transform-origin: top center; scale: min(1, calc(100vw / 794), calc(100vh / 1123)); margin: 0 auto; box-shadow: 0 0 60px rgba(0,0,0,0.5); }
+    }
+    .cover {
+      position: relative;
+      width: 794px;
+      height: 1123px;
+      box-sizing: border-box;
+      background: linear-gradient(155deg, #0c1e3c 0%, #081428 100%);
+      overflow: hidden;
+    }
+    /* Layer 1 - background decorative */
+    .bg-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .bg-glow-tl {
+      position: absolute;
+      top: -200px;
+      left: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(201,168,76,0.10) 0%, transparent 60%);
+    }
+    .bg-glow-br {
+      position: absolute;
+      bottom: -180px;
+      right: -180px;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(19,45,82,0.6) 0%, transparent 60%);
+    }
+    .infinity-mark {
+      position: absolute;
+      bottom: 120px;
+      right: 60px;
+      font-family: 'Playfair Display', serif;
+      font-size: 360px;
+      font-weight: 900;
+      color: rgba(201,168,76,0.06);
+      line-height: 1;
+      letter-spacing: -20px;
+      user-select: none;
+    }
+    /* Layer 2 - structural lines */
+    .vline-gold {
+      position: absolute;
+      left: 60px;
+      top: 110px;
+      bottom: 110px;
+      width: 4px;
+      background: linear-gradient(180deg, var(--gold-dark) 0%, var(--gold) 40%, var(--gold-light) 60%, var(--gold-dark) 100%);
+      z-index: 2;
+    }
+    .rule-top {
+      position: absolute;
+      top: 60px;
+      left: 60px;
+      right: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
+      z-index: 2;
+    }
+    .rule-bottom {
+      position: absolute;
+      bottom: 60px;
+      left: 76px;
+      right: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+      z-index: 2;
+    }
+    /* Layer 3 - content */
+    .content {
+      position: absolute;
+      left: 110px;
+      right: 80px;
+      top: 0;
+      bottom: 0;
+      z-index: 3;
+    }
+    .brand-row {
+      position: absolute;
+      top: 115px;
+      left: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-glyph {
+      font-family: 'Playfair Display', serif;
+      font-size: 44px;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+    .brand-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--text-white);
+    }
+    .brand-name span { color: var(--gold); }
+    .kicker {
+      position: absolute;
+      top: 220px;
+      left: 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 11pt;
+      font-weight: 400;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.95;
+    }
+    .kicker .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      margin: 0 14px 2px 0;
+      vertical-align: middle;
+    }
+    .hero-title {
+      position: absolute;
+      top: 280px;
+      left: 0;
+      right: 0;
+      font-family: 'Playfair Display', serif;
+      font-size: 52pt;
+      font-weight: 700;
+      line-height: 1.12;
+      color: var(--text-white);
+      max-width: 600px;
+      letter-spacing: -1px;
+    }
+    .hero-title .accent {
+      color: var(--gold);
+      font-style: italic;
+      font-weight: 400;
+    }
+    .subtitle {
+      position: absolute;
+      top: 500px;
+      left: 0;
+      right: 0;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22pt;
+      font-weight: 500;
+      letter-spacing: 4px;
+      color: var(--gold-light);
+      text-transform: uppercase;
+    }
+    .tagline-block {
+      position: absolute;
+      top: 580px;
+      left: 0;
+      right: 0;
+      max-width: 540px;
+    }
+    .tagline-line {
+      width: 60px;
+      height: 2px;
+      background: var(--gold);
+      margin-bottom: 42px;
+    }
+    .tagline-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26pt;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--text-white);
+      line-height: 1.3;
+    }
+    .tagline-text .em { color: var(--gold); }
+    .summary {
+      position: absolute;
+      top: 720px;
+      left: 0;
+      right: 0;
+      max-width: 540px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11pt;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--text-muted);
+    }
+    .meta-block {
+      position: absolute;
+      bottom: 130px;
+      left: 0;
+      right: 0;
+    }
+    .meta-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 9pt;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .meta-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 14pt;
+      font-weight: 500;
+      color: var(--text-white);
+      letter-spacing: 1px;
+    }
+    .meta-row {
+      display: flex;
+      gap: 60px;
+      align-items: flex-end;
+    }
+    .meta-col { flex: 0 0 auto; }
+    .footer-row {
+      position: absolute;
+      bottom: 115px;
+      left: 110px;
+      right: 80px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      z-index: 3;
+    }
+    .footer-row .right { color: var(--gold); }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <!-- Layer 1: background -->
+    <div class="bg-layer">
+      <div class="bg-grid"></div>
+      <div class="bg-glow-tl"></div>
+      <div class="bg-glow-br"></div>
+      <div class="infinity-mark">&infin;</div>
+    </div>
+
+    <!-- Layer 2: structural lines -->
+    <div class="rule-top"></div>
+    <div class="vline-gold"></div>
+    <div class="rule-bottom"></div>
+
+    <!-- Layer 3: content -->
+    <div class="content">
+      <div class="brand-row">
+        <div class="brand-glyph">&infin;</div>
+        <div class="brand-name">Infinity Legal <span>SA</span></div>
+      </div>
+
+      <div class="kicker"><span class="dot"></span>Membership Agreement &middot; 2025</div>
+
+      <div class="hero-title">
+        Personal Legal<br>
+        <span class="accent">Membership</span><br>
+        Agreement
+      </div>
+
+      <div class="subtitle">A Policy of Legal Protection</div>
+
+      <div class="tagline-block">
+        <div class="tagline-line"></div>
+        <div class="tagline-text">Justice <span class="em">without limits.</span></div>
+      </div>
+
+      <div class="summary">
+        This Membership Agreement sets out the benefits, terms, conditions and exclusions
+        of your Infinity Legal SA personal legal expenses cover. It forms the binding contract
+        between you and Infinity Legal SA, underwritten by LegalGuard Insurance Southern Africa
+        Limited, and is governed by the laws of the Republic of South Africa.
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-row">
+          <div class="meta-col">
+            <div class="meta-label">Reference Number</div>
+            <div class="meta-value">ILS PERSONAL/2025/06/01</div>
+          </div>
+          <div class="meta-col">
+            <div class="meta-label">Issued</div>
+            <div class="meta-value">June 2025</div>
+          </div>
+          <div class="meta-col">
+            <div class="meta-label">Jurisdiction</div>
+            <div class="meta-value">Republic of South Africa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-row">
+      <span>www.infinitylegal.co.za &middot; 0861 4 LEGAL</span>
+      <span class="right">FSP 53214 &middot; POPIA Compliant</span>
+    </div>
+  </div>
+</body>
+</html>
