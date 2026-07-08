@@ -24,7 +24,6 @@ function pbRequest<T = any>(method: string, path: string, body?: unknown, token?
         'Content-Type': 'application/json',
         ...(token ? { Authorization: token } : {}),
       },
-      // @ts-expect-error - family is valid but not in types
       family: 4, // Force IPv4
     };
     

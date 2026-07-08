@@ -5,7 +5,8 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { Prisma } from '@prisma/client';
+import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 
 export async function GET(
@@ -13,21 +14,13 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const { slug } = await params;
 
-    const { data: article, error } = await db
-      .from('legal_articles')
-      .select('*')
-      .eq('slug', slug)
-      .eq('is_published', true)
-      .single();
+    const article = await db.legalArticle.findFirst({
+      where: { slug, is_published: true },
+    });
 
-    if (error || !article) {
+    if (!article) {
       return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
     }
 
@@ -53,47 +46,40 @@ export async function PATCH(
       return apiError('Only administrators can update articles', 403, 'FORBIDDEN');
     }
 
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const { slug } = await params;
     const body = await request.json();
 
+    // Find article by slug
+    const existing = await db.legalArticle.findUnique({ where: { slug } });
+    if (!existing) {
+      return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
+    }
+
     // Build update object from allowed fields
-    const updateFields: Record<string, unknown> = {};
-    const allowedFields = ['title', 'subtitle', 'content', 'summary', 'category', 'tags', 'cover_image_url', 'reading_time_min', 'is_featured', 'is_published', 'sort_order'];
+    const updateData: Prisma.LegalArticleUpdateInput = {};
+    const allowedFields = ['title', 'subtitle', 'content', 'summary', 'category', 'cover_image_url', 'reading_time_min', 'is_featured', 'is_published', 'sort_order'];
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
-        updateFields[field] = body[field];
+        (updateData as Record<string, unknown>)[field] = body[field];
       }
+    }
+    if (body.tags !== undefined) {
+      updateData.tags = body.tags ? (body.tags as Prisma.InputJsonValue) : Prisma.JsonNull;
     }
 
     // Set published_at when publishing for the first time
-    if (body.is_published === true) {
-      updateFields.published_at = new Date().toISOString();
+    if (body.is_published === true && !existing.published_at) {
+      updateData.published_at = new Date();
     }
 
-    if (Object.keys(updateFields).length === 0) {
+    if (Object.keys(updateData).length === 0) {
       return apiError('No valid fields to update', 400, 'NO_FIELDS');
     }
 
-    const { data: article, error } = await db
-      .from('legal_articles')
-      .update(updateFields)
-      .eq('slug', slug)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Article update error:', error);
-      return apiError('Failed to update article', 500, 'UPDATE_ERROR');
-    }
-
-    if (!article) {
-      return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
-    }
+    const article = await db.legalArticle.update({
+      where: { slug },
+      data: updateData,
+    });
 
     return apiResponse(article);
   } catch (error) {
@@ -117,21 +103,15 @@ export async function DELETE(
       return apiError('Only administrators can delete articles', 403, 'FORBIDDEN');
     }
 
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const { slug } = await params;
 
-    const { error } = await db
-      .from('legal_articles')
-      .delete()
-      .eq('slug', slug);
-
-    if (error) {
-      console.error('Article delete error:', error);
-      return apiError('Failed to delete article', 500, 'DELETE_ERROR');
+    try {
+      await db.legalArticle.delete({ where: { slug } });
+    } catch (delErr: any) {
+      if (delErr?.code === 'P2025') {
+        return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
+      }
+      throw delErr;
     }
 
     return apiResponse({ success: true });

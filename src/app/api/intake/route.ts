@@ -15,6 +15,7 @@
  */
 
 import { NextRequest } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
 import { authRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
@@ -214,14 +215,16 @@ export async function POST(request: NextRequest) {
         },
         ai_confidence: aiConfidence,
         ai_summary: aiAnalysis.substring(0, 500),
-        ai_recommendations: aiRecommendations,
+        ai_recommendations: aiRecommendations
+          ? (aiRecommendations as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         status: 'submitted',
         submitted_at: new Date(),
       },
     });
 
     // ---- Create a Case for this intake ----
-    let caseData = null;
+    let caseData: { id: string; case_ref: string; title: string; status: string } | null = null;
     try {
       if (clientId) {
         const caseRef = await generateCaseRef();
@@ -258,7 +261,9 @@ export async function POST(request: NextRequest) {
               provider: aiProvider,
               model: aiModel,
             },
-            recommendations: aiRecommendations,
+            recommendations: aiRecommendations
+              ? (aiRecommendations as Prisma.InputJsonValue)
+              : Prisma.JsonNull,
             confidence_score: aiConfidence,
             ai_model_used: aiModel,
             completed_at: new Date(),

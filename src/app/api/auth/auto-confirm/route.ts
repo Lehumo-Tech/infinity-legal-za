@@ -1,8 +1,8 @@
 /**
  * POST /api/auth/auto-confirm - Auto-confirm a user's email
  *
- * Works with both Supabase and local auth.
- * When using local auth, just marks email_verified = true.
+ * Uses local Prisma/SQLite auth.
+ * Marks email_verified = true on the user record.
  *
  * SECURITY:
  * - Rate limited to prevent abuse (reuses signup rate limiter — 3/hour per IP)
@@ -14,11 +14,10 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError, checkRateLimit, validateBodySize } from '@/lib/middleware';
 import { signupRateLimiter } from '@/lib/security';
 import { createAuditLog } from '@/lib/audit';
-import { confirmLocalEmail, isSupabaseReachable, findLocalUser } from '@/lib/local-auth';
+import { confirmLocalEmail } from '@/lib/local-auth';
 import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
@@ -48,65 +47,6 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid user ID format', 400, 'INVALID_USER_ID');
     }
 
-    // ============================================
-    // Strategy 1: Try Supabase first
-    // ============================================
-    const supabaseAdmin = getAdminClient();
-    const supabaseReachable = supabaseAdmin && await isSupabaseReachable();
-
-    if (supabaseReachable && supabaseAdmin) {
-      try {
-        // Find the user by ID or email
-        let userId = user_id;
-        if (!userId && email) {
-          const { data: profile } = await supabaseAdmin
-            .from('profiles')
-            .select('id')
-            .eq('email', email.toLowerCase().trim())
-            .single();
-
-          if (!profile) {
-            // Don't reveal whether the email exists
-            return apiResponse({ confirmed: true, message: 'Email confirmation processed' });
-          }
-          userId = profile.id;
-        }
-
-        // Confirm the user's email using admin API
-        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId!, {
-          email_confirm: true,
-        });
-
-        if (updateError) {
-          console.error('Auto-confirm error:', updateError.message);
-          return apiResponse({ confirmed: true, message: 'Email confirmation processed' });
-        }
-
-        // Update the profile's email_verified flag
-        await supabaseAdmin
-          .from('profiles')
-          .update({ email_verified: true })
-          .eq('id', userId!);
-
-        // Audit log
-        await createAuditLog({
-          user_id: userId!,
-          action: 'EMAIL_AUTO_CONFIRMED',
-          resource_type: 'user',
-          resource_id: userId!,
-          ip_address: request.headers.get('x-forwarded-for') || undefined,
-          user_agent: request.headers.get('user-agent') || undefined,
-        });
-
-        return apiResponse({ confirmed: true, message: 'Email confirmed successfully' });
-      } catch (supabaseError) {
-        console.warn('[Auto-confirm] Supabase failed, falling back to local:', supabaseError);
-      }
-    }
-
-    // ============================================
-    // Strategy 2: Local Auth Fallback (Prisma/SQLite)
-    // ============================================
     // Security: Only confirm local users created within the last 30 minutes
     // to prevent abuse of this endpoint for confirming old accounts
     const THIRTY_MINUTES = 30 * 60 * 1000;
@@ -134,10 +74,10 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     await createAuditLog({
-      user_id: user_id || undefined,
+      user_id: localUser.id,
       action: 'EMAIL_AUTO_CONFIRMED_LOCAL',
       resource_type: 'user',
-      resource_id: user_id || undefined,
+      resource_id: localUser.id,
       ip_address: request.headers.get('x-forwarded-for') || undefined,
       user_agent: request.headers.get('user-agent') || undefined,
     });

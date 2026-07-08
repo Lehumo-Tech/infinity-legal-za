@@ -6,9 +6,9 @@ import { requireAuth } from '@/lib/middleware';
 export async function GET(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
-    if (!auth) return NextResponse.json({ success: false, error: { message: 'Unauthorized' } }, { status: 401 });
+    if (!auth.authenticated) return NextResponse.json({ success: false, error: { message: 'Unauthorized' } }, { status: 401 });
 
-    const userId = auth.userId;
+    const userId = auth.user.userId;
     const { searchParams } = new URL(req.url);
     const perPage = Math.min(parseInt(searchParams.get('perPage') || '20'), 100);
     const page = Math.max(parseInt(searchParams.get('page') || '1'), 1);
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
-    if (!auth) return NextResponse.json({ success: false, error: { message: 'Unauthorized' } }, { status: 401 });
+    if (!auth.authenticated) return NextResponse.json({ success: false, error: { message: 'Unauthorized' } }, { status: 401 });
 
     const body = await req.json();
     const { recipient_id, subject, content, case_id, message_type } = body;
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     const message = await db.message.create({
       data: {
-        sender_id: auth.userId,
+        sender_id: auth.user.userId,
         recipient_id,
         subject: subject || null,
         content: content.trim(),
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
-    if (!auth) return NextResponse.json({ success: false, error: { message: 'Unauthorized' } }, { status: 401 });
+    if (!auth.authenticated) return NextResponse.json({ success: false, error: { message: 'Unauthorized' } }, { status: 401 });
 
     const body = await req.json();
     const { message_id } = body;
@@ -169,11 +169,11 @@ export async function PUT(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
-    if (!auth) return NextResponse.json({ success: false, error: { message: 'Unauthorized' } }, { status: 401 });
+    if (!auth.authenticated) return NextResponse.json({ success: false, error: { message: 'Unauthorized' } }, { status: 401 });
 
     const result = await db.message.updateMany({
       where: {
-        recipient_id: auth.userId,
+        recipient_id: auth.user.userId,
         is_read: false,
       },
       data: { is_read: true },

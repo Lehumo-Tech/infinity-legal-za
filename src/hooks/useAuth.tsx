@@ -15,6 +15,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { createBrowserSupabaseClient, isSupabaseConfigured } from '@/lib/supabase/browser';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
+import type { UserRole } from '@/components/types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -81,27 +82,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .select('*')
           .eq('id', userId)
-          .single(),
-        8000 // 8 second timeout
+          .single() as unknown as Promise<{ data: Profile | null; error: unknown }>,
+        3000 // 3 second timeout (reduced from 8s — local auth is the primary path)
       );
 
       if (error || !profile) {
-        console.error('Profile fetch error:', error);
+        // Profile not found is expected when using local auth — don't log as error
         return null;
       }
 
       // Also get email_verified from auth
       const { data: { user: authUser } } = await withTimeout(
         supabase.auth.getUser(),
-        5000 // 5 second timeout
+        2000 // 2 second timeout
       );
 
       return {
         ...profile,
         email_verified: authUser?.email_confirmed_at ? true : false,
       };
-    } catch (err) {
-      console.error('Profile fetch exception:', err);
+    } catch {
+      // Supabase unreachable — local auth (JWT cookie) is the primary auth path.
+      // This is expected in environments where Supabase is configured but not reachable.
       return null;
     }
   }, [getSupabase]);
@@ -113,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     full_name: authUser.user_metadata?.full_name || null,
     phone: authUser.user_metadata?.phone || null,
     avatar_url: null,
-    role: (authUser.user_metadata?.role || 'client') as string,
+    role: (authUser.user_metadata?.role || 'client') as UserRole,
     id_number: null,
     company: null,
     address: null,

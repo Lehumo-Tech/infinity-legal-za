@@ -1,10 +1,11 @@
 /**
  * POST /api/admin/seed-articles - Seed legal articles (admin only)
- * Inserts articles directly using the admin client (bypasses RLS)
+ * Uses Prisma upsert to insert/update each article by slug.
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { Prisma } from '@prisma/client';
+import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 
 const ARTICLES = [
@@ -351,47 +352,44 @@ export async function POST(request: NextRequest) {
       return apiError('Only administrators can seed articles', 403, 'FORBIDDEN');
     }
 
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
-    // Check table exists
-    const { error: checkError } = await db
-      .from('legal_articles')
-      .select('id')
-      .limit(1);
-
-    if (checkError) {
-      return apiError('legal_articles table does not exist. Run the SQL migration first in Supabase SQL Editor.', 503, 'TABLE_MISSING');
-    }
-
     // Upsert articles
-    const results = [];
+    const results: Array<{ slug: string; status: string; id?: string; error?: string }> = [];
     for (const article of ARTICLES) {
-      const { data, error } = await db
-        .from('legal_articles')
-        .upsert({
-          slug: article.slug,
-          title: article.title,
-          subtitle: article.subtitle,
-          content: article.content,
-          summary: article.summary,
-          category: article.category,
-          tags: article.tags,
-          reading_time_min: article.reading_time_min,
-          is_published: article.is_published,
-          is_featured: article.is_featured,
-          published_at: article.is_published ? new Date().toISOString() : null,
-          sort_order: article.sort_order,
-        }, { onConflict: 'slug' })
-        .select()
-        .single();
+      try {
+        const created = await db.legalArticle.upsert({
+          where: { slug: article.slug },
+          update: {
+            title: article.title,
+            subtitle: article.subtitle,
+            content: article.content,
+            summary: article.summary,
+            category: article.category,
+            tags: article.tags as Prisma.InputJsonValue,
+            reading_time_min: article.reading_time_min,
+            is_published: article.is_published,
+            is_featured: article.is_featured,
+            published_at: article.is_published ? new Date() : null,
+            sort_order: article.sort_order,
+          },
+          create: {
+            slug: article.slug,
+            title: article.title,
+            subtitle: article.subtitle,
+            content: article.content,
+            summary: article.summary,
+            category: article.category,
+            tags: article.tags as Prisma.InputJsonValue,
+            reading_time_min: article.reading_time_min,
+            is_published: article.is_published,
+            is_featured: article.is_featured,
+            published_at: article.is_published ? new Date() : null,
+            sort_order: article.sort_order,
+          },
+        });
 
-      if (error) {
-        results.push({ slug: article.slug, status: 'error', error: error.message });
-      } else {
-        results.push({ slug: article.slug, status: 'upserted', id: data.id });
+        results.push({ slug: article.slug, status: 'upserted', id: created.id });
+      } catch (err: any) {
+        results.push({ slug: article.slug, status: 'error', error: err?.message || 'Unknown error' });
       }
     }
 

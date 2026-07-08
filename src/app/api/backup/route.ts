@@ -4,22 +4,18 @@
  *
  * Note: On Vercel/serverless, direct filesystem backup is not possible.
  * Managed database backups are handled by the database provider (e.g. Neon, Supabase).
- * This endpoint tracks backup records for audit purposes.
+ * This endpoint tracks backup records as AuditLog entries (action=CREATE_BACKUP / action=LIST_BACKUPS)
+ * since the Prisma schema doesn't have a dedicated backup_records table.
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { apiResponse, apiError, requireAuth, createPaginationResult, getPaginationParams } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -27,41 +23,29 @@ export async function POST(request: NextRequest) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    const body = await request.json();
-    const backupType = body.type || 'manual';
+    const body = await request.json().catch(() => ({}));
+    const backupType = body?.type || 'manual';
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `infinity-legal-backup-${timestamp}`;
+    const backupId = `${filename}-${Math.random().toString(36).slice(2, 8)}`;
 
-    // Create backup record — actual backup is managed by the database provider
-    const { data: record, error: insertError } = await db
-      .from('backup_records')
-      .insert({
-        filename,
-        backup_type: backupType,
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('Backup record insert error:', insertError);
-      return apiError('Backup failed', 500, 'BACKUP_ERROR');
-    }
-
+    // Audit log the backup request
     await createAuditLog({
       user_id: auth.user.userId,
       action: 'CREATE_BACKUP',
       resource_type: 'backup',
-      resource_id: record.id,
+      resource_id: backupId,
+      details: { filename, backup_type: backupType, status: 'completed' },
+      ip_address: request.headers.get('x-forwarded-for') || undefined,
+      user_agent: request.headers.get('user-agent') || undefined,
     });
 
     return apiResponse({
-      id: record.id,
+      id: backupId,
       filename,
       backup_type: backupType,
       status: 'completed',
-      message: 'Backup record created. Managed database backups are handled by your database provider (Neon/Supabase).',
+      message: 'Backup record created. Managed database backups are handled by your database provider.',
       created_at: new Date().toISOString(),
     }, 201);
   } catch (error) {
@@ -72,11 +56,6 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -84,22 +63,22 @@ export async function GET(request: NextRequest) {
       return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
-    const { page, perPage, from, to } = getPaginationParams(request);
+    const { page, perPage } = getPaginationParams(request);
 
-    const { data: backups, count: total, error: queryError } = await db
-      .from('backup_records')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, to);
-
-    if (queryError) {
-      console.error('Backup list error:', queryError);
-      return apiError('Failed to list backups', 500, 'BACKUP_LIST_ERROR');
-    }
+    // Fetch audit logs of type CREATE_BACKUP as the "backup records" list
+    const [backups, total] = await Promise.all([
+      db.auditLog.findMany({
+        where: { action: 'CREATE_BACKUP' },
+        orderBy: { created_at: 'desc' },
+        skip: (page - 1) * perPage,
+        take: perPage,
+      }),
+      db.auditLog.count({ where: { action: 'CREATE_BACKUP' } }),
+    ]);
 
     return apiResponse({
-      data: backups || [],
-      pagination: createPaginationResult(total || 0, page, perPage),
+      data: backups,
+      pagination: createPaginationResult(total, page, perPage),
     });
   } catch (error) {
     console.error('Backup list error:', error);

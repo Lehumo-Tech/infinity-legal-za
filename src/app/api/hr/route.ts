@@ -1,28 +1,22 @@
 /**
  * GET /api/hr - HR Portal aggregated data
  * Access: admin, managing_director, systems_admin
- * profiles.role CHECK: ('client','attorney','paralegal','admin','managing_director','systems_admin')
- * profiles has NO: is_active, department, hire_date, supervisor_id
+ *
+ * Uses Prisma to aggregate staff counts by role and attorney info.
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { type RoleKey } from '@/lib/auth';
 
-// Only roles in the actual profiles CHECK constraint
 const ALLOWED_ROLES: RoleKey[] = ['admin', 'managing_director', 'systems_admin'];
 
-// Non-client roles from profiles CHECK constraint
+// Non-client roles from the schema's role field
 const STAFF_ROLES = ['attorney', 'paralegal', 'admin', 'managing_director', 'systems_admin'];
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -32,25 +26,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Run all queries in parallel
-    // profiles has no department, is_active, hire_date columns
-    const [
-      totalEmployeesResult,
-      employeesData,
-    ] = await Promise.all([
-      // Total employees (non-client)
-      db.from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .in('role', STAFF_ROLES),
-      // All employees for grouping (role only, no department)
-      db.from('profiles')
-        .select('role')
-        .in('role', STAFF_ROLES),
+    const [totalEmployees, employees] = await Promise.all([
+      db.user.count({ where: { role: { in: STAFF_ROLES } } }),
+      db.user.findMany({
+        where: { role: { in: STAFF_ROLES } },
+        select: { role: true, is_active: true },
+      }),
     ]);
 
-    const totalEmployees = totalEmployeesResult.count || 0;
-    const employees = employeesData.data || [];
-
-    // Group by role in JS (no department column to group by)
+    // Group by role in JS
     const roleMap: Record<string, number> = {};
     for (const item of employees) {
       const r = item.role;
@@ -61,26 +45,34 @@ export async function GET(request: NextRequest) {
       count,
     }));
 
-    // Also fetch attorney details for enrichment
-    const { data: attorneysData } = await db
-      .from('attorneys')
-      .select('id, practice_number, specialization, available, profile:profiles(id, full_name, email, role)');
+    // Fetch attorney details for enrichment
+    const attorneys = await db.user.findMany({
+      where: { role: 'attorney' },
+      select: {
+        id: true,
+        full_name: true,
+        email: true,
+        practice_number: true,
+        specialization: true,
+        is_active: true,
+      },
+    });
 
-    const activeAttorneys = (attorneysData || []).filter((a: any) => a.available).length;
-    const totalAttorneys = (attorneysData || []).length;
+    const activeAttorneys = attorneys.filter(a => a.is_active).length;
+    const totalAttorneys = attorneys.length;
 
     // Leave balances — empty until leave management system is built
-    const leaveBalances: any[] = [];
+    const leaveBalances: unknown[] = [];
 
     // Open positions — empty until recruitment system is built
-    const openPositions: any[] = [];
+    const openPositions: unknown[] = [];
 
     // Upcoming reviews — empty until performance review system is built
-    const upcomingReviews: any[] = [];
+    const upcomingReviews: unknown[] = [];
 
     return apiResponse({
       total_employees: totalEmployees,
-      active_employees: totalEmployees, // No is_active column, all are considered active
+      active_employees: employees.filter(e => e.is_active).length,
       employees_by_role: employeesByRoleFormatted,
       attorneys: {
         total: totalAttorneys,

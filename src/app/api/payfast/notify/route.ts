@@ -8,26 +8,19 @@
  * IMPORTANT: This endpoint does NOT require authentication as PayFast
  * calls it server-to-server without a JWT token.
  *
- * payment_records schema: id, subscription_id, case_id, user_id, amount, currency,
- *   status (pending/completed/failed/refunded/partially_refunded),
- *   payfast_payment_id, payfast_token, payment_method, description, metadata (JSONB),
- *   paid_at, created_at
- * No columns: m_payment_id, payment_status, amount_gross, amount_fee, amount_net, pf_payment_id, payfast_data
+ * Prisma PaymentRecord schema: id, subscription_id, case_id, client_id, amount,
+ *   currency, status, payfast_payment_id, payfast_token, payfast_merchant_id,
+ *   payfast_signature, payment_method, description, metadata (JSON), paid_at, created_at
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { Prisma } from '@prisma/client';
+import { db } from '@/lib/db';
 import { verifyITN, isValidPayFastIP, type PayFastITNData } from '@/lib/payfast';
-import { apiError } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     // Parse the form-encoded body from PayFast
     const formData = await request.formData();
     const itnData: Record<string, string> = {};
@@ -65,56 +58,58 @@ export async function POST(request: NextRequest) {
       return new NextResponse('INVALID', { status: 400 });
     }
 
-    // Find the payment record — use payfast_payment_id (which we stored mPaymentId into)
-    const { data: paymentRecord, error: findError } = await db
-      .from('payment_records')
-      .select('*')
-      .eq('payfast_payment_id', mPaymentId)
-      .single();
+    // Find the payment record by payfast_payment_id (which we stored mPaymentId into)
+    const paymentRecord = await db.paymentRecord.findFirst({
+      where: { payfast_payment_id: mPaymentId },
+    });
 
-    if (findError || !paymentRecord) {
+    if (!paymentRecord) {
       console.error('PayFast ITN: Payment record not found for payfast_payment_id:', mPaymentId);
       return new NextResponse('NOT_FOUND', { status: 404 });
     }
 
+    // Build merged metadata
+    const existingMetadata = (paymentRecord.metadata && typeof paymentRecord.metadata === 'object')
+      ? (paymentRecord.metadata as Record<string, unknown>)
+      : {};
+    const newMetadata = {
+      ...existingMetadata,
+      pf_payment_id: pfPaymentId || null,
+      amount_gross: amountGross || null,
+      itn_data: itnData,
+    } as Prisma.InputJsonValue;
+
     // Update the payment record based on payment status
     if (paymentStatus === 'COMPLETE') {
-      // Payment successful — use schema columns: status, paid_at, metadata
-      const { error: updateError } = await db
-        .from('payment_records')
-        .update({
+      await db.paymentRecord.update({
+        where: { id: paymentRecord.id },
+        data: {
           status: 'completed',
-          paid_at: new Date().toISOString(),
-          metadata: {
-            ...(typeof paymentRecord.metadata === 'object' && paymentRecord.metadata ? paymentRecord.metadata : {}),
-            pf_payment_id: pfPaymentId || null,
-            amount_gross: amountGross || null,
-            itn_data: itnData,
-          },
-        })
-        .eq('id', paymentRecord.id);
-
-      if (updateError) {
-        console.error('PayFast ITN: Failed to update payment record:', updateError);
-      }
+          paid_at: new Date(),
+          metadata: newMetadata,
+        },
+      });
 
       // Activate the subscription if linked
       if (paymentRecord.subscription_id) {
-        const { error: subUpdateError } = await db
-          .from('user_subscriptions')
-          .update({
-            status: 'active',
-          })
-          .eq('id', paymentRecord.subscription_id);
+        await db.userSubscription.update({
+          where: { id: paymentRecord.subscription_id },
+          data: { status: 'active' },
+        }).catch(err => console.error('PayFast ITN: Failed to activate subscription:', err));
+      }
 
-        if (subUpdateError) {
-          console.error('PayFast ITN: Failed to activate subscription:', subUpdateError);
-        }
+      // Also update the client's subscription_status to 'active'
+      try {
+        await db.client.update({
+          where: { id: paymentRecord.client_id },
+          data: { subscription_status: 'active' },
+        });
+      } catch (clientErr) {
+        console.error('PayFast ITN: Failed to update client subscription status:', clientErr);
       }
 
       // Create audit log
       await createAuditLog({
-        user_id: paymentRecord.user_id,
         action: 'payment_complete',
         resource_type: 'payment',
         resource_id: paymentRecord.id,
@@ -123,40 +118,23 @@ export async function POST(request: NextRequest) {
 
       console.log(`PayFast ITN: Payment ${mPaymentId} completed successfully`);
     } else if (paymentStatus === 'FAILED') {
-      // Payment failed
-      const { error: updateError } = await db
-        .from('payment_records')
-        .update({
+      await db.paymentRecord.update({
+        where: { id: paymentRecord.id },
+        data: {
           status: 'failed',
-          metadata: {
-            ...(typeof paymentRecord.metadata === 'object' && paymentRecord.metadata ? paymentRecord.metadata : {}),
-            pf_payment_id: pfPaymentId || null,
-            itn_data: itnData,
-          },
-        })
-        .eq('id', paymentRecord.id);
-
-      if (updateError) {
-        console.error('PayFast ITN: Failed to update payment record:', updateError);
-      }
+          metadata: newMetadata,
+        },
+      });
 
       // Mark subscription as expired if linked
       if (paymentRecord.subscription_id) {
-        const { error: subUpdateError } = await db
-          .from('user_subscriptions')
-          .update({
-            status: 'expired',
-          })
-          .eq('id', paymentRecord.subscription_id);
-
-        if (subUpdateError) {
-          console.error('PayFast ITN: Failed to expire subscription:', subUpdateError);
-        }
+        await db.userSubscription.update({
+          where: { id: paymentRecord.subscription_id },
+          data: { status: 'expired' },
+        }).catch(err => console.error('PayFast ITN: Failed to expire subscription:', err));
       }
 
-      // Create audit log
       await createAuditLog({
-        user_id: paymentRecord.user_id,
         action: 'payment_failed',
         resource_type: 'payment',
         resource_id: paymentRecord.id,
@@ -166,20 +144,10 @@ export async function POST(request: NextRequest) {
       console.log(`PayFast ITN: Payment ${mPaymentId} failed`);
     } else if (paymentStatus === 'PENDING') {
       // Payment pending - just update the metadata
-      const { error: updateError } = await db
-        .from('payment_records')
-        .update({
-          metadata: {
-            ...(typeof paymentRecord.metadata === 'object' && paymentRecord.metadata ? paymentRecord.metadata : {}),
-            pf_payment_id: pfPaymentId || null,
-            itn_data: itnData,
-          },
-        })
-        .eq('id', paymentRecord.id);
-
-      if (updateError) {
-        console.error('PayFast ITN: Failed to update payment record:', updateError);
-      }
+      await db.paymentRecord.update({
+        where: { id: paymentRecord.id },
+        data: { metadata: newMetadata },
+      });
 
       console.log(`PayFast ITN: Payment ${mPaymentId} pending`);
     }
@@ -189,7 +157,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('PayFast ITN processing error:', error);
     // Still return 200 to prevent PayFast from retrying unnecessarily
-    // But log the error for investigation
     return new NextResponse('OK', { status: 200 });
   }
 }

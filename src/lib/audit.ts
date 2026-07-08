@@ -7,6 +7,7 @@
  * so trackApiEvent and logError are no-ops.
  */
 
+import { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
 
 // ============================================
@@ -29,7 +30,7 @@ export async function createAuditLog(params: {
         action: params.action,
         resource_type: params.resource_type,
         resource_id: params.resource_id || null,
-        details: params.details || null,
+        details: params.details ? (params.details as Prisma.InputJsonValue) : Prisma.JsonNull,
         ip_address: params.ip_address || null,
         user_agent: params.user_agent || null,
       },

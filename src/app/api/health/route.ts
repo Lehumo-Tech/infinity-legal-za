@@ -1,30 +1,19 @@
 /**
- * GET /api/health - Health check endpoint via Supabase
+ * GET /api/health - Health check endpoint
+ * Verifies the SQLite/Prisma database connection is healthy.
  */
 
-import { getAdminClient } from '@/lib/supabase/api-client';
 import { apiResponse, apiError } from '@/lib/middleware';
+import { db } from '@/lib/db';
 
 export async function GET() {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
-    // Test database connection by querying profiles count
-    const { error } = await db
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
-
-    if (error) {
-      console.error('Health check DB error:', error);
-      return apiError('Database connection unhealthy', 503, 'DB_UNHEALTHY');
-    }
+    // Test database connection by counting users
+    await db.user.count();
 
     return apiResponse({
       status: 'healthy',
-      database: 'supabase',
+      database: 'sqlite',
       timestamp: new Date().toISOString(),
       services: {
         database: 'connected',
@@ -32,6 +21,7 @@ export async function GET() {
       },
     });
   } catch (error: unknown) {
+    console.error('Health check DB error:', error);
     return apiError('Database connection unhealthy', 503, 'DB_UNHEALTHY');
   }
 }

@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useHeroEntrance, useScrollReveal, useMagneticButton, gsap, ScrollTrigger } from '@/lib/gsap';
 
 
 interface LandingPageProps {
@@ -45,6 +46,13 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [pricingPlans, setPricingPlans] = useState<any[]>([]);
+
+  // GSAP — hero entrance + scroll reveals + magnetic CTA
+  const heroRef = useHeroEntrance();
+  const aiIntakeRef = useScrollReveal('[data-reveal]', { stagger: 0.1 });
+  const askAiRef = useScrollReveal('[data-reveal]', { stagger: 0.1 });
+  const pricingRef = useScrollReveal('[data-reveal]', { stagger: 0.12 });
+  const ctaRef = useMagneticButton(0.25);
 
   // Fetch pricing plans from API
   useEffect(() => {
@@ -169,7 +177,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
       </nav>
 
       {/* ===== HERO ===== */}
-      <section className="relative bg-[#0a1628] overflow-hidden">
+      <section ref={heroRef} className="relative bg-[#0a1628] overflow-hidden">
         {/* Atmospheric background layers */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628] via-[#0c1e3c] to-[#071020]" />
@@ -190,11 +198,11 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
           <div className="grid lg:grid-cols-5 gap-6 lg:gap-8 items-center">
             {/* Left: Copy — 3/5 */}
             <div className="lg:col-span-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-[#c9a84c]/[0.08] border border-[#c9a84c]/20 rounded-full mb-8">
+              <div data-hero="kicker" className="inline-flex items-center gap-2.5 px-4 py-2 bg-[#c9a84c]/[0.08] border border-[#c9a84c]/20 rounded-full mb-8">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse" />
                 <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">AI-Powered Legal Platform</span>
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem] font-bold text-white leading-[1.1] tracking-tight">
+              <h1 data-hero="title" className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem] font-bold text-white leading-[1.1] tracking-tight">
                 Your Rights,{' '}
                 <span className="relative inline-block">
                   <span className="relative z-10 text-[#c9a84c]">Reinforced</span>
@@ -202,18 +210,18 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                 </span>
                 <span className="text-[#c9a84c]">.</span>
               </h1>
-              <p className="mt-7 text-base sm:text-lg text-[#7a8fb0] max-w-xl leading-relaxed">
+              <p data-hero="subtitle" className="mt-7 text-base sm:text-lg text-[#7a8fb0] max-w-xl leading-relaxed">
                 South Africa&apos;s first AI-powered legal practice management platform. Free AI intake that captures your matter before you even sign up. Plans from{' '}
                 <span className="text-white font-medium">R99/month</span>.
               </p>
-              <div className="mt-10 flex flex-col sm:flex-row gap-3">
+              <div data-hero="cta" className="mt-10 flex flex-col sm:flex-row gap-3">
                 {isAuthenticated ? (
                   <Button onClick={onBackToDashboard} size="lg" className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-12 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 gap-2">
                     <LayoutDashboard className="w-4 h-4" />
                     Back to Dashboard
                   </Button>
                 ) : (
-                  <Button onClick={() => handleSignUpWithEmail()} size="lg" className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-12 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 group">
+                  <Button ref={ctaRef as any} onClick={() => handleSignUpWithEmail()} size="lg" className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-xl px-7 h-12 text-sm font-semibold shadow-lg shadow-[#c9a84c]/20 group">
                     Free AI Intake <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
                   </Button>
                 )}
@@ -224,7 +232,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                   Explore Practice Areas
                 </Button>
               </div>
-              <div className="mt-12 flex flex-wrap gap-x-8 gap-y-3">
+              <div data-hero="stat" className="mt-12 flex flex-wrap gap-x-8 gap-y-3">
                 {trustIndicators.map((item) => (
                   <span key={item.label} className="flex items-center gap-2 text-[11px] text-[#7a8fb0] font-medium">
                     <item.icon className="w-3.5 h-3.5 text-[#c9a84c]/50" />{item.label}
@@ -259,10 +267,10 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
       </section>
 
       {/* ===== FREE AI INTAKE ===== */}
-      <section id="ai-intake" aria-labelledby="ai-intake-heading" className="py-20 sm:py-28 bg-white relative">
+      <section ref={aiIntakeRef} id="ai-intake" aria-labelledby="ai-intake-heading" className="py-20 sm:py-28 bg-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section header — left-aligned, not centered */}
-          <div className="max-w-xl mb-14">
+          <div data-reveal className="max-w-xl mb-14">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200/60 rounded-full mb-5">
               <Sparkles className="w-3 h-3 text-emerald-600" />
               <span className="text-emerald-700 text-[11px] font-semibold uppercase tracking-wider">100% Free — No Sign-Up Required</span>
@@ -344,11 +352,11 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
       </section>
 
       {/* ===== ASK AI ===== */}
-      <section id="ask-ai" aria-labelledby="ask-ai-heading" className="py-20 sm:py-28 bg-[#f7f8fa] relative overflow-hidden">
+      <section ref={askAiRef} id="ask-ai" aria-labelledby="ask-ai-heading" className="py-20 sm:py-28 bg-[#f7f8fa] relative overflow-hidden">
         {/* Subtle decorative element */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#c9a84c]/[0.03] rounded-full blur-[80px]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-xl mb-12">
+          <div data-reveal className="max-w-xl mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#0c1e3c]/[0.04] border border-[#0c1e3c]/10 rounded-full mb-5">
               <Bot className="w-3 h-3 text-[#a88832]" />
               <span className="text-[#a88832] text-[11px] font-semibold uppercase tracking-wider">AI Legal Assistant</span>
@@ -605,9 +613,9 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
       </section>
 
       {/* ===== PRICING ===== */}
-      <section id="pricing" aria-labelledby="pricing-heading" className="py-20 sm:py-28 bg-[#f7f8fa]">
+      <section ref={pricingRef} id="pricing" aria-labelledby="pricing-heading" className="py-20 sm:py-28 bg-[#f7f8fa]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div data-reveal className="text-center mb-16">
             <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Pricing</span>
             <h2 id="pricing-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight mt-3">
               Simple, transparent pricing.
@@ -619,7 +627,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
               const isPopular = plan.is_popular || plan.slug === 'labour_legal_plan';
               const features = Array.isArray(plan.features) ? plan.features : [];
               return (
-                <div key={plan.slug || plan.name} className={`relative flex flex-col rounded-2xl transition-all duration-300 ${isPopular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
+                <div key={plan.slug || plan.name} data-reveal className={`relative flex flex-col rounded-2xl transition-all duration-300 ${isPopular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">

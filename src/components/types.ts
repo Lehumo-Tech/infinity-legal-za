@@ -29,6 +29,7 @@ export interface Stats {
   totalClients: number;
   totalLegalAdvisors: number;
   totalRevenue: number;
+  revenueTrend?: string | number;
 }
 
 export interface Consultation {
@@ -41,8 +42,8 @@ export interface Consultation {
   status: string;
   notes?: string | null;
   meeting_type: string;
-  client?: { full_name: string | null; email: string };
-  attorney?: { full_name: string | null; email: string };
+  client?: { full_name: string | null; email: string; profile?: { full_name: string | null; email: string } };
+  attorney?: { full_name: string | null; email: string; profile?: { full_name: string | null; email: string } };
   case?: { title: string; case_ref: string } | null;
   created_at: string;
 }

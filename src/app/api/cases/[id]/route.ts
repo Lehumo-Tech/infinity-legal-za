@@ -1,16 +1,17 @@
 /**
- * GET/PUT/DELETE /api/cases/[id] - Get/Update/Delete a single case via Supabase
+ * GET/PUT/DELETE /api/cases/[id] - Get/Update/Delete a single case via Prisma
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { Prisma } from '@prisma/client';
+import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Valid enum values per Supabase schema
-const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'intellectual_property', 'tax', 'personal_injury', 'debt_recovery', 'other'];
+// Valid enum values per Prisma schema
+const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'tax', 'personal_injury', 'debt_recovery', 'other'];
 const VALID_STATUSES = ['intake', 'review', 'active', 'on_hold', 'closed', 'archived'];
 
 // GET - Get single case by ID
@@ -19,11 +20,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -33,53 +29,63 @@ export async function GET(
 
     const { id } = await params;
 
-    // Fetch case with related data — attorney_id FK → attorneys(id) → profiles(id)
-    const { data: caseRecord, error: caseError } = await db
-      .from('cases')
-      .select('*, client:profiles!cases_client_id_fkey(id, full_name, email, phone), attorney:attorneys!cases_attorney_id_fkey(id, profile:profiles(full_name, email, role))')
-      .eq('id', id)
-      .single();
+    // Fetch case with related data — attorney_id FK → User(id)
+    const caseRecord = await db.case.findUnique({
+      where: { id },
+      include: {
+        client: {
+          include: {
+            user: {
+              select: { id: true, full_name: true, email: true, phone: true },
+            },
+          },
+        },
+        attorney: {
+          select: { id: true, full_name: true, email: true, role: true },
+        },
+      },
+    });
 
-    if (caseError || !caseRecord) {
+    if (!caseRecord) {
       return apiError('Case not found', 404, 'CASE_NOT_FOUND');
     }
 
-    // Non-admin users can only see cases they're assigned to
+    // Non-admin users can only see cases they're assigned to (via client → user_id)
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      const isAssigned = caseRecord.client_id === auth.user.userId;
+      const isAssigned = caseRecord.client.user_id === auth.user.userId ||
+                         caseRecord.attorney_id === auth.user.userId;
       if (!isAssigned) {
         return apiError('Case not found', 404, 'CASE_NOT_FOUND');
       }
     }
 
-    // Fetch related documents — documents uses `status` not `workflow_status`, `file_name` not `title`
-    const { data: documents } = await db
-      .from('documents')
-      .select('id, file_name, document_type, status, version, created_at')
-      .eq('case_id', id)
-      .order('created_at', { ascending: false });
+    // Fetch related documents
+    const documents = await db.document.findMany({
+      where: { case_id: id },
+      select: { id: true, file_name: true, document_type: true, status: true, version: true, created_at: true },
+      orderBy: { created_at: 'desc' },
+    });
 
     // Fetch related tasks
-    const { data: tasks } = await db
-      .from('tasks')
-      .select('id, title, status, priority, due_date')
-      .eq('case_id', id)
-      .order('created_at', { ascending: false });
+    const tasks = await db.task.findMany({
+      where: { case_id: id },
+      select: { id: true, title: true, status: true, priority: true, due_date: true },
+      orderBy: { created_at: 'desc' },
+    });
 
-    // Fetch timeline — schema uses event_type, event_description, performed_by
-    const { data: timeline } = await db
-      .from('case_timeline')
-      .select('*')
-      .eq('case_id', id)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    // Fetch timeline (last 20)
+    const timeline = await db.caseTimeline.findMany({
+      where: { case_id: id },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+    });
 
     const result = {
       ...caseRecord,
-      lead_attorney: caseRecord.attorney?.profile || null,
-      documents: documents || [],
-      tasks: tasks || [],
-      timeline: timeline || [],
+      lead_attorney: caseRecord.attorney || null,
+      documents,
+      tasks,
+      timeline,
     };
 
     return apiResponse(result);
@@ -95,11 +101,6 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -110,13 +111,12 @@ export async function PUT(
     const { id } = await params;
 
     // Verify case exists
-    const { data: existingCase, error: fetchError } = await db
-      .from('cases')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const existingCase = await db.case.findUnique({
+      where: { id },
+      select: { id: true, status: true, title: true, attorney_id: true },
+    });
 
-    if (fetchError || !existingCase) {
+    if (!existingCase) {
       return apiError('Case not found', 404, 'CASE_NOT_FOUND');
     }
 
@@ -146,54 +146,58 @@ export async function PUT(
       return apiError(`Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`, 400, 'INVALID_STATUS');
     }
 
-    // Validate attorney_id references attorneys table if provided
+    // Validate attorney_id references a User if provided
     if (attorney_id) {
-      const { data: attorneyExists } = await db
-        .from('attorneys')
-        .select('id')
-        .eq('id', attorney_id)
-        .single();
+      const attorneyExists = await db.user.findUnique({
+        where: { id: attorney_id },
+        select: { id: true },
+      });
       if (!attorneyExists) {
         return apiError('Attorney not found', 404, 'ATTORNEY_NOT_FOUND');
       }
     }
 
     // Build update data
-    const updateData: Record<string, unknown> = {};
+    const updateData: Prisma.CaseUpdateInput = {};
     if (title !== undefined) updateData.title = sanitizeString(title);
     if (description !== undefined) updateData.description = description ? sanitizeString(description) : null;
     if (case_type !== undefined) updateData.case_type = case_type;
     if (status !== undefined) updateData.status = status;
-    if (attorney_id !== undefined) updateData.attorney_id = attorney_id || null;
+    if (attorney_id !== undefined) {
+      updateData.attorney = attorney_id
+        ? { connect: { id: attorney_id } }
+        : { disconnect: true };
+    }
     if (opposing_party !== undefined) updateData.opposing_party = opposing_party ? sanitizeString(opposing_party) : null;
     if (court_name !== undefined) updateData.court_name = court_name ? sanitizeString(court_name) : null;
     if (case_number !== undefined) updateData.case_number = case_number ? sanitizeString(case_number) : null;
     if (jurisdiction !== undefined) updateData.jurisdiction = jurisdiction ? sanitizeString(jurisdiction) : null;
     if (estimated_value !== undefined) updateData.estimated_value = estimated_value || null;
     if (retainer_amount !== undefined) updateData.retainer_amount = retainer_amount || null;
-    if (contingency_fee !== undefined) updateData.contingency_fee = contingency_fee || null;
     if (notes !== undefined) updateData.notes = notes ? sanitizeString(notes) : null;
-    if (tags !== undefined) updateData.tags = tags;
-
-    const { data: updatedCase, error: updateError } = await db
-      .from('cases')
-      .update(updateData)
-      .eq('id', id)
-      .select('*, client:profiles!cases_client_id_fkey(id, full_name, email), attorney:attorneys!cases_attorney_id_fkey(profile:profiles(full_name, email))')
-      .single();
-
-    if (updateError || !updatedCase) {
-      console.error('Update case error:', updateError);
-      return apiError('Failed to update case', 500, 'UPDATE_CASE_ERROR');
+    if (tags !== undefined) {
+      updateData.tags = tags ? (tags as Prisma.InputJsonValue) : Prisma.JsonNull;
     }
+    // contingency_fee is not in the schema — ignore it
 
-    // Create timeline entry on status change — schema uses event_type, event_description, performed_by
+    const updatedCase = await db.case.update({
+      where: { id },
+      data: updateData,
+      include: {
+        client: { include: { user: { select: { id: true, full_name: true, email: true } } } },
+        attorney: { select: { id: true, full_name: true, email: true } },
+      },
+    });
+
+    // Create timeline entry on status change
     if (status && status !== existingCase.status) {
-      await db.from('case_timeline').insert({
-        case_id: id,
-        event_type: 'status_change',
-        event_description: `Case status changed from ${existingCase.status} to ${status}`,
-        performed_by: auth.user.userId,
+      await db.caseTimeline.create({
+        data: {
+          case_id: id,
+          event_type: 'status_change',
+          event_description: `Case status changed from ${existingCase.status} to ${status}`,
+          performed_by: auth.user.userId,
+        },
       });
     }
 
@@ -218,11 +222,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -233,35 +232,29 @@ export async function DELETE(
     const { id } = await params;
 
     // Verify case exists
-    const { data: existingCase, error: fetchError } = await db
-      .from('cases')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const existingCase = await db.case.findUnique({
+      where: { id },
+      select: { id: true, title: true },
+    });
 
-    if (fetchError || !existingCase) {
+    if (!existingCase) {
       return apiError('Case not found', 404, 'CASE_NOT_FOUND');
     }
 
     // Soft delete by setting status to 'archived'
-    const { data: archivedCase, error: archiveError } = await db
-      .from('cases')
-      .update({ status: 'archived' })
-      .eq('id', id)
-      .select()
-      .single();
+    const archivedCase = await db.case.update({
+      where: { id },
+      data: { status: 'archived' },
+    });
 
-    if (archiveError) {
-      console.error('Archive case error:', archiveError);
-      return apiError('Failed to archive case', 500, 'DELETE_CASE_ERROR');
-    }
-
-    // Create timeline entry — schema uses event_type, event_description, performed_by
-    await db.from('case_timeline').insert({
-      case_id: id,
-      event_type: 'CASE_ARCHIVED',
-      event_description: `Case archived by ${auth.user.email}`,
-      performed_by: auth.user.userId,
+    // Create timeline entry
+    await db.caseTimeline.create({
+      data: {
+        case_id: id,
+        event_type: 'CASE_ARCHIVED',
+        event_description: `Case archived by ${auth.user.email}`,
+        performed_by: auth.user.userId,
+      },
     });
 
     await createAuditLog({

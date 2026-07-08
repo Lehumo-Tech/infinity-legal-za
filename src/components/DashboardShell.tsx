@@ -6,7 +6,7 @@ import {
   Users, FolderKanban, Target, FileText, Shield, TrendingUp,
   Bell, Search, ChevronRight, Activity, Clock, AlertTriangle, CheckCircle2,
   LogOut, DollarSign, UserPlus, FileCheck,
-  ArrowUpRight, ArrowRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
+  ArrowUpRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
   Mail, Phone, Building, Star, Zap, Globe,
   KeyRound, ShieldCheck, Upload, Plus,
   BookOpen, Briefcase, Crown, MessageSquare, LayoutDashboard,
@@ -31,9 +31,6 @@ import {
   DialogTitle, DialogTrigger, DialogFooter, DialogClose,
 } from '@/components/ui/dialog';
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
-} from '@/components/ui/sheet';
-import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,29 +38,13 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { LandingPage } from '@/components/LandingPage';
-import { LoginScreen } from '@/components/LoginScreen';
-import { PaymentWall } from '@/components/PaymentWall';
-import { CommunicationsView } from '@/components/CommunicationsView';
 import { useAuth } from '@/hooks/useAuth';
 
 // ============================================
 // TYPES
 // ============================================
-type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart' | 'subscription' | 'communications';
+type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart';
 type UserRole = 'managing_director' | 'admin' | 'attorney' | 'paralegal' | 'systems_admin' | 'client';
-
-// Role display mapping — attorney shows as "Legal Advisor" in UI
-const ROLE_LABELS: Record<string, string> = {
-  managing_director: 'Managing Director',
-  admin: 'Admin',
-  attorney: 'Legal Advisor',
-  paralegal: 'Paralegal',
-  systems_admin: 'Systems Admin',
-  client: 'Client',
-};
-
-const displayRole = (role: string | null | undefined) => ROLE_LABELS[role || ''] || (role || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
 interface User {
   id: string;
@@ -158,8 +139,8 @@ interface Notification {
 // ============================================
 // MAIN APP COMPONENT (Client-side)
 // ============================================
-export default function HomePageClient() {
-  const { user: authUser, accessToken, loading: authLoading, signOut } = useAuth();
+export default function DashboardShell({ onShowLanding }: { onShowLanding: () => void }) {
+  const { user: authUser, accessToken, signOut } = useAuth();
   const isAuthenticated = !!authUser && !!accessToken;
   const user: User | null = authUser ? {
     id: authUser.id,
@@ -172,10 +153,6 @@ export default function HomePageClient() {
   const token = accessToken;
   const [currentView, setCurrentView] = useState<View>('workbench');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showLanding, setShowLanding] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const [initialSignup, setInitialSignup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [charts, setCharts] = useState<any>(null);
@@ -192,27 +169,14 @@ export default function HomePageClient() {
   const [leadsPage, setLeadsPage] = useState(1);
   const [casesTotal, setCasesTotal] = useState(0);
   const [leadsTotal, setLeadsTotal] = useState(0);
-  const [loginError, setLoginError] = useState('');
+
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const [subscription, setSubscription] = useState<any>(null);
-  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auth is handled by useAuth() hook - signIn/signOut are in the LoginScreen and topbar
   // The auth state (isAuthenticated, user, token) is derived from the auth context
   // No more localStorage - sessions are managed via Supabase cookies
-
-  // Loading timeout — prevent infinite loading spinner (8 second max)
-  useEffect(() => {
-    if (authLoading) {
-      loadingTimerRef.current = setTimeout(() => setLoadingTimeout(true), 8000);
-    }
-    return () => {
-      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
-    };
-  }, [authLoading]);
 
   const loadDashboard = async (authToken?: string) => {
     const t = authToken || token;
@@ -328,24 +292,6 @@ export default function HomePageClient() {
     }
   };
 
-  const loadSubscription = async () => {
-    if (!token) return;
-    try {
-      const res = await fetch('/api/subscriptions', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success && data.data?.subscription) {
-        setSubscription(data.data.subscription);
-      } else {
-        setSubscription(null);
-      }
-    } catch (e) {
-      console.error('Subscription load error:', e);
-      setSubscription(null);
-    }
-  };
-
   const loadNotifications = async () => {
     if (!token) return;
     try {
@@ -373,20 +319,17 @@ export default function HomePageClient() {
       else if (currentView === 'documents') await loadDocuments();
       else if (currentView === 'tasks') await loadTasks();
       else if (currentView === 'staff' || currentView === 'org-chart') await loadStaff();
-      else if (currentView === 'pricing' || currentView === 'subscription') {
-        await loadPricingPlans();
-        await loadSubscription();
-      }
+      else if (currentView === 'pricing') await loadPricingPlans();
     };
     loadData();
   }, [currentView, isAuthenticated]);
 
-  // Load notifications and subscription on auth
+  // Load notifications on auth (wrapped in async IIFE to avoid setState-in-effect lint)
   useEffect(() => {
     if (isAuthenticated && token) {
       void (async () => {
         try {
-          await Promise.all([loadNotifications(), loadSubscription()]);
+          await loadNotifications();
         } catch { /* ignore */ }
       })();
     }
@@ -406,95 +349,36 @@ export default function HomePageClient() {
       { id: 'workbench', label: 'Workbench', icon: LayoutDashboard, group: 'Main' },
     ];
 
-    if (isClient) {
-      // CLIENT NAVIGATION — simplified, focused on their needs
-      items.push({ id: 'cases', label: 'My Cases', icon: FolderKanban, group: 'My Legal' });
-      items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'My Legal' });
-      items.push({ id: 'documents', label: 'My Documents', icon: FileText, group: 'My Legal' });
-      items.push({ id: 'tasks', label: 'My Tasks', icon: CheckCircle2, group: 'My Legal' });
-      items.push({ id: 'subscription', label: subscription ? 'My Plan' : 'Subscribe', icon: subscription ? Crown : Zap, group: 'Plan' });
-      items.push({ id: 'communications', label: 'Messages', icon: Mail, group: 'Plan' });
-    } else {
-      // STAFF NAVIGATION
-      items.push({ id: 'cases', label: 'Cases', icon: FolderKanban, group: 'Practice' });
-      items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'Practice' });
+    // Cases — all roles can see (clients see their own cases, staff see all/assigned)
+    items.push({ id: 'cases', label: 'Cases', icon: FolderKanban, group: 'Practice' });
+    items.push({ id: 'consultations', label: 'Consultations', icon: BookOpen, group: 'Practice' });
 
-      if (isManagement || isSales || isLegal) {
-        items.push({ id: 'leads', label: 'Leads', icon: Target, group: 'Practice' });
-      }
-
-      items.push({ id: 'documents', label: 'Documents', icon: FileText, group: 'Practice' });
-      items.push({ id: 'tasks', label: 'Tasks', icon: CheckCircle2, group: 'Practice' });
-
-      if (isManagement || isLegal || isParalegal || isFinance) {
-        items.push({ id: 'staff', label: 'Staff Portal', icon: Users, group: 'Firm' });
-        items.push({ id: 'org-chart', label: 'Org Structure', icon: TreePine, group: 'Firm' });
-      }
-
-      if (isManagement) {
-        items.push({ id: 'analytics', label: 'Analytics', icon: TrendingUp, group: 'Firm' });
-      }
-
-      items.push({ id: 'pricing', label: 'Pricing', icon: DollarSign, group: 'More' });
-      items.push({ id: 'communications', label: 'Communications', icon: Mail, group: 'More' });
+    // Leads — only staff who manage leads
+    if (isManagement || isSales || isLegal) {
+      items.push({ id: 'leads', label: 'Leads', icon: Target, group: 'Practice' });
     }
+
+    // Documents & Tasks — all roles (clients see own, staff see all/assigned)
+    items.push({ id: 'documents', label: 'Documents', icon: FileText, group: 'Practice' });
+    items.push({ id: 'tasks', label: 'Tasks', icon: CheckCircle2, group: 'Practice' });
+
+    // Staff & Org — internal only, not for clients
+    if (isManagement || isLegal || isParalegal || isFinance) {
+      items.push({ id: 'staff', label: 'Staff Portal', icon: Users, group: 'Firm' });
+      items.push({ id: 'org-chart', label: 'Org Structure', icon: TreePine, group: 'Firm' });
+    }
+
+    // Analytics — management only
+    if (isManagement) {
+      items.push({ id: 'analytics', label: 'Analytics', icon: TrendingUp, group: 'Firm' });
+    }
+
+    items.push({ id: 'pricing', label: 'Pricing', icon: DollarSign, group: 'More' });
 
     return items;
   };
 
-  // Loading guard — show skeleton while auth is initializing
-  // This prevents the flash of LandingPage for logged-in users
-  // If loading takes more than 15 seconds, show the landing page instead
-  if (authLoading && !loadingTimeout) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full border-2 border-[#c9a84c]/20 border-t-[#c9a84c] animate-spin" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Image src="/logo_legal.png" alt="Infinity Legal SA" width={80} height={45} className="object-contain opacity-60" />
-          </div>
-          <p className="text-slate-400 text-xs tracking-wider uppercase">Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
-  if (!isAuthenticated) {
-    if (showLogin) {
-      return (
-        <LoginScreen
-          onLogin={() => {}}
-          loading={false}
-          error={loginError}
-          initialSignup={initialSignup}
-          onBackToHome={() => { setShowLogin(false); setInitialSignup(false); }}
-        />
-      );
-    }
-    return (
-      <LandingPage
-        onLoginClick={() => { setShowLogin(true); setInitialSignup(false); }}
-        onSignUp={(email?: string, name?: string) => {
-          if (email) sessionStorage.setItem('il_intake_email', email);
-          if (name) sessionStorage.setItem('il_intake_name', name);
-          setShowLogin(true);
-          setInitialSignup(true);
-        }}
-      />
-    );
-  }
-
-  if (showLanding) {
-    return (
-      <LandingPage
-        isAuthenticated={true}
-        onBackToDashboard={() => setShowLanding(false)}
-        userName={user?.full_name?.split(' ')[0]}
-      />
-    );
-  }
 
   const navItems = getNavItems();
   const navGroups = [...new Set(navItems.map(i => i.group))];
@@ -502,11 +386,11 @@ export default function HomePageClient() {
   return (
     <div className="min-h-screen flex bg-slate-50">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-[272px]' : 'w-[68px]'} bg-[#0c1e3c] text-white flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex-shrink-0 hidden md:flex`}>
+      <aside className={`${sidebarOpen ? 'w-[272px]' : 'w-[68px]'} bg-[#0c1e3c] text-white flex flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex-shrink-0`}>
         {/* Logo Area */}
         <div
           className="p-4 flex items-center gap-3 border-b border-[#c9a84c]/20 cursor-pointer hover:bg-[#132d52]/30 transition-all duration-200 group"
-          onClick={() => setShowLanding(true)}
+          onClick={() => onShowLanding()}
           title="Visit Homepage"
         >
           <div className="relative">
@@ -525,7 +409,7 @@ export default function HomePageClient() {
           <nav className="p-2 space-y-0.5">
             {/* Homepage Link — card-style */}
             <button
-              onClick={() => setShowLanding(true)}
+              onClick={() => onShowLanding()}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 text-[#c9a84c] hover:bg-[#c9a84c]/10 border border-[#c9a84c]/15 hover:border-[#c9a84c]/30 mb-2 ${sidebarOpen ? '' : 'justify-center'}`}
             >
               <HomeIcon className="w-4 h-4 flex-shrink-0" />
@@ -581,7 +465,7 @@ export default function HomePageClient() {
             {sidebarOpen && (
               <div className="min-w-0">
                 <div className="text-xs font-medium text-white truncate">{user?.full_name}</div>
-                <div className="text-[10px] text-[#7a94b8] truncate">{displayRole(user?.role)}</div>
+                <div className="text-[10px] text-[#7a94b8] capitalize truncate">{user?.role?.replace(/_/g, ' ')}</div>
               </div>
             )}
           </div>
@@ -600,68 +484,15 @@ export default function HomePageClient() {
         </div>
       </aside>
 
-      {/* Mobile sidebar drawer */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="bg-[#0c1e3c] text-white w-[272px] p-0 border-0">
-          <SheetHeader className="sr-only">
-            <SheetTitle>Navigation Menu</SheetTitle>
-            <SheetDescription>Site navigation</SheetDescription>
-          </SheetHeader>
-          {/* Same nav content as sidebar but always expanded */}
-          <div className="p-4 flex items-center gap-3 border-b border-[#c9a84c]/20 cursor-pointer" onClick={() => { setShowLanding(true); setMobileMenuOpen(false); }}>
-            <Image src="/logo_legal.png" alt="Infinity Legal SA" width={48} height={27} className="flex-shrink-0 object-contain" />
-            <div>
-              <span className="font-bold text-lg tracking-tight">Infinity Legal</span>
-              <p className="text-[10px] text-[#7a8fb0] uppercase tracking-widest">Intranet Portal</p>
-            </div>
-          </div>
-          <ScrollArea className="flex-1">
-            <nav className="p-2 space-y-0.5">
-              <button onClick={() => { setShowLanding(true); setMobileMenuOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#c9a84c] hover:bg-[#c9a84c]/10 border border-[#c9a84c]/15 mb-2">
-                <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                <span className="font-medium">Visit Homepage</span>
-              </button>
-              {navGroups.map((group, gi) => (
-                <div key={group}>
-                  {gi > 0 && <><div className="divider-gold my-2 mx-3" /><div className="px-3 pt-2 pb-1.5"><span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a94b8]"><span className="text-[#c9a84c]/60 mr-1.5">—</span>{group}</span></div></>}
-                  {gi === 0 && group !== 'Main' && <div className="px-3 pt-2 pb-1.5"><span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#7a94b8]"><span className="text-[#c9a84c]/60 mr-1.5">—</span>{group}</span></div>}
-                  {navItems.filter(i => i.group === group).map(item => (
-                    <button key={item.id} onClick={() => { setCurrentView(item.id); setMobileMenuOpen(false); }} className={`sidebar-nav-item ${currentView === item.id ? 'active' : ''} relative w-full`}>
-                      {currentView === item.id && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-[#c9a84c] rounded-r-full" />}
-                      <item.icon className="w-4 h-4 flex-shrink-0" />
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </nav>
-          </ScrollArea>
-          <div className="p-3 border-t border-[#1a3358]">
-            <div className="flex items-center gap-3 p-2 rounded-lg">
-              <Avatar className="w-8 h-8 flex-shrink-0">
-                <AvatarFallback className="bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold">{user?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <div className="text-xs font-medium text-white truncate">{user?.full_name}</div>
-                <div className="text-[10px] text-[#7a94b8] truncate">{displayRole(user?.role)}</div>
-              </div>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-
       {/* Main content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="glass-nav h-14 flex items-center justify-between px-3 sm:px-6 flex-shrink-0">
+        <header className="glass-nav h-14 flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 -ml-1 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Open menu">
-              <Menu className="w-5 h-5 text-slate-600" />
-            </button>
             {/* Breadcrumbs */}
             <nav className="flex items-center gap-1.5 text-sm">
               <button
-                onClick={() => setShowLanding(true)}
+                onClick={() => onShowLanding()}
                 className="text-[#7a94b8] hover:text-[#0c1e3c] transition-colors duration-200 flex items-center gap-1"
                 title="Visit Homepage"
               >
@@ -701,7 +532,7 @@ export default function HomePageClient() {
                 <Bell className="w-4 h-4 text-slate-600" />
               </button>
               {showNotifications && (
-                <div className="absolute right-0 top-10 w-80 max-w-[calc(100vw-2rem)] bg-white border shadow-xl rounded-xl z-50 max-h-96 overflow-y-auto">
+                <div className="absolute right-0 top-10 w-80 bg-white border shadow-xl rounded-xl z-50 max-h-96 overflow-y-auto">
                   <div className="p-3 border-b flex items-center justify-between">
                     <span className="font-semibold text-sm text-[#0c1e3c]">Notifications</span>
                     <div className="flex items-center gap-1">
@@ -760,7 +591,7 @@ export default function HomePageClient() {
                 </Avatar>
                 <div className="text-sm hidden sm:block text-left">
                   <div className="font-medium text-[#0c1e3c] text-xs leading-tight">{user?.full_name}</div>
-                  <div className="text-[10px] text-slate-500 leading-tight">{displayRole(user?.role)}</div>
+                  <div className="text-[10px] text-slate-500 capitalize leading-tight">{user?.role?.replace(/_/g, ' ')}</div>
                 </div>
                 <ChevronRight className={`w-3 h-3 text-slate-400 hidden sm:block transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`} />
               </button>
@@ -795,8 +626,8 @@ export default function HomePageClient() {
         </header>
 
         {/* Page content */}
-        <div className="flex-1 overflow-auto p-4 sm:p-6">
-          {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} subscription={subscription} />}
+        <div className="flex-1 overflow-auto p-6">
+          {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} />}
           {currentView === 'cases' && <CasesView cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} token={token} user={user} staff={staff} />}
           {currentView === 'leads' && <LeadsView leads={leads} page={leadsPage} total={leadsTotal} onPageChange={loadLeads} onRefresh={() => loadLeads(leadsPage)} />}
           {currentView === 'documents' && <DocumentsView token={token} documents={documents} onRefresh={loadDocuments} user={user} />}
@@ -805,96 +636,12 @@ export default function HomePageClient() {
           {currentView === 'staff' && <StaffPortal staff={staff} user={user} />}
           {currentView === 'org-chart' && <OrgChartView staff={staff} />}
           {currentView === 'analytics' && <AnalyticsView token={token} stats={stats} />}
-          {currentView === 'pricing' && <PricingView plans={pricingPlans} onSubscribe={(planId) => setCurrentView('subscription')} onLoginClick={() => {}} isAuthenticated={true} />}
-          {currentView === 'communications' && <CommunicationsView token={token} user={user} staff={staff} />}
-          {(currentView === 'subscription') && (
-            <div className="space-y-6">
-              {subscription ? (
-                <>
-                  {/* Active Subscription Details */}
-                  <div className="text-center">
-                    <h2 className="text-xl font-bold text-[#0c1e3c]">My Subscription</h2>
-                    <p className="text-[13px] text-slate-500 mt-1">Manage your current legal plan</p>
-                  </div>
-                  <Card className="max-w-lg mx-auto shadow-sm">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/15 flex items-center justify-center">
-                          <Crown className="w-5 h-5 text-[#a88832]" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-[#0c1e3c]">{subscription.plan?.name || 'Active Plan'}</h3>
-                          <p className="text-[11px] text-slate-500">{subscription.plan?.slug?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">Status</span>
-                          <Badge className={subscription.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>{subscription.status}</Badge>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">Monthly Price</span>
-                          <span className="font-medium">R{subscription.plan?.price_monthly || '—'}</span>
-                        </div>
-                        {subscription.days_remaining !== null && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-slate-500">Days Remaining</span>
-                            <span className="font-medium">{subscription.days_remaining}</span>
-                          </div>
-                        )}
-                        {subscription.cancel_at_period_end && (
-                          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[12px]">
-                            Your subscription will cancel at the end of the billing period.
-                          </div>
-                        )}
-                      </div>
-                      <Separator className="my-4" />
-                      {subscription.plan?.features && (
-                        <div>
-                          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Included Features</p>
-                          <ul className="space-y-1.5">
-                            {(Array.isArray(subscription.plan.features) ? subscription.plan.features : []).map((f: string, i: number) => (
-                              <li key={i} className="flex items-center gap-2 text-[12px] text-slate-600">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c]" />
-                                {f}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {!subscription.cancel_at_period_end && (
-                        <Button variant="outline" size="sm" className="w-full mt-4 text-red-600 border-red-200 hover:bg-red-50 text-[12px]" onClick={async () => {
-                          if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) return;
-                          try {
-                            const res = await fetch('/api/subscriptions', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
-                            const data = await res.json();
-                            if (data.success) {
-                              toast.success('Subscription scheduled for cancellation');
-                              await loadSubscription();
-                            } else {
-                              toast.error(data.error?.message || 'Failed to cancel');
-                            }
-                          } catch {
-                            toast.error('Network error');
-                          }
-                        }}>Cancel Subscription</Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                </>
-              ) : (
-                <>
-                  {/* No subscription — show PaymentWall */}
-                  <PaymentWall isAuthenticated={true} onPaymentInitiated={() => loadSubscription()} className="max-w-4xl mx-auto" />
-                </>
-              )}
-            </div>
-          )}
+          {currentView === 'pricing' && <PricingView plans={pricingPlans} />}
         </div>
 
         {/* Footer */}
         <footer className="bg-[#0c1e3c] py-4 px-6 flex-shrink-0 border-t border-[#c9a84c]/15">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-[#7a94b8]">
+          <div className="flex items-center justify-between text-[10px] text-[#7a94b8]">
             <span>&copy; {new Date().getFullYear()} Infinity Legal (Pty) Ltd. All rights reserved.</span>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> POPIA Compliant</span>
@@ -913,10 +660,10 @@ export default function HomePageClient() {
 // ============================================
 // WORKBENCH VIEW - Premium Legal Dashboard
 // ============================================
-function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth, subscription }: {
+function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth }: {
   stats: Stats | null; user: User | null; cases: any[]; consultations: Consultation[];
   tasks: TaskItem[]; token: string | null; onViewChange: (v: View) => void;
-  charts: any; firmHealth: Record<string, boolean>; subscription: any;
+  charts: any; firmHealth: Record<string, boolean>;
 }) {
   const role = user?.role || 'client';
   const isClient = role === 'client';
@@ -929,16 +676,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const todayStr = now.toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-  const quickActions = isClient ? [
-    // CLIENT quick actions — focused on their needs
-    { label: 'My Cases', icon: FolderKanban, color: 'bg-[#0c1e3c] text-[#c9a84c]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'cases' as View },
-    { label: 'Consultations', icon: BookOpen, color: 'bg-emerald-50 text-emerald-700', accent: 'group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)]', view: 'consultations' as View },
-    { label: 'My Documents', icon: FileUp, color: 'bg-blue-50 text-blue-700', accent: 'group-hover:shadow-[0_0_12px_rgba(59,130,246,0.2)]', view: 'documents' as View },
-    { label: 'My Tasks', icon: CheckCircle2, color: 'bg-amber-50 text-amber-700', accent: 'group-hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]', view: 'tasks' as View },
-    ...(subscription ? [] : [{ label: 'Subscribe Now', icon: Zap, color: 'bg-[#c9a84c]/15 text-[#a88832]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'subscription' as View }]),
-    ...(subscription ? [{ label: 'My Plan', icon: Crown, color: 'bg-[#c9a84c]/15 text-[#a88832]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'subscription' as View }] : []),
-  ] : [
-    // STAFF quick actions
+  const quickActions = [
     ...(isLegal || isManagement ? [{ label: 'Log Consultation', icon: BookOpen, color: 'bg-[#0c1e3c] text-[#c9a84c]', accent: 'group-hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]', view: 'consultations' as View }] : []),
     ...(isLegal || isParalegal || isManagement ? [{ label: 'Upload Document', icon: FileUp, color: 'bg-emerald-50 text-emerald-700', accent: 'group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)]', view: 'documents' as View }] : []),
     ...(isManagement || isLegal ? [{ label: 'New Case', icon: FolderKanban, color: 'bg-blue-50 text-blue-700', accent: 'group-hover:shadow-[0_0_12px_rgba(59,130,246,0.2)]', view: 'cases' as View }] : []),
@@ -982,7 +720,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
             {/* Role badge with gold shimmer */}
             <Badge className="mt-3 bg-gradient-to-r from-[#c9a84c] via-[#dfc475] to-[#c9a84c] text-[#0c1e3c] text-[10px] font-semibold animate-shimmer bg-[length:200%_100%] shadow-sm">
               <Crown className="w-3 h-3 mr-1" />
-              {displayRole(role)}
+              {role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </Badge>
           </div>
           <div className="hidden md:flex gap-3">
@@ -994,64 +732,8 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
               </>
             )}
           </div>
-          <div className="flex md:hidden gap-2 mt-3">
-            {stats && (
-              <>
-                <MiniStat label="Active" value={stats.activeCases} />
-                <MiniStat label="Tasks" value={stats.pendingTasks} />
-              </>
-            )}
-          </div>
         </div>
       </div>
-
-      {/* ═══════════════════════════════════════════
-          SUBSCRIPTION CTA — For clients without a plan
-          ═══════════════════════════════════════════ */}
-      {isClient && !subscription && (
-        <div className="relative rounded-2xl overflow-hidden border-2 border-[#c9a84c]/30 bg-gradient-to-r from-[#0c1e3c] via-[#132d52] to-[#0c1e3c]">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#c9a84c]/[0.06] rounded-full blur-[40px]" />
-          <div className="relative p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#c9a84c]/15 flex items-center justify-center flex-shrink-0">
-                <Zap className="w-6 h-6 text-[#c9a84c]" />
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-base">Get Legal Coverage from R99/month</h3>
-                <p className="text-[#8fa4c4] text-[13px] mt-0.5">Choose a plan that covers your legal needs — Civil, Labour, or Extensive.</p>
-              </div>
-            </div>
-            <Button onClick={() => onViewChange('subscription')} className="bg-[#c9a84c] text-[#0c1e3c] hover:bg-[#d4b85c] rounded-lg px-6 text-[13px] font-semibold shadow-lg shadow-[#c9a84c]/20 flex-shrink-0 gap-2">
-              View Plans <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════
-          SUBSCRIPTION STATUS — For clients with a plan
-          ═══════════════════════════════════════════ */}
-      {isClient && subscription && (
-        <div className="relative rounded-2xl overflow-hidden border border-emerald-200 bg-gradient-to-r from-emerald-50/50 via-white to-emerald-50/50">
-          <div className="relative p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                <Crown className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-[#0c1e3c] font-semibold text-sm">{subscription.plan?.name || 'Active Plan'}</h3>
-                  <Badge className={subscription.status === 'active' ? 'bg-emerald-100 text-emerald-700 text-[9px]' : 'bg-amber-100 text-amber-700 text-[9px]'}>{subscription.status}</Badge>
-                </div>
-                <p className="text-slate-500 text-[12px] mt-0.5">R{subscription.plan?.price_monthly || '—'}/month{subscription.days_remaining !== null ? ` · ${subscription.days_remaining} days remaining` : ''}</p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => onViewChange('subscription')} className="text-[#a88832] border-[#c9a84c]/30 hover:bg-[#c9a84c]/5 text-[12px]">
-              Manage Plan
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* ═══════════════════════════════════════════
           QUICK ACTIONS — Staggered Premium Cards
@@ -1133,7 +815,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
       {/* ═══════════════════════════════════════════
           CONSULTATIONS & TASKS — Premium Cards
           ═══════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Consultations */}
         <div className="card-premium">
           <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
@@ -1464,13 +1146,13 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input placeholder="Search cases..." value={caseSearch} onChange={e => setCaseSearch(e.target.value)} className="pl-9 input-premium focus:ring-0" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-40 input-premium focus:ring-0">
+            <SelectTrigger className="w-40 input-premium focus:ring-0">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
@@ -1486,7 +1168,7 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto -mx-4 sm:-mx-6">
+        <div className="overflow-x-auto -mx-6">
           <table className="w-full table-premium">
             <thead>
               <tr>
@@ -1571,7 +1253,7 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
                 className="mt-1 input-premium focus:ring-0"
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs font-medium text-slate-600">Case Type <span className="text-red-500">*</span></Label>
                 <Select value={caseForm.case_type} onValueChange={v => setCaseForm(f => ({ ...f, case_type: v }))}>
@@ -1606,7 +1288,7 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
                 rows={3}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs font-medium text-slate-600">Opposing Party</Label>
                 <Input
@@ -1926,7 +1608,7 @@ function DocumentsView({ token, documents, onRefresh, user }: {
                     <Label className="text-xs font-medium text-slate-600">Title</Label>
                     <Input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Document title" className="mt-1 input-premium" />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs font-medium text-slate-600">Document Type</Label>
                       <Select value={uploadType} onValueChange={setUploadType}>
@@ -2183,7 +1865,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
           <h2 className="text-xl font-bold text-[#0c1e3c]">Consultations</h2>
           <p className="text-sm text-slate-500">{consultations.length} consultation{consultations.length !== 1 ? 's' : ''} logged</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={onRefresh} className="border-slate-200 text-slate-600 hover:border-[#0c1e3c] hover:text-[#0c1e3c] transition-all duration-200">
             <RefreshCw className="w-4 h-4 mr-1" /> Refresh
           </Button>
@@ -2200,7 +1882,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                   <DialogDescription className="text-slate-500">Schedule or log a client consultation</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs font-medium text-slate-600">Client Name</Label>
                       <Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Client name" className="mt-1 input-premium" />
@@ -2210,7 +1892,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                       <Input value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))} placeholder="email@infinitylegal.org" className="mt-1 input-premium" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs font-medium text-slate-600">Legal Advisor</Label>
                       <Select value={form.attorney_id} onValueChange={v => setForm(f => ({ ...f, attorney_id: v }))}>
@@ -2239,7 +1921,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs font-medium text-slate-600">Date & Time</Label>
                       <Input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} className="mt-1 input-premium" />
@@ -2290,7 +1972,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-children">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 stagger-children">
           {consultations.map(c => {
             const mConfig = meetingConfig[c.meeting_type] || meetingConfig.in_person;
             const MIcon = mConfig.icon;
@@ -2309,7 +1991,7 @@ function ConsultationsView({ token, consultations, onRefresh, user, staff }: {
                         {c.status?.replace(/_/g, ' ')}
                       </span>
                     </div>
-                    {/* Legal Advisor with avatar */}
+                    {/* Attorney with avatar */}
                     <div className="flex items-center gap-2 mt-1.5">
                       <Avatar className="w-5 h-5">
                         <AvatarFallback className="text-[8px] bg-[#0c1e3c] text-white">
@@ -2512,14 +2194,14 @@ function TasksView({ token, tasks, onRefresh, user, staff }: {
               <Label>Description</Label>
               <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Task description..." className="mt-1 input-premium focus:ring-0" rows={2} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Assign To</Label>
                 <Select value={form.assigned_to} onValueChange={v => setForm(f => ({ ...f, assigned_to: v }))}>
                   <SelectTrigger className="mt-1 input-premium focus:ring-0"><SelectValue placeholder="Select staff" /></SelectTrigger>
                   <SelectContent>
                     {staff.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.full_name} ({displayRole(s.role)})</SelectItem>
+                      <SelectItem key={s.id} value={s.id}>{s.full_name} ({s.role.replace(/_/g, ' ')})</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -2537,7 +2219,7 @@ function TasksView({ token, tasks, onRefresh, user, staff }: {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Due Date</Label>
                 <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="mt-1 input-premium focus:ring-0" />
@@ -2631,7 +2313,7 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
               filterRole === r ? 'btn-navy text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            {displayRole(r)}
+            {roleLabels[r] || r.replace(/_/g, ' ')}
           </button>
         ))}
       </div>
@@ -2642,7 +2324,7 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
             <h3 className="text-sm font-semibold text-[#0c1e3c] uppercase tracking-wider capitalize">
-              {displayRole(group)}
+              {roleLabels[group] || group.replace(/_/g, ' ')}
             </h3>
             <span className="text-[10px] text-slate-400 font-medium">({members.length})</span>
           </div>
@@ -2673,7 +2355,7 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-[#0c1e3c] text-sm truncate">{m.full_name}</div>
                     <div className={`mt-1 ${roleBadgeVariant[m.role] || 'badge-status badge-closed'}`}>
-                      {displayRole(m.role)}
+                      {roleLabels[m.role] || m.role.replace(/_/g, ' ')}
                     </div>
                     <div className="text-[11px] text-slate-500 mt-2 flex items-center gap-1.5 truncate">
                       <Mail className="w-3 h-3 flex-shrink-0 text-slate-400" />{m.email}
@@ -2815,7 +2497,7 @@ function OrgChartView({ staff }: { staff: StaffMember[] }) {
                           </Avatar>
                           <div>
                             <div className="text-xs font-medium text-[#0c1e3c] group-hover/card:text-[#a88832] transition-colors">{m.full_name}</div>
-                            <div className="text-[9px] text-slate-400">{displayRole(m.role)}</div>
+                            <div className="text-[9px] text-slate-400">{roleLabels[m.role] || m.role.replace(/_/g, ' ')}</div>
                           </div>
                         </div>
                       ))}
@@ -2884,7 +2566,7 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
           </div>
 
           {/* Charts area */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Case Status Distribution — refined horizontal bars */}
             <div className="card-premium">
               <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
@@ -2997,20 +2679,7 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
 // ============================================
 // PRICING VIEW
 // ============================================
-function PricingView({
-  plans,
-  onSubscribe: _onSubscribe,
-  onLoginClick: _onLoginClick,
-  isAuthenticated: _isAuthenticated,
-}: {
-  plans: any[];
-  onSubscribe?: (planId: any) => void;
-  onLoginClick?: () => void;
-  isAuthenticated?: boolean;
-}) {
-  const { accessToken } = useAuth();
-  const [subscribingPlanId, setSubscribingPlanId] = useState<string | null>(null);
-
+function PricingView({ plans }: { plans: any[] }) {
   const planStyleMap: Record<string, { isPopular: boolean; badge: string | null }> = {
     civil_legal_plan: { isPopular: false, badge: null },
     labour_legal_plan: { isPopular: true, badge: 'Most Popular' },
@@ -3018,52 +2687,6 @@ function PricingView({
   };
 
   const defaultPlanStyle = { isPopular: false, badge: null };
-
-  const handleSubscribe = async (planId: string) => {
-    if (!accessToken) {
-      toast.error('Please sign in to subscribe');
-      return;
-    }
-    setSubscribingPlanId(planId);
-    try {
-      const res = await fetch('/api/payfast/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ planId, billingCycle: 'monthly' }),
-      });
-      const data = await res.json();
-
-      if (data.success && data.data) {
-        // Create and submit hidden form to PayFast
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = data.data.payfastUrl;
-        Object.entries(data.data.formData).forEach(([key, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = String(value);
-          form.appendChild(input);
-        });
-        document.body.appendChild(form);
-        form.submit();
-      } else {
-        const errorMsg = data.error?.message || data.error || 'Failed to initiate payment';
-        if (res.status === 409) {
-          toast.error('Active subscription found', { description: 'You already have an active subscription.' });
-        } else {
-          toast.error('Payment failed', { description: errorMsg });
-        }
-      }
-    } catch {
-      toast.error('Network error', { description: 'Could not connect to the payment service.' });
-    } finally {
-      setSubscribingPlanId(null);
-    }
-  };
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -3089,7 +2712,6 @@ function PricingView({
             const style = planStyleMap[plan.slug] || defaultPlanStyle;
             const features = Array.isArray(plan.features) ? plan.features : [];
             const isPopular = style.isPopular;
-            const isSubscribing = subscribingPlanId === plan.id;
 
             return (
               <div key={plan.id} className={`relative ${isPopular ? 'card-navy p-0' : 'card-premium p-0'} ${isPopular ? 'ring-2 ring-[#c9a84c]/40' : ''}`}>
@@ -3107,9 +2729,6 @@ function PricingView({
                 <div className="p-6">
                   {/* Plan name */}
                   <h3 className={`font-semibold text-base ${isPopular ? 'text-white' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
-                  {plan.description && (
-                    <p className={`text-[11px] mt-0.5 ${isPopular ? 'text-[#8fa4c4]' : 'text-slate-400'}`}>{plan.description}</p>
-                  )}
 
                   {/* Price display — large serif font */}
                   <div className="mt-3 flex items-baseline gap-1">
@@ -3123,6 +2742,13 @@ function PricingView({
                   {plan.price_annual && (
                     <p className={`text-xs mt-1 ${isPopular ? 'text-emerald-400' : 'text-emerald-600'}`}>
                       R{Math.round(plan.price_annual)}/year — save {Math.round((1 - plan.price_annual / (plan.price_monthly * 12)) * 100)}%
+                    </p>
+                  )}
+
+                  {/* Plan limits */}
+                  {plan.max_cases && (
+                    <p className={`text-xs mt-2 ${isPopular ? 'text-[#7a94b8]' : 'text-slate-400'}`}>
+                      Up to {plan.max_cases} cases · {plan.max_documents || '∞'} documents
                     </p>
                   )}
 
@@ -3143,22 +2769,14 @@ function PricingView({
                     ))}
                   </ul>
 
-                  {/* CTA button — actual PayFast checkout */}
+                  {/* CTA button */}
                   <button
-                    className={`w-full mt-5 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    className={`w-full mt-5 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 ${
                       isPopular ? 'btn-gold' : 'btn-navy'
-                    } ${isSubscribing ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    onClick={() => handleSubscribe(plan.id)}
-                    disabled={subscribingPlanId !== null}
+                    }`}
+                    onClick={() => toast.success(`${plan.name} selected! Redirecting to signup...`)}
                   >
-                    {isSubscribing ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>Subscribe — R{Math.round(plan.price_monthly)}/mo</>
-                    )}
+                    {isPopular ? 'Get Started' : `Choose ${plan.name}`}
                   </button>
                 </div>
               </div>
@@ -3273,7 +2891,7 @@ function AskInfinityBubble() {
 
       {/* Chat popup — premium dialog */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] card-premium flex flex-col overflow-hidden animate-scale-in h-[520px] sm:h-auto" style={{ maxHeight: '70vh' }}>
+        <div className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] card-premium flex flex-col overflow-hidden animate-scale-in" style={{ height: '520px' }}>
           {/* Header */}
           <div className="p-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-gradient-to-r from-[#0c1e3c] to-[#132d52] rounded-t-2xl">
             <div className="flex items-center gap-2.5">

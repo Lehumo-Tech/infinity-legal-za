@@ -1,10 +1,13 @@
 /**
  * POST /api/admin/migrate - Run schema migrations (admin only)
- * Creates the legal_articles table and seeds data
+ *
+ * With Prisma + SQLite, the schema is managed via prisma/schema.prisma and
+ * `prisma db push`. This endpoint now reports the current state of the
+ * legal_articles table (article count).
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 
 export const dynamic = 'force-dynamic';
@@ -21,36 +24,17 @@ export async function POST(request: NextRequest) {
       return apiError('Only administrators can run migrations', 403, 'FORBIDDEN');
     }
 
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
-    // Check if table exists
-    const { error: checkError } = await db
-      .from('legal_articles')
-      .select('id')
-      .limit(1);
-
-    if (checkError && checkError.message.includes('Could not find')) {
-      return apiResponse({
-        message: 'legal_articles table does not exist. Run the SQL migration in Supabase SQL Editor.',
-        needsManualMigration: true,
-      });
-    }
-
-    // Table exists — return status
-    const { count } = await db
-      .from('legal_articles')
-      .select('*', { count: 'exact', head: true });
+    // Count existing articles
+    const count = await db.legalArticle.count();
 
     return apiResponse({
-      message: 'legal_articles table exists',
+      message: 'Database schema is managed by Prisma. Legal articles table is ready.',
       articleCount: count,
       needsMigration: false,
+      needsManualMigration: false,
     });
   } catch (error) {
     console.error('Migration error:', error);
-    return apiError('Migration failed', 500, 'MIGRATION_ERROR');
+    return apiError('Migration check failed', 500, 'MIGRATION_ERROR');
   }
 }

@@ -5,7 +5,8 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { Prisma } from '@prisma/client';
+import { db } from '@/lib/db';
 import { requireAuth, apiResponse, apiError } from '@/lib/middleware';
 import {
   buildPaymentForm,
@@ -20,12 +21,7 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
-    // Authenticate user (async for Supabase)
+    // Authenticate user
     const authResult = await requireAuth(request);
     if (!authResult.authenticated) {
       return authResult.error!;
@@ -45,13 +41,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch the pricing plan
-    const { data: plan, error: planError } = await db
-      .from('pricing_plans')
-      .select('*')
-      .eq('id', planId)
-      .single();
+    const plan = await db.pricingPlan.findUnique({
+      where: { id: planId },
+    });
 
-    if (planError || !plan) {
+    if (!plan) {
       return apiError('Pricing plan not found', 404, 'PLAN_NOT_FOUND');
     }
 
@@ -68,27 +62,41 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid plan amount', 400, 'INVALID_AMOUNT');
     }
 
-    // Check if user already has an active subscription
-    const { data: existingSub } = await db
-      .from('user_subscriptions')
-      .select('id')
-      .eq('user_id', user.userId)
-      .eq('status', 'active')
-      .maybeSingle();
+    // Check if user already has a client profile + active subscription
+    const clientProfile = await db.client.findUnique({
+      where: { user_id: user.userId },
+      include: {
+        subscriptions: {
+          where: { status: 'active' },
+          select: { id: true },
+          take: 1,
+        },
+      },
+    });
 
-    if (existingSub) {
+    if (clientProfile && clientProfile.subscriptions.length > 0) {
       return apiError('You already have an active subscription. Please cancel it first.', 409, 'SUBSCRIPTION_EXISTS');
     }
 
     // Fetch user details for PayFast
-    const { data: dbUser, error: userError } = await db
-      .from('profiles')
-      .select('*')
-      .eq('id', user.userId)
-      .single();
+    const dbUser = await db.user.findUnique({
+      where: { id: user.userId },
+      select: { id: true, email: true, full_name: true },
+    });
 
-    if (userError || !dbUser) {
+    if (!dbUser) {
       return apiError('User not found', 404, 'USER_NOT_FOUND');
+    }
+
+    // If no client profile yet, create one
+    let clientId: string;
+    if (clientProfile) {
+      clientId = clientProfile.id;
+    } else {
+      const newClient = await db.client.create({
+        data: { user_id: user.userId, subscription_status: 'none' },
+      });
+      clientId = newClient.id;
     }
 
     // Parse name parts
@@ -100,43 +108,41 @@ export async function POST(request: NextRequest) {
     // Generate unique payment ID
     const mPaymentId = generatePaymentId();
 
-    // Create a pending subscription
+    // Create a pending subscription (trial until ITN confirms)
     const periodStart = new Date();
     const periodEnd = calculatePeriodEnd(periodStart, billingCycle);
 
-    const { data: subscription, error: subError } = await db
-      .from('user_subscriptions')
-      .insert({
-        user_id: user.userId,
+    const subscription = await db.userSubscription.create({
+      data: {
+        client_id: clientId,
         plan_id: planId,
-        status: 'trial', // Will be set to active on ITN confirmation
-        current_period_start: periodStart.toISOString(),
-        current_period_end: periodEnd.toISOString(),
+        status: 'trial',
+        current_period_start: periodStart,
+        current_period_end: periodEnd,
         cancel_at_period_end: false,
-      })
-      .select()
-      .single();
-
-    if (subError || !subscription) {
-      console.error('Failed to create subscription:', subError);
-      return apiError('Failed to create checkout session', 500, 'CHECKOUT_ERROR');
-    }
+      },
+    });
 
     // Create a pending payment record
-    const { error: paymentError } = await db
-      .from('payment_records')
-      .insert({
-        user_id: user.userId,
-        subscription_id: subscription.id,
-        payfast_payment_id: mPaymentId,
-        amount,
-        status: 'pending',
-        description: `${plan.name} - ${billingCycle === 'annual' ? 'Annual' : 'Monthly'}`,
-        metadata: { billing_cycle: billingCycle, plan_name: plan.name },
+    try {
+      await db.paymentRecord.create({
+        data: {
+          client_id: clientId,
+          subscription_id: subscription.id,
+          payfast_payment_id: mPaymentId,
+          amount,
+          status: 'pending',
+          description: `${plan.name} - ${billingCycle === 'annual' ? 'Annual' : 'Monthly'}`,
+          metadata: {
+            billing_cycle: billingCycle,
+            plan_name: plan.name,
+          } as Prisma.InputJsonValue,
+        },
       });
-
-    if (paymentError) {
-      console.error('Failed to create payment record:', paymentError);
+    } catch (paymentErr) {
+      console.error('Failed to create payment record:', paymentErr);
+      // Roll back the subscription so the user can retry
+      await db.userSubscription.delete({ where: { id: subscription.id } }).catch(() => {});
       return apiError('Failed to create checkout session', 500, 'CHECKOUT_ERROR');
     }
 

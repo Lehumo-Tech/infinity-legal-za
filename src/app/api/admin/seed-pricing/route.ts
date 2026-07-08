@@ -4,11 +4,11 @@
  * Replaces the wrong database plans with the correct ones matching the frontend.
  * Plans: Civil Legal (R99/mo), Labour Legal (R99/mo), Extensive (R139/mo)
  *
- * Works with both Prisma (local SQLite) and Supabase.
+ * Uses Prisma to delete existing plans and create the correct ones.
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { Prisma } from '@prisma/client';
 import { apiResponse, apiError } from '@/lib/middleware';
 import { db as prisma } from '@/lib/db';
 
@@ -83,84 +83,44 @@ export async function POST(request: NextRequest) {
   try {
     const results: string[] = [];
 
-    // Strategy 1: Try Prisma (local SQLite)
-    try {
-      // Delete all existing plans
-      await prisma.pricingPlan.deleteMany();
-      results.push('Deleted all old plans (Prisma)');
+    // Delete all existing plans
+    await prisma.pricingPlan.deleteMany();
+    results.push('Deleted all old plans');
 
-      // Insert the correct plans
-      for (const plan of CORRECT_PLANS) {
-        await prisma.pricingPlan.create({
-          data: {
-            ...plan,
-            features: JSON.stringify(plan.features),
-          },
-        });
-        results.push(`Inserted ${plan.name} (${plan.slug}) — R${plan.price_monthly}/mo`);
-      }
-
-      // Verify
-      const verifyPlans = await prisma.pricingPlan.findMany({
-        where: { is_active: true },
-        orderBy: { sort_order: 'asc' },
-      });
-
-      return apiResponse({
-        message: 'Pricing plans seeded successfully (Prisma)',
-        results,
-        activePlans: verifyPlans,
-      });
-    } catch (prismaError: any) {
-      results.push(`Prisma failed: ${prismaError.message}`);
-    }
-
-    // Strategy 2: Try Supabase
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
-    const { error: deleteError } = await db
-      .from('pricing_plans')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
-
-    if (deleteError) {
-      results.push(`Warning: Could not delete old plans: ${deleteError.message}`);
-    } else {
-      results.push('Deleted all old plans (Supabase)');
-    }
-
+    // Insert the correct plans
     for (const plan of CORRECT_PLANS) {
-      const { error: insertError } = await db
-        .from('pricing_plans')
-        .insert(plan);
-
-      if (insertError) {
-        results.push(`Error inserting ${plan.name}: ${insertError.message}`);
-      } else {
-        results.push(`Inserted ${plan.name} (${plan.slug}) — R${plan.price_monthly}/mo`);
-      }
+      await prisma.pricingPlan.create({
+        data: {
+          name: plan.name,
+          slug: plan.slug,
+          description: plan.description,
+          price_monthly: plan.price_monthly,
+          price_annual: plan.price_annual,
+          currency: plan.currency,
+          features: plan.features as Prisma.InputJsonValue,
+          max_cases: plan.max_cases,
+          max_documents: plan.max_documents,
+          is_popular: plan.is_popular,
+          is_active: plan.is_active,
+          sort_order: plan.sort_order,
+        },
+      });
+      results.push(`Inserted ${plan.name} (${plan.slug}) — R${plan.price_monthly}/mo`);
     }
 
-    const { data: verifyPlans, error: verifyError } = await db
-      .from('pricing_plans')
-      .select('name, slug, price_monthly, is_active')
-      .eq('is_active', true)
-      .order('sort_order');
-
-    if (verifyError) {
-      results.push(`Verification error: ${verifyError.message}`);
-    }
+    // Verify
+    const verifyPlans = await prisma.pricingPlan.findMany({
+      where: { is_active: true },
+      orderBy: { sort_order: 'asc' },
+    });
 
     return apiResponse({
-      message: 'Pricing plans seeded successfully (Supabase)',
+      message: 'Pricing plans seeded successfully',
       results,
-      activePlans: verifyPlans || [],
+      activePlans: verifyPlans,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Seed pricing error:', error);
-    return apiError('Failed to seed pricing plans', 500, 'SEED_ERROR');
+    return apiError(`Failed to seed pricing plans: ${error?.message || 'Unknown error'}`, 500, 'SEED_ERROR');
   }
 }

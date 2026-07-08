@@ -198,11 +198,11 @@ async function main() {
       where: { email: userData.email },
     });
     if (existing) {
-      // Update password hash to bcrypt format
+      // Update password hash to bcrypt format (use the userData's own hashed password)
       await prisma.user.update({
         where: { email: userData.email },
         data: {
-          password: passwordHash,
+          password: userData.password,
           popi_consent: true,
           email_verified: true,
         },

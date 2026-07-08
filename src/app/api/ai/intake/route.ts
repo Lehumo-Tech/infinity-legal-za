@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ---- Save to Database ----
-    let submission = null;
+    let submission: { id: string; status: string } | null = null;
     try {
       const data = await db.intakeSubmission.create({
         data: {
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
             email: normalizedEmail,
             phone: phone ? sanitizeString(phone.trim()) : null,
             consent_given: true,
-            popia_consent: true,
+            popi_consent: true,
           },
           case_details: {
             description: sanitizeString(description.trim()),
@@ -174,6 +174,7 @@ export async function POST(request: NextRequest) {
           status: 'submitted',
           submitted_at: new Date(),
         },
+        select: { id: true, status: true },
       });
       submission = data;
     } catch (insertError) {

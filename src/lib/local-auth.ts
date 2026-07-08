@@ -21,7 +21,7 @@ const JWT_SECRET = process.env.JWT_SECRET || process.env.ENCRYPTION_KEY || 'dev-
 const JWT_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 const JWT_ISSUER = 'infinity-legal-za';
 
-interface JWTPayload {
+export interface JWTPayload {
   sub: string;       // user ID
   email: string;
   role: string;

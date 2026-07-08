@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         },
         {
           status: 429,
-          headers: rateResult.headers || {},
+          headers: (rateResult.headers || {}) as Record<string, string>,
         }
       );
     }

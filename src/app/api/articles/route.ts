@@ -4,10 +4,10 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { Prisma } from '@prisma/client';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { sanitizeString } from '@/lib/security';
-import { db as prisma } from '@/lib/db';
+import { db } from '@/lib/db';
 
 const VALID_CATEGORIES = [
   'civil_litigation', 'labour_law', 'criminal_defence', 'family_law',
@@ -28,87 +28,33 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 50);
     const offset = parseInt(url.searchParams.get('offset') || '0');
 
-    // Try Prisma (local SQLite) first
-    try {
-      if (slug) {
-        const article = await prisma.legalArticle.findUnique({
-          where: { slug, is_published: true },
-        });
-        if (!article) {
-          return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
-        }
-        return apiResponse(article);
-      }
-
-      const where: any = { is_published: true };
-      if (category) where.category = category;
-      if (featured === 'true') where.is_featured = true;
-
-      const [articles, total] = await Promise.all([
-        prisma.legalArticle.findMany({
-          where,
-          orderBy: [{ is_featured: 'desc' }, { published_at: 'desc' }],
-          take: limit,
-          skip: offset,
-        }),
-        prisma.legalArticle.count({ where }),
-      ]);
-
-      return apiResponse({ articles, total, limit, offset });
-    } catch (prismaError) {
-      // Prisma query failed — try Supabase
-    }
-
-    // Fallback: Try Supabase
-    const supabase = getAdminClient();
-    if (!supabase) {
-      return apiResponse({ articles: [], total: 0, limit, offset });
-    }
-
     if (slug) {
-      const { data: article, error } = await supabase
-        .from('legal_articles')
-        .select('id, slug, title, subtitle, content, summary, category, tags, cover_image_url, author_id, reading_time_min, is_featured, published_at, created_at, updated_at')
-        .eq('slug', slug)
-        .eq('is_published', true)
-        .single();
-
-      if (error || !article) {
+      const article = await db.legalArticle.findFirst({
+        where: { slug, is_published: true },
+      });
+      if (!article) {
         return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
       }
-
       return apiResponse(article);
     }
 
-    let query = supabase
-      .from('legal_articles')
-      .select('id, slug, title, subtitle, summary, category, tags, cover_image_url, reading_time_min, is_featured, published_at, created_at', { count: 'exact' })
-      .eq('is_published', true);
+    const where: Prisma.LegalArticleWhereInput = { is_published: true };
+    if (category) where.category = category;
+    if (featured === 'true') where.is_featured = true;
 
-    if (category && VALID_CATEGORIES.includes(category as any)) {
-      query = query.eq('category', category);
-    }
+    const [articles, total] = await Promise.all([
+      db.legalArticle.findMany({
+        where,
+        orderBy: [{ is_featured: 'desc' }, { published_at: 'desc' }],
+        take: limit,
+        skip: offset,
+      }),
+      db.legalArticle.count({ where }),
+    ]);
 
-    if (featured === 'true') {
-      query = query.eq('is_featured', true);
-    }
-
-    const { data: articles, count, error } = await query
-      .order('is_featured', { ascending: false })
-      .order('published_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (error) {
-      return apiResponse({ articles: [], total: 0, limit, offset });
-    }
-
-    return apiResponse({
-      articles: articles || [],
-      total: count || 0,
-      limit,
-      offset,
-    });
+    return apiResponse({ articles, total, limit, offset });
   } catch (error) {
+    console.error('Articles list error:', error);
     return apiResponse({ articles: [], total: 0, limit: 20, offset: 0 });
   }
 }
@@ -129,11 +75,6 @@ export async function POST(request: NextRequest) {
       return apiError('Only administrators can create articles', 403, 'FORBIDDEN');
     }
 
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const body = await request.json();
     const { title, subtitle, content, summary, category, tags, slug, cover_image_url, reading_time_min, is_featured } = body;
 
@@ -145,34 +86,32 @@ export async function POST(request: NextRequest) {
       return apiError(`Category must be one of: ${VALID_CATEGORIES.join(', ')}`, 400, 'INVALID_CATEGORY');
     }
 
-    const { data: article, error } = await db
-      .from('legal_articles')
-      .insert({
-        title: sanitizeString(title),
-        subtitle: subtitle ? sanitizeString(subtitle) : null,
-        content,
-        summary: summary ? sanitizeString(summary) : null,
-        category: category || 'general',
-        tags: tags || [],
-        slug,
-        cover_image_url: cover_image_url || null,
-        reading_time_min: reading_time_min || 5,
-        is_featured: is_featured || false,
-        is_published: false,
-        author_id: user.userId,
-      })
-      .select()
-      .single();
+    try {
+      const article = await db.legalArticle.create({
+        data: {
+          title: sanitizeString(title),
+          subtitle: subtitle ? sanitizeString(subtitle) : null,
+          content,
+          summary: summary ? sanitizeString(summary) : null,
+          category: category || 'general',
+          tags: tags ? (tags as Prisma.InputJsonValue) : Prisma.JsonNull,
+          slug,
+          cover_image_url: cover_image_url || null,
+          reading_time_min: reading_time_min || 5,
+          is_featured: is_featured || false,
+          is_published: false,
+          author_id: user.userId,
+        },
+      });
 
-    if (error) {
-      console.error('Article create error:', error);
-      if (error.code === '23505') {
+      return apiResponse(article, 201);
+    } catch (createErr: any) {
+      if (createErr?.code === 'P2002') {
         return apiError('An article with this slug already exists', 409, 'SLUG_EXISTS');
       }
+      console.error('Article create error:', createErr);
       return apiError('Failed to create article', 500, 'CREATE_ERROR');
     }
-
-    return apiResponse(article, 201);
   } catch (error) {
     console.error('Article create error:', error);
     return apiError('Failed to create article', 500, 'CREATE_ERROR');

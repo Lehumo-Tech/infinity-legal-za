@@ -5,7 +5,7 @@
  * stored in the profiles table.
  */
 
-import { db, isSupabaseConfigured } from '@/lib/db';
+import { validateLocalToken } from '@/lib/local-auth';
 
 // ============================================
 // RBAC - ROLE-BASED ACCESS CONTROL
@@ -228,34 +228,22 @@ export interface TokenPayload {
 }
 
 /**
- * Verify a JWT token from the Authorization header using Supabase Auth.
- * Returns the user payload with role from profiles table.
+ * Verify a JWT token from the Authorization header.
+ * Tries local JWT validation (Prisma/SQLite auth) — Supabase is no longer used.
+ * Returns the user payload with role from the User table.
  */
 export async function getUserFromToken(authHeader: string | null): Promise<TokenPayload | null> {
   if (!authHeader?.startsWith('Bearer ')) return null;
   const token = authHeader.substring(7);
 
-  // If Supabase is not configured, return null (no auth)
-  if (!isSupabaseConfigured() || !db) return null;
-
   try {
-    // Verify the JWT with Supabase Auth
-    const { data: { user }, error } = await db.auth.getUser(token);
-    if (error || !user) return null;
-
-    // Get the user's profile for role information
-    const { data: profile } = await db
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile) return null;
+    const payload = await validateLocalToken(token);
+    if (!payload) return null;
 
     return {
-      userId: user.id,
-      email: user.email || '',
-      role: profile.role,
+      userId: payload.userId,
+      email: payload.email,
+      role: payload.role,
     };
   } catch {
     return null;

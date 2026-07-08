@@ -1,27 +1,22 @@
 /**
  * GET /api/management - Management Portal aggregated data
- * Access: managing_director, systems_admin only (directors)
- * profiles.role CHECK: ('client','attorney','paralegal','admin','managing_director','systems_admin')
- * cases has: case_ref (not matter_number), attorney_id FK → attorneys(id) (not lead_attorney_id → profiles)
- * cases has NO: urgency, is_high_risk, support_paralegal_id
- * profiles has NO: department, is_active, supervisor_id, hire_date
+ * Access: managing_director, systems_admin only
+ *
+ * Uses Prisma to aggregate case, client, staff, attorney, and audit-log data.
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { type RoleKey } from '@/lib/auth';
 
-// Only roles in profiles CHECK constraint
 const ALLOWED_ROLES: RoleKey[] = ['managing_director', 'systems_admin'];
+
+// Non-client roles
+const STAFF_ROLES = ['attorney', 'paralegal', 'admin', 'managing_director', 'systems_admin'];
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -30,108 +25,104 @@ export async function GET(request: NextRequest) {
       return apiError('Insufficient role privileges', 403, 'ROLE_FORBIDDEN');
     }
 
-    // Non-client roles from the actual profiles CHECK constraint
-    const staffRoles = ['attorney', 'paralegal', 'admin', 'managing_director', 'systems_admin'];
-
     // Run all queries in parallel
     const [
-      totalCasesResult,
-      activeCasesResult,
-      casesRevenueData,
-      totalClientsResult,
-      totalStaffResult,
-      attorneysData,
-      recentAuditLogsData,
+      totalCases,
+      activeCases,
+      totalClients,
+      totalStaff,
+      attorneys,
+      recentAuditLogs,
+      casesRevenue,
+      caseAttorneyIds,
     ] = await Promise.all([
-      // Total cases
-      db.from('cases').select('*', { count: 'exact', head: true }),
-      // Active cases (status not closed/archived)
-      db.from('cases')
-        .select('*', { count: 'exact', head: true })
-        .not('status', 'in', '("closed","archived")'),
-      // Revenue data (all estimated values)
-      db.from('cases').select('estimated_value'),
-      // Total clients
-      db.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'client'),
-      // Total staff
-      db.from('profiles').select('*', { count: 'exact', head: true }).in('role', staffRoles),
-      // Attorneys for performance tracking
-      db.from('attorneys')
-        .select('id, practice_number, specialization, available, profile:profiles(id, full_name, email, role)')
-        .eq('available', true),
-      // Recent audit logs (last 10)
-      db.from('audit_logs')
-        .select('id, action, resource_type, resource_id, details, ip_address, created_at, user_id')
-        .order('created_at', { ascending: false })
-        .limit(10),
+      db.case.count(),
+      db.case.count({
+        where: { status: { notIn: ['closed', 'archived'] } },
+      }),
+      db.user.count({ where: { role: 'client' } }),
+      db.user.count({ where: { role: { in: STAFF_ROLES } } }),
+      db.user.findMany({
+        where: { role: 'attorney', is_active: true },
+        select: {
+          id: true,
+          full_name: true,
+          email: true,
+          practice_number: true,
+          specialization: true,
+        },
+      }),
+      db.auditLog.findMany({
+        take: 10,
+        orderBy: { created_at: 'desc' },
+        include: { user: { select: { id: true, full_name: true, email: true, role: true } } },
+      }),
+      db.case.findMany({
+        where: { estimated_value: { not: null } },
+        select: { estimated_value: true },
+      }),
+      db.case.findMany({
+        where: { attorney_id: { not: null } },
+        select: { attorney_id: true },
+      }),
     ]);
 
-    const totalCases = totalCasesResult.count || 0;
-    const activeCases = activeCasesResult.count || 0;
-    const totalClients = totalClientsResult.count || 0;
-    const totalStaff = totalStaffResult.count || 0;
-
     // Calculate total revenue
-    const totalRevenue = (casesRevenueData.data || []).reduce(
-      (sum: number, c: any) => sum + (c.estimated_value || 0), 0
+    const totalRevenue = casesRevenue.reduce(
+      (sum, c) => sum + (c.estimated_value || 0),
+      0
     );
 
-    // Get case counts per attorney — cases.attorney_id references attorneys(id)
-    const attorneyIds = (attorneysData.data || []).map((a: any) => a.id);
-
-    let caseCountsMap: Record<string, number> = {};
-    if (attorneyIds.length > 0) {
-      const { data: caseCountsData } = await db
-        .from('cases')
-        .select('attorney_id')
-        .not('attorney_id', 'is', null);
-
-      for (const c of (caseCountsData || [])) {
-        const attId = c.attorney_id;
-        if (attId) {
-          caseCountsMap[attId] = (caseCountsMap[attId] || 0) + 1;
-        }
+    // Get case counts per attorney
+    const caseCountsMap: Record<string, number> = {};
+    for (const c of caseAttorneyIds) {
+      const attId = c.attorney_id;
+      if (attId) {
+        caseCountsMap[attId] = (caseCountsMap[attId] || 0) + 1;
       }
     }
 
     // Attorney performance
-    const attorneyPerformance = (attorneysData.data || [])
-      .filter((a: any) => (caseCountsMap[a.id] || 0) > 0)
-      .map((a: any) => ({
-        id: a.id,
-        full_name: a.profile?.full_name || 'Unknown',
-        practice_number: a.practice_number,
-        specialization: a.specialization,
-        case_count: caseCountsMap[a.id] || 0,
-      }));
-
-    // Enrich recent audit logs with user info
-    const recentAuditLogsFormatted = await Promise.all(
-      (recentAuditLogsData.data || []).map(async (log: any) => {
-        let user = null;
-        if (log.user_id) {
-          const { data: userData } = await db
-            .from('profiles')
-            .select('id, full_name, email, role')
-            .eq('id', log.user_id)
-            .single();
-          user = userData;
+    const attorneyPerformance = attorneys
+      .filter((a) => (caseCountsMap[a.id] || 0) > 0)
+      .map((a) => {
+        const spec = a.specialization;
+        let specialization: string[] = [];
+        if (Array.isArray(spec)) {
+          specialization = spec as string[];
+        } else if (typeof spec === 'string') {
+          try {
+            const parsed = JSON.parse(spec);
+            specialization = Array.isArray(parsed) ? parsed : [spec];
+          } catch {
+            specialization = [spec];
+          }
         }
         return {
-          id: log.id,
-          action: log.action,
-          resource_type: log.resource_type,
-          resource_id: log.resource_id,
-          details: log.details,
-          ip_address: log.ip_address,
-          created_at: log.created_at,
-          user,
+          id: a.id,
+          full_name: a.full_name || 'Unknown',
+          practice_number: a.practice_number,
+          specialization,
+          case_count: caseCountsMap[a.id] || 0,
         };
-      })
-    );
+      });
+
+    // Format recent audit logs (user already included)
+    const recentAuditLogsFormatted = recentAuditLogs.map((log) => ({
+      id: log.id,
+      action: log.action,
+      resource_type: log.resource_type,
+      resource_id: log.resource_id,
+      details: log.details,
+      ip_address: log.ip_address,
+      created_at: log.created_at,
+      user: log.user
+        ? { id: log.user.id, full_name: log.user.full_name, email: log.user.email, role: log.user.role }
+        : null,
+    }));
 
     // Pending approvals — empty until approval system is built
-    const pendingApprovals: any[] = [];
+    const pendingApprovals: unknown[] = [];
 
     // Key metrics
     const avgCaseValue = totalCases > 0 ? Math.round((totalRevenue / totalCases) * 100) / 100 : 0;
@@ -145,7 +136,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Financial summary — empty until billing system is built
-    const financialSummary: any[] = [];
+    const financialSummary: unknown[] = [];
 
     return apiResponse({
       firm_overview: {

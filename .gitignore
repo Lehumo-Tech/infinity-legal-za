@@ -58,3 +58,24 @@ mini-services/
 
 # Worklog
 worklog.md
+
+# Sandbox screenshots & temp files
+*.screenshot.png
+screenshot.png
+preview.png
+ssr-*.png
+final-landing-*.png
+security-audit-screenshot.png
+
+# Research data
+research_sa_*.json
+
+# Generated PDFs (build artifacts, not source)
+upload/body.pdf
+upload/cover.pdf
+upload/cover.html
+upload/generate_policy.py
+*.db
+dev.log
+.zscripts/*.log
+*.tsbuildinfo

@@ -1,14 +1,15 @@
 /**
- * GET/PUT/DELETE /api/consultations/[id] - Get/Update/Cancel a single consultation via Supabase
+ * GET/PUT/DELETE /api/consultations/[id] - Get/Update/Cancel a single consultation via Prisma
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { Prisma } from '@prisma/client';
+import { db } from '@/lib/db';
 import { sanitizeString } from '@/lib/security';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 
-// Valid enum values per Supabase schema
+// Valid enum values per Prisma schema
 const VALID_STATUSES = ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'];
 const VALID_MEETING_TYPES = ['in_person', 'video_call', 'phone_call'];
 
@@ -18,25 +19,21 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
-    // consultations.attorney_id FK → attorneys(id) → profiles(id)
-    // cases has case_ref (not matter_number)
-    const { data: consultation, error } = await db
-      .from('consultations')
-      .select('*, client:profiles!consultations_client_id_fkey(id, full_name, email, phone), attorney:attorneys!consultations_attorney_id_fkey(id, profile:profiles(full_name, email, role)), case:cases(id, case_ref, title, status)')
-      .eq('id', id)
-      .single();
+    const consultation = await db.consultation.findUnique({
+      where: { id },
+      include: {
+        client: { select: { id: true, full_name: true, email: true, phone: true } },
+        attorney: { select: { id: true, full_name: true, email: true, role: true } },
+        case: { select: { id: true, case_ref: true, title: true, status: true } },
+      },
+    });
 
-    if (error || !consultation) {
+    if (!consultation) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
@@ -53,24 +50,18 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
     // Verify consultation exists
-    const { data: existingConsultation, error: fetchError } = await db
-      .from('consultations')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const existingConsultation = await db.consultation.findUnique({
+      where: { id },
+      select: { id: true },
+    });
 
-    if (fetchError || !existingConsultation) {
+    if (!existingConsultation) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
@@ -95,27 +86,25 @@ export async function PUT(
       return apiError(`Invalid meeting_type. Must be one of: ${VALID_MEETING_TYPES.join(', ')}`, 400, 'INVALID_MEETING_TYPE');
     }
 
-    // Build update data — schema has scheduled_at (not scheduled_date + scheduled_time)
-    const updateData: Record<string, unknown> = {};
+    // Build update data
+    const updateData: Prisma.ConsultationUpdateInput = {};
     if (status !== undefined) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes ? sanitizeString(notes) : null;
-    if (scheduled_at !== undefined) updateData.scheduled_at = scheduled_at;
-    if (duration_minutes !== undefined) updateData.duration_minutes = duration_minutes;
+    if (scheduled_at !== undefined) updateData.scheduled_at = new Date(scheduled_at);
+    if (duration_minutes !== undefined) updateData.duration_minutes = Number(duration_minutes);
     if (meeting_type !== undefined) updateData.meeting_type = meeting_type;
     if (location !== undefined) updateData.location = location;
     if (meeting_link !== undefined) updateData.meeting_link = meeting_link;
 
-    const { data: updatedConsultation, error: updateError } = await db
-      .from('consultations')
-      .update(updateData)
-      .eq('id', id)
-      .select('*, client:profiles!consultations_client_id_fkey(id, full_name, email), attorney:attorneys!consultations_attorney_id_fkey(id, profile:profiles(full_name, email, role)), case:cases(id, case_ref, title)')
-      .single();
-
-    if (updateError || !updatedConsultation) {
-      console.error('Update consultation error:', updateError);
-      return apiError('Failed to update consultation', 500, 'UPDATE_CONSULTATION_ERROR');
-    }
+    const updatedConsultation = await db.consultation.update({
+      where: { id },
+      data: updateData,
+      include: {
+        client: { select: { id: true, full_name: true, email: true } },
+        attorney: { select: { id: true, full_name: true, email: true, role: true } },
+        case: { select: { id: true, case_ref: true, title: true } },
+      },
+    });
 
     await createAuditLog({
       user_id: auth.user.userId,
@@ -138,39 +127,26 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
     const { id } = await params;
 
     // Verify consultation exists
-    const { data: existingConsultation, error: fetchError } = await db
-      .from('consultations')
-      .select('id')
-      .eq('id', id)
-      .single();
+    const existingConsultation = await db.consultation.findUnique({
+      where: { id },
+      select: { id: true },
+    });
 
-    if (fetchError || !existingConsultation) {
+    if (!existingConsultation) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
     // Cancel the consultation by setting status to 'cancelled'
-    const { data: cancelledConsultation, error: updateError } = await db
-      .from('consultations')
-      .update({ status: 'cancelled' })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('Cancel consultation error:', updateError);
-      return apiError('Failed to cancel consultation', 500, 'CANCEL_CONSULTATION_ERROR');
-    }
+    const cancelledConsultation = await db.consultation.update({
+      where: { id },
+      data: { status: 'cancelled' },
+    });
 
     await createAuditLog({
       user_id: auth.user.userId,

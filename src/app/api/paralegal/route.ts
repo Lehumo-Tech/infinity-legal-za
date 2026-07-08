@@ -1,16 +1,12 @@
 /**
  * GET /api/paralegal - Paralegal Portal aggregated data
  * Access: paralegal role
- * profiles.role CHECK: ('client','attorney','paralegal','admin','managing_director','systems_admin')
- * cases has: case_ref (not matter_number), attorney_id FK → attorneys(id) (not lead_attorney_id)
- * cases has NO: urgency, is_high_risk, support_paralegal_id, court_date
- * leads has: first_name, last_name (not name), assigned_to (not assigned_paralegal_id)
- * documents has: status (not workflow_status), uploaded_by (not prepared_by)
- * tasks status: ('pending','in_progress','completed','cancelled') — no 'overdue'
+ *
+ * Uses Prisma to aggregate the paralegal's tasks, assigned leads, and recent documents.
  */
 
 import { NextRequest } from 'next/server';
-import { getAdminClient } from '@/lib/supabase/api-client';
+import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { type RoleKey } from '@/lib/auth';
 
@@ -18,11 +14,6 @@ const ALLOWED_ROLES: RoleKey[] = ['paralegal'];
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminClient();
-    if (!db) {
-      return apiError('Database not configured. Please set Supabase environment variables.', 503, 'DB_NOT_CONFIGURED');
-    }
-
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
@@ -37,50 +28,64 @@ export async function GET(request: NextRequest) {
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
-    // Run all queries in parallel using Supabase client
-    const [
-      myTasksResult,
-      myAssignedLeadsResult,
-      recentDocumentsResult,
-    ] = await Promise.all([
+    // Run all queries in parallel
+    const [myTasks, myAssignedLeads, recentDocuments, upcomingDeadlines] = await Promise.all([
       // My tasks (assigned_to = userId, not completed/cancelled)
-      db.from('tasks')
-        .select('*, creator:profiles!tasks_created_by_fkey(id, full_name, email), case:cases(id, case_ref, title, status)')
-        .eq('assigned_to', userId)
-        .not('status', 'in', '("completed","cancelled")')
-        .order('created_at', { ascending: false }),
+      db.task.findMany({
+        where: {
+          assigned_to: userId,
+          status: { notIn: ['completed', 'cancelled'] },
+        },
+        include: {
+          creator: { select: { id: true, full_name: true, email: true } },
+          case: { select: { id: true, case_ref: true, title: true, status: true } },
+        },
+        orderBy: { created_at: 'desc' },
+      }),
 
-      // Leads assigned to me (assigned_to = userId)
-      db.from('leads')
-        .select('*, assigned_to_profile:profiles!leads_assigned_to_fkey(id, full_name, email)')
-        .eq('assigned_to', userId)
-        .not('status', 'in', '("retained","lost")')
-        .order('created_at', { ascending: false }),
+      // Leads assigned to me — leads are IntakeSubmissions with personal_info.assigned_to = userId
+      db.intakeSubmission.findMany({
+        where: {
+          status: { notIn: ['retained', 'lost', 'draft'] },
+        },
+        orderBy: { created_at: 'desc' },
+      }),
 
       // Recent documents I uploaded
-      db.from('documents')
-        .select('*, case:cases(id, case_ref, title, status)')
-        .eq('uploaded_by', userId)
-        .order('created_at', { ascending: false })
-        .limit(10),
+      db.document.findMany({
+        where: { uploaded_by: userId },
+        include: {
+          case: { select: { id: true, case_ref: true, title: true, status: true } },
+        },
+        orderBy: { created_at: 'desc' },
+        take: 10,
+      }),
+
+      // Upcoming deadlines (tasks due in next 7 days, not completed/cancelled)
+      db.task.findMany({
+        where: {
+          assigned_to: userId,
+          status: { notIn: ['completed', 'cancelled'] },
+          due_date: {
+            gte: now,
+            lte: sevenDaysFromNow,
+          },
+        },
+        include: {
+          case: { select: { id: true, case_ref: true, title: true } },
+        },
+        orderBy: { due_date: 'asc' },
+      }),
     ]);
 
-    const myTasks = myTasksResult.data || [];
-    const myAssignedLeads = myAssignedLeadsResult.data || [];
-    const recentDocuments = recentDocumentsResult.data || [];
-
-    // Upcoming deadlines (tasks due in next 7 days, not completed/cancelled)
-    const { data: upcomingDeadlines } = await db
-      .from('tasks')
-      .select('id, title, priority, status, due_date, case:cases(id, case_ref, title)')
-      .eq('assigned_to', userId)
-      .gte('due_date', now.toISOString())
-      .lte('due_date', sevenDaysFromNow.toISOString())
-      .not('status', 'in', '("completed","cancelled")')
-      .order('due_date', { ascending: true });
+    // Filter leads in JS by personal_info.assigned_to === userId
+    const myAssignedLeadsFiltered = myAssignedLeads.filter(sub => {
+      const pi = (sub.personal_info && typeof sub.personal_info === 'object' ? sub.personal_info : {}) as Record<string, unknown>;
+      return pi.assigned_to === userId;
+    });
 
     // Format my tasks
-    const myTasksFormatted = myTasks.map((t: any) => ({
+    const myTasksFormatted = myTasks.map((t) => ({
       id: t.id,
       title: t.title,
       description: t.description,
@@ -91,24 +96,33 @@ export async function GET(request: NextRequest) {
       creator: t.creator,
     }));
 
-    // Format leads — has first_name/last_name (not name)
-    const myAssignedLeadsFormatted = myAssignedLeads.map((l: any) => ({
-      id: l.id,
-      first_name: l.first_name,
-      last_name: l.last_name,
-      name: `${l.first_name || ''} ${l.last_name || ''}`.trim(),
-      email: l.email,
-      phone: l.phone,
-      source: l.source,
-      status: l.status,
-      case_type: l.case_type,
-      description: l.description,
-      lead_score: l.lead_score,
-      created_at: l.created_at,
-    }));
+    // Format leads — has first_name/last_name from personal_info
+    const myAssignedLeadsFormatted = myAssignedLeadsFiltered.map((sub) => {
+      const pi = (sub.personal_info && typeof sub.personal_info === 'object' ? sub.personal_info : {}) as Record<string, unknown>;
+      const fullName = typeof pi.full_name === 'string' ? pi.full_name : '';
+      const parts = fullName.split(/\s+/);
+      const firstName = typeof pi.first_name === 'string' ? pi.first_name : parts[0] || '';
+      const lastName = typeof pi.last_name === 'string' ? pi.last_name : parts.slice(1).join(' ') || '';
+      return {
+        id: sub.id,
+        first_name: firstName,
+        last_name: lastName,
+        name: `${firstName} ${lastName}`.trim(),
+        email: typeof pi.email === 'string' ? pi.email : '',
+        phone: typeof pi.phone === 'string' ? pi.phone : '',
+        source: typeof pi.source === 'string' ? pi.source : 'website',
+        status: sub.status,
+        case_type: sub.case_type,
+        description: sub.case_description,
+        lead_score: typeof pi.lead_score === 'number'
+          ? pi.lead_score
+          : (sub.ai_confidence ? Math.round(sub.ai_confidence * 100) : null),
+        created_at: sub.created_at,
+      };
+    });
 
     // Format upcoming deadlines
-    const upcomingDeadlinesFormatted = (upcomingDeadlines || []).map((t: any) => ({
+    const upcomingDeadlinesFormatted = upcomingDeadlines.map((t) => ({
       id: t.id,
       title: t.title,
       priority: t.priority,
@@ -117,8 +131,8 @@ export async function GET(request: NextRequest) {
       case: t.case,
     }));
 
-    // Format recent documents — has status (not workflow_status)
-    const recentDocumentsFormatted = recentDocuments.map((d: any) => ({
+    // Format recent documents
+    const recentDocumentsFormatted = recentDocuments.map((d) => ({
       id: d.id,
       file_name: d.file_name,
       document_type: d.document_type,
@@ -130,10 +144,10 @@ export async function GET(request: NextRequest) {
     }));
 
     // Calculate summary
-    const pendingTasks = myTasks.filter((t: any) => t.status === 'pending').length;
-    const inProgressTasks = myTasks.filter((t: any) => t.status === 'in_progress').length;
-    const urgentDeadlines = (upcomingDeadlines || []).filter((t: any) => t.priority === 'urgent' || t.priority === 'high').length;
-    const activeLeads = myAssignedLeads.length;
+    const pendingTasks = myTasks.filter((t) => t.status === 'pending').length;
+    const inProgressTasks = myTasks.filter((t) => t.status === 'in_progress').length;
+    const urgentDeadlines = upcomingDeadlines.filter((t) => t.priority === 'urgent' || t.priority === 'high').length;
+    const activeLeads = myAssignedLeadsFiltered.length;
 
     return apiResponse({
       my_tasks: myTasksFormatted,

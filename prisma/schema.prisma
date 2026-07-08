@@ -19,22 +19,25 @@ model User {
   phone                 String?
   avatar_url            String?
   /// CHECK: client | attorney | paralegal | admin | managing_director | systems_admin
+  /// NOTE: "attorney" is the internal enum value (matches SA Legal Practice Council registration).
+  ///       In all user-facing UI it is displayed as "Legal Advisor".
   role                  String    @default("client")
   department            String?
   id_number             String?
   company               String?
   address               Json?
-  practice_number       String?   // For attorneys
-  bar_admission_date    DateTime? // For attorneys
-  specialization        Json?     // For attorneys - was String[] in PG
-  hourly_rate           Float?    // For attorneys
-  bio                   String?   // For attorneys
+  practice_number       String?   // For legal advisors (LPC registration)
+  bar_admission_date    DateTime? // For legal advisors
+  specialization        Json?     // For legal advisors - was String[] in PG
+  hourly_rate           Float?    // For legal advisors
+  bio                   String?   // For legal advisors
   is_active             Boolean   @default(true)
   email_verified        Boolean   @default(false)
   popi_consent          Boolean   @default(false)
   password_expires_at   DateTime?
   last_password_change  DateTime?
   last_login_at         DateTime?
+  last_active_at        DateTime? // Last known activity timestamp (engagement tracking)
   created_at            DateTime  @default(now())
   updated_at            DateTime  @updatedAt
 
@@ -152,6 +155,7 @@ model Case {
   next_deadline   DateTime?
   notes           String?
   is_high_risk    Boolean  @default(false)
+  closed_at       DateTime? // When the case was closed/archived (reporting)
   tags            Json?    // was String[] in PG
   metadata        Json?
   created_at      DateTime @default(now())
@@ -527,6 +531,7 @@ model UserSubscription {
   current_period_start DateTime?
   current_period_end   DateTime?
   cancel_at_period_end Boolean  @default(false)
+  auto_renew           Boolean  @default(true) // Auto-renew at end of period
   trial_ends_at        DateTime?
   payfast_token        String?
   created_at           DateTime @default(now())
