@@ -447,3 +447,27 @@ Stage Summary:
 - attorney→legal advisor migration: COMPLETE (schema + API + UI)
 - GitHub: PUSHED to https://github.com/Lehumo-Tech/infinity-legal-za main branch
 - DEPLOYMENT STATUS: READY (GO)
+
+---
+Task ID: FIX-LOGIN-IFRAME
+Agent: main (orchestrator)
+Task: User reported "sign in doesnt work — when i input the credential the login never happens"
+
+Work Log:
+- Read LoginScreen.tsx (form calls useAuth.signIn) and useAuth.tsx (signIn POSTs to /api/auth/login, then fetchCurrentUser calls /api/auth/profile)
+- Read /api/auth/login/route.ts: cookie set with sameSite:'lax', httpOnly:true — this is the root cause
+- Root cause: SameSite=Lax cookies are BLOCKED in cross-origin iframes (preview-chat-*.space-z.ai). Login POST returns 200 + sets cookie, but the cookie is never sent on the subsequent cross-origin /api/auth/profile fetch → 401 → auth state stays logged out → "login never happens"
+- Confirmed server's requireAuth() (src/lib/middleware.ts) already supports Bearer token fallback (Strategy 2) via validateLocalToken()
+- Created src/lib/auth-fetch.ts: localStorage token storage + global window.fetch interceptor that auto-attaches 'Authorization: Bearer <token>' to all /api/* requests when token is in storage
+- Updated src/hooks/useAuth.tsx: installAuthFetch() on provider mount; signIn() stores token from login response + uses partial user immediately + refreshes full profile in background; signOut() clears stored token
+- TypeScript: 0 errors. ESLint: 0 errors.
+- agent-browser verification: login succeeds, token stored in localStorage (len=308), dashboard loads
+- Critical proof: cleared cookies (simulates iframe SameSite block) → /api/auth/profile still returns 200 (role: managing_director), /api/dashboard returns 200 (totalCases: 2) — Bearer header auth works with NO cookie present
+- Dev log confirms: POST /api/auth/login 200 → GET /api/auth/profile 200 → all authed APIs 200
+- Committed e0d3f1d, pushed to origin/main (in sync 0/0)
+
+Stage Summary:
+- Login now works in the preview iframe (and in normal browsers)
+- Fix is client-side only; zero changes to 15+ components that call fetch('/api/...')
+- Both transports work: cookie (normal context) + Bearer header (iframe context)
+- Token stored in localStorage as 'il_auth_token'; cleared on signOut

@@ -481,3 +481,6 @@ $ next dev -p 3000 --webpack
  GET /api/cases?page=1&perPage=3 200 in 608ms (compile: 586ms, proxy.ts: 3ms, render: 19ms)
  GET /api/auth/profile 200 in 18ms (compile: 6ms, proxy.ts: 4ms, render: 8ms)
  GET /api/dashboard 200 in 23ms (compile: 7ms, proxy.ts: 4ms, render: 13ms)
+ GET / 200 in 262ms (compile: 68ms, proxy.ts: 6ms, render: 188ms)
+ GET / 200 in 30ms (compile: 3ms, proxy.ts: 4ms, render: 23ms)
+ GET / 200 in 32ms (compile: 2ms, proxy.ts: 4ms, render: 26ms)
