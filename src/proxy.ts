@@ -23,16 +23,19 @@ const PUBLIC_API_ROUTES = [
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/auth/signout',
+  '/api/auth/profile',      // Reads auth-token cookie itself; must be reachable for session check
   '/api/contact',
   '/api/health',
-  '/api/payfast/notify', // PayFast server-to-server webhook
-  '/api/report',         // Public report
-  '/api/pricing',        // Public pricing info
-  '/api/ai/intake',      // Public AI intake form on landing page
-  '/api/intake',         // Public intake form (creates lead + case + AI analysis)
-  '/api/ai/chat',        // Public AI chat (rate-limited for anonymous users)
-  '/api/articles',       // Public legal articles
-  '/api/admin/seed-pricing', // Seed pricing plans (admin setup)
+  '/api/payfast/notify',    // PayFast server-to-server webhook
+  '/api/payfast/success',   // PayFast return URL (browser redirect, no auth header)
+  '/api/payfast/cancel',    // PayFast return URL (browser redirect, no auth header)
+  '/api/report',            // Public report
+  '/api/pricing',           // Public pricing info
+  '/api/ai/intake',         // Public AI intake form on landing page
+  '/api/intake',            // Public intake form (creates lead + case + AI analysis)
+  '/api/ai/chat',           // Public AI chat (rate-limited for anonymous users)
+  '/api/articles',          // Public legal articles
+  '/api/holidays',          // Public holiday utility
 ];
 
 // Allowed origin for CORS
@@ -138,6 +141,17 @@ export async function proxy(request: NextRequest) {
       }
     } catch {
       // Session refresh failed — continue without auth
+    }
+
+    // LOCAL AUTH FALLBACK: if Supabase didn't find a session, check for the
+    // local auth-token cookie. This lets locally-authenticated users through
+    // the proxy gate; the route handler's requireAuth() does the real JWT
+    // validation. Without this, all authenticated API calls 401 at the proxy.
+    if (!user) {
+      const localToken = request.cookies.get('auth-token')?.value;
+      if (localToken) {
+        user = { _localAuth: true }; // sentinel — just to pass the !user gate
+      }
     }
 
     // Add security headers to all responses

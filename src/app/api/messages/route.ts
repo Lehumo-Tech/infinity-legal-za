@@ -150,6 +150,26 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // IDOR fix: verify the caller owns the message (is the recipient) before updating
+    const existingMessage = await db.message.findUnique({
+      where: { id: message_id },
+      select: { recipient_id: true, sender_id: true },
+    });
+
+    if (!existingMessage) {
+      return NextResponse.json(
+        { success: false, error: { message: 'Message not found' } },
+        { status: 404 }
+      );
+    }
+
+    if (existingMessage.recipient_id !== auth.user.userId) {
+      return NextResponse.json(
+        { success: false, error: { message: 'Forbidden: you can only mark messages addressed to you as read' } },
+        { status: 403 }
+      );
+    }
+
     const message = await db.message.update({
       where: { id: message_id },
       data: { is_read: true },

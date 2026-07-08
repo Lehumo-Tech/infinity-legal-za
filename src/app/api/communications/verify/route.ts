@@ -5,7 +5,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { apiResponse, apiError, checkRateLimit, validateCSRF } from '@/lib/middleware';
+import { apiResponse, apiError, checkRateLimit, validateCSRF, requireAuth } from '@/lib/middleware';
 import { sendEmail } from '@/lib/email-service';
 import { sendSms, formatSaPhone } from '@/lib/sms-service';
 import { renderEmailTemplate, renderSmsTemplate, generateOtp } from '@/lib/communication-templates';
@@ -14,6 +14,9 @@ import { signupRateLimiter } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
     const csrf = validateCSRF(request);
     if (!csrf.valid) return csrf.error!;
 
@@ -106,8 +109,6 @@ export async function POST(request: NextRequest) {
       emailSent,
       smsSent,
       expiresAt: expiresAt.toISOString(),
-      // For development/testing — include OTP in response (remove in production!)
-      ...(process.env.NODE_ENV !== 'production' ? { otpCode } : {}),
     });
   } catch (error) {
     console.error('[Communications/Verify] Error:', error);

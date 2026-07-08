@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { View, User, Stats, Consultation, TaskItem } from '@/components/types';
+import { formatRevenue } from '@/lib/format';
 import { KPISkeleton, CardGridSkeleton } from '@/components/LoadingSkeleton';
 
 export function WorkbenchView({ stats, user, cases, consultations, tasks, token, onViewChange, charts, firmHealth, loading }: {
@@ -75,7 +76,7 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
                 <div className="text-[9px] text-[#5a7199] uppercase tracking-wider">Tasks</div>
               </div>
               <div className="bg-white/[0.06] backdrop-blur-sm rounded-xl px-4 py-2.5 text-center border border-white/[0.06]">
-                <div className="text-lg font-bold text-[#c9a84c]">{stats.totalRevenue > 1000000 ? `R${(stats.totalRevenue / 1000000).toFixed(1)}M` : `R${(stats.totalRevenue / 1000).toFixed(0)}K`}</div>
+                <div className="text-lg font-bold text-[#c9a84c]">{formatRevenue(stats.totalRevenue)}</div>
                 <div className="text-[9px] text-[#5a7199] uppercase tracking-wider">Revenue</div>
               </div>
             </div>
@@ -159,7 +160,7 @@ export function WorkbenchView({ stats, user, cases, consultations, tasks, token,
                 </div>
               </div>
               <div className="text-2xl font-bold text-[#0c1e3c]">
-                {stats.totalRevenue > 1000000 ? `R${(stats.totalRevenue / 1000000).toFixed(1)}M` : `R${(stats.totalRevenue / 1000).toFixed(0)}K`}
+                {formatRevenue(stats.totalRevenue)}
               </div>
               <p className="text-[10px] text-slate-500 mt-0.5">{stats.totalClients} clients</p>
             </CardContent>

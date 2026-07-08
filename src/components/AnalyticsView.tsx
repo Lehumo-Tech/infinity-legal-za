@@ -5,6 +5,7 @@ import {
   Card, CardContent, CardHeader, CardTitle,
 } from '@/components/ui/card';
 import type { Stats } from '@/components/types';
+import { formatRevenue, formatPercent, formatCount } from '@/lib/format';
 
 export function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | null }) {
   return (
@@ -18,7 +19,7 @@ export function AnalyticsView({ token, stats }: { token: string | null; stats: S
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(2)}M`, icon: DollarSign, iconBg: 'bg-[#c9a84c]/10 text-[#a88832]', borderAccent: 'border-l-[#c9a84c]' },
+              { label: 'Total Revenue', value: formatRevenue(stats.totalRevenue), icon: DollarSign, iconBg: 'bg-[#c9a84c]/10 text-[#a88832]', borderAccent: 'border-l-[#c9a84c]' },
               { label: 'Active Cases', value: stats.activeCases, icon: FolderKanban, iconBg: 'bg-blue-50 text-blue-600', borderAccent: 'border-l-blue-500' },
               { label: 'New Leads', value: stats.newLeads, icon: UserPlus, iconBg: 'bg-emerald-50 text-emerald-600', borderAccent: 'border-l-emerald-500' },
               { label: 'Total Clients', value: stats.totalClients, icon: Users, iconBg: 'bg-purple-50 text-purple-600', borderAccent: 'border-l-purple-500' },

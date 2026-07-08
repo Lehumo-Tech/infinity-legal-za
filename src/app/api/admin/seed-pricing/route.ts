@@ -9,10 +9,12 @@
 
 import { NextRequest } from 'next/server';
 import { Prisma } from '@prisma/client';
-import { apiResponse, apiError } from '@/lib/middleware';
+import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { db as prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+
+const ADMIN_ROLES = ['managing_director', 'systems_admin', 'admin'];
 
 // Correct pricing plans matching the frontend (PricingView.tsx PLAN_STYLES)
 const CORRECT_PLANS = [
@@ -81,6 +83,13 @@ const CORRECT_PLANS = [
 
 export async function POST(request: NextRequest) {
   try {
+    // AUTH: admin-only — this route wipes all pricing plans
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+    if (!ADMIN_ROLES.includes(auth.user.role)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const results: string[] = [];
 
     // Delete all existing plans

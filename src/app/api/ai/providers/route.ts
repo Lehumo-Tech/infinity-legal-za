@@ -22,6 +22,11 @@ export async function GET(request: NextRequest) {
       return authResult.error!;
     }
 
+    // Staff-only: provider config exposes internal integration details
+    if (['client'].includes(authResult.user.role)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const statuses = getProviderStatuses();
     const tokenUsage = getTotalTokenUsage();
 

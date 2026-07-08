@@ -56,6 +56,11 @@ export async function PUT(
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
+    // Permission gate: caller must have EDIT_DOCUMENT permission
+    if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.EDIT_DOCUMENT)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const { id } = await params;
 
     // Verify document exists

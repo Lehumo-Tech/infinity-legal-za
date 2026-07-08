@@ -13,6 +13,34 @@ import { createAuditLog } from '@/lib/audit';
 const VALID_STATUSES = ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'];
 const VALID_MEETING_TYPES = ['in_person', 'video_call', 'phone_call'];
 
+// Staff roles that can access any consultation
+const STAFF_ROLES = ['managing_director', 'systems_admin', 'admin', 'attorney', 'paralegal'];
+
+/**
+ * Permission check: callers who are not staff may only access their own
+ * consultations. Returns an apiError response if forbidden, otherwise null.
+ */
+async function assertConsultationAccess(
+  auth: { authenticated: true; user: { userId: string; role: string } } | { authenticated: false; user: null; error: any },
+  consultation: { client_id: string } | null
+) {
+  if (!consultation) return null; // caller handles 404 separately
+  if (auth.authenticated && STAFF_ROLES.includes(auth.user.role)) return null;
+
+  // Client: must own the consultation (consultation.client_id references User.id)
+  if (!auth.authenticated) {
+    return apiError('Authentication required', 401, 'AUTH_REQUIRED');
+  }
+  const client = await db.client.findFirst({
+    where: { user_id: auth.user.userId },
+    select: { id: true, user_id: true },
+  });
+  if (!client || consultation.client_id !== client.user_id) {
+    return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+  }
+  return null;
+}
+
 // GET - Get single consultation by ID
 export async function GET(
   request: NextRequest,
@@ -37,6 +65,9 @@ export async function GET(
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
 
+    const forbidden = await assertConsultationAccess(auth, consultation);
+    if (forbidden) return forbidden;
+
     return apiResponse(consultation);
   } catch (error) {
     console.error('Get consultation error:', error);
@@ -58,12 +89,15 @@ export async function PUT(
     // Verify consultation exists
     const existingConsultation = await db.consultation.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, client_id: true },
     });
 
     if (!existingConsultation) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
+
+    const forbidden = await assertConsultationAccess(auth, existingConsultation);
+    if (forbidden) return forbidden;
 
     const body = await request.json();
     const {
@@ -135,12 +169,15 @@ export async function DELETE(
     // Verify consultation exists
     const existingConsultation = await db.consultation.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, client_id: true },
     });
 
     if (!existingConsultation) {
       return apiError('Consultation not found', 404, 'CONSULTATION_NOT_FOUND');
     }
+
+    const forbidden = await assertConsultationAccess(auth, existingConsultation);
+    if (forbidden) return forbidden;
 
     // Cancel the consultation by setting status to 'cancelled'
     const cancelledConsultation = await db.consultation.update({

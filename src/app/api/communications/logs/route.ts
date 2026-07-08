@@ -12,10 +12,18 @@
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
-import { apiResponse, apiError } from '@/lib/middleware';
+import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
+    // Logs expose all PII — restrict to admin roles
+    if (!['managing_director', 'systems_admin', 'admin'].includes(auth.user.role)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const { searchParams } = new URL(request.url);
     const channel = searchParams.get('channel') || undefined;
     const status = searchParams.get('status') || undefined;

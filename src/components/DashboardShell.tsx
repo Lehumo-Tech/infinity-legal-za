@@ -39,6 +39,7 @@ import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { formatRevenue } from '@/lib/format';
 
 // ============================================
 // TYPES
@@ -728,7 +729,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
               <>
                 <MiniStat label="Active Cases" value={stats.activeCases} />
                 <MiniStat label="Pending Tasks" value={stats.pendingTasks} />
-                {!isClient && <MiniStat label="Revenue" value={`R${(stats.totalRevenue / 1000000).toFixed(1)}M`} />}
+                {!isClient && <MiniStat label="Revenue" value={formatRevenue(stats.totalRevenue)} />}
               </>
             )}
           </div>
@@ -770,7 +771,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
             { label: 'Active Cases', value: stats.activeCases, icon: Activity, color: 'text-emerald-600 bg-emerald-50', border: 'border-l-emerald-500' },
             ...(!isClient ? [
               { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-600 bg-purple-50', border: 'border-l-purple-500' },
-              { label: 'Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
+              { label: 'Revenue', value: formatRevenue(stats.totalRevenue), icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
             ] : []),
             { label: 'Pending Tasks', value: stats.pendingTasks, icon: Clock, color: 'text-orange-600 bg-orange-50', border: 'border-l-orange-500' },
             { label: 'Overdue', value: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600 bg-red-50', border: 'border-l-red-500' },
@@ -1079,7 +1080,7 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
           title: caseForm.title,
           case_type: caseForm.case_type,
           description: caseForm.description || undefined,
-          client_id: user.id,
+          // client_id omitted — backend auto-resolves the caller's own Client record
           opposing_party: caseForm.opposing_party || undefined,
           court_name: caseForm.court_name || undefined,
           notes: caseForm.urgency !== 'medium' ? `Urgency: ${caseForm.urgency}` : undefined,
@@ -2540,7 +2541,7 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
           {/* Stats overview grid — stat-card */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger-children">
             {[
-              { label: 'Total Revenue', value: `R${(stats.totalRevenue / 1000000).toFixed(2)}M`, icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
+              { label: 'Total Revenue', value: formatRevenue(stats.totalRevenue), icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
               { label: 'Active Cases', value: stats.activeCases, icon: FolderKanban, color: 'text-emerald-700 bg-emerald-50', border: 'border-l-emerald-500' },
               { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-700 bg-purple-50', border: 'border-l-purple-500' },
               { label: 'Total Clients', value: stats.totalClients, icon: Users, color: 'text-blue-700 bg-blue-50', border: 'border-l-blue-500' },
@@ -2639,7 +2640,7 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
               </div>
               <div>
                 <p className="text-[#8fa4c4] text-xs uppercase tracking-wider font-medium">Total Revenue</p>
-                <p className="text-2xl font-bold text-white mt-0.5" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>R{(stats.totalRevenue / 1000000).toFixed(2)}M</p>
+                <p className="text-2xl font-bold text-white mt-0.5" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{formatRevenue(stats.totalRevenue)}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

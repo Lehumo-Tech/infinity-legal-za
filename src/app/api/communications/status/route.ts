@@ -2,13 +2,22 @@
  * GET /api/communications/status - Get email/SMS service status
  */
 
-import { apiResponse } from '@/lib/middleware';
+import { NextRequest } from 'next/server';
+import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { getEmailServiceStatus } from '@/lib/email-service';
 import { getSmsServiceStatus } from '@/lib/sms-service';
 import { db } from '@/lib/db';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
+    // Service config exposes provider details — restrict to admin roles
+    if (!['managing_director', 'systems_admin', 'admin'].includes(auth.user.role)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const emailStatus = getEmailServiceStatus();
     const smsStatus = getSmsServiceStatus();
 

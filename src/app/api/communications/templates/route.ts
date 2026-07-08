@@ -4,11 +4,19 @@
 
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
-import { apiResponse, apiError } from '@/lib/middleware';
+import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { EMAIL_TEMPLATES, SMS_TEMPLATES } from '@/lib/communication-templates';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
+    // Template listing is staff-only (clients don't need template metadata)
+    if (['client'].includes(auth.user.role)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const { searchParams } = new URL(request.url);
     const channel = searchParams.get('channel') || undefined;
 

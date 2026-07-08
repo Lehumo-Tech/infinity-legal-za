@@ -1,27 +1,42 @@
 /**
- * useAuth - Supabase Authentication Hook
+ * useAuth - Local JWT Authentication Hook
  *
- * Provides reactive auth state management using Supabase browser client.
- * Cookie-based SSR auth with middleware session refresh.
+ * Uses the local Prisma/SQLite auth system via /api/auth/login.
+ * Issues an httpOnly `auth-token` cookie (HMAC-SHA256 JWT) that all
+ * API routes read via getAuthUser().
  *
- * Auto sign-in: After signup, users are auto-confirmed and can sign in
- * immediately. If a sign-in fails with "Email not confirmed", the system
- * will auto-confirm the email and retry the sign-in automatically.
+ * This is the single source of truth for client-side auth. Supabase
+ * is no longer used for authentication (only the DB may be used for
+ * other features if configured).
  */
 
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { createBrowserSupabaseClient, isSupabaseConfigured } from '@/lib/supabase/browser';
-import type { User } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
 import type { UserRole } from '@/components/types';
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
+// ============================================
+// TYPES
+// ============================================
+
+interface AuthUser {
+  id: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  role: UserRole;
+  id_number: string | null;
+  company: string | null;
+  popi_consent: boolean | null;
+  email_verified: boolean | null;
+  last_login_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 interface AuthState {
-  user: (Profile & { email_verified: boolean }) | null;
-  supabaseUser: User | null;
+  user: AuthUser | null;
   accessToken: string | null;
   loading: boolean;
   error: string | null;
@@ -44,254 +59,118 @@ interface SignUpData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Timeout wrapper to prevent hanging promises
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
-    ),
-  ]);
+// ============================================
+// HELPERS
+// ============================================
+
+/** Fetch the current user from /api/auth/profile (reads the auth-token cookie). */
+async function fetchCurrentUser(): Promise<AuthUser | null> {
+  try {
+    const res = await fetch('/api/auth/profile', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json.success && json.data) {
+      return json.data as AuthUser;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
+
+// ============================================
+// PROVIDER
+// ============================================
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
-    supabaseUser: null,
     accessToken: null,
     loading: true,
     error: null,
   });
-  const supabaseRef = useRef<ReturnType<typeof createBrowserSupabaseClient> | null>(null);
   const initializedRef = useRef(false);
 
-  // Lazy init the browser client
-  const getSupabase = useCallback(() => {
-    if (!supabaseRef.current) {
-      supabaseRef.current = createBrowserSupabaseClient();
-    }
-    return supabaseRef.current;
-  }, []);
-
-  // Fetch the user's profile from the profiles table (with timeout)
-  const fetchProfile = useCallback(async (userId: string): Promise<(Profile & { email_verified: boolean }) | null> => {
-    const supabase = getSupabase();
-    try {
-      const { data: profile, error } = await withTimeout(
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single() as unknown as Promise<{ data: Profile | null; error: unknown }>,
-        3000 // 3 second timeout (reduced from 8s — local auth is the primary path)
-      );
-
-      if (error || !profile) {
-        // Profile not found is expected when using local auth — don't log as error
-        return null;
-      }
-
-      // Also get email_verified from auth
-      const { data: { user: authUser } } = await withTimeout(
-        supabase.auth.getUser(),
-        2000 // 2 second timeout
-      );
-
-      return {
-        ...profile,
-        email_verified: authUser?.email_confirmed_at ? true : false,
-      };
-    } catch {
-      // Supabase unreachable — local auth (JWT cookie) is the primary auth path.
-      // This is expected in environments where Supabase is configured but not reachable.
-      return null;
-    }
-  }, [getSupabase]);
-
-  // Build a minimal profile from auth user data when the profiles table row doesn't exist yet
-  const buildMinimalProfile = useCallback((authUser: User): (Profile & { email_verified: boolean }) => ({
-    id: authUser.id,
-    email: authUser.email || '',
-    full_name: authUser.user_metadata?.full_name || null,
-    phone: authUser.user_metadata?.phone || null,
-    avatar_url: null,
-    role: (authUser.user_metadata?.role || 'client') as UserRole,
-    id_number: null,
-    company: null,
-    address: null,
-    preferences: null,
-    popi_consent: false,
-    email_verified: !!authUser.email_confirmed_at,
-    last_login_at: null,
-    created_at: authUser.created_at,
-    updated_at: authUser.updated_at || authUser.created_at,
-  }), []);
-
-  // Initialize auth state — runs once
+  // On mount: check if already authenticated via cookie
   useEffect(() => {
-    // If Supabase isn't configured, skip auth initialization
-    if (!isSupabaseConfigured()) {
-      queueMicrotask(() => {
-        setAuthState({
-          supabaseUser: null,
-          user: null,
-          accessToken: null,
-          loading: false,
-          error: null,
-        });
+    let cancelled = false;
+    (async () => {
+      const user = await fetchCurrentUser();
+      if (cancelled) return;
+      setAuthState({
+        user,
+        accessToken: user ? 'cookie' : null, // cookie-based; no access token in JS
+        loading: false,
+        error: null,
       });
-      return;
-    }
+      initializedRef.current = true;
+    })();
 
-    const supabase = getSupabase();
-
-    // Listen for auth state changes — handles everything including INITIAL_SESSION
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        initializedRef.current = true;
-
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-          if (session?.user) {
-            const profile = await fetchProfile(session.user.id);
-            setAuthState({
-              supabaseUser: session.user,
-              user: profile ?? buildMinimalProfile(session.user),
-              accessToken: session.access_token,
-              loading: false,
-              error: null,
-            });
-          } else {
-            setAuthState({
-              supabaseUser: null,
-              user: null,
-              accessToken: null,
-              loading: false,
-              error: null,
-            });
-          }
-        } else if (event === 'SIGNED_OUT') {
-          setAuthState({
-            supabaseUser: null,
-            user: null,
-            accessToken: null,
-            loading: false,
-            error: null,
-          });
-        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          setAuthState(prev => ({
-            ...prev,
-            supabaseUser: session.user,
-            accessToken: session.access_token,
-          }));
-        }
-      }
-    );
-
-    // Fallback: if onAuthStateChange never fires (e.g. Supabase is slow), stop loading after 5s
-    const fallbackTimer = setTimeout(() => {
-      if (!initializedRef.current) {
-        console.warn('Auth initialization timed out — setting loading to false');
+    // Safety: stop loading after 8s even if profile fetch hangs
+    const timer = setTimeout(() => {
+      if (!initializedRef.current && !cancelled) {
         setAuthState(prev => ({ ...prev, loading: false }));
+        initializedRef.current = true;
       }
-    }, 5000);
+    }, 8000);
 
     return () => {
-      subscription.unsubscribe();
-      clearTimeout(fallbackTimer);
+      cancelled = true;
+      clearTimeout(timer);
     };
-  }, [getSupabase, fetchProfile, buildMinimalProfile]);
+  }, []);
 
-  // Sign in with email and password — uses Supabase browser client directly
-  // Auto-confirms email if needed, then retries sign-in
+  // ============================================
+  // SIGN IN — calls /api/auth/login which sets the auth-token cookie
+  // ============================================
   const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    if (!isSupabaseConfigured()) {
-      return { success: false, error: 'Service unavailable. Please try again later.' };
-    }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
-      const supabase = getSupabase();
-      const { data, error } = await withTimeout(
-        supabase.auth.signInWithPassword({
-          email: email.toLowerCase().trim(),
-          password,
-        }),
-        15000 // 15 second timeout for sign-in
-      );
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: email.toLowerCase().trim(), password }),
+      });
 
-      if (error) {
-        // If email is not confirmed, auto-confirm and retry
-        if (error.message?.toLowerCase().includes('email not confirmed') || error.message?.toLowerCase().includes('email not verified')) {
-          try {
-            const confirmRes = await fetch('/api/auth/auto-confirm', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email.toLowerCase().trim() }),
-            });
+      const json = await res.json();
 
-            if (confirmRes.ok) {
-              // Retry sign-in after auto-confirm
-              const { data: retryData, error: retryError } = await withTimeout(
-                supabase.auth.signInWithPassword({
-                  email: email.toLowerCase().trim(),
-                  password,
-                }),
-                15000
-              );
-
-              if (!retryError && retryData.user) {
-                const profile = await fetchProfile(retryData.user.id);
-
-                setAuthState({
-                  supabaseUser: retryData.user,
-                  user: profile ?? buildMinimalProfile(retryData.user),
-                  accessToken: retryData.session?.access_token ?? null,
-                  loading: false,
-                  error: null,
-                });
-                return { success: true };
-              }
-            }
-          } catch {
-            // Auto-confirm failed, fall through to original error
-          }
-        }
-
-        setAuthState(prev => ({ ...prev, loading: false, error: error.message }));
-        return { success: false, error: error.message };
+      if (!res.ok || !json.success) {
+        const msg = json.error?.message || json.error || 'Sign in failed';
+        setAuthState(prev => ({ ...prev, loading: false, error: msg }));
+        return { success: false, error: msg };
       }
 
-      if (data.user) {
-        const profile = await fetchProfile(data.user.id);
-
-        setAuthState({
-          supabaseUser: data.user,
-          user: profile ?? buildMinimalProfile(data.user),
-          accessToken: data.session?.access_token ?? null,
-          loading: false,
-          error: null,
-        });
-        return { success: true };
-      }
-
-      setAuthState(prev => ({ ...prev, loading: false, error: 'Sign in failed' }));
-      return { success: false, error: 'Sign in failed — no user returned' };
+      // Cookie is now set by the server. Fetch the full profile.
+      const user = await fetchCurrentUser();
+      setAuthState({
+        user,
+        accessToken: 'cookie',
+        loading: false,
+        error: null,
+      });
+      return { success: true };
     } catch (err: any) {
-      const message = err?.message?.includes('timed out') ? 'Sign in timed out. Please check your connection and try again.' : (err?.message || 'Sign in failed');
+      const message = err?.message || 'Sign in failed';
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
-  }, [getSupabase, fetchProfile, buildMinimalProfile]);
+  }, []);
 
-  // Sign up via server-side route — auto sign-in after successful signup
+  // ============================================
+  // SIGN UP — calls /api/auth/signup, then signs in
+  // ============================================
   const signUp = useCallback(async (signUpData: SignUpData): Promise<{ success: boolean; error?: string }> => {
-    if (!isSupabaseConfigured()) {
-      return { success: false, error: 'Service unavailable. Please try again.' };
-    }
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
-      const response = await fetch('/api/auth/signup', {
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           email: signUpData.email.toLowerCase().trim(),
           password: signUpData.password,
@@ -302,38 +181,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }),
       });
 
-      const result = await response.json();
+      const json = await res.json();
 
-      if (!response.ok || result.error) {
-        const errorMessage = result.error?.message || result.error || result.message || 'Signup failed';
+      if (!res.ok || !json.success) {
+        const msg = json.error?.message || json.error || 'Signup failed';
         setAuthState(prev => ({ ...prev, loading: false }));
-        return { success: false, error: errorMessage };
+        return { success: false, error: msg };
       }
 
-      // Account created successfully — auto sign-in
-      try {
-        const supabase = getSupabase();
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: signUpData.email.toLowerCase().trim(),
-          password: signUpData.password,
-        });
-
-        if (!signInError && signInData.user) {
-          const profile = await fetchProfile(signInData.user.id);
-          setAuthState({
-            supabaseUser: signInData.user,
-            user: profile ?? buildMinimalProfile(signInData.user),
-            accessToken: signInData.session?.access_token ?? null,
-            loading: false,
-            error: null,
-          });
-          return { success: true };
-        }
-      } catch {
-        // Auto sign-in failed — user will need to sign in manually
+      // Account created — auto sign-in to set the auth-token cookie
+      const signInResult = await signIn(signUpData.email, signUpData.password);
+      if (signInResult.success) {
+        return { success: true };
       }
 
-      // Fallback: account created but couldn't auto sign-in — clear error state
+      // Account created but auto sign-in failed — user can sign in manually
       setAuthState(prev => ({ ...prev, loading: false, error: null }));
       return { success: true, error: 'Account created! Please sign in with your credentials.' };
     } catch (err: any) {
@@ -341,46 +203,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthState(prev => ({ ...prev, loading: false, error: message }));
       return { success: false, error: message };
     }
-  }, [getSupabase, fetchProfile, buildMinimalProfile]);
+  }, [signIn]);
 
-  // Sign out
+  // ============================================
+  // SIGN OUT — clears the auth-token cookie via /api/auth/signout
+  // ============================================
   const signOut = useCallback(async () => {
-    if (!isSupabaseConfigured()) {
-      return;
-    }
     try {
-      const supabase = getSupabase();
-      await supabase.auth.signOut();
-      // Also call the server-side signout to clear cookies
-      await fetch('/api/auth/signout', { method: 'POST' });
-    } catch (err) {
-      console.error('Signout error:', err);
+      await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
+    } catch {
+      // ignore — clear local state regardless
     }
-    // Always clear local state regardless of API call success
     setAuthState({
-      supabaseUser: null,
       user: null,
       accessToken: null,
       loading: false,
       error: null,
     });
-  }, [getSupabase]);
+  }, []);
 
-  // Refresh profile data
-  const refreshProfile = useCallback(async (userId?: string) => {
-    const supabase = getSupabase();
-    let uid = userId;
-    if (!uid) {
-      const { data: { user } } = await supabase.auth.getUser();
-      uid = user?.id;
+  // ============================================
+  // REFRESH PROFILE
+  // ============================================
+  const refreshProfile = useCallback(async () => {
+    const user = await fetchCurrentUser();
+    if (user) {
+      setAuthState(prev => ({ ...prev, user }));
     }
-    if (!uid) return;
-    if (!isSupabaseConfigured()) return;
-    const profile = await fetchProfile(uid);
-    if (profile) {
-      setAuthState(prev => ({ ...prev, user: profile }));
-    }
-  }, [getSupabase, fetchProfile]);
+  }, []);
 
   return (
     <AuthContext.Provider

@@ -83,6 +83,10 @@ export async function POST(request: NextRequest) {
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
+    // Staff roles that can book consultations on behalf of any client
+    const STAFF_ROLES = ['managing_director', 'systems_admin', 'admin', 'attorney', 'paralegal'];
+    const isStaff = STAFF_ROLES.includes(auth.user.role);
+
     const body = await request.json();
     const {
       client_id,
@@ -114,6 +118,24 @@ export async function POST(request: NextRequest) {
       } else {
         // We need a user account for the client
         return apiError('Client not found. Please create a client account first.', 404, 'CLIENT_NOT_FOUND');
+      }
+    }
+
+    // Permission check: clients can only book for themselves.
+    // If a client omits client_id/client_email, default to their own userId.
+    if (!isStaff) {
+      if (!resolvedClientId) {
+        // Client booking for themselves — resolve from their own profile
+        const ownClient = await db.client.findFirst({
+          where: { user_id: auth.user.userId },
+          select: { user_id: true },
+        });
+        if (!ownClient) {
+          return apiError('No client profile found for your account', 403, 'FORBIDDEN');
+        }
+        resolvedClientId = ownClient.user_id;
+      } else if (resolvedClientId !== auth.user.userId) {
+        return apiError('You can only book consultations for yourself', 403, 'FORBIDDEN');
       }
     }
 

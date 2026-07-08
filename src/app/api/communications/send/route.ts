@@ -14,7 +14,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF } from '@/lib/middleware';
+import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF, requireAuth } from '@/lib/middleware';
 import { sendEmail, isEmailConfigured } from '@/lib/email-service';
 import { sendSms, isSmsConfigured, formatSaPhone } from '@/lib/sms-service';
 import { renderEmailTemplate, renderSmsTemplate } from '@/lib/communication-templates';
@@ -22,8 +22,26 @@ import { communicationsRateLimiter } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
+    // Only staff can send communications via this endpoint
+    if (['client'].includes(auth.user.role)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const csrf = validateCSRF(request);
     if (!csrf.valid) return csrf.error!;
+
+    // Rate limit sends
+    const rateResult = await checkRateLimit(request, communicationsRateLimiter);
+    if (!rateResult.allowed) {
+      return apiError('Too many send attempts. Please try again later.', 429, 'RATE_LIMITED');
+    }
+
+    // Reject oversized payloads (1MB max)
+    const sizeCheck = validateBodySize(request, 1024 * 1024);
+    if (!sizeCheck.valid) return sizeCheck.error!;
 
     const body = await request.json();
     const { channel, template, to, subject, body: content, variables = {}, category, userId, recipientName } = body;

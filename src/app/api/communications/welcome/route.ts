@@ -6,13 +6,21 @@
  */
 
 import { NextRequest } from 'next/server';
-import { apiResponse, apiError } from '@/lib/middleware';
+import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
 import { sendEmail } from '@/lib/email-service';
 import { sendSms, formatSaPhone } from '@/lib/sms-service';
 import { renderEmailTemplate, renderSmsTemplate } from '@/lib/communication-templates';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.authenticated) return auth.error!;
+
+    // Sending welcome comms is an admin-only action
+    if (!['managing_director', 'systems_admin', 'admin'].includes(auth.user.role)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const body = await request.json();
     const { userId, email, fullName, phone } = body;
 

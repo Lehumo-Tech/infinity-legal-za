@@ -161,10 +161,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, case_type, client_id, estimated_value, opposing_party, court_name, jurisdiction, notes, urgency } = body;
+    const { title, description, case_type, estimated_value, opposing_party, court_name, jurisdiction, notes, urgency } = body;
+    let { client_id } = body;
 
-    if (!title || !case_type || !client_id) {
-      return apiError('Title, case type, and client are required', 400, 'MISSING_FIELDS');
+    if (!title || !case_type) {
+      return apiError('Title and case type are required', 400, 'MISSING_FIELDS');
     }
 
     // Validate case_type enum
@@ -181,6 +182,19 @@ export async function POST(request: NextRequest) {
     // Validate urgency if provided
     if (urgency && !['low', 'medium', 'high', 'critical'].includes(urgency)) {
       return apiError('Invalid urgency level', 400, 'INVALID_URGENCY');
+    }
+
+    // Resolve client_id: if not provided, try to find the caller's own Client record.
+    // This lets clients create cases for themselves without specifying client_id.
+    if (!client_id) {
+      const ownClient = await db.client.findFirst({ where: { user_id: auth.user.userId } });
+      if (ownClient) {
+        client_id = ownClient.id;
+      }
+    }
+
+    if (!client_id) {
+      return apiError('Client is required. Select a client or ensure your account has a client profile.', 400, 'MISSING_CLIENT');
     }
 
     // Validate client exists
