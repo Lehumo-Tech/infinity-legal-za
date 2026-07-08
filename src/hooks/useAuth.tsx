@@ -5,6 +5,15 @@
  * Issues an httpOnly `auth-token` cookie (HMAC-SHA256 JWT) that all
  * API routes read via getAuthUser().
  *
+ * CROSS-ORIGIN IFRAME SUPPORT:
+ * Cookies with SameSite=Lax are blocked in cross-origin iframes (e.g. the
+ * preview-chat-*.space-z.ai preview). So on successful login we ALSO store
+ * the JWT in localStorage and install a global fetch interceptor that
+ * attaches `Authorization: Bearer <token>` to all /api/* requests. The
+ * server's requireAuth() accepts the Bearer header as a fallback to the
+ * cookie, so auth works in both normal and iframe contexts. See
+ * src/lib/auth-fetch.ts for the transport details.
+ *
  * This is the single source of truth for client-side auth. Supabase
  * is no longer used for authentication (only the DB may be used for
  * other features if configured).
@@ -14,6 +23,11 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import type { UserRole } from '@/components/types';
+import {
+  installAuthFetch,
+  getStoredToken,
+  setStoredToken,
+} from '@/lib/auth-fetch';
 
 // ============================================
 // TYPES
@@ -63,7 +77,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // HELPERS
 // ============================================
 
-/** Fetch the current user from /api/auth/profile (reads the auth-token cookie). */
+/**
+ * Fetch the current user from /api/auth/profile.
+ *
+ * Works in BOTH normal (cookie) and cross-origin iframe (Bearer header) contexts:
+ * - In a normal browser, the httpOnly `auth-token` cookie is sent automatically.
+ * - In a cross-origin iframe, the cookie is blocked, so the global fetch
+ *   interceptor (installed by installAuthFetch) attaches `Authorization:
+ *   Bearer <token>` from localStorage instead.
+ * - If neither is present, the server returns 401 and we get null.
+ */
 async function fetchCurrentUser(): Promise<AuthUser | null> {
   try {
     const res = await fetch('/api/auth/profile', {
@@ -95,15 +118,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
   const initializedRef = useRef(false);
 
-  // On mount: check if already authenticated via cookie
+  // On mount: install the cross-origin fetch interceptor (attaches Bearer token
+  // from localStorage to /api/* requests when available), then check auth state.
+  // The interceptor must be installed BEFORE the initial profile fetch so that a
+  // returning user with a token in localStorage (but no cookie, e.g. inside the
+  // preview iframe) is recognized as authenticated.
   useEffect(() => {
+    installAuthFetch();
     let cancelled = false;
     (async () => {
       const user = await fetchCurrentUser();
       if (cancelled) return;
       setAuthState({
         user,
-        accessToken: user ? 'cookie' : null, // cookie-based; no access token in JS
+        accessToken: user ? (getStoredToken() || 'cookie') : null,
         loading: false,
         error: null,
       });
@@ -145,11 +173,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: msg };
       }
 
-      // Cookie is now set by the server. Fetch the full profile.
-      const user = await fetchCurrentUser();
+      // Store the JWT in localStorage so the global fetch interceptor can
+      // attach it as a Bearer header on subsequent /api/* calls. This is
+      // essential for cross-origin iframes where SameSite=Lax cookies are
+      // blocked — without it, /api/auth/profile (and every other authed
+      // endpoint) would 401 immediately after login.
+      const token: string | undefined = json.data?.token;
+      if (token) {
+        setStoredToken(token);
+      }
+
+      // The login response includes a partial user object. Use it immediately
+      // so the UI flips to the authenticated state without a second round-trip,
+      // then refresh the full profile in the background.
+      const partial = json.data?.user;
+      const initialUser: AuthUser | null = partial
+        ? {
+            id: partial.id,
+            email: partial.email,
+            full_name: partial.full_name ?? null,
+            phone: null,
+            avatar_url: null,
+            role: partial.role as UserRole,
+            id_number: null,
+            company: null,
+            popi_consent: null,
+            email_verified: partial.email_verified ?? null,
+            last_login_at: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+        : null;
+
+      if (initialUser) {
+        setAuthState({
+          user: initialUser,
+          accessToken: token || 'cookie',
+          loading: false,
+          error: null,
+        });
+      }
+
+      // Fetch the full profile (phone, avatar, etc.) in the background.
+      // In the iframe this works because the interceptor now attaches the
+      // Bearer header; in a normal browser the cookie works too.
+      const fullUser = await fetchCurrentUser();
       setAuthState({
-        user,
-        accessToken: 'cookie',
+        user: fullUser || initialUser,
+        accessToken: token || 'cookie',
         loading: false,
         error: null,
       });
@@ -209,6 +280,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // SIGN OUT — clears the auth-token cookie via /api/auth/signout
   // ============================================
   const signOut = useCallback(async () => {
+    // Clear the localStorage token first so the interceptor stops attaching it.
+    setStoredToken(null);
     try {
       await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
     } catch {
