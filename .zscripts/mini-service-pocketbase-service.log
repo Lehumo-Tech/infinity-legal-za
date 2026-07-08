@@ -2,7 +2,7 @@
 bun install v1.3.14 (0d9b296a)
 No packages! Deleted empty lockfile
 
-[7.00ms] done
+[13.00ms] done
 [pocketbase-service] Running bun run dev...
 $ bun --hot index.ts
 [PB-Service] Health endpoint on port 8091

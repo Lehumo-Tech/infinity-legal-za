@@ -212,3 +212,29 @@ Stage Summary:
 - All insurance language removed; framed as legal services subscription
 - 3 plans with comparison table, POPIA section, Legal Practice Council regulator, fair usage policy, refund policy, limitation of liability
 - Old wrong document kept at Infinity_Legal_Membership_Agreement.pdf for comparison
+
+---
+Task ID: 11
+Agent: Main Agent
+Task: Quality control, bug fixes, GSAP integration, browser testing, schema update, git push
+
+Work Log:
+- Ran ESLint (clean) and TypeScript check (0 errors after prisma generate)
+- Fixed critical dev server crash: removed duplicate src/middleware.ts that conflicted with src/proxy.ts in Next.js 16 (server was hanging at 115% CPU, 2.8GB RAM)
+- Installed gsap@3.15.0 and built src/lib/gsap.ts with 5 reusable animation hooks (useHeroEntrance, useScrollReveal, useMagneticButton, useGsapContext, useCounterAnimation)
+- Integrated GSAP into LandingPage: staggered hero entrance (kicker→title→subtitle→cta→stats), scroll-triggered reveals on AI intake/ask-ai/pricing sections, magnetic hover on primary CTA, all respecting prefers-reduced-motion
+- Updated Prisma schema: added Case.closed_at, User.last_active_at, UserSubscription.auto_renew; updated role comments clarifying 'attorney' is internal enum displaying as 'Legal Advisor'
+- Ran prisma db push to sync schema
+- Fixed user-facing 'Attorney' strings → 'Legal Advisor' in DashboardShell (labels, placeholders, role badges, stats)
+- Fixed useAuth profile fetch timeout noise (8s→3s timeout, silent fail when Supabase unreachable — local JWT is primary auth)
+- Agent Browser testing: verified landing page renders all sections, login works (tidimalo@infinitylegal.org → dashboard), Cases view, Pricing view (3 plans R99/R99/R139), mobile viewport (390x844) with hamburger menu, sticky footer
+- Committed all changes (67 files, +7108/-1759 lines)
+- Push to GitHub failed: token in remote URL is expired (needs fresh token from user)
+
+Stage Summary:
+- Dev server: stable, HTTP 200, no crashes, no syntax errors
+- TypeScript: 0 errors | ESLint: 0 errors, 0 warnings
+- GSAP animation system live on landing page
+- Schema updated and synced to DB
+- Browser-verified: landing, login, dashboard, cases, pricing, mobile all working
+- Commit 9ca89f6 ready locally; push needs fresh GitHub token
