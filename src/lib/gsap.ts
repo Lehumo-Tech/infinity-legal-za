@@ -72,21 +72,53 @@ export function useScrollReveal(
 
   useEffect(() => {
     if (!scope.current || prefersReducedMotion()) return;
+
     const ctx = gsap.context(() => {
-      gsap.from(selector, {
-        y,
-        opacity,
-        duration,
-        stagger,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: scope.current,
-          start,
-          once,
-        },
-      });
+      // fromTo with immediateRender:false ensures elements stay VISIBLE
+      // until ScrollTrigger is ready to fire. This prevents the "stuck at
+      // opacity:0" bug when ScrollTrigger miscalculates viewport position
+      // (e.g. inside cross-origin iframes / preview panels).
+      gsap.fromTo(
+        selector,
+        { y, opacity },
+        {
+          y: 0,
+          opacity: 1,
+          duration,
+          stagger,
+          ease: 'power3.out',
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: scope.current,
+            start,
+            once,
+          },
+        }
+      );
     }, scope);
-    return () => ctx.revert();
+
+    // Recalculate trigger positions after layout settles.
+    const refreshTimer = setTimeout(() => {
+      try { ScrollTrigger.refresh(); } catch { /* noop */ }
+    }, 200);
+
+    // SAFETY NET: if the ScrollTrigger has not fired within 1.5s (e.g. it
+    // never calculated correctly in the iframe), force the elements visible
+    // so content is never permanently hidden.
+    const safetyTimer = setTimeout(() => {
+      try {
+        const els = scope.current?.querySelectorAll(selector);
+        els?.forEach((el) => {
+          gsap.set(el, { clearProps: 'opacity,transform,y' });
+        });
+      } catch { /* noop */ }
+    }, 1500);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      clearTimeout(safetyTimer);
+      ctx.revert();
+    };
   }, [selector, y, opacity, duration, stagger, start, once]);
 
   return scope;
@@ -101,15 +133,31 @@ export function useHeroEntrance(): RefObject<HTMLDivElement | null> {
 
   useEffect(() => {
     if (!scope.current || prefersReducedMotion()) return;
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      tl.from('[data-hero="kicker"]', { y: 20, opacity: 0, duration: 0.5 })
-        .from('[data-hero="title"]', { y: 40, opacity: 0, duration: 0.8 }, '-=0.2')
-        .from('[data-hero="subtitle"]', { y: 24, opacity: 0, duration: 0.6 }, '-=0.4')
-        .from('[data-hero="cta"]', { y: 20, opacity: 0, duration: 0.5 }, '-=0.3')
-        .from('[data-hero="stat"]', { y: 24, opacity: 0, duration: 0.5, stagger: 0.1 }, '-=0.2');
+      tl.fromTo('[data-hero="kicker"]', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, immediateRender: false })
+        .fromTo('[data-hero="title"]', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, immediateRender: false }, '-=0.2')
+        .fromTo('[data-hero="subtitle"]', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, immediateRender: false }, '-=0.4')
+        .fromTo('[data-hero="cta"]', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, immediateRender: false }, '-=0.3')
+        .fromTo('[data-hero="stat"]', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, immediateRender: false }, '-=0.2');
     }, scope);
-    return () => ctx.revert();
+
+    // SAFETY NET: force hero elements visible if the timeline hasn't
+    // completed within 2s (guards against stuck-invisible in iframes).
+    const safetyTimer = setTimeout(() => {
+      try {
+        const els = scope.current?.querySelectorAll('[data-hero]');
+        els?.forEach((el) => {
+          gsap.set(el, { clearProps: 'opacity,transform,y' });
+        });
+      } catch { /* noop */ }
+    }, 2000);
+
+    return () => {
+      clearTimeout(safetyTimer);
+      ctx.revert();
+    };
   }, []);
 
   return scope;
