@@ -46,7 +46,7 @@ const CSP_HEADER = [
   "img-src 'self' data: https: blob:",
   "font-src 'self' https://fonts.gstatic.com",
   "connect-src 'self' https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co",
-  "frame-ancestors 'none'",
+  "frame-ancestors 'self' https://*.space-z.ai http://*.space-z.ai",
   "base-uri 'self'",
   "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
   "object-src 'none'",
@@ -60,7 +60,7 @@ const CSP_HEADER = [
 
 function addSecurityHeaders(response: NextResponse): void {
   response.headers.set('Content-Security-Policy', CSP_HEADER);
-  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
