@@ -31,11 +31,11 @@ const securityHeaders = [
   },
   {
     key: "Cross-Origin-Opener-Policy",
-    value: "same-origin",
+    value: "same-origin-allow-popups",
   },
   {
     key: "Cross-Origin-Resource-Policy",
-    value: "same-origin",
+    value: "cross-origin",
   },
   {
     key: "X-Session-Timeout",
