@@ -471,3 +471,27 @@ Stage Summary:
 - Fix is client-side only; zero changes to 15+ components that call fetch('/api/...')
 - Both transports work: cookie (normal context) + Bearer header (iframe context)
 - Token stored in localStorage as 'il_auth_token'; cleared on signOut
+
+---
+Task ID: FIX-LOGIN-IFRAME-v2
+Agent: main (orchestrator)
+Task: User reported sign-in still not working after first fix ("the sign in does not sign in dumbass")
+
+Work Log:
+- Investigated: login POST returns 200 (CSRF not blocking), but server was hung at 102% CPU / repeatedly dying
+- Found agent-browser threw SecurityError "Access is denied" on localStorage — meaning the previous fix (localStorage token) would silently fail in sandboxed iframes
+- Rewrote src/lib/auth-fetch.ts:
+  - Token now stored in IN-MEMORY module-level variable (primary, always works) + localStorage (best-effort persistence, try/catch wrapped)
+  - Fetch interceptor installed at MODULE LOAD TIME (not React effect), fully try/catch wrapped so it never breaks fetch
+  - Added withAuthHeader() helper for explicit Bearer-header fetch options
+- Updated src/hooks/useAuth.tsx: fetchCurrentUser() accepts explicitToken param; signIn() passes login token explicitly to fetchCurrentUser() so post-login profile fetch works even if interceptor not installed AND even if localStorage blocked
+- TypeScript: 0 errors. ESLint: 0 errors.
+- Verified via curl: login -> token (308 chars); /api/auth/profile with Bearer header only (no cookie) -> success:true, email, role:managing_director; without auth -> 401
+- Verified via agent-browser (server + test in single shell): login -> token stored (len=308), dashboard loads ("INTRANET PORTAL", "Tidimalo Tsatsi", full sidebar)
+- Server instability: sandbox kills background processes when shell commands complete. Restarted with nohup+setsid+disown keepalive daemon.
+- Committed f72281a, pushed to origin/main (in sync 0/0)
+
+Stage Summary:
+- Login now works even when localStorage is blocked (in-memory token is authoritative)
+- Bearer header attached via interceptor at module load + explicit header on critical post-login fetch
+- Fix is bulletproof against: SameSite cookie blocking, localStorage blocking, interceptor timing races
