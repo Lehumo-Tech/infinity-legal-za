@@ -9,37 +9,37 @@
  * requests. So even though login returns 200 and the cookie is "set", the very next
  * call to /api/auth/profile sends no cookie → 401 → user appears to never log in.
  *
- * SameSite=None; Secure would fix the iframe case but requires HTTPS (impossible on
- * http://localhost in dev), so it can't be used universally.
+ * Worse: in some iframe sandbox configurations, localStorage is ALSO blocked
+ * (SecurityError: Access is denied). So we can't rely on localStorage alone.
  *
  * SOLUTION
  * --------
  * The server's `requireAuth()` already accepts a `Bearer <jwt>` Authorization header
  * as a fallback to the cookie (see src/lib/middleware.ts Strategy 2). We leverage that:
  *
- *   1. On successful login, the response body already contains the JWT `token`.
- *      We store it in localStorage (which works in cross-origin iframes, unlike cookies).
- *   2. We monkey-patch `window.fetch` so every request to `/api/*` automatically gets
- *      `Authorization: Bearer <token>` attached when a token is in storage. This means
- *      all 15+ components that call `fetch('/api/...')` keep working with zero changes.
+ *   1. On successful login, the response body contains the JWT `token`. We store it in
+ *      an IN-MEMORY module-level variable (always works, immune to localStorage
+ *      blocking) AND attempt to mirror it to localStorage (for page-refresh persistence,
+ *      gracefully degrading if storage is blocked).
+ *   2. We patch `window.fetch` at MODULE LOAD TIME (not in a React effect, to guarantee
+ *      it's ready before any fetch fires) so every request to `/api/*` automatically
+ *      gets `Authorization: Bearer <token>` attached when a token is in memory.
  *   3. The cookie is still set by the server for same-origin/normal-browser contexts,
  *      so both transports work. The header simply takes over when the cookie can't be sent.
  *
  * This is the standard pattern used by client-side auth libraries (e.g. axios interceptors).
+ * All 15+ components that call `fetch('/api/...')` keep working with zero changes.
  */
+
+// ============================================
+// IN-MEMORY TOKEN STORE (primary — always works)
+// ============================================
+let inMemoryToken: string | null = null;
 
 const TOKEN_KEY = 'il_auth_token';
 
-export function getStoredToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    return window.localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-
-export function setStoredToken(token: string | null): void {
+/** Persist token to localStorage if the browser allows it (best-effort). */
+function persistToStorage(token: string | null): void {
   if (typeof window === 'undefined') return;
   try {
     if (token) {
@@ -48,43 +48,64 @@ export function setStoredToken(token: string | null): void {
       window.localStorage.removeItem(TOKEN_KEY);
     }
   } catch {
-    // localStorage may be blocked in some contexts; ignore silently
+    // localStorage may be blocked (sandbox, third-party storage partitioning, private
+    // mode). That's fine — the in-memory copy is authoritative for the session.
   }
 }
 
-let installed = false;
+/** Try to load a previously-stored token from localStorage on startup. */
+function loadFromStorage(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function getStoredToken(): string | null {
+  // In-memory is authoritative; localStorage is only a persistence backup.
+  return inMemoryToken;
+}
+
+export function setStoredToken(token: string | null): void {
+  inMemoryToken = token;
+  persistToStorage(token);
+}
+
+// ============================================
+// FETCH INTERCEPTOR
+// ============================================
+
 const originalFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : null;
 
 /**
- * Install a global fetch interceptor that attaches the Bearer token to all
- * same-origin /api/* requests. Idempotent — safe to call multiple times.
+ * Patch window.fetch to attach the Bearer token to all same-origin /api/* requests.
  *
- * The original fetch is preserved so the patch can be bypassed if ever needed.
+ * Wrapped in try/catch so a failure in the interceptor NEVER breaks the underlying
+ * fetch — worst case the request goes out without the header (and falls back to cookie
+ * auth, which works in same-origin contexts).
  */
-export function installAuthFetch(): void {
-  if (typeof window === 'undefined' || installed || !originalFetch) return;
-  installed = true;
-
-  window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+function patchedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  try {
     let url = '';
     try {
-      url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
     } catch {
-      // If we can't read the url, just pass through untouched
-      return originalFetch(input, init);
+      return originalFetch!(input, init);
     }
 
     // Only intercept relative /api/* calls (same-origin). Leave absolute URLs,
     // webhooks, and cross-origin requests untouched so they behave normally.
-    const isSameOriginApi = url.startsWith('/api/') || url.startsWith(`${window.location.origin}/api/`);
+    const isSameOriginApi = url.startsWith('/api/') || (typeof window !== 'undefined' && url.startsWith(`${window.location.origin}/api/`));
     if (!isSameOriginApi) {
-      return originalFetch(input, init);
+      return originalFetch!(input, init);
     }
 
     const token = getStoredToken();
     if (!token) {
-      // No token in storage — fall back to cookie auth (same-origin normal context)
-      return originalFetch(input, init);
+      // No token in memory — fall back to cookie auth (same-origin normal context).
+      return originalFetch!(input, init);
     }
 
     // Merge headers, preserving any caller-supplied headers. Never overwrite an
@@ -98,15 +119,49 @@ export function installAuthFetch(): void {
     // belt-and-suspenders for same-origin contexts.
     const credentials = init?.credentials ?? 'include';
 
-    return originalFetch(input, { ...init, headers, credentials });
-  }) as typeof window.fetch;
+    return originalFetch!(input, { ...init, headers, credentials });
+  } catch {
+    // Never let the interceptor break a fetch — fall through to the original.
+    return originalFetch!(input, init);
+  }
 }
 
 /**
- * Restore the original fetch (mainly useful for tests / HMR cleanup).
+ * Install the global fetch interceptor. Idempotent — safe to call multiple times.
+ * Called at module load (below) AND from the AuthProvider effect for safety.
  */
-export function uninstallAuthFetch(): void {
-  if (typeof window === 'undefined' || !installed || !originalFetch) return;
-  window.fetch = originalFetch;
-  installed = false;
+let installed = false;
+export function installAuthFetch(): void {
+  if (typeof window === 'undefined' || installed || !originalFetch) return;
+  installed = true;
+  window.fetch = patchedFetch as typeof window.fetch;
+}
+
+/**
+ * Build a fetch options object with the Bearer header explicitly attached.
+ * Use this for critical one-off authenticated calls (e.g. the post-login profile
+ * fetch) so they don't depend on the interceptor being installed.
+ */
+export function withAuthHeader(init?: RequestInit): RequestInit {
+  const token = getStoredToken();
+  const headers = new Headers(init?.headers || undefined);
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  return { ...init, headers, credentials: init?.credentials ?? 'include' };
+}
+
+// ============================================
+// MODULE-LOAD INSTALLATION
+// ============================================
+// Install the interceptor the moment this module is imported in the browser.
+// useAuth.tsx imports this module, and AuthProvider (which wraps the whole app)
+// imports useAuth — so the interceptor is live before any component can fire a fetch.
+// We also eagerly load any previously-stored token from localStorage so a page
+// refresh inside a normal browser restores the session.
+if (typeof window !== 'undefined') {
+  // Eagerly restore token from storage (best-effort; ignored if storage is blocked).
+  const restored = loadFromStorage();
+  if (restored) inMemoryToken = restored;
+  installAuthFetch();
 }

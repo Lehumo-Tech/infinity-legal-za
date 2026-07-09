@@ -27,6 +27,7 @@ import {
   installAuthFetch,
   getStoredToken,
   setStoredToken,
+  withAuthHeader,
 } from '@/lib/auth-fetch';
 
 // ============================================
@@ -80,20 +81,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 /**
  * Fetch the current user from /api/auth/profile.
  *
- * Works in BOTH normal (cookie) and cross-origin iframe (Bearer header) contexts:
- * - In a normal browser, the httpOnly `auth-token` cookie is sent automatically.
- * - In a cross-origin iframe, the cookie is blocked, so the global fetch
- *   interceptor (installed by installAuthFetch) attaches `Authorization:
- *   Bearer <token>` from localStorage instead.
- * - If neither is present, the server returns 401 and we get null.
+ * Works in BOTH normal (cookie) and cross-origin iframe (Bearer header) contexts.
+ * The global fetch interceptor (installed at module load in auth-fetch.ts) attaches
+ * `Authorization: Bearer <token>` automatically when a token is in memory. If the
+ * interceptor somehow isn't live, callers can pass `explicitToken` to force the
+ * header via withAuthHeader() — this is used by signIn() for the critical
+ * post-login profile fetch so it never depends on interceptor timing.
  */
-async function fetchCurrentUser(): Promise<AuthUser | null> {
+async function fetchCurrentUser(explicitToken?: string): Promise<AuthUser | null> {
   try {
-    const res = await fetch('/api/auth/profile', {
+    const baseInit: RequestInit = {
       method: 'GET',
       credentials: 'include',
       cache: 'no-store',
-    });
+    };
+    // If an explicit token is provided, set the Authorization header directly so
+    // this call succeeds even if the global interceptor hasn't installed yet.
+    const init = explicitToken
+      ? (() => {
+          const headers = new Headers();
+          headers.set('Authorization', `Bearer ${explicitToken}`);
+          return { ...baseInit, headers, credentials: 'include' as const };
+        })()
+      : withAuthHeader(baseInit);
+    const res = await fetch('/api/auth/profile', init);
     if (!res.ok) return null;
     const json = await res.json();
     if (json.success && json.data) {
@@ -215,9 +226,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Fetch the full profile (phone, avatar, etc.) in the background.
-      // In the iframe this works because the interceptor now attaches the
-      // Bearer header; in a normal browser the cookie works too.
-      const fullUser = await fetchCurrentUser();
+      // Pass the explicit token so this works EVEN IF the global interceptor
+      // hasn't installed yet, AND even if localStorage is blocked (the token is
+      // in the in-memory store from setStoredToken above). This is the critical
+      // call that makes login "stick" — if it 401s, the user appears logged out.
+      const fullUser = await fetchCurrentUser(token);
       setAuthState({
         user: fullUser || initialUser,
         accessToken: token || 'cookie',
