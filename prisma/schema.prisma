@@ -38,6 +38,7 @@ model User {
   last_password_change  DateTime?
   last_login_at         DateTime?
   last_active_at        DateTime? // Last known activity timestamp (engagement tracking)
+  clerk_id              String?  @unique // Clerk user ID (when Clerk auth is enabled)
   created_at            DateTime  @default(now())
   updated_at            DateTime  @updatedAt
 

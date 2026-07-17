@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+// ============================================
+// Security Headers (with CSP updated for Clerk, PostHog, Sentry)
+// ============================================
 const securityHeaders = [
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-XSS-Protection", value: "1; mode=block" },
@@ -14,11 +17,16 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://vercel-insights.com https://www.payfast.co.za https://sandbox.payfast.co.za",
+      // Script sources: app + PayFast + Clerk + PostHog + Sentry + Vercel
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://vercel-insights.com https://www.payfast.co.za https://sandbox.payfast.co.za https://*.clerk.accounts.dev https://*.clerk.com https://*.posthog.com https://*.sentry.io https://*.ingest.sentry.io",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      // Image sources: app + data + any https + Clerk avatars + PostHog + Sentry
       "img-src 'self' data: https: blob:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://vercel.live https://vercel-insights.com https://*.vercel.app https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co",
+      // Connect sources: app + PayFast + Supabase + Clerk + PostHog + Sentry + Vercel
+      "connect-src 'self' https://vercel.live https://vercel-insights.com https://*.vercel.app https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://*.posthog.com https://app.posthog.com https://*.sentry.io https://*.ingest.sentry.io",
+      // Frame sources: allow Clerk's auth iframe
+      "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com",
       "frame-ancestors 'self' https://*.space-z.ai http://*.space-z.ai",
       "base-uri 'self'",
       "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
@@ -47,7 +55,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // eslint config moved to eslint.config.mjs in Next.js 16
   reactStrictMode: true,
   poweredByHeader: false,
   allowedDevOrigins: [
@@ -75,4 +82,25 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// ============================================
+// Sentry Integration
+// ============================================
+// Wrap the config with withSentryConfig. This is safe to call even without
+// SENTRY_DSN — the SDK only initializes when the DSN is present (see
+// sentry.*.config.ts). Source map uploads require SENTRY_AUTH_TOKEN.
+import { withSentryConfig } from "@sentry/nextjs";
+
+export default withSentryConfig(nextConfig, {
+  // Only relevant when SENTRY_AUTH_TOKEN is set (production source map uploads)
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  // Suppress sentry-cli logs during build
+  silent: true,
+  // Don't fail the build if source map upload fails
+  errorHandler: () => {},
+  // Disable automatic instrumentation of routes (we handle it manually)
+  // This avoids the "auto-instrumentation" warning in dev
+  disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+});
