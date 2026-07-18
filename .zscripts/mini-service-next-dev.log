@@ -2,7 +2,7 @@
 bun install v1.3.14 (0d9b296a)
 No packages! Deleted empty lockfile
 
-[10.00ms] done
+[19.00ms] done
 [next-dev] Running bun run dev...
 $ bun --hot index.ts
 54 |     nextProcess = null;
@@ -14,8 +14,13 @@ $ bun --hot index.ts
 [Next ERR] Error: listen EADDRINUSE: address already in use :::3000
     at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
     at new Promise (<anonymous>) {
-  code: 'EADDRINUSE'error: script "dev" was terminated by signal SIGTERM (Polite quit request)
- [?25h
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next] [?25h
 [Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 1/50)
@@ -150,6 +155,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 10/50)
 [NextDev] Starting Next.js on port 3000...
@@ -179,6 +185,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 12/50)
 [NextDev] Starting Next.js on port 3000...
@@ -223,6 +230,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 15/50)
 [NextDev] Starting Next.js on port 3000...
@@ -237,6 +245,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 16/50)
 [NextDev] Starting Next.js on port 3000...
@@ -266,6 +275,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 18/50)
 [NextDev] Starting Next.js on port 3000...
@@ -310,6 +320,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 21/50)
 [NextDev] Starting Next.js on port 3000...
@@ -339,6 +350,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 23/50)
 [NextDev] Starting Next.js on port 3000...
@@ -368,6 +380,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 25/50)
 [NextDev] Starting Next.js on port 3000...
@@ -472,6 +485,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 32/50)
 [NextDev] Starting Next.js on port 3000...
@@ -561,6 +575,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 38/50)
 [NextDev] Starting Next.js on port 3000...
@@ -620,6 +635,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 42/50)
 [NextDev] Starting Next.js on port 3000...
@@ -709,6 +725,7 @@ $ bun --hot index.ts
   port: 3000
 }
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 48/50)
 [NextDev] Starting Next.js on port 3000...

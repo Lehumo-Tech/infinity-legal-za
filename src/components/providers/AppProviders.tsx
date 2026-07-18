@@ -12,7 +12,7 @@
 import React from 'react';
 import { AuthProvider } from '@/hooks/useAuth';
 import { isClerkEnabled, clerkPublishableKey, clerkSignInUrl, clerkSignUpUrl, clerkAfterSignInUrl, clerkAfterSignUpUrl } from '@/lib/clerk-config';
-import { isPostHogEnabled, posthogKey, posthogHost } from '@/lib/posthog';
+import { isPostHogEnabled, posthogKey, posthogHost } from '@/lib/posthog-client';
 
 // ============================================
 // Clerk Provider (conditional)
@@ -20,6 +20,8 @@ import { isPostHogEnabled, posthogKey, posthogHost } from '@/lib/posthog';
 function ClerkProviderWrapper({ children }: { children: React.ReactNode }) {
   if (!isClerkEnabled) return <>{children}</>;
 
+  // Lazy-load Clerk SDK only when enabled, so it isn't bundled when disabled.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { ClerkProvider } = require('@clerk/nextjs');
   return (
     <ClerkProvider
@@ -57,6 +59,8 @@ function ClerkProviderWrapper({ children }: { children: React.ReactNode }) {
 function PostHogProviderWrapper({ children }: { children: React.ReactNode }) {
   if (!isPostHogEnabled) return <>{children}</>;
 
+  // Lazy-load PostHog SDK only when enabled, so it isn't bundled when disabled.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { PostHogProvider } = require('posthog-js/react');
   return (
     <PostHogProvider

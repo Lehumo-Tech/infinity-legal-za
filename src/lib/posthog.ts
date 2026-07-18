@@ -1,15 +1,17 @@
 /**
- * PostHog Analytics Configuration
+ * PostHog Analytics — SERVER-SIDE configuration.
  *
- * PostHog is conditionally enabled: when NEXT_PUBLIC_POSTHOG_KEY is set,
- * analytics tracking activates. When absent, all tracking calls are no-ops.
+ * Contains the posthog-node client for use in API routes and server
+ * components only. MUST NOT be imported by client components —
+ * posthog-node depends on node:async_hooks which webpack cannot bundle
+ * for the browser. Client-safe constants live in ./posthog-client.
  *
  * To activate PostHog:
  * 1. Create a project at https://app.posthog.com
  * 2. Copy the "Project API Key" (phc_...)
  * 3. Add to .env:
  *      NEXT_PUBLIC_POSTHOG_KEY=phc_...
- *      NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com  (or your self-hosted URL)
+ *      NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com  (or self-hosted URL)
  *
  * Key events tracked:
  * - user_signed_in, user_signed_up, user_signed_out
@@ -18,10 +20,10 @@
  * - case_created, document_uploaded, consultation_scheduled
  */
 
-export const isPostHogEnabled: boolean = !!process.env.NEXT_PUBLIC_POSTHOG_KEY;
+// Re-export client-safe constants so server code can import everything from one place
+export { isPostHogEnabled, posthogKey, posthogHost, clientTrack } from './posthog-client';
 
-export const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY || '';
-export const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
+import { isPostHogEnabled, posthogKey, posthogHost } from './posthog-client';
 
 /**
  * Server-side PostHog client (for API routes and server components).

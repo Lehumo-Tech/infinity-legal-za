@@ -951,3 +951,147 @@ Datasource "db": SQLite database "custom.db" at "file:/home/z/my-project/db/cust
 
 Error: Use the --accept-data-loss flag to ignore the data loss warnings like prisma db push --accept-data-loss
 error: script "db:push" exited with code 1
+==========================================
+[2026-07-18 12:49:31] Starting: bun install
+==========================================
+[BUN] Installing dependencies...
+[0.14ms] ".env"
+bun install v1.3.14 (0d9b296a)
+
+$ prisma generate
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.2 -> 7.8.0                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 874ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+
+Checked 1174 installs across 1205 packages (no changes) [4.32s]
+==========================================
+[2026-07-18 12:49:35] Completed: bun install
+[LOG] Step: bun install | Duration: 4s
+==========================================
+
+==========================================
+[2026-07-18 12:49:35] Starting: bun run db:push
+==========================================
+[BUN] Setting up database...
+$ prisma db push
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": SQLite database "custom.db" at "file:/home/z/my-project/db/custom.db"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 648ms
+
+==========================================
+[2026-07-18 12:49:39] Completed: bun run db:push
+[LOG] Step: bun run db:push | Duration: 4s
+==========================================
+
+==========================================
+[2026-07-18 12:49:39] Starting: Starting Next.js dev server
+==========================================
+[BUN] Starting development server...
+==========================================
+[2026-07-18 12:49:39] Completed: Starting Next.js dev server
+[LOG] Step: Starting Next.js dev server | Duration: 0s
+==========================================
+
+==========================================
+[2026-07-18 12:49:39] Starting: Waiting for Next.js dev server
+==========================================
+Waiting for Next.js dev server to be ready on localhost:3000...
+$ next dev -p 3000 --webpack
+Attempt 1/60: Next.js dev server not ready yet, waiting...
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.8.94:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+[@sentry/nextjs] It appears you've configured a `sentry.server.config.ts` file. Please ensure to put this file's content into the `register()` function of a Next.js instrumentation file instead. To ensure correct functionality of the SDK, `Sentry.init` must be called inside of an instrumentation file. Learn more about setting up an instrumentation file in Next.js: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation. You can safely delete the `sentry.server.config.ts` file afterward.
+[@sentry/nextjs] Could not find a Next.js instrumentation file. This indicates an incomplete configuration of the Sentry SDK. An instrumentation file is required for the Sentry SDK to be initialized on the server: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#create-initialization-config-files (you can suppress this warning by setting SENTRY_SUPPRESS_INSTRUMENTATION_FILE_WARNING=1 as environment variable)
+[@sentry/nextjs] It appears you've configured a `sentry.edge.config.ts` file. Please ensure to put this file's content into the `register()` function of a Next.js instrumentation file instead. To ensure correct functionality of the SDK, `Sentry.init` must be called inside of an instrumentation file. Learn more about setting up an instrumentation file in Next.js: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation. You can safely delete the `sentry.edge.config.ts` file afterward.
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+✓ Ready in 3s
+Attempt 2/60: Next.js dev server not ready yet, waiting...
+○ Compiling proxy ...
+○ Compiling / ...
+Attempt 3/60: Next.js dev server not ready yet, waiting...
+Attempt 4/60: Next.js dev server not ready yet, waiting...
+ GET / 200 in 1714ms (compile: 6ms, proxy.ts: 1633ms, render: 75ms)
+Next.js dev server is ready!
+ GET / 200 in 1718ms (compile: 6ms, proxy.ts: 1633ms, render: 79ms)
+==========================================
+[2026-07-18 12:50:04] Completed: Waiting for Next.js dev server
+[LOG] Step: Waiting for Next.js dev server | Duration: 24s
+==========================================
+
+==========================================
+[2026-07-18 12:50:04] Starting: Health check
+==========================================
+[BUN] Performing health check...
+ GET / 200 in 88ms (compile: 12ms, proxy.ts: 24ms, render: 52ms)
+ GET / 200 in 91ms (compile: 12ms, proxy.ts: 24ms, render: 55ms)
+[BUN] Health check passed
+==========================================
+[2026-07-18 12:50:04] Completed: Health check
+[LOG] Step: Health check | Duration: 0s
+==========================================
+
+==========================================
+[2026-07-18 12:50:04] Starting: Starting mini-services
+==========================================
+Found mini-services directory, scanning for sub-services...
+Checking service: next-dev
+Starting next-dev in background...
+[next-dev] Started in background (PID: 1276)
+[next-dev] Log: /home/z/my-project/.zscripts/mini-service-next-dev.log
+Checking service: pocketbase
+[pocketbase] No package.json found, skipping...
+Checking service: pocketbase-service
+Starting pocketbase-service in background...
+[pocketbase-service] Started in background (PID: 1293)
+[pocketbase-service] Log: /home/z/my-project/.zscripts/mini-service-pocketbase-service.log
+Mini-services startup completed. Started 2 service(s).
+==========================================
+[2026-07-18 12:50:04] Completed: Starting mini-services
+[LOG] Step: Starting mini-services | Duration: 0s
+==========================================
+
+Next.js dev server is running in background (PID: 1149).
+Use 'kill 1149' to stop it.
+ GET / 200 in 97ms (compile: 8ms, proxy.ts: 14ms, render: 75ms)
+ GET / 200 in 64ms (compile: 4ms, proxy.ts: 7ms, render: 53ms)
+ GET / 200 in 50ms (compile: 3ms, proxy.ts: 5ms, render: 42ms)
+ GET / 200 in 41ms (compile: 4ms, proxy.ts: 5ms, render: 33ms)

@@ -8,6 +8,7 @@ import {
   Scale, MessageSquare, Zap, Globe, Smartphone, Newspaper, Tv,
   Users, Briefcase, Bell, ArrowUpRight, Play, ChevronDown,
   AlertTriangle, RefreshCw, LayoutDashboard, Phone, Mail, MapPin, Star, Clock,
+  TrendingUp, Landmark,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,8 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
   const aiIntakeRef = useScrollReveal('[data-reveal]', { stagger: 0.1 });
   const askAiRef = useScrollReveal('[data-reveal]', { stagger: 0.1 });
   const pricingRef = useScrollReveal('[data-reveal]', { stagger: 0.12 });
+  const platformRef = useScrollReveal('[data-reveal]', { stagger: 0.08 });
+  const securityRef = useScrollReveal('[data-reveal]', { stagger: 0.08 });
   const ctaRef = useMagneticButton(0.25);
 
   // Fetch pricing plans from API
@@ -117,7 +120,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
     <div className="min-h-screen flex flex-col bg-white">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-[#c9a84c] focus:text-[#0c1e3c] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg">Skip to main content</a>
       {/* ===== NAVIGATION ===== */}
-      <nav aria-label="Main navigation" className={`sticky top-0 z-50 transition-all duration-500 ${scrolled ? 'bg-[#0a1628]/95 backdrop-blur-xl shadow-2xl shadow-black/10' : 'bg-transparent'}`}>
+      <nav aria-label="Main navigation" className={`sticky top-0 z-50 transition-all duration-500 ${scrolled ? 'liquid-glass-nav' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             <div className="flex items-center gap-3">
@@ -246,7 +249,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
               <div className="relative">
                 {/* Glow behind image */}
                 <div className="absolute -inset-4 bg-[#c9a84c]/[0.08] rounded-3xl blur-2xl" />
-                <div className="relative rounded-2xl overflow-hidden border border-[#1a3a65]/60 shadow-2xl shadow-black/30">
+                <div className="relative liquid-glass-dark overflow-hidden">
                   <Image
                     src="/images/official/creative-app-hero.png"
                     alt="Infinity Legal SA — Your Rights, Reinforced. AI-powered legal protection on your phone."
@@ -264,6 +267,145 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
         </div>
         {/* Bottom gradient fade */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
+      </section>
+
+      {/* ===== PLATFORM BENTO ===== */}
+      <section ref={platformRef} id="platform" aria-labelledby="platform-heading" className="py-20 sm:py-28 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header — left-aligned */}
+          <div data-reveal className="max-w-2xl mb-14">
+            <span className="bento-chip bento-chip-gold">The Platform</span>
+            <h2 id="platform-heading" className="text-3xl sm:text-4xl font-bold text-[#0c1e3c] tracking-tight leading-tight mt-5">
+              Everything your firm needs.<br />Nothing it doesn&apos;t.
+            </h2>
+            <p className="mt-4 text-slate-500 text-base leading-relaxed">
+              One integrated workspace for AI counsel, matter management, communications, and compliance — built for South African legal practice.
+            </p>
+          </div>
+
+          {/* Bento grid */}
+          <div className="bento-grid">
+            {/* Cell 1 — AI Legal Assistant (large feature, tall) */}
+            <div data-reveal className="bento-cell bento-lg bento-tall liquid-glass glass-hover bento-sparkle">
+              <div className="bento-orb-gold" style={{ top: '-50px', right: '-50px' }} aria-hidden="true" />
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="bento-icon"><Sparkles className="w-5 h-5" /></div>
+                  <span className="bento-chip bento-chip-gold">Flagship</span>
+                </div>
+                <h3 className="text-xl font-bold text-[#0c1e3c] mb-2">AI Legal Assistant</h3>
+                <p className="text-sm text-slate-600 leading-relaxed mb-5">
+                  Draft memos, summarise matter files, and triage intake 24/7 with counsel-grade AI.
+                </p>
+                {/* Faux chat snippet */}
+                <div className="mt-auto space-y-2.5">
+                  <div className="flex justify-end">
+                    <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[#0c1e3c] text-white text-[12px] px-3.5 py-2.5 leading-snug">
+                      Summarise the Mthembu matter and flag POPIA risks.
+                    </div>
+                  </div>
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white border border-slate-200 text-[#0c1e3c] text-[12px] px-3.5 py-2.5 leading-snug">
+                      <span className="inline-flex items-center gap-1.5 text-[#a88832] font-semibold mb-1"><Bot className="w-3 h-3" />AI</span>
+                      3 risks found: un-redacted ID in Annexure B, consent gap on s.18, retention past 7-yr limit. Memo drafted — review attached.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cell 2 — Case Management */}
+            <div data-reveal className="bento-cell bento-md liquid-glass glass-hover">
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bento-icon"><FolderKanban className="w-5 h-5" /></div>
+                  <span className="bento-chip">Matters</span>
+                </div>
+                <h3 className="text-base font-bold text-[#0c1e3c] mb-1.5">Case Management</h3>
+                <p className="text-[13px] text-slate-600 leading-relaxed mb-4">
+                  Track every matter from intake to resolution with structured workflows.
+                </p>
+                <div className="mt-auto space-y-2">
+                  {[
+                    { name: 'Mthembu v. Estate', status: 'active' },
+                    { name: 'Ndlovu Custody', status: 'pending' },
+                    { name: 'Pty Ltd Contract', status: 'active' },
+                  ].map(c => (
+                    <div key={c.name} className="flex items-center justify-between rounded-lg bg-white/60 border border-slate-200/70 px-3 py-2">
+                      <span className="text-[12px] font-medium text-[#0c1e3c] truncate">{c.name}</span>
+                      <span className={`badge-status badge-${c.status}`}>{c.status === 'active' ? 'Active' : 'Pending'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Cell 3 — Communications */}
+            <div data-reveal className="bento-cell bento-sm liquid-glass glass-hover">
+              <div className="bento-orb-emerald" style={{ bottom: '-60px', left: '-60px' }} aria-hidden="true" />
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="bento-icon mb-4"><MessageSquare className="w-5 h-5" /></div>
+                <h3 className="text-base font-bold text-[#0c1e3c] mb-1.5">Communications</h3>
+                <p className="text-[13px] text-slate-600 leading-relaxed">
+                  Email, SMS, and WhatsApp from one inbox. POPIA-logged every time.
+                </p>
+              </div>
+            </div>
+
+            {/* Cell 4 — Document Vault */}
+            <div data-reveal className="bento-cell bento-sm liquid-glass glass-hover">
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="bento-icon mb-4"><Lock className="w-5 h-5" /></div>
+                <h3 className="text-base font-bold text-[#0c1e3c] mb-1.5">Document Vault</h3>
+                <p className="text-[13px] text-slate-600 leading-relaxed">
+                  POPIA-grade encryption, versioned, e-sign ready.
+                </p>
+              </div>
+            </div>
+
+            {/* Cell 5 — Analytics & Insights */}
+            <div data-reveal className="bento-cell bento-md liquid-glass glass-hover">
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bento-icon"><TrendingUp className="w-5 h-5" /></div>
+                  <span className="bento-chip">Insights</span>
+                </div>
+                <h3 className="text-base font-bold text-[#0c1e3c] mb-1.5">Analytics &amp; Insights</h3>
+                <p className="text-[13px] text-slate-600 leading-relaxed mb-4">
+                  Win rates, response times, and revenue per practice area — at a glance.
+                </p>
+                {/* Faux bar chart */}
+                <div className="mt-auto flex items-end gap-2 h-16">
+                  {[40, 65, 50, 85, 70].map((h, i) => (
+                    <div key={i} className="flex-1 rounded-t-md" style={{ height: `${h}%`, background: i % 2 === 0 ? 'linear-gradient(180deg, #c9a84c 0%, #a88832 100%)' : 'linear-gradient(180deg, #1a3358 0%, #0c1e3c 100%)' }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Cell 6 — Built for South Africa (wide banner, dark glass) */}
+            <div data-reveal className="bento-cell bento-full liquid-glass-dark glass-hover">
+              <div className="bento-orb-navy" style={{ top: '-80px', left: '20%' }} aria-hidden="true" />
+              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-5 h-full">
+                <div className="bento-icon-dark flex-shrink-0"><Landmark className="w-5 h-5" /></div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    <h3 className="text-lg font-bold text-white">Built for South Africa</h3>
+                    <span className="bento-chip bento-chip-light">Local</span>
+                  </div>
+                  <p className="text-sm text-[#8fa4c4] leading-relaxed max-w-2xl">
+                    POPIA compliant, CCMA-ready, PayFast integrated, ZAR pricing. Built locally for SA firms — not a foreign product retrofitted for our law.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-x-5 gap-y-2 sm:flex-shrink-0">
+                  {['POPIA', 'CCMA', 'PayFast', 'ZAR'].map(tag => (
+                    <span key={tag} className="text-[11px] font-semibold text-[#c9a84c] uppercase tracking-wider">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ===== FREE AI INTAKE ===== */}
@@ -627,24 +769,29 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
               const isPopular = plan.is_popular || plan.slug === 'labour_legal_plan';
               const features = Array.isArray(plan.features) ? plan.features : [];
               return (
-                <div key={plan.slug || plan.name} data-reveal className={`relative flex flex-col rounded-2xl transition-all duration-300 ${isPopular ? 'bg-[#0c1e3c] text-white shadow-2xl shadow-[#0c1e3c]/20 scale-[1.03] ring-1 ring-[#c9a84c]/30' : 'bg-white border border-slate-200 hover:shadow-lg hover:shadow-slate-100/50'}`}>
+                <div key={plan.slug || plan.name} data-reveal className={`relative flex flex-col transition-all duration-300 glass-hover ${isPopular ? 'liquid-glass-gold scale-[1.03]' : 'liquid-glass'}`}>
                   {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">
-                        <Star className="w-3 h-3" />Most Popular
-                      </span>
-                    </div>
+                    <>
+                      <div className="absolute inset-0 overflow-hidden rounded-[20px] pointer-events-none" aria-hidden="true">
+                        <div className="bento-orb-gold" style={{ top: '-60px', right: '-60px' }} />
+                      </div>
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                        <span className="inline-flex items-center gap-1.5 px-4 py-1 bg-[#c9a84c] text-[#0c1e3c] text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md">
+                          <Star className="w-3 h-3" />Most Popular
+                        </span>
+                      </div>
+                    </>
                   )}
-                  <div className="p-6 lg:p-8">
+                  <div className="relative z-10 p-6 lg:p-8 flex flex-col flex-1">
                     <div className="mb-6">
-                      <h3 className={`text-base font-semibold ${isPopular ? 'text-[#c9a84c]' : 'text-[#0c1e3c]'}`}>{plan.name}</h3>
-                      <p className={`text-[12px] mt-1 ${isPopular ? 'text-[#8fa4c4]' : 'text-slate-500'}`}>{plan.description}</p>
+                      <h3 className="text-base font-semibold text-[#0c1e3c]">{plan.name}</h3>
+                      <p className="text-[12px] mt-1 text-slate-500">{plan.description}</p>
                       <div className="mt-4 flex items-baseline gap-1">
-                        <span className={`text-4xl font-bold tracking-tight ${isPopular ? 'text-white' : 'text-[#0c1e3c]'}`}>R{Math.round(plan.price_monthly)}</span>
-                        <span className={`text-sm ${isPopular ? 'text-[#5a7199]' : 'text-slate-400'}`}>/month</span>
+                        <span className="text-4xl font-bold tracking-tight text-[#0c1e3c]">R{Math.round(plan.price_monthly)}</span>
+                        <span className="text-sm text-slate-400">/month</span>
                       </div>
                       {plan.price_annual && (
-                        <p className={`text-[10px] mt-1 ${isPopular ? 'text-[#c9a84c]' : 'text-emerald-600'}`}>
+                        <p className="text-[10px] mt-1 text-emerald-600">
                           R{Math.round(plan.price_annual)}/year — save {Math.round((1 - plan.price_annual / (plan.price_monthly * 12)) * 100)}%
                         </p>
                       )}
@@ -653,7 +800,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                       {features.map((feature: string) => (
                         <li key={feature} className="flex items-start gap-2.5">
                           <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#c9a84c]" />
-                          <span className={`text-[13px] ${isPopular ? 'text-[#c4d3e8]' : 'text-slate-600'}`}>{feature}</span>
+                          <span className="text-[13px] text-slate-600">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -669,23 +816,45 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
       </section>
 
       {/* ===== SECURITY ===== */}
-      <section className="py-20 sm:py-24 bg-[#0a1628] relative overflow-hidden">
+      <section ref={securityRef} aria-labelledby="security-heading" className="py-20 sm:py-24 bg-[#0a1628] relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628] via-[#0c1e3c] to-[#0a1628]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Security & Compliance</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mt-3">Enterprise-grade security.</h2>
+          <div data-reveal className="text-center mb-14">
+            <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">Security &amp; Compliance</span>
+            <h2 id="security-heading" className="text-3xl sm:text-4xl font-bold text-white tracking-tight mt-3">Enterprise-grade security.</h2>
             <p className="mt-4 text-[#7a8fb0] text-base max-w-lg mx-auto">Your data is protected with the highest standards of security and South African compliance.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+          <div className="bento-grid max-w-5xl mx-auto">
             {trustIndicators.map((item) => (
-              <div key={item.label} className="flex items-center gap-4 p-6 bg-[#0f2240]/60 border border-[#1a3a65]/50 rounded-xl hover:border-[#c9a84c]/20 transition-all duration-300">
-                <div className="w-12 h-12 rounded-xl bg-[#c9a84c]/[0.08] flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-5 h-5 text-[#c9a84c]" />
+              <div key={item.label} data-reveal className="bento-cell bento-md liquid-glass-dark glass-hover">
+                <div className="bento-orb-navy" style={{ top: '-70px', right: '-70px' }} aria-hidden="true" />
+                <div className="relative z-10 flex items-center gap-4 h-full">
+                  <div className="bento-icon-dark flex-shrink-0">
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold text-sm">{item.label}</h3>
+                    <p className="text-[#8fa4c4] text-[11px] mt-0.5 leading-relaxed">On by default, always enforced.</p>
+                  </div>
                 </div>
-                <span className="text-white font-semibold text-sm">{item.label}</span>
               </div>
             ))}
+            {/* Audit trail — wide banner cell */}
+            <div data-reveal className="bento-cell bento-full liquid-glass-dark glass-hover">
+              <div className="bento-orb-navy" style={{ bottom: '-90px', left: '35%' }} aria-hidden="true" />
+              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-5 h-full">
+                <div className="bento-icon-dark flex-shrink-0">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-white font-semibold text-base">Full Audit Trail</h3>
+                  <p className="text-[#8fa4c4] text-[13px] mt-1 leading-relaxed max-w-2xl">
+                    Every login, document view, and edit is logged immutably — exportable for POPIA Subject Access Requests and court-ready evidence chains.
+                  </p>
+                </div>
+                <span className="bento-chip bento-chip-light self-start sm:self-center">Immutable</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
