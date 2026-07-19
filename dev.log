@@ -173,3 +173,130 @@ $ next dev -p 3000 --webpack
  GET / 200 in 834ms (compile: 107ms, proxy.ts: 167ms, render: 560ms)
  GET / 200 in 813ms (compile: 31ms, proxy.ts: 495ms, render: 286ms)
  GET / 200 in 830ms (compile: 31ms, proxy.ts: 495ms, render: 303ms)
+[keepalive 04:47:43] starting bun run dev
+$ next dev -p 3000 --webpack
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.2.110:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] It appears you've configured a `sentry.server.config.ts` file. Please ensure to put this file's content into the `register()` function of a Next.js instrumentation file instead. To ensure correct functionality of the SDK, `Sentry.init` must be called inside of an instrumentation file. Learn more about setting up an instrumentation file in Next.js: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation. You can safely delete the `sentry.server.config.ts` file afterward.
+[@sentry/nextjs] Could not find a Next.js instrumentation file. This indicates an incomplete configuration of the Sentry SDK. An instrumentation file is required for the Sentry SDK to be initialized on the server: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#create-initialization-config-files (you can suppress this warning by setting SENTRY_SUPPRESS_INSTRUMENTATION_FILE_WARNING=1 as environment variable)
+[@sentry/nextjs] It appears you've configured a `sentry.edge.config.ts` file. Please ensure to put this file's content into the `register()` function of a Next.js instrumentation file instead. To ensure correct functionality of the SDK, `Sentry.init` must be called inside of an instrumentation file. Learn more about setting up an instrumentation file in Next.js: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation. You can safely delete the `sentry.edge.config.ts` file afterward.
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+✓ Ready in 3s
+○ Compiling proxy ...
+○ Compiling / ...
+Request timed out after 3000ms
+
+Retrying 1/3...
+ GET / 200 in 17.8s (compile: 16.7s, proxy.ts: 583ms, render: 469ms)
+ GET / 200 in 17.8s (compile: 16.7s, proxy.ts: 584ms, render: 478ms)
+ GET / 200 in 17.8s (compile: 16.7s, proxy.ts: 584ms, render: 479ms)
+ GET / 200 in 278ms (compile: 25ms, proxy.ts: 222ms, render: 32ms)
+$ next dev -p 3000 --webpack
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.2.110:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] It appears you've configured a `sentry.server.config.ts` file. Please ensure to put this file's content into the `register()` function of a Next.js instrumentation file instead. To ensure correct functionality of the SDK, `Sentry.init` must be called inside of an instrumentation file. Learn more about setting up an instrumentation file in Next.js: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation. You can safely delete the `sentry.server.config.ts` file afterward.
+[@sentry/nextjs] Could not find a Next.js instrumentation file. This indicates an incomplete configuration of the Sentry SDK. An instrumentation file is required for the Sentry SDK to be initialized on the server: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#create-initialization-config-files (you can suppress this warning by setting SENTRY_SUPPRESS_INSTRUMENTATION_FILE_WARNING=1 as environment variable)
+[@sentry/nextjs] It appears you've configured a `sentry.edge.config.ts` file. Please ensure to put this file's content into the `register()` function of a Next.js instrumentation file instead. To ensure correct functionality of the SDK, `Sentry.init` must be called inside of an instrumentation file. Learn more about setting up an instrumentation file in Next.js: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation. You can safely delete the `sentry.edge.config.ts` file afterward.
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+✓ Ready in 2s
+○ Compiling proxy ...
+○ Compiling / ...
+ GET / 200 in 13.7s (compile: 12.7s, proxy.ts: 550ms, render: 435ms)
+ GET / 200 in 13.7s (compile: 12.7s, proxy.ts: 550ms, render: 447ms)
+ GET / 200 in 274ms (compile: 7ms, proxy.ts: 221ms, render: 46ms)
+ GET /api/health 200 in 2.9s (compile: 2.8s, proxy.ts: 14ms, render: 71ms)
+ GET /api/pricing 200 in 1121ms (compile: 836ms, proxy.ts: 272ms, render: 12ms)
+ GET /api/articles?limit=5 200 in 759ms (compile: 742ms, proxy.ts: 4ms, render: 13ms)
+ GET /api/holidays 200 in 772ms (compile: 698ms, proxy.ts: 5ms, render: 70ms)
+ POST /api/auth/login 200 in 1360ms (compile: 1029ms, proxy.ts: 19ms, render: 311ms)
+ GET /api/auth/profile 200 in 656ms (compile: 641ms, proxy.ts: 4ms, render: 11ms)
+ GET /api/dashboard 200 in 689ms (compile: 661ms, proxy.ts: 4ms, render: 23ms)
+ GET /api/cases 200 in 759ms (compile: 741ms, proxy.ts: 4ms, render: 13ms)
+ GET /api/consultations 200 in 822ms (compile: 805ms, proxy.ts: 5ms, render: 12ms)
+ GET /api/tasks 200 in 800ms (compile: 763ms, proxy.ts: 5ms, render: 32ms)
+ GET /api/documents 200 in 808ms (compile: 787ms, proxy.ts: 9ms, render: 12ms)
+ GET /api/leads 200 in 811ms (compile: 794ms, proxy.ts: 4ms, render: 14ms)
+ GET /api/notifications 200 in 1465ms (compile: 1449ms, proxy.ts: 4ms, render: 12ms)
+ GET /api/subscriptions 200 in 766ms (compile: 751ms, proxy.ts: 4ms, render: 11ms)
+ GET /api/staff 200 in 757ms (compile: 742ms, proxy.ts: 4ms, render: 11ms)
+ GET /api/analytics 200 in 768ms (compile: 748ms, proxy.ts: 4ms, render: 16ms)
+ GET /api/communications/logs 200 in 789ms (compile: 772ms, proxy.ts: 4ms, render: 13ms)
+ GET /api/dashboard 401 in 15ms (compile: 6ms, proxy.ts: 4ms, render: 5ms)
+ GET / 200 in 865ms (compile: 157ms, proxy.ts: 452ms, render: 257ms)
+[?25h
+$ next dev -p 3000 --webpack
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.2.110:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] It appears you've configured a `sentry.server.config.ts` file. Please ensure to put this file's content into the `register()` function of a Next.js instrumentation file instead. To ensure correct functionality of the SDK, `Sentry.init` must be called inside of an instrumentation file. Learn more about setting up an instrumentation file in Next.js: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation. You can safely delete the `sentry.server.config.ts` file afterward.
+[@sentry/nextjs] Could not find a Next.js instrumentation file. This indicates an incomplete configuration of the Sentry SDK. An instrumentation file is required for the Sentry SDK to be initialized on the server: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#create-initialization-config-files (you can suppress this warning by setting SENTRY_SUPPRESS_INSTRUMENTATION_FILE_WARNING=1 as environment variable)
+[@sentry/nextjs] It appears you've configured a `sentry.edge.config.ts` file. Please ensure to put this file's content into the `register()` function of a Next.js instrumentation file instead. To ensure correct functionality of the SDK, `Sentry.init` must be called inside of an instrumentation file. Learn more about setting up an instrumentation file in Next.js: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation. You can safely delete the `sentry.edge.config.ts` file afterward.
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+✓ Ready in 2.4s
+○ Compiling proxy ...
+○ Compiling / ...
+ GET / 200 in 14.0s (compile: 12.8s, proxy.ts: 480ms, render: 749ms)
+ GET / 200 in 298ms (compile: 39ms, proxy.ts: 225ms, render: 33ms)
+ GET /api/health 200 in 2.3s (compile: 2.1s, proxy.ts: 226ms, render: 39ms)
+ GET /api/pricing 200 in 1732ms (compile: 1221ms, proxy.ts: 499ms, render: 12ms)
+ GET /api/articles?limit=5 200 in 1023ms (compile: 814ms, proxy.ts: 199ms, render: 10ms)
+ GET /api/holidays 200 in 1169ms (compile: 758ms, proxy.ts: 129ms, render: 282ms)
+ POST /api/auth/login 200 in 1093ms (compile: 776ms, proxy.ts: 12ms, render: 306ms)
+ GET /api/auth/profile 200 in 791ms (compile: 759ms, proxy.ts: 20ms, render: 12ms)
+ GET /api/dashboard 200 in 861ms (compile: 820ms, proxy.ts: 19ms, render: 22ms)
+ GET /api/cases 200 in 1395ms (compile: 1362ms, proxy.ts: 20ms, render: 13ms)
+ GET /api/consultations 200 in 810ms (compile: 766ms, proxy.ts: 31ms, render: 14ms)
+ GET /api/tasks 200 in 761ms (compile: 741ms, proxy.ts: 10ms, render: 11ms)
+ GET /api/documents 200 in 760ms (compile: 734ms, proxy.ts: 16ms, render: 10ms)
+ GET /api/leads 200 in 890ms (compile: 754ms, proxy.ts: 124ms, render: 12ms)
+ GET /api/notifications 200 in 1478ms (compile: 1449ms, proxy.ts: 17ms, render: 11ms)
+ GET /api/subscriptions 200 in 1140ms (compile: 869ms, proxy.ts: 261ms, render: 10ms)
+ GET /api/staff 200 in 837ms (compile: 808ms, proxy.ts: 18ms, render: 11ms)
+ GET /api/analytics 200 in 844ms (compile: 807ms, proxy.ts: 22ms, render: 15ms)
+ GET /api/communications/logs 200 in 930ms (compile: 899ms, proxy.ts: 17ms, render: 13ms)
+ GET /api/dashboard 401 in 33ms (compile: 8ms, proxy.ts: 19ms, render: 6ms)
+ GET / 200 in 354ms (compile: 75ms, proxy.ts: 10ms, render: 269ms)
+ GET / 200 in 369ms (compile: 54ms, proxy.ts: 39ms, render: 275ms)
+ GET /api/auth/profile 401 in 54ms (compile: 42ms, proxy.ts: 4ms, render: 8ms)
+ GET /api/articles?limit=20 200 in 95ms (compile: 46ms, proxy.ts: 31ms, render: 18ms)
+ GET /api/pricing 200 in 160ms (compile: 16ms, proxy.ts: 88ms, render: 55ms)
+ GET /api/articles?limit=20 200 in 95ms (compile: 9ms, proxy.ts: 68ms, render: 19ms)
+ GET /api/pricing 200 in 59ms (compile: 26ms, proxy.ts: 21ms, render: 12ms)
+ GET / 200 in 120ms (compile: 4ms, proxy.ts: 14ms, render: 101ms)
+ GET /api/auth/profile 401 in 21ms (compile: 8ms, proxy.ts: 5ms, render: 9ms)
+ GET /api/articles?limit=20 200 in 33ms (compile: 4ms, proxy.ts: 11ms, render: 18ms)
+ GET /api/pricing 200 in 44ms (compile: 6ms, proxy.ts: 33ms, render: 6ms)
+ GET /api/articles?limit=20 200 in 47ms (compile: 3ms, proxy.ts: 17ms, render: 27ms)
+ GET /api/pricing 200 in 59ms (compile: 9ms, proxy.ts: 39ms, render: 11ms)
+ GET / 200 in 479ms (compile: 47ms, proxy.ts: 307ms, render: 125ms)
+ GET / 200 in 66ms (compile: 4ms, proxy.ts: 6ms, render: 55ms)
+ GET / 200 in 127ms (compile: 20ms, proxy.ts: 18ms, render: 89ms)
+ GET /api/auth/profile 401 in 67ms (compile: 6ms, proxy.ts: 46ms, render: 16ms)
+ GET /api/articles?limit=20 200 in 101ms (compile: 45ms, proxy.ts: 15ms, render: 41ms)
+ GET /api/pricing 200 in 90ms (compile: 44ms, proxy.ts: 35ms, render: 11ms)
+ GET /api/articles?limit=20 200 in 90ms (compile: 19ms, proxy.ts: 52ms, render: 19ms)
+ GET /api/pricing 200 in 29ms (compile: 5ms, proxy.ts: 11ms, render: 12ms)
+ POST /api/auth/login 200 in 437ms (compile: 15ms, proxy.ts: 29ms, render: 393ms)
+ GET /api/auth/profile 200 in 26ms (compile: 8ms, proxy.ts: 11ms, render: 8ms)
+ GET /api/notifications?perPage=20 200 in 199ms (compile: 86ms, proxy.ts: 34ms, render: 79ms)
+ GET /api/subscriptions 200 in 226ms (compile: 150ms, proxy.ts: 34ms, render: 42ms)
+ GET /api/dashboard 200 in 284ms (compile: 59ms, proxy.ts: 34ms, render: 192ms)
+ GET / 200 in 45ms (compile: 2ms, proxy.ts: 5ms, render: 37ms)
+ GET / 200 in 50ms (compile: 2ms, proxy.ts: 4ms, render: 44ms)

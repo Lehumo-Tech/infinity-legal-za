@@ -1,0 +1,51 @@
+Server PID: 4079
+SERVER UP after 5s
+
+==========================================
+  QC REPORT — Infinity Legal ZA
+==========================================
+
+=== 1. SERVER ===
+  GET / : HTTP 200 in 0.484035s
+
+=== 2. ESLINT ===
+  PASS — 0 errors
+
+=== 3. TYPESCRIPT ===
+  PASS — 0 errors
+
+=== 4. PUBLIC API ROUTES (expect 200) ===
+  /api/health → 200
+  /api/pricing → 200
+  /api/articles?limit=5 → 200
+  /api/holidays → 200
+
+=== 5. AUTH FLOW ===
+  /api/auth/login → success=True  token_len=308
+
+=== 6. AUTHED API ROUTES (expect 200 with Bearer token) ===
+  /api/auth/profile → 200
+  /api/dashboard → 200
+  /api/cases → 200
+  /api/consultations → 200
+  /api/tasks → 200
+  /api/documents → 200
+  /api/leads → 200
+  /api/notifications → 200
+  /api/subscriptions → 200
+  /api/staff → 200
+  /api/analytics → 200
+  /api/communications/logs → 200
+
+=== 7. SECURITY: unauthed protected route (expect 401) ===
+  /api/dashboard (no token) → 401
+
+=== 8. DEV LOG (recent) ===
+ GET /api/notifications 200 in 1478ms (compile: 1449ms, proxy.ts: 17ms, render: 11ms)
+ GET /api/subscriptions 200 in 1140ms (compile: 869ms, proxy.ts: 261ms, render: 10ms)
+ GET /api/staff 200 in 837ms (compile: 808ms, proxy.ts: 18ms, render: 11ms)
+ GET /api/analytics 200 in 844ms (compile: 807ms, proxy.ts: 22ms, render: 15ms)
+ GET /api/communications/logs 200 in 930ms (compile: 899ms, proxy.ts: 17ms, render: 13ms)
+ GET /api/dashboard 401 in 33ms (compile: 8ms, proxy.ts: 19ms, render: 6ms)
+
+=== QC COMPLETE — server left running for browser verification ===
