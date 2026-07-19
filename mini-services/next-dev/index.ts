@@ -11,12 +11,16 @@ let restartCount = 0;
 function startNext() {
   console.log(`[NextDev] Starting Next.js on port ${PORT}...`);
   
+  // Use Turbopack (Next 16 default) — it's far more memory-efficient than
+  // webpack (which OOM-kills at 2.8GB RSS on this 3.9GB sandbox).
   nextProcess = spawn('node', [NEXT_BIN, 'dev', '-p', PORT.toString()], {
     cwd: resolve(__dirname, '../..'),
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: false,
     env: {
       ...process.env,
+      // Cap V8 heap to prevent OOM kills on the 3.9GB sandbox.
+      NODE_OPTIONS: '--max-old-space-size=1024 --max-semi-space-size=32',
       // Override DATABASE_URL if it points to SQLite (sandbox default)
       // Use POSTGRES_URL from .env for Neon PostgreSQL connection
       DATABASE_URL: process.env.POSTGRES_URL && process.env.DATABASE_URL?.startsWith('file:')

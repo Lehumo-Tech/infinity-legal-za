@@ -812,3 +812,27 @@ Stage Summary:
 - Liquid glass v2 design system shipped: 12 new utility classes (aurora, sweep, cursor, buttons, inputs, pills, dividers, footer, scrim, elevated, stat, tabs, grain) with animations + accessibility fallbacks.
 - LandingPage enhanced: animated aurora hero background, specular sweep on 5 bento/pricing cards, cursor-follow refraction glow on hover, frosted liquid-glass footer, frosted pill badge, frosted navy button.
 - Preview verified live via agent-browser (HTTP 200, full page renders, 0 console errors, all v2 CSS classes compiled).
+
+---
+Task ID: SANDBOX-FIX
+Agent: Main Agent
+Task: Fix "loading forever" preview issue + sandbox stability
+
+Work Log:
+- Diagnosed "loading forever" via agent-browser: page HTML rendered but an INFINITE HOT-UPDATE LOOP was firing (dozens of .hot-update.json/.hot-update.js requests per second, [Fast Refresh] rebuilding endlessly). The browser's network indicator never settled → user saw perpetual loading.
+- Root cause #1: `bun run dev > dev.log 2>&1` wrote logs to dev.log in the project root. Next.js's file watcher saw dev.log change → triggered rebuild → produced more logs → infinite loop.
+- Root cause #2: `package.json` script used `next dev -p 3000 --webpack`. Webpack compilation eats 2.8GB RSS on the 3.9GB sandbox → triggers Next.js's built-in "Server is approaching the used memory threshold, restarting..." → auto-restart → recompilation → sandbox kills it.
+- Fixes applied:
+  1. Removed invalid `watchOptions.ignored` from next.config.ts (Next 16 doesn't support that key shape — caused config warning).
+  2. Changed `package.json` dev script from `next dev -p 3000 --webpack` → `next dev -p 3000` (Turbopack, ~50% lighter: 1.3GB RSS vs 2.8GB).
+  3. Updated `mini-services/next-dev/index.ts` to spawn without `--webpack` + set `NODE_OPTIONS=--max-old-space-size=1024 --max-semi-space-size=32`.
+  4. Redirected all dev logs to `/tmp/dev.log` and `/tmp/next-dev.log` (outside the watched project tree).
+- Verified via agent-browser: page renders hero "Your Rights, Reinforced.", networkidle fires (✓ Done), zero hot-update requests, no console errors. Turbopack RSS stable at 1.3GB (was 2.8GB with webpack).
+- Remaining issue: sandbox process killer reaps ALL background processes between tool calls (even setsid orphans). Server stays alive only while a bash command is actively running. User must preview during the active command window.
+
+Stage Summary:
+- "Loading forever" FIXED: root cause was infinite hot-update loop from dev.log writes + webpack memory auto-restart loop.
+- Switched to Turbopack (package.json + mini-service): 1.3GB RSS, no OOM, no auto-restart loop.
+- Logs moved to /tmp to escape file watcher.
+- Liquid glass v2 design (12 new utilities) renders correctly under Turbopack.
+- `bun run lint` clean. agent-browser verified: HTTP 200, hero renders, 0 hot-update requests, networkidle passes.
