@@ -27,6 +27,7 @@
  */
 
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { db } from '@/lib/db';
 
 // ============================================
@@ -190,7 +191,20 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResult> {
 }
 
 // ============================================
-// RESEND API HELPER
+// RESEND SDK (lazy singleton)
+// ============================================
+
+let resendClient: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resendClient) {
+    resendClient = new Resend(RESEND_API_KEY!);
+  }
+  return resendClient;
+}
+
+// ============================================
+// RESEND API HELPER (uses official SDK)
 // ============================================
 
 async function sendViaResend(params: SendEmailParams): Promise<EmailResult> {
@@ -198,26 +212,18 @@ async function sendViaResend(params: SendEmailParams): Promise<EmailResult> {
   const recipients = Array.isArray(to) ? to : [to];
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: recipients,
-        subject,
-        html,
-        text: text || html.replace(/<[^>]*>/g, ''),
-        reply_to: replyTo,
-      }),
+    const resend = getResendClient();
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: recipients,
+      subject,
+      html,
+      text: text || html.replace(/<[^>]*>/g, ''),
+      ...(replyTo ? { reply_to: replyTo } : {}),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('[Email/Resend] API error:', data);
+    if (error) {
+      console.error('[Email/Resend] SDK error:', error.message);
       await logCommunication({
         userId,
         recipientEmail: recipients[0],
@@ -228,9 +234,9 @@ async function sendViaResend(params: SendEmailParams): Promise<EmailResult> {
         content: html,
         status: 'failed',
         provider: 'resend',
-        errorMessage: data.message || 'Resend API error',
+        errorMessage: error.message || 'Resend API error',
       });
-      return { success: false, provider: 'resend', error: data.message || 'Failed to send email' };
+      return { success: false, provider: 'resend', error: error.message };
     }
 
     await logCommunication({
@@ -243,10 +249,10 @@ async function sendViaResend(params: SendEmailParams): Promise<EmailResult> {
       content: html,
       status: 'sent',
       provider: 'resend',
-      providerId: data.id,
+      providerId: data?.id,
     });
 
-    return { success: true, messageId: data.id, provider: 'resend' };
+    return { success: true, messageId: data?.id, provider: 'resend' };
   } catch (error: any) {
     console.error('[Email/Resend] Error:', error.message);
     await logCommunication({

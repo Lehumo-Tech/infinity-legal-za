@@ -525,16 +525,21 @@ model Notification {
 
 model UserSubscription {
   id                   String   @id @default(uuid())
-  client_id            String
+  client_id            String   @unique
   plan_id              String
   /// CHECK: active | past_due | cancelled | expired | trial
   status               String   @default("active")
+  billing_cycle        String?  @default("monthly") // monthly | annual (Stripe)
   current_period_start DateTime?
   current_period_end   DateTime?
   cancel_at_period_end Boolean  @default(false)
   auto_renew           Boolean  @default(true) // Auto-renew at end of period
   trial_ends_at        DateTime?
   payfast_token        String?
+  // Stripe integration (populated when Stripe is the active provider)
+  stripe_customer_id       String?
+  stripe_subscription_id   String?
+  stripe_price_id          String?
   created_at           DateTime @default(now())
   updated_at           DateTime @updatedAt
 
@@ -548,7 +553,7 @@ model UserSubscription {
 }
 
 // ============================================
-// PAYMENT RECORDS (PayFast integration)
+// PAYMENT RECORDS (PayFast + Stripe integration)
 // ============================================
 
 model PaymentRecord {
@@ -567,6 +572,9 @@ model PaymentRecord {
   payment_method        String?
   description           String?
   metadata              Json?
+  // Stripe integration
+  provider              String?  @default("payfast") // payfast | stripe
+  provider_payment_id   String?  // Stripe session/charge ID
   paid_at               DateTime?
   created_at            DateTime @default(now())
 

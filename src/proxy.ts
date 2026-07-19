@@ -29,6 +29,9 @@ const PUBLIC_API_ROUTES = [
   '/api/payfast/notify',    // PayFast server-to-server webhook
   '/api/payfast/success',   // PayFast return URL (browser redirect, no auth header)
   '/api/payfast/cancel',    // PayFast return URL (browser redirect, no auth header)
+  '/api/stripe/webhook',    // Stripe server-to-server webhook (signature-verified, no auth header)
+  '/api/stripe/success',    // Stripe return URL (browser redirect)
+  '/api/stripe/cancel',     // Stripe return URL (browser redirect)
   '/api/report',            // Public report
   '/api/pricing',           // Public pricing info
   '/api/ai/intake',         // Public AI intake form on landing page
@@ -41,17 +44,18 @@ const PUBLIC_API_ROUTES = [
 // Allowed origin for CORS
 const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
 
-// Content Security Policy (updated for PayFast + Supabase)
+// Content Security Policy (updated for Stripe + Resend + PostHog + Sentry + Clerk)
 const CSP_HEADER = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.payfast.co.za https://sandbox.payfast.co.za",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://js.stripe.com/v3 https://www.payfast.co.za https://sandbox.payfast.co.za https://app.posthog.com https://browser.sentry-cdn.com https://clerk.cloudflare.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: https: blob:",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co",
+  "connect-src 'self' https://js.stripe.com https://api.stripe.com https://www.payfast.co.za https://sandbox.payfast.co.za https://*.supabase.co https://app.posthog.com https://*.posthog.com https://o1.ingest.sentry.io https://*.ingest.sentry.io https://api.resend.com https://api.pinecone.io https://*.clerk.accounts.dev https://clerk.infinitylegal.org",
   "frame-ancestors 'self' https://*.space-z.ai http://*.space-z.ai",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.clerk.accounts.dev",
   "base-uri 'self'",
-  "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za",
+  "form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za https://js.stripe.com https://api.stripe.com",
   "object-src 'none'",
   "media-src 'self'",
   "manifest-src 'self'",
