@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
+import { serverTrack } from '@/lib/posthog';
 
 // Valid enum values per Prisma schema
 const VALID_STATUSES = ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'];
@@ -211,6 +212,12 @@ export async function POST(request: NextRequest) {
       resource_type: 'consultation',
       resource_id: consultation.id,
       details: { message: `Consultation scheduled for client ${resolvedClientId}` },
+    });
+
+    // PostHog analytics (no-op when keys are absent)
+    await serverTrack(auth.user.userId, 'consultation_scheduled', {
+      consultationId: consultation.id,
+      clientId: resolvedClientId,
     });
 
     // Create notification for the attorney

@@ -37,3 +37,747 @@ $ bun --hot index.ts
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 2/50)
 [NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 3/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 4/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 5/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 6/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 7/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 8/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 9/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 10/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 11/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 12/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 13/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 14/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 15/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 16/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 17/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 18/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 19/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 20/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 21/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 22/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 23/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 24/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 25/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 26/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 27/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 28/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 29/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 30/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 31/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 32/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 33/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 34/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 35/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 36/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 37/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 38/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 39/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 40/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 41/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 42/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 43/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 44/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 45/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 46/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 47/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 48/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[Next] 
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 49/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Restarting in 2s... (attempt 50/50)
+[NextDev] Starting Next.js on port 3000...
+[Next ERR] ⨯ Failed to start server
+[Next ERR] Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+[Next] [?25h
+[NextDev] Process exited with code 1, signal null
+[NextDev] Max restarts reached.
+error: script "dev" exited with code 1

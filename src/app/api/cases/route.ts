@@ -11,6 +11,7 @@ import { db } from '@/lib/db';
 import { hasPermission, PERMISSIONS, type RoleKey } from '@/lib/auth';
 import { apiResponse, apiError, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
+import { serverTrack } from '@/lib/posthog';
 
 // Valid enum values per Prisma schema
 const VALID_CASE_TYPES = ['civil', 'criminal', 'family', 'corporate', 'property', 'labour', 'immigration', 'tax', 'personal_injury', 'debt_recovery', 'other'];
@@ -259,6 +260,12 @@ export async function POST(request: NextRequest) {
       action: 'CREATE_CASE',
       resource_type: 'case',
       resource_id: newCase.id,
+    });
+
+    // PostHog analytics (no-op when keys are absent)
+    await serverTrack(auth.user.userId, 'case_created', {
+      caseId: newCase.id,
+      caseRef,
     });
 
     return apiResponse(newCase, 201);

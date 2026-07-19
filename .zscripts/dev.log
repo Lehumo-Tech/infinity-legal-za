@@ -2072,3 +2072,2469 @@ As a result, the code may not run as expected or may cause runtime errors.
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
 As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 201ms (compile: 11ms, proxy.ts: 36ms, render: 154ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 252ms (compile: 12ms, proxy.ts: 35ms, render: 206ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 415ms (compile: 25ms, proxy.ts: 12ms, render: 378ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 179ms (compile: 11ms, proxy.ts: 10ms, render: 158ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/auth/profile 401 in 12.9s (compile: 12.8s, proxy.ts: 11ms, render: 101ms)
+ GET / 200 in 363ms (compile: 208ms, proxy.ts: 64ms, render: 91ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/pricing 200 in 3.4s (compile: 2.9s, proxy.ts: 528ms, render: 20ms)
+ GET /api/articles?limit=20 200 in 3.4s (compile: 2.9s, proxy.ts: 528ms, render: 22ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles?limit=20 200 in 35ms (compile: 9ms, proxy.ts: 15ms, render: 11ms)
+ GET /api/pricing 200 in 36ms (compile: 14ms, proxy.ts: 15ms, render: 8ms)
+ GET / 200 in 598ms (compile: 191ms, proxy.ts: 15ms, render: 392ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 333ms (compile: 52ms, proxy.ts: 28ms, render: 253ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 307ms (compile: 7ms, proxy.ts: 47ms, render: 253ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 496ms (compile: 56ms, proxy.ts: 38ms, render: 402ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 235ms (compile: 3ms, proxy.ts: 21ms, render: 212ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 143ms (compile: 11ms, proxy.ts: 13ms, render: 120ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 237ms (compile: 8ms, proxy.ts: 16ms, render: 213ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 183ms (compile: 8ms, proxy.ts: 10ms, render: 165ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 101ms (compile: 8ms, proxy.ts: 10ms, render: 83ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 259ms (compile: 8ms, proxy.ts: 40ms, render: 212ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 149ms (compile: 11ms, proxy.ts: 18ms, render: 120ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 863ms (compile: 25ms, proxy.ts: 485ms, render: 354ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 242ms (compile: 22ms, proxy.ts: 22ms, render: 198ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 240ms (compile: 8ms, proxy.ts: 16ms, render: 216ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 142ms (compile: 11ms, proxy.ts: 18ms, render: 113ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 96ms (compile: 9ms, proxy.ts: 10ms, render: 78ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 83ms (compile: 9ms, proxy.ts: 46ms, render: 28ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 310ms (compile: 10ms, proxy.ts: 144ms, render: 156ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 190ms (compile: 6ms, proxy.ts: 157ms, render: 28ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 97ms (compile: 7ms, proxy.ts: 24ms, render: 67ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 202ms (compile: 7ms, proxy.ts: 48ms, render: 147ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 314ms (compile: 44ms, proxy.ts: 64ms, render: 206ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 250ms (compile: 47ms, proxy.ts: 16ms, render: 187ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 329ms (compile: 8ms, proxy.ts: 14ms, render: 308ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 760ms (compile: 289ms, proxy.ts: 425ms, render: 46ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 262ms (compile: 7ms, proxy.ts: 16ms, render: 239ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 183ms (compile: 35ms, proxy.ts: 13ms, render: 135ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 234ms (compile: 3ms, proxy.ts: 17ms, render: 215ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 180ms (compile: 17ms, proxy.ts: 13ms, render: 149ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 192ms (compile: 33ms, proxy.ts: 40ms, render: 120ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 135ms (compile: 11ms, proxy.ts: 12ms, render: 112ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 993ms (compile: 105ms, proxy.ts: 597ms, render: 291ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 177ms (compile: 10ms, proxy.ts: 12ms, render: 155ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 281ms (compile: 2ms, proxy.ts: 16ms, render: 263ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 195ms (compile: 10ms, proxy.ts: 22ms, render: 162ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 280ms (compile: 228ms, proxy.ts: 18ms, render: 34ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 227ms (compile: 3ms, proxy.ts: 14ms, render: 211ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 101ms (compile: 11ms, proxy.ts: 9ms, render: 80ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 213ms (compile: 3ms, proxy.ts: 15ms, render: 196ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 416ms (compile: 244ms, proxy.ts: 132ms, render: 39ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 269ms (compile: 3ms, proxy.ts: 17ms, render: 250ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 195ms (compile: 11ms, proxy.ts: 14ms, render: 171ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 221ms (compile: 24ms, proxy.ts: 11ms, render: 187ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 226ms (compile: 2ms, proxy.ts: 20ms, render: 204ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/auth/login 200 in 2.9s (compile: 2.4s, proxy.ts: 15ms, render: 498ms)
+ GET / 200 in 1380ms (compile: 144ms, proxy.ts: 812ms, render: 424ms)
+ GET /api/auth/profile 200 in 118ms (compile: 15ms, proxy.ts: 87ms, render: 16ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/notifications?perPage=20 200 in 4.1s (compile: 4.0s, proxy.ts: 87ms, render: 41ms)
+ GET /api/subscriptions 200 in 4.1s (compile: 4.0s, proxy.ts: 87ms, render: 43ms)
+ GET /api/dashboard 200 in 4.1s (compile: 4.0s, proxy.ts: 87ms, render: 56ms)
+ GET / 200 in 561ms (compile: 256ms, proxy.ts: 226ms, render: 78ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 231ms (compile: 16ms, proxy.ts: 15ms, render: 201ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 101ms (compile: 5ms, proxy.ts: 19ms, render: 77ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 229ms (compile: 18ms, proxy.ts: 174ms, render: 37ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 307ms (compile: 12ms, proxy.ts: 36ms, render: 259ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 425ms (compile: 29ms, proxy.ts: 318ms, render: 79ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 226ms (compile: 2ms, proxy.ts: 11ms, render: 212ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 110ms (compile: 5ms, proxy.ts: 14ms, render: 91ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 179ms (compile: 11ms, proxy.ts: 14ms, render: 155ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 140ms (compile: 10ms, proxy.ts: 12ms, render: 119ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 225ms (compile: 173ms, proxy.ts: 19ms, render: 33ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 439ms (compile: 250ms, proxy.ts: 106ms, render: 83ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 275ms (compile: 3ms, proxy.ts: 45ms, render: 227ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 189ms (compile: 10ms, proxy.ts: 12ms, render: 168ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 186ms (compile: 8ms, proxy.ts: 26ms, render: 152ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 173ms (compile: 10ms, proxy.ts: 17ms, render: 147ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 143ms (compile: 9ms, proxy.ts: 9ms, render: 125ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 164ms (compile: 34ms, proxy.ts: 10ms, render: 120ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 1083ms (compile: 79ms, proxy.ts: 790ms, render: 214ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 222ms (compile: 11ms, proxy.ts: 17ms, render: 193ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 165ms (compile: 10ms, proxy.ts: 17ms, render: 138ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 284ms (compile: 2ms, proxy.ts: 14ms, render: 268ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 211ms (compile: 3ms, proxy.ts: 14ms, render: 195ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/cases?page=1&perPage=10&search= 200 in 3.7s (compile: 3.6s, proxy.ts: 10ms, render: 95ms)
+ GET / 200 in 591ms (compile: 266ms, proxy.ts: 275ms, render: 50ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/consultations?perPage=50 200 in 4.6s (compile: 4.2s, proxy.ts: 276ms, render: 44ms)
+ GET / 200 in 543ms (compile: 102ms, proxy.ts: 194ms, render: 247ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/leads?page=1&perPage=10 200 in 3.1s (compile: 2.9s, proxy.ts: 194ms, render: 15ms)
+ GET / 200 in 474ms (compile: 85ms, proxy.ts: 167ms, render: 222ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 171ms (compile: 9ms, proxy.ts: 9ms, render: 152ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 1191ms (compile: 66ms, proxy.ts: 727ms, render: 398ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 254ms (compile: 51ms, proxy.ts: 13ms, render: 190ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 304ms (compile: 3ms, proxy.ts: 16ms, render: 286ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 100ms (compile: 8ms, proxy.ts: 10ms, render: 82ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 500 in 8.3s (compile: 8.1s, proxy.ts: 25ms, render: 170ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/leads?page=1&perPage=10 200 in 756ms (compile: 193ms, proxy.ts: 540ms, render: 22ms)
+ GET / 200 in 460ms (compile: 105ms, proxy.ts: 22ms, render: 334ms)
+ GET / 200 in 468ms (compile: 105ms, proxy.ts: 22ms, render: 341ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 370ms (compile: 86ms, proxy.ts: 15ms, render: 269ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 206ms (compile: 13ms, proxy.ts: 8ms, render: 184ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 500 in 3.4s (compile: 3.4s, proxy.ts: 17ms, render: 33ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 782ms (compile: 103ms, proxy.ts: 57ms, render: 622ms)
+ GET / 200 in 785ms (compile: 102ms, proxy.ts: 57ms, render: 626ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 274ms (compile: 15ms, proxy.ts: 10ms, render: 249ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 558ms (compile: 43ms, proxy.ts: 66ms, render: 449ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 592ms (compile: 12ms, proxy.ts: 322ms, render: 259ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 265ms (compile: 35ms, proxy.ts: 19ms, render: 211ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 215ms (compile: 12ms, proxy.ts: 11ms, render: 193ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 209ms (compile: 35ms, proxy.ts: 7ms, render: 167ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 405ms (compile: 16ms, proxy.ts: 24ms, render: 364ms)
+⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 500 in 2.4s (compile: 2.3s, proxy.ts: 45ms, render: 48ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 2.1s (compile: 190ms, proxy.ts: 13ms, render: 1894ms)
+ GET / 200 in 2.1s (compile: 189ms, proxy.ts: 13ms, render: 1899ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 697ms (compile: 292ms, proxy.ts: 306ms, render: 99ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 301ms (compile: 7ms, proxy.ts: 13ms, render: 280ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 385ms (compile: 300ms, proxy.ts: 39ms, render: 46ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 177ms (compile: 8ms, proxy.ts: 4ms, render: 166ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 483ms (compile: 318ms, proxy.ts: 54ms, render: 110ms)
+ GET / 200 in 422ms (compile: 87ms, proxy.ts: 30ms, render: 305ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 805ms (compile: 44ms, proxy.ts: 372ms, render: 388ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+
+./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.

@@ -41,6 +41,9 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { formatRevenue } from '@/lib/format';
 import IntegrationsDashboard from '@/components/IntegrationsDashboard';
+import { LeadsView as LeadsViewExternal } from '@/components/LeadsView';
+import { CasesView as CasesViewExternal } from '@/components/CasesView';
+import { ConsultationsView as ConsultationsViewExternal } from '@/components/ConsultationsView';
 
 // ============================================
 // TYPES
@@ -635,10 +638,10 @@ export default function DashboardShell({ onShowLanding }: { onShowLanding: () =>
         {/* Page content */}
         <div className="flex-1 overflow-auto p-6">
           {currentView === 'workbench' && <WorkbenchView stats={stats} user={user} cases={cases} consultations={consultations} tasks={tasks} token={token} onViewChange={setCurrentView} charts={charts} firmHealth={firmHealth} />}
-          {currentView === 'cases' && <CasesView cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} token={token} user={user} staff={staff} />}
-          {currentView === 'leads' && <LeadsView leads={leads} page={leadsPage} total={leadsTotal} onPageChange={loadLeads} onRefresh={() => loadLeads(leadsPage)} />}
+          {currentView === 'cases' && <CasesViewExternal cases={cases} page={casesPage} total={casesTotal} onPageChange={loadCases} onRefresh={() => loadCases(casesPage)} token={token} user={user} staff={staff} />}
+          {currentView === 'leads' && <LeadsViewExternal leads={leads} page={leadsPage} total={leadsTotal} onPageChange={loadLeads} onRefresh={() => loadLeads(leadsPage)} token={token} user={user} />}
           {currentView === 'documents' && <DocumentsView token={token} documents={documents} onRefresh={loadDocuments} user={user} />}
-          {currentView === 'consultations' && <ConsultationsView token={token} consultations={consultations} onRefresh={loadConsultations} user={user} staff={staff} />}
+          {currentView === 'consultations' && <ConsultationsViewExternal token={token} consultations={consultations} onRefresh={loadConsultations} user={user} staff={staff} />}
           {currentView === 'tasks' && <TasksView token={token} tasks={tasks} onRefresh={loadTasks} user={user} staff={staff} />}
           {currentView === 'staff' && <StaffPortal staff={staff} user={user} />}
           {currentView === 'org-chart' && <OrgChartView staff={staff} />}
@@ -1326,161 +1329,6 @@ function CasesView({ cases, page, total, onPageChange, onRefresh, token, user, s
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-// ============================================
-// LEADS VIEW
-// ============================================
-function LeadsView({ leads, page, total, onPageChange, onRefresh }: { leads: any[]; page: number; total: number; onPageChange: (p: number) => void; onRefresh: () => void }) {
-  const totalPages = Math.ceil(total / 10);
-
-  const sourceIcons: Record<string, any> = {
-    website: Globe, referral: Users, social_media: MessageSquare,
-    google_ads: Zap, walk_in: MapPin, phone: Phone, email: Mail,
-    partner: Handshake, event: Star, other: AlertCircle,
-  };
-
-  const statusBorderColor: Record<string, string> = {
-    new: '#3b82f6', contacted: '#f59e0b', qualified: '#10b981',
-    consultation_scheduled: '#8b5cf6', retained: '#14b8a6', lost: '#ef4444',
-    nurturing: '#94a3b8',
-  };
-
-  const statusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'retained': case 'qualified': return 'badge-active';
-      case 'new': case 'contacted': case 'consultation_scheduled': return 'badge-pending';
-      case 'lost': return 'badge-closed';
-      case 'nurturing': return 'badge-pending';
-      default: return 'badge-pending';
-    }
-  };
-
-  const scoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-600 bg-emerald-50';
-    if (score >= 60) return 'text-amber-600 bg-amber-50';
-    if (score >= 40) return 'text-orange-600 bg-orange-50';
-    return 'text-red-600 bg-red-50';
-  };
-
-  const pipelineTopColors: Record<string, string> = {
-    new: 'border-t-blue-500', contacted: 'border-t-amber-500',
-    qualified: 'border-t-emerald-500', consultation_scheduled: 'border-t-purple-500',
-    retained: 'border-t-teal-500', lost: 'border-t-red-500', nurturing: 'border-t-slate-400',
-  };
-
-  return (
-    <div className="space-y-4 animate-fade-in-up">
-      <div className="card-premium p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="border-l-2 border-[#c9a84c] pl-4">
-              <h2 className="text-xl font-bold text-[#0c1e3c]">Leads Pipeline</h2>
-              <p className="text-sm text-slate-500">{total} total leads</p>
-            </div>
-            <Badge className="bg-[#0c1e3c] text-white text-[10px] font-semibold ml-2 hover:bg-[#0c1e3c]">{total}</Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={onRefresh} className="text-slate-500 hover:text-[#0c1e3c]">
-              <RefreshCw className="w-4 h-4" />
-            </Button>
-            <Button size="sm" className="btn-gold px-4">
-              <Plus className="w-4 h-4 mr-1.5" /> New Lead
-            </Button>
-          </div>
-        </div>
-
-        {/* Pipeline Count Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-6">
-          {['new', 'contacted', 'qualified', 'consultation_scheduled', 'retained', 'lost', 'nurturing'].map(status => {
-            const count = leads.filter(l => l.status === status).length;
-            return (
-              <div key={status} className={`text-center p-2.5 rounded-lg bg-white border border-slate-100 border-t-2 ${pipelineTopColors[status] || 'border-t-slate-300'}`}>
-                <div className="text-lg font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{count}</div>
-                <div className="text-[10px] text-slate-500 capitalize">{status.replace(/_/g, ' ')}</div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Lead Cards */}
-        <div className="space-y-3 stagger-children">
-          {leads.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
-                <Target className="w-7 h-7 text-slate-300" />
-              </div>
-              <p className="text-slate-400 font-medium">No leads found</p>
-              <p className="text-[11px] text-slate-300 mt-1">Add a new lead to start tracking your pipeline</p>
-            </div>
-          ) : (
-            leads.map(l => {
-              const SourceIcon = sourceIcons[l.source] || AlertCircle;
-              const leadName = [l.first_name, l.last_name].filter(Boolean).join(' ') || l.name || '-';
-              return (
-                <div key={l.id} className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-100 hover:border-slate-200 hover:shadow-sm transition-all duration-200" style={{ borderLeft: `3px solid ${statusBorderColor[l.status] || '#94a3b8'}` }}>
-                  {/* Avatar */}
-                  <Avatar className="w-10 h-10 flex-shrink-0">
-                    <AvatarFallback className="bg-[#0c1e3c]/5 text-[#0c1e3c] text-xs font-bold">
-                      {leadName.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-[#0c1e3c] text-sm">{leadName}</span>
-                      <span className={`badge-status ${statusBadgeClass(l.status)}`}>{(l.status || '').replace(/_/g, ' ')}</span>
-                    </div>
-                    <div className="flex items-center gap-3 mt-1 flex-wrap">
-                      {l.email && <span className="text-xs text-slate-500 flex items-center gap-1">
-                        <Mail className="w-3 h-3" />{l.email}
-                      </span>}
-                      <span className="text-xs text-slate-500 flex items-center gap-1">
-                        <SourceIcon className="w-3 h-3" />{(l.source || '').replace(/_/g, ' ')}
-                      </span>
-                      {l.case_type && <span className="text-xs text-slate-500 flex items-center gap-1">
-                        <Briefcase className="w-3 h-3" />{l.case_type.replace(/_/g, ' ')}
-                      </span>}
-                    </div>
-                  </div>
-                  {/* Score */}
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${scoreColor(l.lead_score || 0)}`}>
-                    <span className="text-sm font-bold">{l.lead_score || 0}</span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-slate-500">Page {page} of {totalPages}</p>
-          <div className="flex gap-1">
-            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)} className="hover-lift">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i;
-              if (p > totalPages) return null;
-              return (
-                <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => onPageChange(p)}
-                  className={p === page ? 'btn-navy' : 'hover-lift'}>
-                  {p}
-                </Button>
-              );
-            })}
-            <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} className="hover-lift">
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
