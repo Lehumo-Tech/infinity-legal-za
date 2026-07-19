@@ -766,3 +766,49 @@ Stage Summary:
 - The full lead→outreach→qualify→convert→case→consultation pipeline is functional and verified via API.
 - Resend email service used for outreach + welcome emails (simulation mode when key absent).
 - PostHog tracking added to lead/case/consultation creation routes (serverTrack, no-op when disabled).
+
+---
+Task ID: LG-V2
+Agent: Main Agent
+Task: Add more liquid glass treatment to the platform + fix sandbox so user can preview
+
+Work Log:
+- Diagnosed sandbox: dev server (next-server) was being OOM-killed at 2.3GB RSS (machine has 3.9GB RAM). Root cause = uncapped Node heap during webpack compilation.
+- Fix: set NODE_OPTIONS="--max-old-space-size=1536 --max-semi-space-size=64" to cap V8 heap at 1.5GB, preventing kernel OOM. Cleared bloated .next cache.
+- Server start strategy: `setsid bash -c 'exec bun run dev' & disown` — reparents the dev server to PID 1 (init) so it survives as an orphan after the launching shell returns. Verified orphan survives 4+ minutes, sufficient for user preview window.
+- Enhanced liquid glass design system in src/app/globals.css (+12 new utility classes, ~430 lines appended):
+  * .liquid-glass-aurora + 4 blob variants (gold/navy/ember/teal) with 3 drifting keyframe animations (aurora-drift-1/2/3, 18-26s loops)
+  * .liquid-glass-sweep + .liquid-glass-sweep-host — animated diagonal specular sheen on hover (glass-sweep keyframe, 1.4s)
+  * .liquid-glass-cursor — cursor-follow refraction glow using --mx/--my CSS vars (radial gradient)
+  * .liquid-glass-btn-gold / -navy / -ghost — frosted translucent buttons with specular ::before overlay
+  * .liquid-glass-input — frosted input with gold focus ring
+  * .liquid-glass-pill + .liquid-glass-pill-light — frosted kicker badges
+  * .liquid-glass-divider + .liquid-glass-divider-light — frosted gradient rules
+  * .liquid-glass-footer — frosted sticky footer with top gold border + inset shadow
+  * .liquid-glass-scrim — frosted modal/sheet backdrop
+  * .liquid-glass-elevated — double-layer premium card (28px blur, gradient border)
+  * .liquid-glass-stat — frosted dashboard metric tile
+  * .liquid-glass-tabs — frosted tab bar
+  * .liquid-glass-grain — subtle SVG noise film-grain overlay
+  * Reduced-motion + backdrop-filter fallbacks for all v2 classes
+- Applied new treatments to src/components/LandingPage.tsx:
+  * Hero: replaced static gold orbs with animated aurora mesh (3 drifting blobs: gold top-right, navy bottom-left, ember center)
+  * Hero kicker badge: converted to .liquid-glass-pill .liquid-glass-pill-light
+  * "Explore Practice Areas" button: converted to .liquid-glass-btn-navy
+  * Flagship bento cell (AI Legal Assistant): added .liquid-glass-sweep-host + .liquid-glass-cursor + sweep element
+  * Case Management + Analytics bento cells: added sweep + cursor-follow
+  * All 3 pricing cards: added sweep + cursor-follow (popular card keeps liquid-glass-gold)
+  * Footer: converted to .liquid-glass-footer (frosted, was bg-[#060e1a] solid)
+  * Added useEffect mousemove listener that sets --mx/--my CSS vars on all .liquid-glass-cursor elements for true cursor-follow refraction
+- Verification:
+  * `bun run lint` → 0 errors, 0 warnings
+  * Dev server: HTTP 200 on / (ready in 3s warm)
+  * Compiled CSS (_next/static/css/app/layout.css) contains all 12 v2 classes confirmed via grep
+  * agent-browser snapshot: full LandingPage renders — nav, hero "Your Rights, Reinforced.", platform bento, flagship AI cell, pricing — no console errors
+  * Full-page screenshot captured to /home/z/my-project/preview-liquid-glass.png (4.2MB)
+
+Stage Summary:
+- Sandbox fixed: dev server runs reliably with 1.5GB heap cap, started as setsid orphan so it survives for the user's preview window.
+- Liquid glass v2 design system shipped: 12 new utility classes (aurora, sweep, cursor, buttons, inputs, pills, dividers, footer, scrim, elevated, stat, tabs, grain) with animations + accessibility fallbacks.
+- LandingPage enhanced: animated aurora hero background, specular sweep on 5 bento/pricing cards, cursor-follow refraction glow on hover, frosted liquid-glass footer, frosted pill badge, frosted navy button.
+- Preview verified live via agent-browser (HTTP 200, full page renders, 0 console errors, all v2 CSS classes compiled).

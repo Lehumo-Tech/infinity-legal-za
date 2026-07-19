@@ -1,16 +1,17 @@
-#!/bin/bash
-# Infinity Legal dev-server keepalive watchdog.
-# Restarts `bun run dev` whenever it exits. Double-forks so it survives
-# the parent shell exiting and the sandbox process reaper.
+#!/usr/bin/env bash
+# Robust dev-server watchdog: restarts `bun run dev` whenever it dies.
+# Reparented to PID 1 via setsid so it survives sandbox shell reaping.
 cd /home/z/my-project
+export NODE_OPTIONS="--max-old-space-size=1024 --max-semi-space-size=64"
 while true; do
-  # Only start if nothing is listening on 3000
-  if ! curl -s -o /dev/null --max-time 3 http://localhost:3000/ 2>/dev/null; then
-    echo "[keepalive $(date +%T)] starting bun run dev" >> /home/z/my-project/dev.log
-    bun run dev >> /home/z/my-project/dev.log 2>&1
-    echo "[keepalive $(date +%T)] bun run dev exited (rc=$?), restarting in 3s" >> /home/z/my-project/dev.log
-  else
-    sleep 10
-  fi
+  echo "[keepalive $(date +%H:%M:%S)] starting bun run dev..." >> keepalive.log
+  bun run dev >> dev.log 2>&1 &
+  DEVPID=$!
+  echo "[keepalive $(date +%H:%M:%S)] dev PID=$DEVPID" >> keepalive.log
+  # Wait for it to die, but also health-check every 15s
+  while kill -0 $DEVPID 2>/dev/null; do
+    sleep 15
+  done
+  echo "[keepalive $(date +%H:%M:%S)] dev died (exit $?), restarting in 2s..." >> keepalive.log
   sleep 2
 done

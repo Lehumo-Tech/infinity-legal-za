@@ -87,6 +87,25 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Cursor-follow refraction: track mouse over liquid-glass-cursor surfaces
+  useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      const targets = document.querySelectorAll<HTMLElement>('.liquid-glass-cursor');
+      targets.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (
+          e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top && e.clientY <= rect.bottom
+        ) {
+          el.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+          el.style.setProperty('--my', `${e.clientY - rect.top}px`);
+        }
+      });
+    };
+    window.addEventListener('mousemove', handleMove, { passive: true });
+    return () => window.removeEventListener('mousemove', handleMove);
+  }, []);
+
   const handleSignUpWithEmail = (prefillEmail?: string, prefilledName?: string) => {
     // Prefer onSignUp (opens signup form), fall back to onLoginClick (opens login form)
     if (onSignUp) {
@@ -184,8 +203,12 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
         {/* Atmospheric background layers */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628] via-[#0c1e3c] to-[#071020]" />
-          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#c9a84c]/[0.03] rounded-full blur-[120px] -translate-y-1/3 translate-x-1/4" />
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#c9a84c]/[0.02] rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4" />
+          {/* Animated aurora mesh — liquid glass depth */}
+          <div className="liquid-glass-aurora">
+            <div className="liquid-glass-aurora-blob liquid-glass-aurora-blob-gold" style={{ top: '-15%', right: '-5%', width: '520px', height: '520px' }} aria-hidden="true" />
+            <div className="liquid-glass-aurora-blob liquid-glass-aurora-blob-navy" style={{ bottom: '-10%', left: '10%', width: '600px', height: '600px' }} aria-hidden="true" />
+            <div className="liquid-glass-aurora-blob liquid-glass-aurora-blob-ember" style={{ top: '40%', left: '55%', width: '380px', height: '380px', opacity: 0.35 }} aria-hidden="true" />
+          </div>
           {/* Subtle geometric lines */}
           <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -201,9 +224,9 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
           <div className="grid lg:grid-cols-5 gap-6 lg:gap-8 items-center">
             {/* Left: Copy — 3/5 */}
             <div className="lg:col-span-3 max-w-2xl">
-              <div data-hero="kicker" className="inline-flex items-center gap-2.5 px-4 py-2 bg-[#c9a84c]/[0.08] border border-[#c9a84c]/20 rounded-full mb-8">
+              <div data-hero="kicker" className="liquid-glass-pill liquid-glass-pill-light mb-8">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] animate-pulse" />
-                <span className="text-[#c9a84c] text-[11px] font-semibold uppercase tracking-[0.15em]">AI-Powered Legal Platform</span>
+                <span>AI-Powered Legal Platform</span>
               </div>
               <h1 data-hero="title" className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem] font-bold text-white leading-[1.1] tracking-tight">
                 Your Rights,{' '}
@@ -231,7 +254,7 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
                 <Button onClick={() => handleSmoothScroll('ask-ai')} variant="outline" size="lg" className="border-[#2a3f5f] text-[#8fa4c4] hover:bg-[#132d52] hover:text-white rounded-xl px-7 h-12 text-sm font-medium">
                   <Bot className="w-4 h-4 mr-2 text-[#c9a84c]" /> Ask AI
                 </Button>
-                <Button onClick={() => handleSmoothScroll('pricing')} size="lg" className="bg-[#1a3358] text-[#c9a84c] hover:bg-[#0c1e3c] rounded-xl px-7 h-12 text-sm font-medium border border-[#c9a84c]/20 transition-colors">
+                <Button onClick={() => handleSmoothScroll('pricing')} size="lg" className="liquid-glass-btn-navy rounded-xl px-7 h-12 text-sm font-medium">
                   Explore Practice Areas
                 </Button>
               </div>
@@ -286,7 +309,8 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
           {/* Bento grid */}
           <div className="bento-grid">
             {/* Cell 1 — AI Legal Assistant (large feature, tall) */}
-            <div data-reveal className="bento-cell bento-lg bento-tall liquid-glass glass-hover bento-sparkle">
+            <div data-reveal className="bento-cell bento-lg bento-tall liquid-glass liquid-glass-sweep-host liquid-glass-cursor glass-hover bento-sparkle">
+              <div className="liquid-glass-sweep" aria-hidden="true" />
               <div className="bento-orb-gold" style={{ top: '-50px', right: '-50px' }} aria-hidden="true" />
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-5">
@@ -315,7 +339,8 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
             </div>
 
             {/* Cell 2 — Case Management */}
-            <div data-reveal className="bento-cell bento-md liquid-glass glass-hover">
+            <div data-reveal className="bento-cell bento-md liquid-glass liquid-glass-sweep-host liquid-glass-cursor glass-hover">
+              <div className="liquid-glass-sweep" aria-hidden="true" />
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="bento-icon"><FolderKanban className="w-5 h-5" /></div>
@@ -364,7 +389,8 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
             </div>
 
             {/* Cell 5 — Analytics & Insights */}
-            <div data-reveal className="bento-cell bento-md liquid-glass glass-hover">
+            <div data-reveal className="bento-cell bento-md liquid-glass liquid-glass-sweep-host liquid-glass-cursor glass-hover">
+              <div className="liquid-glass-sweep" aria-hidden="true" />
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="bento-icon"><TrendingUp className="w-5 h-5" /></div>
@@ -769,7 +795,8 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
               const isPopular = plan.is_popular || plan.slug === 'labour_legal_plan';
               const features = Array.isArray(plan.features) ? plan.features : [];
               return (
-                <div key={plan.slug || plan.name} data-reveal className={`relative flex flex-col transition-all duration-300 glass-hover ${isPopular ? 'liquid-glass-gold scale-[1.03]' : 'liquid-glass'}`}>
+                <div key={plan.slug || plan.name} data-reveal className={`relative flex flex-col transition-all duration-300 glass-hover liquid-glass-sweep-host liquid-glass-cursor ${isPopular ? 'liquid-glass-gold scale-[1.03]' : 'liquid-glass'}`}>
+                  <div className="liquid-glass-sweep" aria-hidden="true" />
                   {isPopular && (
                     <>
                       <div className="absolute inset-0 overflow-hidden rounded-[20px] pointer-events-none" aria-hidden="true">
@@ -860,8 +887,8 @@ export function LandingPage({ onSignIn, onSignUp, onLoginClick, isAuthenticated,
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer className="bg-[#060e1a] mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+      <footer className="liquid-glass-footer mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Brand & Copyright */}
             <div className="flex flex-col gap-3">
