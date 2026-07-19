@@ -271,8 +271,10 @@ export function validateCSRF(request: NextRequest): { valid: boolean; error: Ret
   const referer = request.headers.get('referer');
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-  // Derive the request's own host as an allowed origin (covers any deployment URL)
-  const requestHost = request.headers.get('host');
+  // Derive the request's own host as an allowed origin (covers any deployment URL).
+  // Prefer x-forwarded-host (set by the preview gateway / reverse proxy) over the
+  // rewritten host header, so CSRF passes when the site runs inside the preview iframe.
+  const requestHost = request.headers.get('x-forwarded-host') || request.headers.get('host');
   const requestProto = request.headers.get('x-forwarded-proto') || 'https';
   const requestOrigin = requestHost ? `${requestProto}://${requestHost}` : null;
 
@@ -280,12 +282,29 @@ export function validateCSRF(request: NextRequest): { valid: boolean; error: Ret
     appUrl,
     'http://localhost:3000',
     'https://infinitylegal.org',
+    'https://www.infinitylegal.org',
     requestOrigin,
   ].filter(Boolean) as string[];
 
+  // Allow the sandbox preview environment (preview-chat-*.space-z.ai) — the app
+  // is served through this gateway in the preview panel, so the browser's Origin
+  // header is the space-z.ai domain even though the app itself is localhost:3000.
+  const isPreviewOrigin = (o: string | null): boolean => {
+    if (!o) return false;
+    try {
+      const u = new URL(o);
+      return u.hostname.endsWith('.space-z.ai');
+    } catch {
+      return false;
+    }
+  };
+
   // Check Origin header first (most reliable)
   if (origin) {
-    if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed + '/'))) {
+    if (
+      isPreviewOrigin(origin) ||
+      allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed + '/'))
+    ) {
       return { valid: true, error: null };
     }
     return {
@@ -296,9 +315,16 @@ export function validateCSRF(request: NextRequest): { valid: boolean; error: Ret
 
   // Fall back to Referer header
   if (referer) {
-    const refererUrl = new URL(referer);
-    if (allowedOrigins.some(allowed => refererUrl.origin === new URL(allowed).origin)) {
-      return { valid: true, error: null };
+    try {
+      const refererUrl = new URL(referer);
+      if (
+        isPreviewOrigin(refererUrl.origin) ||
+        allowedOrigins.some(allowed => refererUrl.origin === new URL(allowed).origin)
+      ) {
+        return { valid: true, error: null };
+      }
+    } catch {
+      // malformed referer — fall through to block
     }
     return {
       valid: false,
