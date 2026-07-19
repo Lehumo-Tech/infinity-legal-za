@@ -12,7 +12,7 @@ import {
   BookOpen, Briefcase, Crown, MessageSquare, LayoutDashboard,
   Gavel, Landmark, PhoneCall, Video, MapPin,
   Clock3, FileUp, Calendar, Download,
-  Send, AlertCircle, TreePine,
+  Send, AlertCircle, TreePine, Plug,
   Home as HomeIcon, ArrowLeft, Scale, Heart, Handshake, Sparkles
 } from 'lucide-react';
 import {
@@ -40,11 +40,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { formatRevenue } from '@/lib/format';
+import IntegrationsDashboard from '@/components/IntegrationsDashboard';
 
 // ============================================
 // TYPES
 // ============================================
-type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart';
+type View = 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart' | 'integrations';
 type UserRole = 'managing_director' | 'admin' | 'attorney' | 'paralegal' | 'systems_admin' | 'client';
 
 interface User {
@@ -374,6 +375,11 @@ export default function DashboardShell({ onShowLanding }: { onShowLanding: () =>
       items.push({ id: 'analytics', label: 'Analytics', icon: TrendingUp, group: 'Firm' });
     }
 
+    // Integrations — Managing Director + Systems Admin only (matches /api/integrations role gate)
+    if (role === 'managing_director' || role === 'systems_admin') {
+      items.push({ id: 'integrations', label: 'Integrations', icon: Plug, group: 'Firm' });
+    }
+
     items.push({ id: 'pricing', label: 'Pricing', icon: DollarSign, group: 'More' });
 
     return items;
@@ -638,6 +644,7 @@ export default function DashboardShell({ onShowLanding }: { onShowLanding: () =>
           {currentView === 'org-chart' && <OrgChartView staff={staff} />}
           {currentView === 'analytics' && <AnalyticsView token={token} stats={stats} />}
           {currentView === 'pricing' && <PricingView plans={pricingPlans} />}
+          {currentView === 'integrations' && <IntegrationsDashboard />}
         </div>
 
         {/* Footer */}

@@ -1,17 +1,29 @@
 /**
  * Infinity Legal ZA - Database Seed Script
- * Creates initial pricing plans, staff users, and sample clients with cases.
+ *
+ * Bootstraps the platform with ONLY the real product configuration:
+ *   1. Three pricing plans (Civil Legal Plan, Labour Legal Plan, Extensive Plan)
+ *      — real product data with real ZAR prices.
+ *   2. Slug-migration cleanup (maps legacy slugs to the current PricingView.tsx slugs).
+ *   3. A single bootstrap managing_director admin account, so the platform stays
+ *      accessible when Clerk auth keys are not yet configured. Once Clerk is
+ *      enabled, users are managed in the Clerk dashboard and this bootstrap
+ *      admin can be removed.
+ *   4. A single POPIA consent log for that bootstrap admin only.
+ *
+ * NO simulated client data, fake staff accounts, demo cases, or sample
+ * subscriptions are created. The previous test fixtures (brian@, tshepo@,
+ * thabo@example.com, sarah@example.com, etc.) have all been removed.
+ *
  * Run with: bun run db:seed
  *
- * Login credentials:
- *   Managing Director: tidimalo@infinitylegal.org / Tidimalo@2025!
- *   Co-Director (IT):  brian@infinitylegal.org / Brian@2025!
- *   Legal Advisor:     tshepo@infinitylegal.org / Tshepo@2025!
- *   Client:            thabo@example.com / Client@2025!
- *   Client:            sarah@example.com / Client@2025!
+ * Bootstrap login (delete after Clerk is enabled):
+ *   tidimalo@infinitylegal.org / Tidimalo@2025!
  *
- * IMPORTANT: Uses bcryptjs for password hashing to match local-auth.ts
- * IMPORTANT: Uses slugs matching PricingView.tsx PLAN_STYLES map
+ * IMPORTANT: Uses bcryptjs (SALT_ROUNDS=12) for password hashing to match
+ *            the verification path in src/lib/local-auth.ts.
+ * IMPORTANT: Plan slugs MUST remain `civil_legal_plan`, `labour_legal_plan`,
+ *            `extensive_plan` — they match PricingView.tsx PLAN_STYLES keys.
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -28,7 +40,7 @@ async function hashPassword(password: string): Promise<string> {
 async function main() {
   console.log('🌱 Seeding Infinity Legal ZA database...\n');
 
-  // ─── Create Pricing Plans ───
+  // ─── Create / Update Pricing Plans ───
   // IMPORTANT: Slugs MUST match PricingView.tsx PLAN_STYLES keys
   // (civil_legal_plan, labour_legal_plan, extensive_plan)
   const plans = [
@@ -112,8 +124,9 @@ async function main() {
     }
   }
 
-  // Clean up old slug variants if they exist
-  // Map old slugs to new slugs for migration
+  // ─── Slug Migration Cleanup ───
+  // Map old slugs to new slugs so any historical rows referencing legacy slugs
+  // are repointed at the canonical plan before the legacy plan is deleted.
   const slugMigration: Record<string, string> = {
     'civil-legal': 'civil_legal_plan',
     'labour-legal': 'labour_legal_plan',
@@ -134,285 +147,79 @@ async function main() {
     }
   }
 
-  // ─── Create Staff Users ───
-  const tidimaloPasswordHash = await hashPassword('Tidimalo@2025!');
-  const brianPasswordHash = await hashPassword('Brian@2025!');
-  const tshepoPasswordHash = await hashPassword('Tshepo@2025!');
-  const clientPasswordHash = await hashPassword('Client@2025!');
+  // ─── Bootstrap Admin (Managing Director) ───
+  // This is the ONLY user created by the seed. It exists so the platform is
+  // accessible when Clerk auth keys are absent. Once Clerk is enabled, users
+  // are managed in Clerk's dashboard and this bootstrap admin can be removed.
   const passwordExpiry = new Date();
   passwordExpiry.setDate(passwordExpiry.getDate() + 90);
 
-  const staffUsers = [
-    {
-      email: 'tidimalo@infinitylegal.org',
-      password: tidimaloPasswordHash,
-      full_name: 'Tidimalo Tsatsi',
-      phone: '+27 11 555 0100',
-      role: 'managing_director',
-      department: 'management',
-      practice_number: 'NP/2019/0001',
-      bar_admission_date: new Date('2010-06-15'),
-      specialization: JSON.stringify(['corporate_commercial', 'civil_litigation', 'labour_law']),
-      is_active: true,
-      email_verified: true,
-      popi_consent: true,
-      password_expires_at: passwordExpiry,
-      last_password_change: new Date(),
-    },
-    {
-      email: 'brian@infinitylegal.org',
-      password: brianPasswordHash,
-      full_name: 'Brian Mokwena',
-      phone: '+27 11 555 0101',
-      role: 'systems_admin',
-      department: 'it',
-      is_active: true,
-      email_verified: true,
-      popi_consent: true,
-      password_expires_at: passwordExpiry,
-      last_password_change: new Date(),
-    },
-    {
-      email: 'tshepo@infinitylegal.org',
-      password: tshepoPasswordHash,
-      full_name: 'Tshepo Rametsi',
-      phone: '+27 11 555 0102',
-      role: 'attorney',
-      department: 'litigation',
-      practice_number: 'NP/2021/0042',
-      bar_admission_date: new Date('2015-03-20'),
-      specialization: JSON.stringify(['labour_law', 'family_law', 'civil_litigation']),
-      hourly_rate: 850,
-      bio: 'Legal advisor specialising in labour law and family law with extensive CCMA experience.',
-      is_active: true,
-      email_verified: true,
-      popi_consent: true,
-      password_expires_at: passwordExpiry,
-      last_password_change: new Date(),
-    },
-  ];
+  const adminPasswordHash = await hashPassword('Tidimalo@2025!');
 
-  const createdStaff: Record<string, string> = {};
-  for (const userData of staffUsers) {
-    const existing = await prisma.user.findUnique({
-      where: { email: userData.email },
+  const adminEmail = 'tidimalo@infinitylegal.org';
+  const adminData = {
+    email: adminEmail,
+    password: adminPasswordHash,
+    full_name: 'Tidimalo Tsatsi',
+    phone: '+27 11 555 0100',
+    role: 'managing_director',
+    department: 'management',
+    practice_number: 'NP/2019/0001',
+    bar_admission_date: new Date('2010-06-15'),
+    specialization: JSON.stringify(['corporate_commercial', 'civil_litigation', 'labour_law']),
+    is_active: true,
+    email_verified: true,
+    popi_consent: true,
+    password_expires_at: passwordExpiry,
+    last_password_change: new Date(),
+  };
+
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
+
+  let adminUserId: string;
+  if (existingAdmin) {
+    await prisma.user.update({
+      where: { email: adminEmail },
+      data: adminData,
     });
-    if (existing) {
-      // Update password hash to bcrypt format (use the userData's own hashed password)
-      await prisma.user.update({
-        where: { email: userData.email },
-        data: {
-          password: userData.password,
-          popi_consent: true,
-          email_verified: true,
-        },
-      });
-      createdStaff[userData.email] = existing.id;
-      console.log(`✏️  Updated user: ${userData.email} (bcrypt password)`);
-    } else {
-      const user = await prisma.user.create({ data: userData });
-      createdStaff[userData.email] = user.id;
-      console.log(`✅ Created user: ${userData.full_name} (${userData.role})`);
-    }
+    adminUserId = existingAdmin.id;
+    console.log(`✏️  Updated bootstrap admin: ${adminEmail} (bcrypt password)`);
+  } else {
+    const admin = await prisma.user.create({ data: adminData });
+    adminUserId = admin.id;
+    console.log(`✅ Created bootstrap admin: ${adminData.full_name} (${adminData.role})`);
   }
 
-  // ─── Create Client Users + Client Profiles ───
-  const attorneyId = createdStaff['tshepo@infinitylegal.org'];
-
-  const clientData = [
-    {
-      user: {
-        email: 'thabo@example.com',
-        password: clientPasswordHash,
-        full_name: 'Thabo Molefe',
-        phone: '+27 82 123 4567',
-        role: 'client',
-        id_number: '8501015800089',
-        email_verified: true,
-        popi_consent: true,
-        password_expires_at: passwordExpiry,
-        last_password_change: new Date(),
-      },
-      client: {
-        contract_number: 'INF-202501-00001',
-        id_number: '8501015800089',
-        subscription_status: 'active',
-        membership_number: 'IL-M001',
-        membership_card_issued: true,
-        employer: 'Sasol Limited',
-        occupation: 'Chemical Engineer',
-        annual_income: 650000,
-        tags: JSON.stringify(['vip', 'corporate']),
-      },
-      planSlug: 'labour_legal_plan',
-      case: {
-        case_ref: 'IL-2025-L001',
-        case_number: 'CCMA/JHB/2025/0234',
-        title: 'Unfair Dismissal - Sasol Ltd',
-        description: 'Client was dismissed without proper procedure after 8 years of service. CCMA referral for unfair dismissal.',
-        case_type: 'labour',
-        urgency: 'high',
-        status: 'active',
-        opposing_party: 'Sasol Limited',
-        court_name: 'CCMA Johannesburg',
-        jurisdiction: 'Gauteng',
-        estimated_value: 520000,
-        is_high_risk: true,
-        tags: JSON.stringify(['ccma', 'urgent']),
-      },
-    },
-    {
-      user: {
-        email: 'sarah@example.com',
-        password: clientPasswordHash,
-        full_name: 'Sarah Naidoo',
-        phone: '+27 73 987 6543',
-        role: 'client',
-        id_number: '9205020080067',
-        email_verified: true,
-        popi_consent: true,
-        password_expires_at: passwordExpiry,
-        last_password_change: new Date(),
-      },
-      client: {
-        contract_number: 'INF-202501-00002',
-        id_number: '9205020080067',
-        subscription_status: 'active',
-        membership_number: 'IL-M002',
-        membership_card_issued: true,
-        employer: 'Self-employed',
-        occupation: 'Restaurant Owner',
-        annual_income: 420000,
-        tags: JSON.stringify(['small-business']),
-      },
-      planSlug: 'civil_legal_plan',
-      case: {
-        case_ref: 'IL-2025-C001',
-        case_number: 'GJ/2025/5678',
-        title: 'Commercial Lease Dispute - Sandton City',
-        description: 'Landlord attempting to increase lease by 40% without proper notice. Seeking interdict and lease review.',
-        case_type: 'civil',
-        urgency: 'medium',
-        status: 'review',
-        opposing_party: 'Sandton City Properties (Pty) Ltd',
-        court_name: 'Gauteng High Court',
-        jurisdiction: 'Gauteng',
-        estimated_value: 180000,
-        is_high_risk: false,
-        tags: JSON.stringify(['commercial', 'lease']),
-      },
-    },
-  ];
-
-  const createdClientIds: string[] = [];
-
-  for (const cd of clientData) {
-    const existingUser = await prisma.user.findUnique({
-      where: { email: cd.user.email },
-    });
-
-    if (existingUser) {
-      // Update password to bcrypt
-      await prisma.user.update({
-        where: { email: cd.user.email },
-        data: {
-          password: clientPasswordHash,
-          popi_consent: true,
-          email_verified: true,
-        },
-      });
-      const existingClient = await prisma.client.findUnique({
-        where: { user_id: existingUser.id },
-      });
-      if (existingClient) {
-        createdClientIds.push(existingClient.id);
-      }
-      console.log(`✏️  Updated client: ${cd.user.email} (bcrypt password)`);
-      continue;
-    }
-
-    // Find the plan
-    const plan = await prisma.pricingPlan.findUnique({
-      where: { slug: cd.planSlug },
-    });
-    if (!plan) {
-      console.log(`⚠️  Plan "${cd.planSlug}" not found, skipping client ${cd.user.email}`);
-      continue;
-    }
-
-    // Create user
-    const user = await prisma.user.create({ data: cd.user });
-
-    // Create client profile
-    const client = await prisma.client.create({
+  // ─── POPIA Consent Log (bootstrap admin only) ───
+  const existingConsent = await prisma.consentLog.findFirst({
+    where: { user_id: adminUserId, consent_type: 'popi_act' },
+  });
+  if (!existingConsent) {
+    await prisma.consentLog.create({
       data: {
-        user_id: user.id,
-        plan_id: plan.id,
-        ...cd.client,
+        user_id: adminUserId,
+        consent_type: 'popi_act',
+        granted: true,
+        ip_address: '127.0.0.1',
+        version: '1.0',
       },
     });
-
-    createdClientIds.push(client.id);
-
-    // Create case
-    const caseData = {
-      ...cd.case,
-      client_id: client.id,
-      attorney_id: attorneyId,
-    };
-    await prisma.case.create({ data: caseData });
-
-    // Create subscription
-    const periodStart = new Date();
-    const periodEnd = new Date();
-    periodEnd.setMonth(periodEnd.getMonth() + 1);
-    await prisma.userSubscription.create({
-      data: {
-        client_id: client.id,
-        plan_id: plan.id,
-        status: 'active',
-        current_period_start: periodStart,
-        current_period_end: periodEnd,
-      },
-    });
-
-    console.log(`✅ Created client: ${cd.user.full_name} with case & subscription`);
+    console.log('✅ Created POPIA consent log for bootstrap admin');
+  } else {
+    console.log('ℹ️  POPIA consent log already exists for bootstrap admin');
   }
-
-  // ─── Create POPIA consent log for each user ───
-  const allUsers = await prisma.user.findMany();
-  for (const user of allUsers) {
-    const existingConsent = await prisma.consentLog.findFirst({
-      where: { user_id: user.id, consent_type: 'popi_act' },
-    });
-    if (!existingConsent) {
-      await prisma.consentLog.create({
-        data: {
-          user_id: user.id,
-          consent_type: 'popi_act',
-          granted: true,
-          ip_address: '127.0.0.1',
-          version: '1.0',
-        },
-      });
-    }
-  }
-  console.log('✅ Created POPIA consent logs');
 
   console.log('\n🎉 Seeding complete!');
-  console.log('\n📋 Login Credentials:');
+  console.log('\n📋 Bootstrap Login (delete once Clerk is enabled):');
   console.log('   ┌──────────────────────────────────────────────────────┐');
-  console.log('   │  Managing Director:  tidimalo@infinitylegal.org         │');
-  console.log('   │  Co-Director (IT):  brian@infinitylegal.org            │');
-  console.log('   │  Legal Advisor:     tshepo@infinitylegal.org           │');
-  console.log('   │  Client:             thabo@example.com               │');
-  console.log('   │  Client:             sarah@example.com               │');
-  console.log('   │  Password (MD):      Tidimalo@2025!                  │');
-  console.log('   │  Password (Co-Dir):  Brian@2025!                     │');
-  console.log('   │  Password (Legal):   Tshepo@2025!                    │');
-  console.log('   │  Password (clients): Client@2025!                    │');
+  console.log('   │  Email:    tidimalo@infinitylegal.org                │');
+  console.log('   │  Password: Tidimalo@2025!                            │');
+  console.log('   │  Role:     managing_director                         │');
   console.log('   └──────────────────────────────────────────────────────┘');
-  console.log('\n⚠️  Change passwords after first login!');
+  console.log('\n🧹 All simulated client / case / staff data has been removed.');
+  console.log('   Real users and their data are created at runtime via sign-up.');
 }
 
 main()

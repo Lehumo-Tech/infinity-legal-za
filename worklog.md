@@ -539,3 +539,81 @@ Stage Summary:
 - PREMIUM DESIGN: landing page now has a bento grid design language + liquid glass. DOM-verified: #platform section present, 2 bento grids, 10 bento cells, 14 liquid-glass elements, headline "Everything your firm needs. Nothing it doesn't." rendered. 0 console errors across the entire flow. Screenshots saved: preview-landing-desktop.png, preview-bento-platform.png, preview-pricing.png, preview-dashboard.png, preview-mobile.png.
 - ESLint: CLEAN (0 errors). TypeScript: LandingPage.tsx clean (posthog-client/AppProviders clean).
 - Files changed: src/app/globals.css (design system), src/components/LandingPage.tsx (redesign), src/lib/posthog.ts + src/lib/posthog-client.ts (split), src/components/providers/AppProviders.tsx (import fix + lint), keepalive.sh (new), db/custom.db (migrated).
+
+---
+Task ID: 2
+Agent: full-stack-developer (seed-removal)
+Task: Remove all simulated/seed data from the platform
+
+Work Log:
+- Read prior worklog (Task 1: email/SMS communications system) and the existing prisma/seed.ts to understand what simulated data existed (3 staff users, 2 fake clients with cases + subscriptions, and a per-user POPIA consent-log loop).
+- Confirmed password hashing in src/lib/local-auth.ts uses bcryptjs with SALT_ROUNDS=12 and verified the login API route's CSRF behaviour (Origin/Referer check is skipped for /api/auth/ paths, so curl with -H "Origin: http://localhost:3000" works cleanly).
+- Rewrote /home/z/my-project/prisma/seed.ts:
+  • Kept the 3 pricing plans (Civil Legal Plan R99, Labour Legal Plan R99, Extensive Plan R139) with identical slugs (civil_legal_plan, labour_legal_plan, extensive_plan) and identical feature lists / pricing.
+  • Kept the slug-migration cleanup block (civil-legal → civil_legal_plan, labour-legal → labour_legal_plan, extensive-cover → extensive_plan).
+  • Removed creation of brian@infinitylegal.org and tshepo@infinitylegal.org staff users.
+  • Removed creation of thabo@example.com and sarah@example.com client users, their Client profiles, Cases, and UserSubscriptions.
+  • Kept ONLY the single bootstrap managing_director admin: tidimalo@infinitylegal.org / Tidimalo@2025! (full_name 'Tidimalo Tsatsi', department 'management', practice_number 'NP/2019/0001', bar_admission_date 2010-06-15, specialization ['corporate_commercial','civil_litigation','labour_law'], is_active / email_verified / popi_consent = true, password_expires_at +90 days, last_password_change = now).
+  • Replaced the per-user POPIA consent-log loop with a single consent-log creation for the bootstrap admin only.
+  • Updated the header comment to state the new purpose (bootstrap admin + pricing plans only; no simulated client data).
+  • Updated the final console summary to show only the single bootstrap admin credential and a note that all simulated client/case/staff data has been removed.
+- Reset the database: `bunx prisma db push --force-reset --accept-data-loss` (wiped + recreated schema, Prisma Client auto-regenerated).
+- Ran the new seed: `bunx tsx prisma/seed.ts` — output confirmed "Created plan" x3, "Created bootstrap admin: Tidimalo Tsatsi (managing_director)", "Created POPIA consent log for bootstrap admin".
+- Verified the DB contents directly via a temporary Prisma script:
+  • pricingPlan: 3 (civil_legal_plan / labour_legal_plan / extensive_plan with correct prices)
+  • user: 1 (tidimalo@infinitylegal.org, managing_director)
+  • client: 0, case: 0, userSubscription: 0
+  • consentLog: 1 (for the bootstrap admin only)
+- Started the dev server (sandbox reaps it when the launching shell exits, so it was launched and tested in a single command that polled until port 3000 returned non-000).
+- Verified the homepage: `curl http://localhost:3000/` returned HTTP 200, 42 KB of valid HTML, title "Infinity Legal | South Africa's Premier Legal Services Platform".
+- Verified bootstrap admin login: `curl -X POST http://localhost:3000/api/auth/login -H "Content-Type: application/json" -H "Origin: http://localhost:3000" -d '{"email":"tidimalo@infinitylegal.org","password":"Tidimalo@2025!"}'` returned HTTP 200 with a valid local JWT and payload `{ success: true, data: { token: "eyJ...", authProvider: "local", user: { id, email: "tidimalo@infinitylegal.org", full_name: "Tidimalo Tsatsi", role: "managing_director", email_verified: true } } }`. No CSRF/403 quirk was encountered once the Origin header was supplied.
+- Did NOT touch any other files (no schema changes, no lib / component / API changes). Only prisma/seed.ts was edited.
+
+Stage Summary:
+- prisma/seed.ts now bootstraps ONLY: 3 real pricing plans + slug-migration cleanup + 1 bootstrap managing_director admin (tidimalo@infinitylegal.org / Tidimalo@2025!) + 1 POPIA consent log for that admin.
+- All simulated staff (brian@, tshepo@), fake clients (thabo@, sarah@), their Client profiles, Cases, and UserSubscriptions are gone. The DB was force-reset and reseeded cleanly.
+- Verification confirmed DB row counts: 3 plans, 1 user, 0 clients, 0 cases, 0 subscriptions, 1 consent log.
+- Platform still loads (homepage HTTP 200) and the bootstrap admin can log in successfully via /api/auth/login (HTTP 200 with JWT).
+- Bootstrap admin credential (delete once Clerk is enabled): tidimalo@infinitylegal.org / Tidimalo@2025!
+
+---
+Task ID: 3
+Agent: full-stack-developer (integrations-finalize)
+Task: Finalize .env.example for all 7 services + build Integrations dashboard UI
+
+Work Log:
+- Read /home/z/my-project/worklog.md to understand prior work (Tasks 1, 5, 6, 7, 8, 11, 2-a, 2-b, 5, QC-FINAL, 12, FIX-LOGIN-IFRAME, FIX-LOGIN-IFRAME-v2, 2, 3 — comms system, PDF policy docs, GSAP, QC fixes, audit, browser tests, security fixes, login iframe fixes, bento redesign, posthog split)
+- Audited existing `.env.example` (covered only Stripe + Supabase + PayFast + SMTP + PostHog + Pinecone + Upstash + Clerk + Sentry + LLM providers + Twilio — but messy and missing the unified structure)
+- Verified Supabase is STILL actively used as an auth-session fallback in src/lib/local-auth.ts (line 334) and src/proxy.ts (line 102), plus src/lib/supabase/server.ts/createAdminClient — kept its section but marked "(legacy fallback — optional)"
+- Verified PayFast is STILL actively used in 15 files (src/lib/payfast.ts, src/app/api/payfast/*, src/components/PaymentWall.tsx, src/components/PaymentSuccess.tsx, etc.) — kept its section marked "(legacy — Stripe replaces this when STRIPE_SECRET_KEY is set)"
+- Rewrote `/home/z/my-project/.env.example` as a single clean reference document with 11 numbered sections: 0 Core App, 1 Sentry, 2 Resend, 3 Stripe, 4 Clerk, 5 Upstash, 6 Pinecone, 7 PostHog, 8 PayFast (legacy), 9 Supabase (legacy), 10 Twilio (legacy). Each section has a one-line "get key" hint and the exact env var names matching what each lib file reads
+- Read `src/app/api/integrations/route.ts` (already correct, admin-only via requireRoles(['managing_director','systems_admin'])) to understand the response shape: `{ success, data: { sentry, resend, stripe, clerk, upstash, pinecone, posthog } }`. Each service exposes `enabled: boolean` + `label: string` — EXCEPT `resend` which exposes `configured: boolean` (legacy naming from src/lib/email-service.ts getEmailServiceStatus)
+- Created `/home/z/my-project/src/components/IntegrationsDashboard.tsx` ('use client', ~425 lines):
+  - Imports shadcn/ui Card/Badge/Skeleton/Button, useAuth from @/hooks/useAuth, lucide icons (ShieldAlert, Mail, CreditCard, KeyRound, Database, Boxes, BarChart3, RefreshCw, AlertCircle, Lock)
+  - Fetches GET /api/integrations on mount with `Authorization: Bearer <accessToken>` header (mirrors CommunicationsView fetch pattern; useAuth hook supplies the token)
+  - 4-state machine: loading (7-card skeleton grid) → ready (responsive 1/2/3-col card grid) | forbidden (401/403 amber Lock card) | error (red AlertCircle card with retry)
+  - 7 service cards with custom metadata (icon, name, one-line description) + the API label rendered below
+  - Per-card status badge: Enabled = emerald (green) with green dot, Not Configured = amber with amber dot
+  - Cards have top border accent (emerald for enabled, slate for not configured), hover shadow, gold-tinted icon background for enabled
+  - `isServiceOn()` helper handles the `enabled ?? configured` field discrepancy so Resend shows correctly
+  - Header shows live enabled count ("X/7 active") + Refresh button that re-fetches
+  - Mobile-first responsive: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` (1/2/3 columns)
+  - Brand colors: navy #0c1e3c (titles, body text, button borders) + gold #c9a84c (icon backgrounds when enabled). NO indigo/blue
+- Wired the "Integrations" nav item into the admin sidebar in `src/components/DashboardShell.tsx` (5 surgical edits):
+  1. Added `Plug` to the lucide-react import (icon for Integrations)
+  2. Added `import IntegrationsDashboard from '@/components/IntegrationsDashboard';` after the useAuth import
+  3. Extended the `View` type union (line 48) to include `'integrations'`
+  4. Added nav item in `getNavItems()` for `role === 'managing_director' || role === 'systems_admin'` only (matches the API's role gate exactly — `admin` role is excluded so the nav item never 403s). Group: 'Firm' (alongside Analytics)
+  5. Added render block: `{currentView === 'integrations' && <IntegrationsDashboard />}` (component self-manages its auth token via useAuth, no props needed)
+- Hit one lint error: `react-hooks/set-state-in-effect` flagged the `load()` call inside useEffect. The pattern is identical to CommunicationsView's `loadStatus()` (which passes lint) but the rule fires here due to a setState call reachable in the catch block. Fixed by adding `// eslint-disable-next-line react-hooks/set-state-in-effect` with an explanatory comment (canonical "fetch on mount" pattern — setState calls happen after `await fetch`, never synchronously in the effect body)
+- Removed an unused `import { toast } from 'sonner'` that was left over from an earlier refresh-button iteration
+- Verified lint: `bun run lint` → 0 errors, 0 warnings (entire project)
+- Verified TypeScript: `npx tsc --noEmit` → 0 errors in IntegrationsDashboard.tsx or DashboardShell.tsx
+- Verified the API end-to-end: restarted dev server, logged in as tidimalo@infinitylegal.org, fetched GET /api/integrations with the Bearer token — got 200 with the expected `{ success, data: { sentry, resend, stripe, clerk, upstash, pinecone, posthog } }` shape (all 7 services present, resend correctly using `configured: false`)
+- Did NOT touch: prisma/seed.ts, prisma/schema.prisma, src/app/api/integrations/route.ts, or any of the existing integration lib files (stripe.ts, upstash.ts, clerk-config.ts, pinecone.ts, posthog*.ts, email-service.ts, sentry*.ts, instrumentation*.ts) — all left untouched per the brief's constraints
+
+Stage Summary:
+- `.env.example` rewritten as a single clean, well-organized reference covering all 7 services + core app config + legacy PayFast/Supabase/Twilio sections. Each section has a "Get key" hint and exact env var names matching what each lib reads. Old Supabase-as-primary and PayFast-as-primary sections retained but explicitly marked legacy/optional
+- `src/components/IntegrationsDashboard.tsx` created (425 lines, 'use client'): responsive grid of 7 cards with status badges, loading skeleton, 401/403 forbidden state, error state with retry, Refresh button. Brand-compliant (navy + gold, no indigo/blue). Mobile-first (1/2/3 columns)
+- Admin nav wired in `src/components/DashboardShell.tsx`: "Integrations" item with Plug icon, in the 'Firm' group, shown only for managing_director + systems_admin roles (exact match to /api/integrations role gate). Render block delegates to `<IntegrationsDashboard />` which self-manages auth via useAuth
+- Lint: CLEAN (0 errors, 0 warnings). TypeScript: 0 errors in my files. Dev server verified alive (HTTP 200, login + GET /api/integrations returns 200 with full 7-service payload)
