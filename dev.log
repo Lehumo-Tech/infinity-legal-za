@@ -1,20 +1,14 @@
 $ next dev -p 3000 --webpack
+⨯ Failed to start server
+Error: listen EADDRINUSE: address already in use :::3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
 [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
-▲ Next.js 16.1.3 (webpack)
-- Local:         http://localhost:3000
-- Network:       http://21.0.2.110:3000
-- Environments: .env
-- Experiments (use with caution):
-  · clientTraceMetadata
-
-✓ Starting...
-[@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
-[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
-○ Compiling /instrumentation ...
-✓ Ready in 6.7s
-○ Compiling / ...
-⚠ ./src/instrumentation-client.ts
-The generated code contains 'async/await' because this module is using "topLevelAwait".
-However, your target environment does not appear to support 'async/await'.
-As a result, the code may not run as expected or may cause runtime errors.
- GET / 200 in 14.3s (compile: 13.1s, proxy.ts: 735ms, render: 420ms)
+[?25h
+error: script "dev" exited with code 1
