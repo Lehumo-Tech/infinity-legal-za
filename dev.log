@@ -11,13 +11,14 @@ $ next dev -p 3000 --webpack
 [@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
 [@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
 ○ Compiling /instrumentation ...
-✓ Ready in 7.3s
+✓ Ready in 13.5s
 ○ Compiling proxy ...
 ○ Compiling / ...
 ⚠ ./src/instrumentation-client.ts
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
 As a result, the code may not run as expected or may cause runtime errors.
- GET / 200 in 16.2s (compile: 14.5s, proxy.ts: 767ms, render: 949ms)
- GET / 200 in 280ms (compile: 19ms, proxy.ts: 226ms, render: 35ms)
- GET / 200 in 133ms (compile: 13ms, proxy.ts: 15ms, render: 104ms)
+ GET / 200 in 26.6s (compile: 24.6s, proxy.ts: 997ms, render: 1001ms)
+ GET / 200 in 27.3s (compile: 24.6s, proxy.ts: 997ms, render: 1704ms)
+ GET / 200 in 847ms (compile: 108ms, proxy.ts: 559ms, render: 179ms)
+ GET / 200 in 499ms (compile: 275ms, proxy.ts: 135ms, render: 89ms)
