@@ -67,7 +67,9 @@ export async function upsertDocumentVector(params: {
   try {
     const index = await getPineconeIndex();
     if (!index) return false;
-    await index.upsert([{ id: params.id, values: params.values, metadata: params.metadata }]);
+    await index.upsert({
+      records: [{ id: params.id, values: params.values, metadata: params.metadata }],
+    } as Parameters<typeof index.upsert>[0]);
     return true;
   } catch {
     return false;

@@ -99,8 +99,8 @@ export default withSentryConfig(nextConfig, {
   silent: true,
   // Don't fail the build if source map upload fails
   errorHandler: () => {},
-  // Disable automatic instrumentation of routes (we handle it manually)
-  // This avoids the "auto-instrumentation" warning in dev
-  disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
-  disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  // Disable source map uploading & build-time instrumentation when no auth token
+  // (keeps dev builds fast and warning-free). When SENTRY_AUTH_TOKEN is set in
+  // production, both are enabled automatically.
+  ...(process.env.SENTRY_AUTH_TOKEN ? {} : { sourcemaps: { disable: true } }),
 });
