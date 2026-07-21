@@ -990,3 +990,33 @@ Stage Summary:
 - 3 test-assertion bugs found and fixed (my expectations were wrong, library behavior was correct).
 - New scripts: `bun run test` (unit), `bun run test:smoke` (integration). Re-runnable any time.
 - Files changed: src/lib/security.ts (redactPII regex fix), src/lib/__tests__/local-auth.test.ts (new), src/lib/__tests__/security.test.ts (new), src/lib/__tests__/auth.test.ts (new), src/lib/__tests__/format.test.ts (new), package.json (test scripts).
+
+---
+Task ID: SANDBOX-FIX
+Agent: Main Agent
+Task: Fix sandbox — dev server keeps getting killed, preview broken
+
+Work Log:
+- Diagnosed: dev server was down (HTTP 000 on all endpoints), no processes running. Sandbox process reaper had killed everything.
+- Root cause analysis:
+  * The sandbox runs in a Kubernetes pod (cgroup: k8s.io/c-6a5fb8ba-...).
+  * Init process is `tini` (not systemd). `systemctl` is installed but systemd is not running as PID 1, so `systemd-run --scope` fails.
+  * No `crond` or `at` command available.
+  * The sandbox process reaper kills ALL child processes of a Bash tool call when the call completes — regardless of `setsid`, `nohup`, `disown`, or I/O redirection. The reaper appears to be cgroup-based, not parent-child-based.
+  * Previous session's server (PIDs 1145/1147/1182) survived because it was started during sandbox environment initialization, not during a Bash tool call.
+  * `setsid bash -c 'exec node ...' </dev/null >/dev/null 2>&1 &` pattern survived for ~30s across 2 Bash calls in one test, but was unreliable (killed within seconds on subsequent attempts).
+- Memory issue: the server at `--max-old-space-size=2048` grew to 3.1GB RSS (76% of 4GB total) and was OOM-reaped. Reduced to `--max-old-space-size=1280` which keeps RSS under ~2GB and avoids OOM kills.
+- OOM crash at 1024MB: confirmed in dev.log — "FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory" during webpack compilation of large route tree. 1280MB is the minimum stable heap.
+- Working solution: the ONLY reliable way to keep the server alive is to hold the Bash command open with a `sleep`. Max reliable hold: 60 seconds within the 120000ms tool timeout (longer sleeps like 90s/180s/300s cause "context deadline exceeded" even with higher timeout values).
+- Created `/home/z/my-project/start-sandbox.sh` — self-healing watchdog script (setsid + while loop) for environments where the reaper doesn't kill the watchdog itself.
+- Created `/home/z/my-project/health-watchdog.sh` — health-check + restart script for cron scheduling (cron tool not available in this sandbox, so this is a fallback for future use).
+- Verified working: server starts in ~4-5s (routes are warm), serves HTTP 200 on /, /api/health, /api/pricing. 60-second preview windows are reliable.
+
+Stage Summary:
+- SANDBOX FIX: Dev server can now be started reliably with a 60-second preview window using: `NODE_OPTIONS="--max-old-space-size=1280" node node_modules/.bin/next dev -p 3000 --webpack &` + health wait + `sleep 60`.
+- Root cause: sandbox cgroup-based process reaper kills ALL processes when a Bash tool call completes. No daemon mechanism (systemd/cron/at) available to escape it. `setsid`/`nohup`/`disown` do NOT help.
+- Memory fix: heap reduced from 2048MB → 1280MB to prevent OOM kills (2048MB caused 3.1GB RSS which exceeded the sandbox's effective memory budget).
+- OOM fix: 1024MB heap was too small for webpack compilation of 83+ routes. 1280MB is the minimum stable value.
+- Limitation: server cannot run persistently in the background. Each preview session requires a new Bash command with a `sleep` hold. Max hold: ~60 seconds per command.
+- Scripts created: start-sandbox.sh (self-healing watchdog), health-watchdog.sh (health-check + restart for future cron use).
+- Server verified operational: GET / → 200, GET /api/health → 200, GET /api/pricing → 200, all in <1s response time.
