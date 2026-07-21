@@ -222,6 +222,64 @@ for i in 1 2 3 4 5 6; do
   fi
 done
 
+echo "===== 21. CREATE-CASE-FOR-BRAND-NEW-CLIENT (the previously-broken flow) ====="
+# The audit-test user signed up in step 3 has NO existing cases.
+# Verify staff can now fetch them from /api/crm/users?role=client and create a case.
+CRM_USERS=$(curl -sS "$BASE/api/crm/users?role=client" -H "Authorization: Bearer $STAFF_TOKEN")
+# Find the audit-test user's client_profile_id
+NEW_CLIENT_PID=$(echo "$CRM_USERS" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+users = data.get('data', [])
+for u in users:
+    if u.get('email','').startswith('audit-') and u.get('client_profile_id'):
+        print(u['client_profile_id']); break
+" 2>/dev/null)
+check "brand-new client appears in /api/crm/users with client_profile_id" "nonempty" "${NEW_CLIENT_PID:+nonempty}"
+
+if [[ -n "$NEW_CLIENT_PID" ]]; then
+  # Create a case for this brand-new client (previously this failed with 404 CLIENT_NOT_FOUND)
+  NCR=$(curl -sS -w "\n%{http_code}" -X POST $BASE/api/cases \
+    -H "Authorization: Bearer $STAFF_TOKEN" -H "Content-Type: application/json" \
+    -d "{\"title\":\"Case for brand-new client\",\"case_type\":\"family\",\"client_id\":\"$NEW_CLIENT_PID\",\"urgency\":\"medium\",\"description\":\"Created for a client who had zero cases before\"}")
+  NCR_CODE=$(echo "$NCR" | tail -1)
+  check "POST /api/cases for brand-new client -> 201" "201" "$NCR_CODE"
+  NEW_CASE_ID=$(echo "$NCR" | head -n -1 | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['id'])" 2>/dev/null)
+  if [[ -n "$NEW_CASE_ID" ]]; then
+    # Examine the case detail (the "examine after opening" flow)
+    NCG=$(curl -sS -o /dev/null -w "%{http_code}" "$BASE/api/cases/$NEW_CASE_ID" -H "Authorization: Bearer $STAFF_TOKEN")
+    check "GET /api/cases/[id] for new case -> 200" "200" "$NCG"
+    # Verify it has a CASE_CREATED timeline event
+    NTL=$(curl -sS "$BASE/api/cases/$NEW_CASE_ID" -H "Authorization: Bearer $STAFF_TOKEN" | python3 -c "import sys,json; d=json.load(sys.stdin)['data']; print(len(d.get('timeline',[])))" 2>/dev/null)
+    check "new case has 1 timeline event (CASE_CREATED)" "1" "$NTL"
+    # The brand-new client should now be able to see their own case
+    NC_CLIENT=$(curl -sS -o /dev/null -w "%{http_code}" "$BASE/api/cases/$NEW_CASE_ID" -H "Authorization: Bearer $CLIENT_TOKEN")
+    check "brand-new client can examine their own case -> 200" "200" "$NC_CLIENT"
+  fi
+fi
+
+echo "===== 22. SIMULATION DATA REMOVED (ai_confidence must be null) ====="
+# Submit an intake to verify ai_confidence is no longer the fake 0.85
+INTAKE_RESP=$(curl -sS -w "\n%{http_code}" -X POST $BASE/api/intake \
+  -H "Content-Type: application/json" -H "Origin: http://localhost:3000" \
+  -d "{\"name\":\"Sim Check\",\"email\":\"simcheck-${TS}@example.com\",\"phone\":\"0821111111\",\"caseType\":\"civil\",\"description\":\"Test that ai_confidence is no longer fabricated\",\"urgency\":\"low\",\"consent_given\":true,\"popia_consent\":true}")
+INTAKE_CODE=$(echo "$INTAKE_RESP" | tail -1)
+if [[ "$INTAKE_CODE" == "200" || "$INTAKE_CODE" == "201" ]]; then
+  check "POST /api/intake (sim check) -> 200/201" "200" "200"
+else
+  check "POST /api/intake (sim check) -> 200/201" "200" "$INTAKE_CODE"
+fi
+# ai_confidence should be null (not 0.85)
+AI_CONF=$(echo "$INTAKE_RESP" | head -n -1 | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+data = d.get('data', d)
+# confidence_score may be at top level or nested
+cs = data.get('confidence_score') or data.get('ai_confidence')
+print('null' if cs is None else str(cs))
+" 2>/dev/null)
+check "ai_confidence is null (no fake 0.85)" "null" "$AI_CONF"
+
 echo ""
 echo "========================================"
 echo "SMOKE TEST SUMMARY"

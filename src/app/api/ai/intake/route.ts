@@ -137,7 +137,9 @@ export async function POST(request: NextRequest) {
       aiAnalysis = result.content || 'AI analysis could not be generated at this time. Our team will review your submission manually.';
       aiProvider = result.provider;
       aiModel = result.model;
-      aiConfidence = result.tokensUsed ? 0.85 : null; // placeholder confidence
+      // No calibrated confidence score is returned by the LLM providers — leave null
+      // rather than reporting a fabricated value to staff.
+      aiConfidence = null;
     } catch (aiError) {
       console.error('AI intake analysis failed:', aiError);
       aiAnalysis =

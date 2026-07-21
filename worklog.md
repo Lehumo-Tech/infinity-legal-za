@@ -891,3 +891,68 @@ Stage Summary:
 - Security verified: wrong password → 401 (no user enumeration), missing token → 401, client cannot read staff case → 404 (IDOR), unauth lead convert → 401, 6th login attempt → 429, deactivated users can no longer log in.
 - Remaining (non-blocking) audit findings documented in AUDIT-1 subagent worklog entry: 6 security concerns (CSRF coverage gaps on non-auth routes — low risk since SPA uses Bearer tokens; communications logs expose PII — admin-only; crm/users self-promotion path — low), 20 code-quality issues (messages route inconsistent response shape; missing sanitizeString in cases/consultations POST; invalid date handling; incomplete validRoles list; etc.). All documented for follow-up triage.
 - Smoke test script saved at /home/z/my-project/scripts/smoke.sh — re-runnable any time with `bash scripts/smoke.sh` (requires dev server on :3000).
+
+---
+Task ID: SIM-HUNT
+Agent: general-purpose (sim-data-hunter)
+Task: Hunt down and report ALL remaining simulation/mock/fake/demo/sample data in the codebase
+
+Work Log:
+- Read worklog tail (200 lines) to understand prior work — confirmed LeadsView overhaul, CasesView, schema fixes, seed-removal agent (2-seed-removal-agent) had already cleaned prisma/seed.ts down to 3 plans + 1 bootstrap admin.
+- Grep -i for `mock|fake|demo|sample|dummy|simulat` across `src/`, `prisma/`, `mini-services/` — 7 src files + 3 prisma files + 4 mini-services files matched; inspected each.
+- Read in full the high-risk API routes: dashboard, analytics, sales, hr, management, paralegal, report, backup — ALL clean (real Prisma queries, no mock returns).
+- Read all 10 AI routes under `src/app/api/ai/*` — chat, intake, summarize, memo, vlm, asr, tts, image-gen, web-search, providers. All use real z-ai-web-dev-sdk + Google/Groq/OpenRouter fallbacks via `llm-service.ts` / `llm-providers.ts`. No mock AI responses returned when API keys are absent (the only fallback is an honest "All AI providers are temporarily unavailable" message).
+- Found TWO active sim-data lines: `src/app/api/ai/intake/route.ts:140` and `src/app/api/intake/route.ts:177` both set `aiConfidence = result.tokensUsed ? 0.85 : null; // placeholder confidence` — a hardcoded 0.85 fake confidence value persisted to `IntakeSubmission.ai_confidence` and surfaced to staff reviewing intake submissions.
+- Inspected `prisma/seed.ts` (233 lines) — clean. Creates 3 real pricing plans + 1 bootstrap MD admin (tidimalo@infinitylegal.org) + 1 POPIA consent log. Explicitly notes all previous test fixtures removed.
+- Inspected `prisma/clean-seeded-data.ts` — listed brian@ and tshepo@ in STAFF_EMAILS to keep, but `prisma/seed.ts` only creates tidimalo@. Stale/ghost reference (the active seed-staff admin route still creates all 3, but the standalone clean script's "preserve list" is out of sync with what the main seed creates).
+- Discovered TWO orphaned seed scripts in `scripts/` (NOT referenced in package.json): `scripts/seed-data.ts` (1784 lines, fake staff/client emails + ~50 fake cases/leads/tasks/documents/consultations incl. Nkosi v Johannesburg Metro, Bongani Mthembu, Tshepo Moleleki, Johan Smith, etc.) and `scripts/seed-users.ts` (182 lines, 7 fake users with Password123! incl. Johan Smith client).
+- Discovered demo-user seed blocks in `mini-services/pocketbase/setup.sh` (lines 639-644) and `mini-services/pocketbase/setup-node.js` (lines 645-650): 4 "demo users" with `Password123!` including `client1@example.co.za` (Lindiwe Mthembu, Bongani Khumalo, Tshepo Rametse, IT Administrator).
+- Verified all admin seed routes (seed-pricing, seed-staff, seed-articles) create legitimate real product data only.
+- Verified frontend components: DashboardShell.tsx (3050 lines) clean — `healthItems` array is UI labels fed by real `firmHealth` data; LandingPage.tsx has `displayPlans` and `staticArticles` fallback arrays (duplicates of seed data) used only when API fetch fails; LegalArticlesSection.tsx has identical `staticArticles` fallback; CommunicationsView.tsx "Simulation Mode" UI is honest reflection of email/SMS provider configuration state; IntegrationsDashboard.tsx `SERVICES` is UI metadata (icons/labels), status fetched live from /api/integrations.
+- Verified chat widgets (AIChatWidget.tsx, LandingPage.tsx AIChatWidget, AskInfinityBubble.tsx) initialize with single welcome greeting message — standard chatbot UX, not fake data records.
+- Verified email-service.ts + sms-service.ts simulation fallbacks log to DB with `provider: 'simulated'` and surface honestly in UI — legitimate resilience fallback, clearly labeled.
+- Verified no `John Doe`/`Jane Doe`/`Test User`/`Sample Client` records exist (only "John Doe" as input placeholder text in 3 files; "+27 82 000 0000" only as phone-format placeholder on LandingPage line 1024).
+
+Stage Summary:
+- ACTIVE sim data (must remove): 2 lines — `src/app/api/ai/intake/route.ts:140` and `src/app/api/intake/route.ts:177` (hardcoded 0.85 fake ai_confidence persisted to DB and shown to staff).
+- DEAD/orphaned mock data (low priority, recommend delete): `scripts/seed-data.ts` (1784 lines), `scripts/seed-users.ts` (182 lines), `mini-services/pocketbase/setup.sh` lines 639-644, `mini-services/pocketbase/setup-node.js` lines 645-650, `prisma/clean-seeded-data.ts` (stale STAFF_EMAILS list referencing brian@/tshepo@).
+- LEGITIMATE seed/reference data (keep): prisma/seed.ts (3 plans + 1 bootstrap admin), src/app/api/admin/seed-{staff,pricing,articles}/route.ts, src/app/api/pricing/route.ts FALLBACK_PLANS, LandingPage.tsx displayPlans + caseTypes + trustIndicators + staticArticles, LegalArticlesSection.tsx staticArticles, IntegrationsDashboard.tsx SERVICES, communication-templates.ts EMAIL/SMS templates, DashboardShell healthItems.
+- LEGITIMATE simulation fallbacks (keep, but document): email-service.ts + sms-service.ts simulation mode (clearly labeled "simulated" provider), communications/send route honest "Email simulated" message.
+- No fake testimonials, no fake "10,000+ users" stats, no hardcoded fake users in active code paths.
+
+---
+Task ID: CASE-FLOW-FIX
+Agent: Main Agent
+Task: Fix broken case create/view/examine backend flow + remove all simulation data
+
+Work Log:
+- Diagnosed the core broken flow: /api/crm/users returned user.id (User table PK) but NOT client_profile.id (Client table PK), while POST /api/cases validates client_id against the Client profile PK. Result: staff could only create cases for clients who ALREADY had cases (CasesView had a workaround that extracted client_ids from existing cases). Brand-new clients were unselectable.
+- Dispatched SIM-HUNT subagent (general-purpose) to hunt all simulation/mock/fake data across the codebase. Findings: 2 active sim lines (fake ai_confidence=0.85 in both intake routes), 2 orphaned fake-seed scripts (scripts/seed-data.ts 1784 lines, scripts/seed-users.ts 182 lines), 1 DEMO_USERS block in pocketbase setup.sh + setup-node.js (4 fake users with Password123!). Full report appended to worklog under SIM-HUNT.
+- Backend fixes applied (4 files):
+  1. src/app/api/crm/users/route.ts — added client_profile_id to the response (the real Client PK needed by POST /api/cases). Frontend can now populate a client selector for ANY client, including ones with zero cases.
+  2. src/app/api/cases/route.ts GET — rewrote role-based filtering. Previously: paralegals/officers/consultants with VIEW_OWN_CASES fell through to "return empty list" because they weren't in ['attorney','associate','candidate_attorney']. Now: admins see all (VIEW_ALL_CASES); clients filter by their Client profile; ALL other staff filter by attorney_id=userId (covers anyone a case is assigned to, regardless of role label).
+  3. src/app/api/cases/route.ts POST — expanded LEGAL_ADVISOR_ROLES to include senior_partner, supervising_officer, legal_officer (were missing). These roles can now self-assign as lead advisor when creating a case.
+  4. src/app/api/cases/[id]/route.ts GET — fixed null deref: caseRecord.client.user_id → caseRecord.client?.user_id (orphan cases with null client no longer crash the detail endpoint).
+- Simulation data removed (5 files):
+  5. src/app/api/ai/intake/route.ts:140 — fake `aiConfidence = result.tokensUsed ? 0.85 : null` → `aiConfidence = null` (LLM providers don't return calibrated confidence; reporting a fabricated 0.85 to staff was misleading).
+  6. src/app/api/intake/route.ts:177 — same fake 0.85 → null.
+  7. scripts/seed-data.ts — DELETED (1784-line orphaned fake-data seeder with fake staff/clients/cases/leads/consultations).
+  8. scripts/seed-users.ts — DELETED (182-line orphaned fake-user seeder with Password123!).
+  9. mini-services/pocketbase/setup.sh + setup-node.js — removed DEMO_USERS block (4 fake users: Tshepo Rametse, Bongani Khumalo, Lindiwe Mthembu, IT Administrator with Password123!).
+- Frontend fix (1 file):
+  10. src/components/CasesView.tsx loadClients() — replaced the broken workaround (fetch /api/cases?perPage=200 + extract client_ids) with a proper fetch from /api/crm/users?role=client using the new client_profile_id field. Now staff can select ANY active client with a Client profile, not just ones who already have cases.
+- Extended smoke test (scripts/smoke.sh) with 2 new test sections:
+  - Section 21: CREATE-CASE-FOR-BRAND-NEW-CLIENT — signs up a brand-new user, verifies they appear in /api/crm/users with client_profile_id, creates a case for them (previously 404), examines the case detail, verifies CASE_CREATED timeline event, and verifies the client can examine their own case.
+  - Section 22: SIMULATION DATA REMOVED — submits an intake and asserts ai_confidence is null (not the fake 0.85).
+- Verification:
+  * `bun run lint` → 0 errors, 0 warnings
+  * Extended smoke test: 48 PASS / 1 FAIL (the 1 "fail" was a test-assertion bug — /api/intake correctly returns 201 Created, not 200; fixed the assertion).
+  * The previously-broken flow now works end-to-end: signup brand-new client → staff fetches them from /api/crm/users → staff creates case with their client_profile_id (201) → staff examines case detail (200, 1 timeline event) → client examines their own case (200).
+
+Stage Summary:
+- Case create/view/examine flow FIXED. The root cause was /api/crm/users not exposing the Client profile PK — staff could only create cases for clients who already had cases. Now any active client with a Client profile can be selected.
+- Role-based case filtering FIXED. Paralegals, senior_partners, supervising_officers, legal_officers, and consultants no longer get empty case lists — they see cases assigned to them as lead advisor.
+- Null-deref crash on /api/cases/[id] FIXED (orphan cases with null client no longer 500).
+- Simulation data REMOVED: fake ai_confidence=0.85 (2 files), orphaned seed-data.ts + seed-users.ts (deleted), pocketbase DEMO_USERS (4 fake users removed). The only remaining "simulation" is the clearly-labeled email/SMS simulation mode when RESEND/Twilio creds are absent — that's legitimate fallback behavior, not fake data.
+- Smoke test expanded from 42 → 49 checks. 48/49 pass (the 1 remaining is the assertion-bug fix, not a real failure).
+- Files changed: 4 backend route files, 1 frontend component, 2 deleted scripts, 2 pocketbase setup scripts, 1 smoke test. Lint clean.

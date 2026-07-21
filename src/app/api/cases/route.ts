@@ -64,26 +64,24 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: Record<string, unknown> = {};
 
-    // Role-based filtering
+    // Role-based filtering — proper logic so every role with VIEW_OWN_CASES sees
+    // the cases they're entitled to:
+    //   - Admins/MD (VIEW_ALL_CASES) → no filter (see everything)
+    //   - Clients → filter by their Client profile
+    //   - Attorneys/paralegals/officers/any staff → filter by attorney_id = their userId
+    //     (covers anyone a case is assigned to, regardless of role label)
     if (!canViewAll) {
-      // Client: find their client profile first, then filter by client_id
+      // First: is this user a client? If so, filter by their client profile.
       const clientProfile = await db.client.findUnique({
         where: { user_id: auth.user.userId },
       });
       if (clientProfile) {
         where.client_id = clientProfile.id;
       } else {
-        // Attorney: see cases assigned to them
-        const isAttorney = ['attorney', 'associate', 'candidate_attorney'].includes(role);
-        if (isAttorney) {
-          where.attorney_id = auth.user.userId;
-        } else {
-          // No access to any cases
-          return apiResponse({
-            data: [],
-            pagination: createPaginationResult(0, page, perPage),
-          });
-        }
+        // Not a client → treat as staff. Show cases assigned to them as the lead advisor.
+        // This correctly covers attorney, associate, candidate_attorney, senior_partner,
+        // supervising_officer, legal_officer, paralegal, etc. — anyone with VIEW_OWN_CASES.
+        where.attorney_id = auth.user.userId;
       }
     }
 
@@ -207,15 +205,20 @@ export async function POST(request: NextRequest) {
     // Generate unique case reference
     const caseRef = await generateCaseRef();
 
-    // Determine attorney_id: if the creator is an attorney, assign to them
+    // Determine attorney_id: if the creator is in a legal-advisor role, self-assign.
+    // Covers every role that can legally act as lead advisor on a case.
     let attorneyId: string | null = null;
     const creatorRole = auth.user.role as RoleKey;
-    if (['attorney', 'associate', 'candidate_attorney'].includes(creatorRole)) {
+    const LEGAL_ADVISOR_ROLES = [
+      'attorney', 'associate', 'candidate_attorney',
+      'senior_partner', 'supervising_officer', 'legal_officer',
+    ];
+    if (LEGAL_ADVISOR_ROLES.includes(creatorRole)) {
       attorneyId = auth.user.userId;
     } else if (body.attorney_id) {
-      // Validate attorney exists
+      // Validate attorney exists and is in a legal-advisor role
       const attorneyExists = await db.user.findUnique({
-        where: { id: body.attorney_id, role: { in: ['attorney', 'associate', 'candidate_attorney'] } },
+        where: { id: body.attorney_id, role: { in: LEGAL_ADVISOR_ROLES } },
       });
       if (attorneyExists) {
         attorneyId = body.attorney_id;

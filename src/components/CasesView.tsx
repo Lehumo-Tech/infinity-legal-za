@@ -242,29 +242,34 @@ export function CasesView({
   const [activeTab, setActiveTab] = useState('overview');
 
   // ---- Fetch clients for the create-case selector (staff only) ----
+  // Uses /api/crm/users?role=client which returns the real Client profile PK
+  // (client_profile_id) required by POST /api/cases. This lets staff create
+  // cases for ANY client — including ones who don't have any cases yet.
   const loadClients = useCallback(async () => {
     if (!token || !isStaff) return;
     setLoadingClients(true);
     try {
-      // Extract unique clients from existing cases. We use the case's
-      // top-level `client_id` field (the actual Client profile PK required by
-      // POST /api/cases), NOT `case.client.id` (which is the user.id — a known
-      // API inconsistency). This is the most reliable way to populate a client
-      // selector that will succeed at case-creation time.
-      const res = await fetch('/api/cases?page=1&perPage=200', {
+      const res = await fetch('/api/crm/users?role=client&perPage=200', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       const list: ClientOption[] = [];
-      if (data.success && Array.isArray(data.data?.data)) {
-        const seen = new Set<string>();
-        for (const c of data.data.data as CaseRow[]) {
-          if (!c.client_id || seen.has(c.client_id)) continue;
-          seen.add(c.client_id);
+      if (data.success && Array.isArray(data.data)) {
+        for (const u of data.data as Array<{
+          id: string;
+          full_name: string | null;
+          email: string;
+          client_profile_id: string | null;
+          is_active: boolean;
+        }>) {
+          // Only include clients who have a Client profile row — without one,
+          // POST /api/cases will reject with CLIENT_NOT_FOUND.
+          if (!u.client_profile_id) continue;
+          if (u.is_active === false) continue;
           list.push({
-            id: c.client_id,
-            full_name: c.client?.full_name || null,
-            email: c.client?.email || '(no email)',
+            id: u.client_profile_id,
+            full_name: u.full_name || null,
+            email: u.email || '(no email)',
           });
         }
       }

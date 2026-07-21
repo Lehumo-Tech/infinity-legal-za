@@ -631,35 +631,10 @@ for p in plans:
 done
 
 # =============================================
-# SEED: Demo Users
+# NOTE: Demo user seeding removed — fake accounts (Tshepo Rametse, Bongani Khumalo,
+# Lindiwe Mthembu, IT Administrator with Password123!) were polluting the DB.
+# Real bootstrap admin is created via prisma/seed.ts (tidimalo@infinitylegal.org).
 # =============================================
-echo ""
-echo "📦 Seeding demo users..."
-
-DEMO_USERS='[
-  {"email":"md@infinitylegal.co.za","password":"Password123!","passwordConfirm":"Password123!","full_name":"Tshepo Rametse","role":"managing_director","department":"management","is_active":true,"email_verified":true,"password_expires_at":"2026-08-19 00:00:00.000Z","last_password_change":"2026-05-19 00:00:00.000Z"},
-  {"email":"associate@infinitylegal.co.za","password":"Password123!","passwordConfirm":"Password123!","full_name":"Bongani Khumalo","role":"associate","department":"litigation","is_active":true,"email_verified":true,"password_expires_at":"2026-08-19 00:00:00.000Z","last_password_change":"2026-05-19 00:00:00.000Z"},
-  {"email":"client1@example.co.za","password":"Password123!","passwordConfirm":"Password123!","full_name":"Lindiwe Mthembu","role":"client","is_active":true,"email_verified":true,"password_expires_at":"2026-08-19 00:00:00.000Z","last_password_change":"2026-05-19 00:00:00.000Z"},
-  {"email":"sysadmin@infinitylegal.co.za","password":"Password123!","passwordConfirm":"Password123!","full_name":"IT Administrator","role":"systems_admin","department":"it","is_active":true,"email_verified":true,"password_expires_at":"2026-08-19 00:00:00.000Z","last_password_change":"2026-05-19 00:00:00.000Z"}
-]'
-
-for user in $(echo "$DEMO_USERS" | python3 -c "
-import sys, json
-users = json.load(sys.stdin)
-for u in users:
-  print(json.dumps(u))
-"); do
-  USER_EMAIL=$(echo "$user" | python3 -c "import sys,json;print(json.load(sys.stdin)['email'])")
-  RES=$(curl -s -X POST "$PB_URL/api/collections/users/records" \
-    -H "$CONTENT_HEADER" \
-    -H "$AUTH_HEADER" \
-    -d "$user")
-  if echo "$RES" | python3 -c "import sys,json;d=json.load(sys.stdin);exit(0 if d.get('id') else 1)" 2>/dev/null; then
-    echo "✅ Seeded user: $USER_EMAIL"
-  else
-    echo "⚠️  Seed issue for $USER_EMAIL: $(echo $RES | head -c 200)"
-  fi
-done
 
 echo ""
 echo "🎉 PocketBase setup complete!"

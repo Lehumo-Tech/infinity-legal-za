@@ -74,6 +74,9 @@ export async function GET(request: NextRequest) {
         full_name: user.full_name,
         email: user.email,
         role: user.role,
+        // The Client profile PK — required by POST /api/cases { client_id }.
+        // Without this, staff cannot create cases for clients who don't yet have one.
+        client_profile_id: user.client_profile?.id || null,
         subscription_status: sub?.status || null,
         subscription_plan: sub?.plan?.name || null,
         created_at: user.created_at,

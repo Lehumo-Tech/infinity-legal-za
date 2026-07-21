@@ -51,8 +51,10 @@ export async function GET(
     }
 
     // Non-admin users can only see cases they're assigned to (via client → user_id)
+    // or that they're the lead advisor on. Use optional chaining — a case may have
+    // an orphan client (null) if data was migrated incorrectly.
     if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.VIEW_ALL_CASES)) {
-      const isAssigned = caseRecord.client.user_id === auth.user.userId ||
+      const isAssigned = caseRecord.client?.user_id === auth.user.userId ||
                          caseRecord.attorney_id === auth.user.userId;
       if (!isAssigned) {
         return apiError('Case not found', 404, 'CASE_NOT_FOUND');

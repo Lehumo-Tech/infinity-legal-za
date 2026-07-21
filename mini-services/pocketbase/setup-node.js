@@ -639,26 +639,10 @@ async function main() {
   }
 
   // =============================================
-  // SEED: Demo Users
+  // NOTE: Demo user seeding removed — fake accounts (Tshepo Rametse, Bongani Khumalo,
+  // Lindiwe Mthembu, IT Administrator with Password123!) were polluting the DB.
+  // Real bootstrap admin is created via prisma/seed.ts (tidimalo@infinitylegal.org).
   // =============================================
-  console.log('\n📦 Seeding demo users...');
-  const demoUsers = [
-    { email: 'md@infinitylegal.co.za', password: 'Password123!', passwordConfirm: 'Password123!', full_name: 'Tshepo Rametse', role: 'managing_director', department: 'management', is_active: true, email_verified: true, password_expires_at: '2026-08-19 00:00:00.000Z', last_password_change: '2026-05-19 00:00:00.000Z' },
-    { email: 'associate@infinitylegal.co.za', password: 'Password123!', passwordConfirm: 'Password123!', full_name: 'Bongani Khumalo', role: 'associate', department: 'litigation', is_active: true, email_verified: true, password_expires_at: '2026-08-19 00:00:00.000Z', last_password_change: '2026-05-19 00:00:00.000Z' },
-    { email: 'client1@example.co.za', password: 'Password123!', passwordConfirm: 'Password123!', full_name: 'Lindiwe Mthembu', role: 'client', is_active: true, email_verified: true, password_expires_at: '2026-08-19 00:00:00.000Z', last_password_change: '2026-05-19 00:00:00.000Z' },
-    { email: 'sysadmin@infinitylegal.co.za', password: 'Password123!', passwordConfirm: 'Password123!', full_name: 'IT Administrator', role: 'systems_admin', department: 'it', is_active: true, email_verified: true, password_expires_at: '2026-08-19 00:00:00.000Z', last_password_change: '2026-05-19 00:00:00.000Z' },
-  ];
-  
-  for (const user of demoUsers) {
-    // Check if user already exists
-    const existingUser = await pbRequest('GET', `/collections/users/records?filter=(email='${user.email}')`, null, token);
-    if (existingUser.data.items && existingUser.data.items.length > 0) {
-      console.log(`  User already exists: ${user.email}, skipping`);
-      continue;
-    }
-    const res = await pbRequest('POST', '/collections/users/records', user, token);
-    console.log(res.data.id ? `✅ Seeded user: ${user.email}` : `⚠️ Seed issue for ${user.email}: ${JSON.stringify(res.data).slice(0, 200)}`);
-  }
 
   console.log('\n🎉 PocketBase setup complete!');
   console.log('\n📊 Summary:');
