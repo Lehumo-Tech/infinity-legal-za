@@ -14,13 +14,8 @@ $ bun --hot index.ts
 [Next ERR] Error: listen EADDRINUSE: address already in use :::3000
     at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
     at new Promise (<anonymous>) {
-  code: 'EADDRINUSE',
-  errno: -98,
-  syscall: 'listen',
-  address: '::',
-  port: 3000
-}
-[Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+  code: 'EADDRINUSE'error: script "dev" was terminated by signal SIGTERM (Polite quit request)
+ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
 [Next] [?25h
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 1/50)
@@ -37,6 +32,7 @@ $ bun --hot index.ts
 }
 [Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 2/50)
 [NextDev] Starting Next.js on port 3000...
@@ -82,6 +78,7 @@ $ bun --hot index.ts
 }
 [Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 5/50)
 [NextDev] Starting Next.js on port 3000...
@@ -157,7 +154,6 @@ $ bun --hot index.ts
 }
 [Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
 [Next] [?25h
-[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 10/50)
 [NextDev] Starting Next.js on port 3000...
@@ -218,7 +214,6 @@ $ bun --hot index.ts
 }
 [Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
 [Next] [?25h
-[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 14/50)
 [NextDev] Starting Next.js on port 3000...
@@ -729,6 +724,7 @@ $ bun --hot index.ts
 }
 [Next ERR] [@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
 [Next] [?25h
+[Next] 
 [NextDev] Process exited with code 1, signal null
 [NextDev] Restarting in 2s... (attempt 48/50)
 [NextDev] Starting Next.js on port 3000...

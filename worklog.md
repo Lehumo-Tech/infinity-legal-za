@@ -956,3 +956,37 @@ Stage Summary:
 - Simulation data REMOVED: fake ai_confidence=0.85 (2 files), orphaned seed-data.ts + seed-users.ts (deleted), pocketbase DEMO_USERS (4 fake users removed). The only remaining "simulation" is the clearly-labeled email/SMS simulation mode when RESEND/Twilio creds are absent — that's legitimate fallback behavior, not fake data.
 - Smoke test expanded from 42 → 49 checks. 48/49 pass (the 1 remaining is the assertion-bug fix, not a real failure).
 - Files changed: 4 backend route files, 1 frontend component, 2 deleted scripts, 2 pocketbase setup scripts, 1 smoke test. Lint clean.
+
+---
+Task ID: QC-UNIT-TEST
+Agent: Main Agent
+Task: Run backend quality control and unit testing
+
+Work Log:
+- Read prior worklog (AUDIT-FINAL, SIM-HUNT, CASE-FLOW-FIX) to understand state: 6 critical bugs already fixed, 42/42 smoke tests previously passing, sim data already removed, case flow already fixed.
+- Verified dev server health: GET /api/health → HTTP 200 in 0.17s.
+- Ran ESLint (`bun run lint`): 0 errors, 0 warnings.
+- Ran TypeScript type check (`npx tsc --noEmit`): 0 errors.
+- Ran existing backend smoke test (`bash scripts/smoke.sh`): 49 PASS / 0 FAIL on a clean run (server freshly started so the in-memory auth rate limiter was reset). Covers: health, pricing (3 plans), auth (signup/login/profile/verify/wrong-password/no-auth), dashboard (staff+client), communications (status/templates/logs), cases CRUD + timeline + IDOR, leads→convert (idempotent), consultations CRUD, tasks, notifications (staff+client), CRM, CSRF gate, rate limiting (6th login → 429), brand-new-client case creation flow, simulation-data-removed check (ai_confidence=null).
+- Wrote 4 unit-test files using Bun's built-in test runner (`bun test`), placed in src/lib/__tests__/:
+  * local-auth.test.ts (11 tests) — JWT generateToken/validateToken happy path, tampered body, tampered signature, foreign secret, wrong issuer, malformed tokens (1/2/3+ parts, empty), expiry window (7 days), structural determinism; password hashing (bcrypt, salt randomness, wrong-password rejection, case sensitivity).
+  * security.test.ts (45 tests) — sanitizeString XSS stripping (script/iframe/object/embed/on* handlers/javascript:/vbscript:/data:text/html), apostrophe preservation (O'Brien regression), sanitizeObject nested+array recursion, redactPII (SA ID, +27 phone, 0-prefix phone, credit card, email mask), checkHighRisk (case-insensitive, multi-keyword), isValidEmail, isValidSAPhone, isValidSAIdNumber (Luhn), sanitizeFilename, encrypt/decrypt round-trip (non-determinism, tamper-detection), RateLimiter (max-then-block, independent keys, reset, remaining counter).
+  * auth.test.ts (29 tests) — ROLES tier ordering (MD highest, guest lowest, client in between), hasPermission RBAC matrix (MD=all, guest=none, client=own-only, attorney create/edit but not delete, systems_admin delete+backups, unknown role=false), hasAnyPermission/hasAllPermissions (incl. vacuous-truth empty list), isRoleAtLeast, canManageRole (MD manages all, equal-tier=false, lower-cannot-manage-higher), role-group predicates (isLegalStaff/isDirector/isAdmin/isStaff), validatePasswordStrength (all 5 rules + accumulates ALL errors).
+  * format.test.ts (16 tests) — formatRevenue (K/M adaptive scale, null-safe), formatCurrency (thousands separators, rounding, never "NaN"), formatPercent (0-100 and 0-1 auto-detect, decimals arg, never "NaN%"), formatCount (locale separators, null-safe, never "NaN").
+- First unit-test run: 97 pass / 4 fail. Diagnosed each failure:
+  * 3 were test-assertion bugs (my expectations didn't match correct library behavior): sanitizeFilename preserves parens-as-underscores producing 'my_file__1_.txt' (not 'my_file_(1).txt'); sanitizeFilename does NOT strip leading path separators so '../../etc/passwd' → '._._etc_passwd' (not 'etc_passwd'); sanitizeString strips the ENTIRE <script>...</script> block including text content (so '<script>a</script>' → '' not 'a'). Fixed all 3 assertions with explanatory comments.
+  * 1 was a REAL BUG: redactPII did NOT redact +27-format phone numbers. Root cause: the PHONE_PATTERN regex used `\b` (word boundary) before `(\+27|0)`, but `\b` requires a word/non-word transition and `+` is non-word — so `\b` fails before `+`, leaking +27 numbers in audit logs while 0-prefix numbers were correctly masked. FIXED: replaced `\b...\b` with `(?<!\w)...\ (?\w)` lookbehind/lookahead so both +27 and 0 formats are redacted. Added explanatory comment.
+- Re-ran unit tests after fixes: 101 pass / 0 fail / 359 expect() calls across 4 files in 2.93s.
+- Re-ran ESLint after the regex fix: 0 errors, 0 warnings.
+- Re-ran smoke test on a freshly-restarted server (to reset the in-memory rate limiter): 49 PASS / 0 FAIL. Confirms the redactPII regex change did not break any production API behaviour.
+- Added `test` and `test:smoke` scripts to package.json so the suite is re-runnable with `bun run test` (unit) and `bun run test:smoke` (integration).
+
+Stage Summary:
+- BACKEND QC + UNIT TESTING COMPLETE.
+- Quality control: ESLint clean (0 errors/warnings), TypeScript clean (0 errors), dev server healthy (HTTP 200).
+- Integration tests: 49/49 smoke checks pass (auth, cases, leads, consultations, tasks, notifications, CRM, dashboard, communications, CSRF, rate limiting, case-flow, sim-data-removed).
+- Unit tests: 101/101 pass across 4 files (local-auth: 11, security: 45, auth/RBAC: 29, format: 16) — 359 assertions total.
+- 1 real bug found and fixed by the unit tests: redactPII leaked +27-format phone numbers in audit logs (regex used `\b` which fails before `+`). Fixed with lookbehind/lookahead. This was a PII-redaction gap — +27 numbers in audit/error logs were NOT being masked while 0-prefix numbers were.
+- 3 test-assertion bugs found and fixed (my expectations were wrong, library behavior was correct).
+- New scripts: `bun run test` (unit), `bun run test:smoke` (integration). Re-runnable any time.
+- Files changed: src/lib/security.ts (redactPII regex fix), src/lib/__tests__/local-auth.test.ts (new), src/lib/__tests__/security.test.ts (new), src/lib/__tests__/auth.test.ts (new), src/lib/__tests__/format.test.ts (new), package.json (test scripts).

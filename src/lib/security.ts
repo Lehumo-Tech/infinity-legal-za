@@ -173,7 +173,10 @@ export function decrypt(encryptedData: string): string {
 // ============================================
 
 const SA_ID_PATTERN = /\b\d{13}\b/g;
-const PHONE_PATTERN = /\b(\+27|0)\d{9}\b/g;
+// Use lookbehind/lookahead (not \b) so the +27 format is redacted too —
+// \b fails before '+' because '+' is a non-word character, which previously
+// leaked +27 phone numbers in audit logs while 0-prefix numbers were masked.
+const PHONE_PATTERN = /(?<!\w)(\+27|0)\d{9}(?!\w)/g;
 const EMAIL_PATTERN = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
 const CREDIT_CARD_PATTERN = /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g;
 
