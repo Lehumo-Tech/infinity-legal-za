@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
     const consultation = await db.consultation.create({
       data: {
         client_id: resolvedClientId,
-        attorney_id: attorney_id || resolvedClientId, // fallback to client if no attorney
+        attorney_id: attorney_id || null, // do NOT default to client's own id (would make client their own attorney)
         scheduled_at: new Date(scheduled_at),
         case_id: case_id || null,
         duration_minutes: duration_minutes || 60,

@@ -18,7 +18,7 @@ import { NextRequest } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
 import { apiResponse, apiError, checkRateLimit } from '@/lib/middleware';
-import { authRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
+import { intakeRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { analyzeIntake } from '@/lib/llm-service';
 
 // Valid enum values per Prisma schema
@@ -93,7 +93,7 @@ async function generateCaseRef(): Promise<string> {
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const rateResult = await checkRateLimit(request, authRateLimiter);
+    const rateResult = await checkRateLimit(request, intakeRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many requests. Please try again later.', 429, 'RATE_LIMITED');
     }

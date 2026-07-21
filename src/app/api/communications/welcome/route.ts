@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Send welcome email (always)
+    let emailSent = false;
     const emailRendered = renderEmailTemplate('welcome', templateVars);
     if (emailRendered) {
       const emailResult = await sendEmail({
@@ -47,11 +48,13 @@ export async function POST(request: NextRequest) {
         userId,
         recipientName: fullName,
       });
+      emailSent = emailResult.success;
 
       console.log(`[Welcome] Email ${emailResult.success ? 'sent' : 'failed'} to ${email} via ${emailResult.provider}`);
     }
 
     // Send welcome SMS (if phone provided)
+    let smsSent = false;
     if (phone && formatSaPhone(phone)) {
       const smsText = renderSmsTemplate('welcome', templateVars);
       if (smsText) {
@@ -62,6 +65,7 @@ export async function POST(request: NextRequest) {
           userId,
           recipientName: fullName,
         });
+        smsSent = smsResult.success;
 
         console.log(`[Welcome] SMS ${smsResult.success ? 'sent' : 'failed'} to ${phone} via ${smsResult.provider}`);
       }
@@ -69,8 +73,8 @@ export async function POST(request: NextRequest) {
 
     return apiResponse({
       message: 'Welcome communications dispatched',
-      emailSent: true,
-      smsSent: !!(phone && formatSaPhone(phone)),
+      emailSent,
+      smsSent,
     });
   } catch (error) {
     console.error('[Communications/Welcome] Error:', error);

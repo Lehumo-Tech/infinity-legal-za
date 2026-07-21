@@ -178,6 +178,12 @@ export async function authenticateLocalUser(
       return null;
     }
 
+    // Deactivated users cannot log in (e.g. dismissed staff). Return null to avoid
+    // revealing account status — the login route returns a generic 401 either way.
+    if (user.is_active === false) {
+      return null;
+    }
+
     // Update last login
     await db.user.update({
       where: { id: user.id },

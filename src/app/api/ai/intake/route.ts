@@ -12,7 +12,7 @@ import { NextRequest } from 'next/server';
 import { analyzeIntake } from '@/lib/llm-service';
 import { db } from '@/lib/db';
 import { apiResponse, apiError, checkRateLimit, requireAuth, getPaginationParams, createPaginationResult } from '@/lib/middleware';
-import { authRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
+import { intakeRateLimiter, isValidEmail, sanitizeString } from '@/lib/security';
 import { isStaff, type RoleKey } from '@/lib/auth';
 
 // ============================================
@@ -68,7 +68,7 @@ const CASE_TYPE_MAP: Record<string, string> = {
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const rateResult = await checkRateLimit(request, authRateLimiter);
+    const rateResult = await checkRateLimit(request, intakeRateLimiter);
     if (!rateResult.allowed) {
       return apiError('Too many requests. Please try again later.', 429, 'RATE_LIMITED');
     }
