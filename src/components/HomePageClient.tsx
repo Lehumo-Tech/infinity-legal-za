@@ -6,7 +6,7 @@ import {
   Users, FolderKanban, Target, FileText, Shield, TrendingUp,
   Bell, Search, ChevronRight, Activity, Clock, AlertTriangle, CheckCircle2,
   LogOut, DollarSign, UserPlus, FileCheck,
-  ArrowUpRight, ArrowRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
+  ArrowRight, Menu, X, Eye, Lock, RefreshCw, ChevronLeft,
   Mail, Phone, Building, Star, Zap, Globe,
   KeyRound, ShieldCheck, Upload, Plus,
   BookOpen, Briefcase, Crown, MessageSquare, LayoutDashboard,
@@ -1089,7 +1089,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
             { label: 'Active Cases', value: stats.activeCases, icon: Activity, color: 'text-emerald-600 bg-emerald-50', border: 'border-l-emerald-500' },
             ...(!isClient ? [
               { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-600 bg-purple-50', border: 'border-l-purple-500' },
-              { label: 'Revenue', value: formatRevenue(stats.totalRevenue), icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
+              { label: 'Revenue', value: formatRevenue(stats.totalRevenue), icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]' },
             ] : []),
             { label: 'Pending Tasks', value: stats.pendingTasks, icon: Clock, color: 'text-orange-600 bg-orange-50', border: 'border-l-orange-500' },
             { label: 'Overdue', value: stats.overdueTasks, icon: AlertTriangle, color: 'text-red-600 bg-red-50', border: 'border-l-red-500' },
@@ -1103,12 +1103,6 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
                   <card.icon className="w-4 h-4" />
                 </div>
-                {card.trend && (
-                  <div className="flex items-center gap-0.5 text-emerald-600 text-[10px] font-semibold">
-                    <ArrowUpRight className="w-3 h-3" />
-                    <span>12%</span>
-                  </div>
-                )}
               </div>
               <div className="mt-3">
                 <div className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
@@ -2859,7 +2853,7 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
           {/* Stats overview grid — stat-card */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger-children">
             {[
-              { label: 'Total Revenue', value: formatRevenue(stats.totalRevenue), icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]', trend: true },
+              { label: 'Total Revenue', value: formatRevenue(stats.totalRevenue), icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]' },
               { label: 'Active Cases', value: stats.activeCases, icon: FolderKanban, color: 'text-emerald-700 bg-emerald-50', border: 'border-l-emerald-500' },
               { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-700 bg-purple-50', border: 'border-l-purple-500' },
               { label: 'Total Clients', value: stats.totalClients, icon: Users, color: 'text-blue-700 bg-blue-50', border: 'border-l-blue-500' },
@@ -2869,12 +2863,6 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
                     <card.icon className="w-4 h-4" />
                   </div>
-                  {card.trend && (
-                    <div className="flex items-center gap-0.5 text-emerald-600 text-[10px] font-semibold">
-                      <ArrowUpRight className="w-3 h-3" />
-                      <span>12%</span>
-                    </div>
-                  )}
                 </div>
                 <div className="mt-3">
                   <div className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
@@ -2961,19 +2949,10 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
                 <p className="text-2xl font-bold text-white mt-0.5" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{formatRevenue(stats.totalRevenue)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="flex items-center gap-1 text-emerald-400 text-xs font-semibold">
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                  +12.3%
-                </div>
-                <p className="text-[9px] text-[#7a94b8] mt-0.5">vs last quarter</p>
-              </div>
-              <button className="btn-gold px-3.5 py-2 text-xs flex items-center gap-1.5">
-                <FileText className="w-3 h-3" />
-                Export
-              </button>
-            </div>
+            <button className="btn-gold px-3.5 py-2 text-xs flex items-center gap-1.5">
+              <FileText className="w-3 h-3" />
+              Export
+            </button>
           </div>
         </>
       )}

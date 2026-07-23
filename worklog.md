@@ -1427,3 +1427,106 @@ Stage Summary:
   3. LIQUID GLASS: backdrop-blur saturate, translucent gradients, specular highlights, sheen sweeps, glass pills
 - All data is now LIVE from APIs (pricing, articles, AI chat, AI intake) with graceful loading/error/empty states — ZERO simulation data.
 - Preview is LIVE and rendering correctly. Server stable via double-fork daemon.
+
+---
+Task ID: FIND-DASHBOARD-MOCK-1
+Agent: Explore Agent
+Task: Find all mock data in dashboard components
+
+Work Log:
+- Read /home/z/my-project/worklog.md (1429 lines) — absorbed prior context: prior VERIFY-MOCK-1 (Task ID VERIFY-MOCK-1) had declared all dashboard files CLEAN; prior EXPLORE-1 had catalogued 17 mock-data locations on LANDING PAGE only (all since removed); redesign focused exclusively on LandingPage.tsx. User now reports mock data persists on AUTHENTICATED DASHBOARD (Tidimalo / managing_director). Task scope: re-audit the 26 dashboard files listed by the user.
+- Grep sweep 1 across src/components/*.tsx for `mock|Mock|MOCK|sample|sample|dummy|fake|simulation` (case-insensitive) — confirmed only legitimate uses: CommunicationsView "Simulation Mode" badge for unconfigured SMTP/Twilio, LandingPage "no mock data" comments, shadcn input-otp hasFakeCaret animation.
+- Grep sweep 2 for fake SA surnames (Mthembu|Ndlovu|Khumalo|Dlamini|Nkosi|Sithole|Mokoena|Mahlangu|Zulu|Botha|van der Merwe|du Plessis|Pty Ltd) — only hit is CasesView.tsx:616 placeholder "e.g. Mthembu — Unlawful Eviction Defence" (form input example, not mock data display).
+- Grep sweep 3 for hardcoded chart data arrays `[1,2,3,4]`, `data: [40,65,...]`, `barHeights`, `heights = [...]` — all hits are Skeleton iteration counts or LandingPage skeleton placeholder widths (NOT mock domain data).
+- Grep sweep 4 for `trend: true|trend: stats|>\d+%<|+\d+.\d+%` — found 6 MOCK hits: 3 in HomePageClient.tsx (LIVE), 3 in DashboardShell.tsx (DEAD code).
+- Grep sweep 5 for `revenueTrend` across whole src/ — confirmed the API (`/api/dashboard`) does NOT populate `revenueTrend` (zero hits in src/app/api). Only consumer is AdminDashboard.tsx which uses `stats.revenueTrend || 'N/A'` (honest fallback, not mock).
+- Architectural discovery: Grep'd all 26 dashboard files the user listed for `from '@/components/...` imports across src/. Found that ONLY `CommunicationsView` is actually imported by live code (HomePageClient.tsx:47). The other 25 files are DEAD CODE:
+  * `AppShell.tsx` → not imported anywhere
+  * `DashboardShell.tsx` → only imported by dead `AppShell.tsx`
+  * `dashboard/AdminDashboard.tsx`, `AttorneyDashboard.tsx`, `ClientDashboard.tsx`, `LegalAdvisorDashboard.tsx`, `AdminClientsView.tsx`, `AdminSubscriptionsView.tsx`, `ClientMessagesView.tsx`, `ClientSubscriptionView.tsx`, `MembershipCard.tsx`, `dashboard/AskInfinityBubble.tsx` → none imported anywhere
+  * `CasesView.tsx`, `LeadsView.tsx`, `ConsultationsView.tsx` → only imported by dead `DashboardShell.tsx` (as `XExternal` aliases)
+  * `AnalyticsView.tsx`, `WorkbenchView.tsx`, `OrgChartView.tsx`, `StaffPortal.tsx`, `PricingView.tsx`, `IntegrationsDashboard.tsx`, `AdminCRM.tsx`, `TasksView.tsx`, `DocumentsView.tsx` → none imported anywhere
+- Verified `src/app/page.tsx` (the root route) imports only `HomePageClient` (line 3) and renders it inside `<Suspense>` (line 70).
+- Verified `HomePageClient.tsx` (3578 lines) renders the ENTIRE authenticated dashboard through INLINE function declarations (not external imports): WorkbenchView (line 917), MiniStat (1348), CasesView (1360), LeadsView (1647), DocumentsView (1802), ConsultationsView (2116), TasksView (2363), StaffPortal (2568), OrgChartView (2718), AnalyticsView (2842), PricingView (3001), AskInfinityBubble (3177), AskInfinityChat (3409). The only external dashboard view imported is CommunicationsView (line 47).
+- File-by-file inspection of all 26 listed files + HomePageClient internals:
+  * HomePageClient.tsx WorkbenchView (LIVE, lines 917-1343): MOCK at line 1109 `<span>12%</span>` revenue trend — triggered by `trend: true` flag at line 1092 in the Revenue stat card of the KPI Stats Grid. Always shown when stats load (NOT fallback). Other cards (Total Cases, Active Cases, New Leads, Pending Tasks, Overdue, Clients, Documents) use live `stats.*` values — clean. Case Distribution chart uses live `charts?.casesByType` — clean. Firm Health uses live `firmHealth` prop — clean. Upcoming Consultations use live `consultations.slice(0,5)` — clean. My Tasks uses live `tasks.filter(...).slice(0,5)` — clean.
+  * HomePageClient.tsx AnalyticsView (LIVE, lines 2842-2996): MOCK at line 2875 `<span>12%</span>` revenue trend in "Total Revenue" stat card (triggered by `trend: true` flag at line 2862). MOCK at lines 2966-2970 in the bottom navy "Total Revenue" card: hardcoded `+12.3%` and text `vs last quarter` — presented as real quarter-over-quarter revenue change. Always shown when stats load. Other elements (Case Status Distribution bars, Task Overview) use live `stats.*` values — clean.
+  * DashboardShell.tsx (DEAD CODE, 3050 lines): Contains exact MIRROR of HomePageClient's WorkbenchView and AnalyticsView functions (same code, different file). MOCK at line 801 `<span>12%</span>`, line 2412 `<span>12%</span>`, lines 2505-2507 `+12.3%` / `vs last quarter`. Also has its own inline AskInfinityBubble (line 2650) — clean (welcome message + live /api/ai/chat).
+  * AppShell.tsx (DEAD CODE, 126 lines): Just an auth-state wrapper around DashboardShell. No mock data.
+  * dashboard/AdminDashboard.tsx (DEAD CODE, 359 lines): CLEAN — uses `stats.revenueTrend || 'N/A'` (honest fallback, not mock). All data from props (live API).
+  * dashboard/AttorneyDashboard.tsx (DEAD CODE, 375 lines): CLEAN — all data from props.
+  * dashboard/ClientDashboard.tsx (DEAD CODE, 327 lines): CLEAN — all data from props. Note line 100 generates fallback contract number `INF-{year}-{slug-prefix}01` when API doesn't return one — this is a value GENERATOR (uses real subscription date + plan slug), not a hardcoded fake value.
+  * dashboard/LegalAdvisorDashboard.tsx (DEAD CODE, 375 lines): CLEAN — all data from props.
+  * dashboard/AdminClientsView.tsx (DEAD CODE, 138 lines): CLEAN — fetches clients from `/api/staff?role=client`.
+  * dashboard/AdminSubscriptionsView.tsx (DEAD CODE, 151 lines): CLEAN — fetches from `/api/subscriptions?admin=true`. Summary cards compute from real subscription array.
+  * dashboard/ClientMessagesView.tsx (DEAD CODE, 246 lines): CLEAN — fetches from `/api/messages`.
+  * dashboard/ClientSubscriptionView.tsx (DEAD CODE, 148 lines): CLEAN — uses props (subscription, pricingPlans, user). Note line 73 generates fallback contract number using `Math.random()` — value generator, not hardcoded fake.
+  * dashboard/MembershipCard.tsx (DEAD CODE, 147 lines): CLEAN — all data via props. `INF-****-*****` is a mask format for missing contract numbers. `0861 INFINITY` is the company helpline (static content).
+  * dashboard/AskInfinityBubble.tsx (DEAD CODE, 188 lines): CLEAN — welcome message + 3 suggested questions (UI content). Live /api/ai/chat.
+  * CasesView.tsx (DEAD CODE, 1126 lines): CLEAN — VALID_CASE_TYPES, URGENCY_LEVELS, CASE_STATUSES, STATUS_COLORS, URGENCY_COLORS, STAFF_ROLES, ATTORNEY_ROLES are all UI config enums. Line 616 placeholder "e.g. Mthembu — Unlawful Eviction Defence" is form input example text.
+  * LeadsView.tsx (DEAD CODE, 1090 lines): CLEAN — VALID_CASE_TYPES, PIPELINE_STATUSES, STAFF_ROLES, statusColors, pipelineTopColors, statusBorderColor are UI config. All data fetched from API.
+  * TasksView.tsx (DEAD CODE, lines unknown): CLEAN — no top-level mock arrays, no `mock|fake|sample|dummy` keyword hits.
+  * DocumentsView.tsx (DEAD CODE, lines unknown): CLEAN — no top-level mock arrays, no mock-keyword hits.
+  * ConsultationsView.tsx (DEAD CODE, 1237 lines): CLEAN — STAFF_ROLES, VALID_STATUSES, STATUS_LABELS, statusColors, meetingIcons, meetingIconBg, MEETING_LABELS are UI config.
+  * CommunicationsView.tsx (LIVE — only external dashboard file actually used, 1237 lines): CLEAN — "Simulation Mode" badge is for unconfigured SMTP/Twilio services (legitimate status display, not mock data). All message logs fetched from `/api/communications/logs`.
+  * AnalyticsView.tsx (DEAD CODE, 95 lines): CLEAN — uses live `stats.*` values from props. No hardcoded trends.
+  * OrgChartView.tsx (DEAD CODE, 79 lines): CLEAN — `hierarchy`, `roleLabels`, `tierColors` are UI config maps. Renders staff from props (live API).
+  * WorkbenchView.tsx (DEAD CODE, 356 lines): CLEAN — quickActions UI config. All KPIs from live `stats.*` props. Case Distribution from live `charts?.casesByType`. Firm Health from live `firmHealth` prop. NO hardcoded trends (unlike the inline WorkbenchView in HomePageClient.tsx which has "12%").
+  * IntegrationsDashboard.tsx (DEAD CODE, 423 lines): CLEAN — `SERVICES` array describes REAL third-party services (Sentry, Resend, Stripe, Clerk, Upstash, Pinecone, PostHog). Live status fetched from `/api/integrations`.
+  * StaffPortal.tsx (DEAD CODE, 103 lines): CLEAN — `roleLabels`, `roleColors`, `avatarBg` are UI config maps. Staff from props (live API).
+  * AdminCRM.tsx (DEAD CODE, 1297 lines): CLEAN — all data fetched from `/api/crm`, `/api/crm/users`, `/api/crm/subscriptions`, `/api/crm/activity`, `/api/crm/settings`. State initializations are empty arrays/objects. ROLE_COLORS, SUB_STATUS_COLORS, ACTION_ICONS are UI config.
+  * PricingView.tsx (DEAD CODE, 149 lines): CLEAN — `PLAN_STYLES` is slug→style map (UI config). All plan data from `plans` prop.
+
+Stage Summary:
+- USER'S COMPLAINT IS VALIDATED: Mock data persists on the authenticated dashboard shown to Tidimalo (managing_director).
+- ROOT CAUSE: The LIVE authenticated dashboard is rendered ENTIRELY through `src/components/HomePageClient.tsx` (NOT through the dashboard files listed by the user, which are dead code). The inline `WorkbenchView` and `AnalyticsView` functions in HomePageClient.tsx contain HARDCODED revenue trend values that are always shown (not fallback).
+- CRITICAL ARCHITECTURAL FINDING: 25 of the 26 files the user listed are DEAD CODE (not imported anywhere in src/). Only `CommunicationsView.tsx` is actually used. The user's mental model of the dashboard file structure does not match the actual live rendering path. The standalone `dashboard/*.tsx`, `DashboardShell.tsx`, `AppShell.tsx`, `CasesView.tsx`, `LeadsView.tsx`, `ConsultationsView.tsx`, `AnalyticsView.tsx`, `WorkbenchView.tsx`, `OrgChartView.tsx`, `StaffPortal.tsx`, `PricingView.tsx`, `IntegrationsDashboard.tsx`, `AdminCRM.tsx`, `TasksView.tsx`, `DocumentsView.tsx` are all dead code (orphans from a prior refactor that consolidated everything into HomePageClient.tsx).
+- MOCK DATA FOUND — LIVE code path (visible to Tidimalo on dashboard):
+  * **HomePageClient.tsx line 1109** — `<span>12%</span>` hardcoded revenue trend in WorkbenchView's Stats Grid "Revenue" card. Triggered by `trend: true` flag at line 1092. Always shown when stats load (NOT a fallback). Mock value: fake "12%" growth presented as real.
+  * **HomePageClient.tsx line 2875** — `<span>12%</span>` hardcoded revenue trend in AnalyticsView's Stats Grid "Total Revenue" card. Triggered by `trend: true` flag at line 2862. Always shown. Mock value: fake "12%" growth.
+  * **HomePageClient.tsx lines 2966-2970** — `+12.3%` and `vs last quarter` hardcoded text in AnalyticsView's bottom navy "Total Revenue" card. Always shown. Mock value: fake "+12.3%" quarter-over-quarter revenue change.
+- MOCK DATA FOUND — DEAD code path (not actually rendered, but present for cleanup):
+  * **DashboardShell.tsx line 801** — Same `<span>12%</span>` mock (mirror of HomePageClient:1109).
+  * **DashboardShell.tsx line 2412** — Same `<span>12%</span>` mock (mirror of HomePageClient:2875).
+  * **DashboardShell.tsx lines 2505-2507** — Same `+12.3%` / `vs last quarter` mock (mirror of HomePageClient:2966-2970).
+- INCONSISTENCY NOTE: The dead `AdminDashboard.tsx` correctly uses `trend: stats.revenueTrend || 'N/A'` (line 133) — the proper pattern. The live `HomePageClient.tsx` WorkbenchView/AnalyticsView should adopt this pattern. Note that `/api/dashboard` does NOT currently populate `revenueTrend` (verified via grep — zero hits in src/app/api), so even with the proper pattern the trend would display as "N/A" until the API is extended. The hardcoded "12%" / "+12.3%" mask this gap by showing fake positive growth.
+- CLEAN FILES (no mock data): AppShell.tsx, dashboard/AdminDashboard.tsx, dashboard/AttorneyDashboard.tsx, dashboard/ClientDashboard.tsx, dashboard/LegalAdvisorDashboard.tsx, dashboard/AdminClientsView.tsx, dashboard/AdminSubscriptionsView.tsx, dashboard/ClientMessagesView.tsx, dashboard/ClientSubscriptionView.tsx, dashboard/MembershipCard.tsx, dashboard/AskInfinityBubble.tsx, CasesView.tsx, LeadsView.tsx, TasksView.tsx, DocumentsView.tsx, ConsultationsView.tsx, CommunicationsView.tsx (live — Simulation badge is legitimate), AnalyticsView.tsx (external), OrgChartView.tsx, WorkbenchView.tsx (external), IntegrationsDashboard.tsx, StaffPortal.tsx, AdminCRM.tsx, PricingView.tsx.
+- RECOMMENDED ACTIONS (for next agent):
+  1. Replace the 3 hardcoded mock trends in HomePageClient.tsx (lines 1109, 2875, 2966-2970) with either `stats.revenueTrend || 'N/A'` pattern (matching AdminDashboard.tsx) OR remove the trend UI entirely until `/api/dashboard` populates `revenueTrend`.
+  2. Delete the 3 mirror mock instances in DashboardShell.tsx (lines 801, 2412, 2505-2507) along with the entire DashboardShell.tsx + AppShell.tsx files (dead code, 3176 lines total).
+  3. Optionally delete the other 23 dead-code dashboard files listed by the user (total ~9000+ lines of dead code) — this would dramatically simplify the codebase and prevent future confusion. Verify with user before deleting since they may want to migrate the inline views back to standalone files.
+  4. Verify the inline implementations in HomePageClient.tsx match (or are supersets of) the external dead-code versions before any migration/consolidation.
+
+---
+Task ID: FIX-DASHBOARD-MOCK-1
+Agent: Main Agent
+Task: Remove remaining mock data from Tidimalo's authenticated dashboard
+
+Work Log:
+- User reported mock data still visible in Tidimalo dashboard (managing_director).
+- Subagent audit (FIND-DASHBOARD-MOCK-1) found root cause: 3 hardcoded fake revenue trends in HomePageClient.tsx (the LIVE dashboard code path):
+  1. Line 1109: WorkbenchView stats grid — Revenue card showed fake "12%" trend
+  2. Line 2875: AnalyticsView stats grid — Total Revenue card showed fake "12%" trend
+  3. Lines 2966-2970: AnalyticsView bottom navy card — showed fake "+12.3% vs last quarter"
+- Verified dashboard API returns REAL data: totalCases: 39, activeCases: 20, totalRevenue: R295,000, totalClients: 66, newLeads: 23, pendingTasks: 15. API does NOT compute revenue trend (no previous-period comparison).
+- FIXED: Removed all 3 fake trend indicators:
+  * Removed `trend: true` flags from Revenue card config objects (lines 1092, 2862)
+  * Removed the `{card.trend && (<div>...12%...</div>)}` rendering blocks (lines 1106-1111, 2872-2877)
+  * Removed the "+12.3% vs last quarter" block from AnalyticsView navy revenue card (lines 2964-2971), kept the Export button
+  * Removed unused `ArrowUpRight` import (no longer referenced)
+- ESLint: 0 errors, 0 warnings.
+- Browser-verified by logging in as Tidimalo (tidimalo@infinitylegal.org):
+  * Workbench dashboard shows REAL API data: 39 Total Cases, 20 Active Cases, 23 New Leads, R295K Revenue, 15 Pending Tasks, 0 Overdue, 66 Clients, 0 Documents
+  * Case Distribution by Type shows REAL percentages: Civil 59% (23), Family 38% (15), Labour 3% (1) — calculated from actual case counts
+  * Firm Health: 5/6 Healthy (RBAC, POPIA, Audit Logging, Encryption, Password Policy pass; Backup Active false)
+  * Analytics view: Export button standalone (no fake "+12.3%" next to it)
+  * Full-page text extraction confirms ZERO "12%", "12.3%", or "vs last quarter" strings
+  * Zero console errors
+
+Stage Summary:
+- 3 fake revenue trend indicators removed from HomePageClient.tsx (the live dashboard code).
+- Dashboard now shows 100% real API data — no hardcoded metrics, no fake growth percentages.
+- All stat values (cases, revenue, leads, clients, tasks) come from /api/dashboard which queries the real SQLite database via Prisma.
+- Case distribution percentages are real (computed from actual case counts in the frontend).
+- Firm health checks are real (from /api/dashboard health object).
+- Note: 25 of 26 standalone dashboard component files (AdminDashboard.tsx, AttorneyDashboard.tsx, etc.) are DEAD CODE — not imported anywhere. The live dashboard is entirely inline in HomePageClient.tsx. These dead files could be deleted in a future cleanup but don't affect what the user sees.
