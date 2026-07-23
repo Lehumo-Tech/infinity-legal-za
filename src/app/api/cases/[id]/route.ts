@@ -203,6 +203,14 @@ export async function PUT(
       });
     }
 
+    // Fetch timeline AFTER creating any new event, so the response includes
+    // the latest timeline state (otherwise the client would have to re-fetch).
+    const timeline = await db.caseTimeline.findMany({
+      where: { case_id: id },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+    });
+
     await createAuditLog({
       user_id: auth.user.userId,
       action: 'UPDATE_CASE',
@@ -211,7 +219,11 @@ export async function PUT(
       details: { message: `Case "${existingCase.title}" updated` },
     });
 
-    return apiResponse(updatedCase);
+    return apiResponse({
+      ...updatedCase,
+      lead_attorney: updatedCase.attorney || null,
+      timeline,
+    });
   } catch (error) {
     console.error('Update case error:', error);
     return apiError('Failed to update case', 500, 'UPDATE_CASE_ERROR');

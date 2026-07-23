@@ -448,7 +448,7 @@ model Consultation {
   id                 String   @id @default(uuid())
   case_id            String?
   client_id          String
-  attorney_id        String
+  attorney_id        String?
   /// CHECK: scheduled | confirmed | in_progress | completed | cancelled | no_show
   status             String   @default("scheduled")
   scheduled_at       DateTime
@@ -464,7 +464,7 @@ model Consultation {
 
   case     Case?  @relation(fields: [case_id], references: [id])
   client   User  @relation("ConsultationClient", fields: [client_id], references: [id])
-  attorney User  @relation("ConsultationAttorney", fields: [attorney_id], references: [id])
+  attorney User? @relation("ConsultationAttorney", fields: [attorney_id], references: [id])
 
   @@index([case_id])
   @@index([client_id])

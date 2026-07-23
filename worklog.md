@@ -1020,3 +1020,49 @@ Stage Summary:
 - Limitation: server cannot run persistently in the background. Each preview session requires a new Bash command with a `sleep` hold. Max hold: ~60 seconds per command.
 - Scripts created: start-sandbox.sh (self-healing watchdog), health-watchdog.sh (health-check + restart for future cron use).
 - Server verified operational: GET / → 200, GET /api/health → 200, GET /api/pricing → 200, all in <1s response time.
+
+---
+Task ID: API-AUDIT-FIX
+Agent: Main Agent
+Task: Full API audit + quality control + assurance — test all APIs, fix crashes, ensure functional
+
+Work Log:
+- Found CRITICAL crash: both `src/middleware.ts` (deprecated) and `src/proxy.ts` (Next.js 16 replacement) existed simultaneously. Next.js 16 throws `Unhandled Rejection: Both middleware file and proxy file are detected` and the server fails to start. DELETED `src/middleware.ts` (the old version; `proxy.ts` is the complete replacement).
+- Wrote comprehensive API audit script (`scripts/full-audit.sh`) that tests 64 checks across all API domains in a single Bash call (beats the sandbox process reaper).
+- First audit run: 36 PASS / 20 FAIL. Diagnosed each failure:
+  * 13 were server-reaped (got=000) — the 1280MB heap triggered Next.js memory-restart ("Server is approaching the used memory threshold"), killing in-flight requests during cold compiles. FIXED: raised heap to 2560MB + set NEXT_PRIVATE_DEBUG_MEMORY=0.
+  * PUT /api/cases/[id] → 400: test was sending `status: "in_progress"` which isn't a valid Case status (valid: intake/review/active/on_hold/closed/archived). Test-script bug, fixed.
+  * IDOR check false-fail: test used the same client the case was created for. Fixed: now signs up TWO clients and tests that client2 cannot read client1's case.
+  * POST /api/leads → 400: test sent `full_name` but route requires `first_name` + `last_name`. Test-script bug, fixed.
+  * 308 redirects on dynamic routes: curl wasn't following trailing-slash redirects. Added `-L` flag.
+  * POST /api/consultations → 500: REAL BUG — `Consultation.attorney_id` was `String` (required) but route set `attorney_id: attorney_id || null`. Prisma rejected null → 500. FIXED: changed schema to `attorney_id String?` + `attorney User?` (optional), ran `db:push`.
+  * POST /api/intake → 400: test sent `full_name`/`case_type` (snake_case) but route expects `name`/`caseType` (camelCase — public API contract). Test-script bug, fixed.
+  * PUT/DELETE /api/consultations/[id] → 405: was a cascade from the POST 500 (no consult_id, so requests went to /api/consultations/ which has no PUT/DELETE handler). Fixed by the schema fix above.
+  * ai_confidence check: test checked the API response but ai_confidence is stored in DB only (not exposed in response by design). Fixed: now checks DB via scripts/check-ai-conf.ts.
+- REAL CODE BUG FIXED: PUT /api/cases/[id] response didn't include timeline events. The route created a timeline event on status change but returned only the updated case (no timeline). FIXED: now fetches and returns `timeline` in the PUT response, matching the GET response shape.
+- Final audit: 64 PASS / 0 FAIL. All 64 API checks pass:
+  * Public routes (5): health, pricing (3 plans), holidays, articles
+  * Auth (10): signup×2, login×2, profile (authed + 401), verify, wrong-password, staff login + token
+  * Dashboard (3): staff, client, no-auth-401
+  * Communications (3): status, templates, logs
+  * Cases CRUD (9): list, create, get, PUT (status=active), timeline=2 events, IDOR 404, own-case 200
+  * Leads (5): create, convert, idempotent re-convert, unauth 401
+  * Consultations (5): create, get, list, PUT, DELETE
+  * Tasks (2): create, list
+  * Notifications (2): staff, client
+  * CRM (3): root, users, users?role=client
+  * Remaining GETs (8): documents, staff, subscriptions, analytics, report, messages, integrations, ai/providers
+  * Security (1): CSRF+auth gate → 401
+  * Simulation data (3): intake 201, response doesn't expose ai_confidence, DB ai_confidence=null
+  * AI (1): chat graceful (200)
+- Quality assurance: ESLint 0 errors/warnings, TypeScript 0 errors, 101/101 unit tests pass.
+
+Stage Summary:
+- API AUDIT COMPLETE. 64/64 API checks pass. 0 failures.
+- 3 REAL BUGS FIXED:
+  1. DELETED src/middleware.ts — was crashing Next.js 16 (both middleware.ts and proxy.ts detected → Unhandled Rejection → server won't start). This was the root cause of the sandbox being "broken".
+  2. Consultation.attorney_id changed from required `String` to optional `String?` — route was setting it to null but schema required it → 500 on every consultation creation. Schema pushed to DB.
+  3. PUT /api/cases/[id] now returns timeline events in the response — previously the client had to re-fetch after an update to see the new timeline.
+- Memory fix: heap raised from 1280MB → 2560MB + NEXT_PRIVATE_DEBUG_MEMORY=0. The 1280MB limit triggered Next.js's memory-restart feature which killed in-flight requests during cold compiles (appeared as random got=000 failures).
+- Audit script: scripts/full-audit.sh (64 checks, re-runnable). Helper: scripts/check-ai-conf.ts.
+- All APIs functional and crash-free: auth, dashboard, communications, cases (CRUD + timeline + IDOR), leads (create + convert + idempotent), consultations (CRUD), tasks, notifications, CRM, documents, staff, subscriptions, analytics, report, messages, integrations, AI (chat + providers), intake (with sim-data-removed verification).
