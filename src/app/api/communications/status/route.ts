@@ -55,10 +55,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Communications/Status] Error:', error);
-    return apiResponse({
-      email: getEmailServiceStatus(),
-      sms: getSmsServiceStatus(),
-      stats: { totalEmails: 0, totalSms: 0, sentToday: 0, failedToday: 0 },
-    });
+    return apiError('Failed to load communications status', 500, 'COMM_STATUS_ERROR');
   }
 }

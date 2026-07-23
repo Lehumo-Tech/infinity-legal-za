@@ -716,6 +716,24 @@ model EmailTemplate {
 }
 
 // ============================================
+// SYSTEM SETTINGS (CRM / firm-wide configuration)
+// ============================================
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  /// CHECK: string | number | boolean | json
+  type        String   @default("string")
+  description String?
+  updated_by  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([key])
+}
+
+// ============================================
 // LEGAL ARTICLES (Knowledge base)
 // ============================================
 

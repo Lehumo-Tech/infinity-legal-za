@@ -87,6 +87,11 @@ export async function POST(request: NextRequest) {
     const auth = await requireAuth(request);
     if (!auth.authenticated) return auth.error!;
 
+    // Permission check FIRST — fail fast before any input parsing
+    if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.CREATE_TASK)) {
+      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
+    }
+
     const body = await request.json();
     const {
       title,
@@ -113,10 +118,6 @@ export async function POST(request: NextRequest) {
         400,
         'INVALID_PRIORITY'
       );
-    }
-
-    if (!hasPermission(auth.user.role as RoleKey, PERMISSIONS.CREATE_TASK)) {
-      return apiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
 
     // Validate assignee exists
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
     await db.notification.create({
       data: {
         user_id: assigned_to,
-        type: 'task_assigned',
+        type: 'info',
         title: 'New Task Assigned',
         message: `You have been assigned a new task: "${title}"`,
       },

@@ -117,7 +117,7 @@ export async function PUT(
       await db.notification.create({
         data: {
           user_id: existingTask.assigned_to,
-          type: 'task_status_update',
+          type: 'info',
           title: 'Task Status Updated',
           message: `Task "${existingTask.title}" status changed from ${existingTask.status} to ${status}`,
         },

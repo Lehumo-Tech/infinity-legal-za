@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
       await db.notification.create({
         data: {
           user_id: recipient_id,
-          type: 'new_message',
+          type: 'info',
           title: 'New Message',
           message: `You have a new message from ${message.sender?.full_name || 'a user'}`,
         },

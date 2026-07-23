@@ -112,7 +112,16 @@ export async function POST(request: NextRequest) {
     if (!authResult.authenticated) return authResult.error!;
     const user = authResult.user;
 
-    const body = await request.json();
+    // Body is optional — the frontend "Cancel Subscription" button sends no body
+    // (defaults to action: 'cancel'). Parse defensively.
+    let body: { plan_id?: string; action?: string } = {};
+    try {
+      const text = await request.text();
+      if (text.trim()) body = JSON.parse(text);
+    } catch {
+      // Malformed JSON — treat as empty body
+      body = {};
+    }
     const { plan_id, action } = body;
 
     // Find or create client profile
