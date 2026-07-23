@@ -1288,3 +1288,310 @@
   .liquid-glass-elevated { background: rgba(255, 255, 255, 0.96); }
   .liquid-glass-stat { background: rgba(255, 255, 255, 0.95); }
 }
+
+/* ============================================================
+   SPATIAL UI DESIGN SYSTEM
+   Depth, parallax, 3D layering, dynamic lighting
+   Used concurrently with liquid-glass + bento-grid
+   ============================================================ */
+
+/* ---- Spatial depth shadows (z-axis layering) ---- */
+.spatial-depth-1 {
+  box-shadow:
+    0 1px 2px rgba(12, 30, 60, 0.04),
+    0 2px 6px rgba(12, 30, 60, 0.06),
+    0 4px 12px rgba(12, 30, 60, 0.04);
+}
+.spatial-depth-2 {
+  box-shadow:
+    0 2px 4px rgba(12, 30, 60, 0.05),
+    0 8px 20px rgba(12, 30, 60, 0.08),
+    0 16px 32px rgba(12, 30, 60, 0.06);
+}
+.spatial-depth-3 {
+  box-shadow:
+    0 4px 8px rgba(12, 30, 60, 0.06),
+    0 16px 36px rgba(12, 30, 60, 0.1),
+    0 32px 64px rgba(12, 30, 60, 0.08);
+}
+.spatial-depth-4 {
+  box-shadow:
+    0 8px 16px rgba(12, 30, 60, 0.08),
+    0 24px 48px rgba(12, 30, 60, 0.12),
+    0 48px 96px rgba(12, 30, 60, 0.1);
+}
+.spatial-depth-glow {
+  box-shadow:
+    0 0 0 1px rgba(201, 168, 76, 0.18),
+    0 8px 24px rgba(201, 168, 76, 0.18),
+    0 24px 56px rgba(12, 30, 60, 0.12);
+}
+
+/* ---- Spatial floating elements ---- */
+.spatial-float {
+  animation: spatial-float 8s ease-in-out infinite;
+}
+.spatial-float-slow {
+  animation: spatial-float 12s ease-in-out infinite;
+}
+.spatial-float-delayed {
+  animation: spatial-float 10s ease-in-out infinite;
+  animation-delay: -3s;
+}
+@keyframes spatial-float {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  25% { transform: translateY(-10px) translateX(4px); }
+  50% { transform: translateY(-6px) translateX(-4px); }
+  75% { transform: translateY(-12px) translateX(2px); }
+}
+
+/* ---- Spatial 3D perspective container ---- */
+.spatial-scene {
+  perspective: 1200px;
+  perspective-origin: 50% 30%;
+}
+.spatial-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---- Spatial tilt on hover (subtle 3D rotation) ---- */
+.spatial-tilt {
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
+  transform-style: preserve-3d;
+}
+.spatial-tilt:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(-3deg) translateY(-4px);
+}
+
+/* ---- Spatial parallax layers (data-depth driven via JS) ---- */
+.spatial-parallax {
+  will-change: transform;
+  transition: transform 0.15s ease-out;
+}
+
+/* ---- Spatial dynamic specular highlight (light follows cursor) ---- */
+.spatial-light {
+  position: relative;
+  overflow: hidden;
+}
+.spatial-light::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle 240px at var(--mx, 50%) var(--my, 30%),
+    rgba(255, 255, 255, 0.22),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: soft-light;
+}
+.spatial-light:hover::before {
+  opacity: 1;
+}
+
+/* ---- Spatial 3D orbs (floating ambient light sources) ---- */
+.spatial-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+.spatial-orb-gold {
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.55), transparent 70%);
+}
+.spatial-orb-navy {
+  background: radial-gradient(circle, rgba(26, 51, 88, 0.6), transparent 70%);
+}
+.spatial-orb-ember {
+  background: radial-gradient(circle, rgba(232, 122, 60, 0.4), transparent 70%);
+}
+.spatial-orb-teal {
+  background: radial-gradient(circle, rgba(45, 168, 155, 0.4), transparent 70%);
+}
+
+/* ---- Spatial glass panel (combines liquid glass + spatial depth) ---- */
+.spatial-glass {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.72) 100%
+  );
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 2px 4px rgba(12, 30, 60, 0.05),
+    0 12px 28px rgba(12, 30, 60, 0.08),
+    0 24px 56px rgba(12, 30, 60, 0.06);
+  overflow: hidden;
+}
+.spatial-glass::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+.spatial-glass > * { position: relative; z-index: 2; }
+
+.spatial-glass-dark {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(12, 30, 60, 0.78) 0%,
+    rgba(8, 20, 40, 0.72) 100%
+  );
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 0 rgba(201, 168, 76, 0.12) inset,
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 16px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+.spatial-glass-dark::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(201, 168, 76, 0.08), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+.spatial-glass-dark > * { position: relative; z-index: 2; }
+
+/* ---- Spatial bento cell (combines bento + spatial + glass) ---- */
+.spatial-bento {
+  position: relative;
+  border-radius: 1.25rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.68) 100%
+  );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 2px 6px rgba(12, 30, 60, 0.05),
+    0 10px 24px rgba(12, 30, 60, 0.07),
+    0 20px 48px rgba(12, 30, 60, 0.05);
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+}
+.spatial-bento:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 4px 10px rgba(12, 30, 60, 0.06),
+    0 16px 36px rgba(12, 30, 60, 0.1),
+    0 32px 72px rgba(12, 30, 60, 0.08);
+}
+.spatial-bento::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  z-index: 2;
+}
+
+/* ---- Spatial divider with depth ---- */
+.spatial-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(12, 30, 60, 0.12), transparent);
+  position: relative;
+}
+
+/* ---- Spatial entrance animations ---- */
+@keyframes spatial-rise {
+  from { opacity: 0; transform: translateY(32px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.spatial-rise { animation: spatial-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes spatial-pop {
+  from { opacity: 0; transform: scale(0.9) rotateX(10deg); }
+  to { opacity: 1; transform: scale(1) rotateX(0); }
+}
+.spatial-pop { animation: spatial-pop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* ---- Spatial sheen (liquid light sweep on bento cells) ---- */
+.spatial-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.spatial-sheen::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: skewX(-18deg);
+  transition: left 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+  z-index: 2;
+}
+.spatial-sheen:hover::after { left: 120%; }
+
+/* ---- Spatial nav (floating glass pill navigation) ---- */
+.spatial-nav {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.68) 100%
+  );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 4px 12px rgba(12, 30, 60, 0.06),
+    0 12px 32px rgba(12, 30, 60, 0.05);
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .spatial-float, .spatial-float-slow, .spatial-float-delayed { animation: none !important; }
+  .spatial-tilt:hover { transform: none; }
+  .spatial-bento:hover { transform: none; }
+  .spatial-sheen::after { display: none; }
+  .spatial-light::before { display: none; }
+  .spatial-rise, .spatial-pop { animation: none !important; opacity: 1; transform: none; }
+}
+
+/* ---- Backdrop-filter fallback for spatial classes ---- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .spatial-glass { background: rgba(255, 255, 255, 0.96); }
+  .spatial-glass-dark { background: rgba(12, 30, 60, 0.96); }
+  .spatial-bento { background: rgba(255, 255, 255, 0.96); }
+  .spatial-nav { background: rgba(255, 255, 255, 0.96); }
+}

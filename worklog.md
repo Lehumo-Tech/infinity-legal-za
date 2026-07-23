@@ -1215,3 +1215,215 @@ Stage Summary:
 - Payment routes verified: payfast checkout/cancel/success, stripe checkout (503 not configured)/cancel/success (307 redirects) — all graceful.
 - Auth/RBAC verified: 401 without token, 403 wrong role (paralegal), 200 with admin token.
 - Preview: LIVE and rendering correctly. User can see the full Infinity Legal platform.
+
+---
+Task ID: EXPLORE-1
+Agent: Explore Agent
+Task: Explore site structure and mock data
+
+Work Log:
+- Read worklog.md to absorb prior context (Infinity Legal SA platform, Next.js 16, navy+gold brand, 43+ API routes, full dashboard + landing page architecture).
+- Read src/app/page.tsx — root route is a thin metadata + Suspense wrapper that renders <HomePageClient />.
+- Read src/components/HomePageClient.tsx (3577 lines) — confirmed it is the auth-aware shell that switches between <LandingPage /> (public home), <LoginScreen />, <PaymentWall />, and <AppShell /> + dashboard views based on useAuth() state. Authenticated data is fetched live from /api/dashboard, /api/cases, /api/leads, /api/consultations, /api/documents, /api/tasks, /api/staff, /api/pricing, /api/subscriptions, /api/notifications.
+- Read src/components/LandingPage.tsx (1521 lines) end-to-end — the actual public home page. Catalogued all 13 rendered sections in order.
+- Read src/components/LandingServer.tsx (769 lines) and src/components/LandingHydration.tsx (144 lines) — confirmed via Grep that NEITHER is imported anywhere in src/. They are DEAD/legacy code from an earlier server-component architecture; the live architecture is page.tsx → HomePageClient → LandingPage (client).
+- Read src/components/LandingIntakeForm.tsx (15 lines) and src/components/LegalArticlesSection.tsx (335 lines) — confirmed the LegalArticlesSection component duplicates the staticArticles fallback found in LandingPage.tsx (same 6 articles).
+- Searched src/ for *mock*/*sample*/*seed*/*fixture*/*dummy*/*fake*/*demo*/*simulation* filename patterns — ZERO matches in src/ (mock data lives inline in components, not in dedicated files).
+- Grep'd for hardcoded array patterns (`const X = [`, inline `[{ name: ...`, `staticArticles`, `displayPlans`, `trustIndicators`, `caseTypes`, `navLinks`) — catalogued every location with line numbers.
+- Listed src/components/ui/ — 50 shadcn/ui primitives available.
+- Read src/app/globals.css (1291 lines) — extracted brand color palette, theme tokens, and custom design-system classes (liquid-glass, bento, btn-gold, card-navy, gradient-navy, etc.).
+- Verified src/app/ contains only 3 page.tsx files: `/` (root home), `/sign-in/[[...sign-in]]` (Clerk), `/sign-up/[[...sign-up]]` (Clerk). Only `/` is user-visible marketing/home page.
+
+Stage Summary:
+- HOME PAGE FLOW: page.tsx → HomePageClient (auth shell) → LandingPage (public marketing page, 1521 lines, all sections inline).
+- 13 SECTIONS rendered on home page in order: (1) Skip-link + Nav, (2) Hero "Your Rights, Reinforced.", (3) Platform Bento (6 cells), (4) Free AI Intake (form + 4-step timeline), (5) Ask AI (chat widget), (6) Campaign (1 featured + 2 cards), (7) App Section (4 features + main image + 3 thumbnails), (8) Media/News (1 featured + 4 list items), (9) Legal Articles (LegalArticlesSection component), (10) Pricing (3 plans), (11) Security (3 trust cards + audit-trail banner), (12) Footer, (13) Floating WhatsApp button.
+- NO Testimonials section. NO FAQ section. NO dedicated CTA banner section. These would be NEW additions during redesign.
+- MOCK DATA LOCATIONS (file + line + content):
+  * LandingPage.tsx:28-32 — caseTypes (11 strings — UI config)
+  * LandingPage.tsx:34-38 — trustIndicators (3 items — UI config, reused in Hero + Security)
+  * LandingPage.tsx:75-79 — displayPlans fallback (3 pricing plans — fallback for /api/pricing)
+  * LandingPage.tsx:129-136 — navLinks (6 items — UI config)
+  * LandingPage.tsx:327-336 — faux AI chat snippet in bento (Mthembu matter) — DECORATIVE MOCK
+  * LandingPage.tsx:354-358 — faux case list (Mthembu v. Estate, Ndlovu Custody, Pty Ltd Contract) — MOCK
+  * LandingPage.tsx:405 — faux bar chart heights [40, 65, 50, 85, 70] — DECORATIVE MOCK
+  * LandingPage.tsx:473-478 — 4-step "How it works" timeline — UI CONTENT (not API-backed)
+  * LandingPage.tsx:590-593 — 2 campaign cards (Tenant Rights, Subscription R99) — MOCK marketing
+  * LandingPage.tsx:644-649 — 4 app feature tiles (Mobile/Web/Messaging/Alerts) — UI CONTENT
+  * LandingPage.tsx:681-685 — 3 app screenshot thumbnails — UI config
+  * LandingPage.tsx:755-760 — 4 mock news articles (NO API backing — pure hardcoded)
+  * LandingPage.tsx:1080-1083 — AI chat welcome message — UI content
+  * LandingPage.tsx:1187-1200 — CATEGORY_META (12 article categories) — UI config
+  * LandingPage.tsx:1209-1294 — staticArticles fallback (6 full markdown articles — fallback for /api/articles)
+  * LegalArticlesSection.tsx:6-19 — CATEGORY_META (DUPLICATE of LandingPage)
+  * LegalArticlesSection.tsx:22-107 — staticArticles (DUPLICATE of LandingPage — 6 articles)
+  * HomePageClient.tsx:3410-3412 — AskInfinityChat welcome message — UI content
+  * HomePageClient.tsx:3461-3466 — suggestedQuestions (4 SA legal prompts) — UI content
+  * LandingServer.tsx:71-78 + 80-84 — DUPLICATE navLinks + trustIndicators (DEAD CODE — not imported anywhere)
+- LIVE API BACKED sections (primary source, fallback to mock): Pricing (/api/pricing), Legal Articles (/api/articles), AI Intake (/api/ai/intake), AI Chat (/api/ai/chat).
+- PURELY HARDCODED sections (no API, all mock): Campaign, App Section, Media/News, Security trust badges.
+- AVAILABLE UI COMPONENTS (50 shadcn primitives): accordion, alert, alert-dialog, aspect-ratio, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, dialog, drawer, dropdown-menu, form, hover-card, input, input-otp, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toast, toaster, toggle, toggle-group, tooltip.
+- THEME / COLOR SCHEME:
+  * Brand Navy: #0c1e3c (primary) / #132d52 (light) / #081428 (dark) / #1a3358 (700) / #0f2240 (800) / #f0f4f8 (50) / #dbe4ed (100) / #b8c9dc (200)
+  * Brand Gold: #c9a84c (primary) / #dfc475 (light) / #a88832 (dark) / #8a6e28 (800) / #fdf8ed (50) / #f9edcc (100) / #f0d68f (200)
+  * Off-white section bg: #f7f8fa / #f8f6f0 (gold-tinted)
+  * Body text: #0c1e3c headings, slate-500/600 body, #7a8fb0/#8fa4c4 muted-blue on dark
+  * shadcn tokens: background oklch(0.985 0.002 247), primary oklch(0.25 0.06 250), accent oklch(0.75 0.12 85)
+  * Custom design system: liquid-glass{,-dark,-gold,-nav}, bento-grid + bento-cell + bento-{sm,md,lg,xl,full,tall} + bento-orb-{gold,navy,emerald}, btn-gold, btn-navy, card-premium, card-navy, stat-card, gradient-navy, gradient-gold-subtle, divider-gold, liquid-glass-aurora (+ 4 blob variants), liquid-glass-sweep, liquid-glass-cursor, liquid-glass-pill.
+- REDESIGN NOTES for next agent:
+  * Primary target file: src/components/LandingPage.tsx (1521 lines, client component). Secondary: src/components/LegalArticlesSection.tsx (335 lines).
+  * DELETE OR CONSOLIDATE: LandingServer.tsx + LandingHydration.tsx are dead code (not imported) — safe to remove if not resurrected.
+  * DUPLICATION: staticArticles + CATEGORY_META exist in BOTH LandingPage.tsx AND LegalArticlesSection.tsx — should be consolidated to one source.
+  * Pricing + Legal Articles already have working API endpoints with graceful fallback — keep this pattern.
+  * Campaign, App, Media/News sections are 100% hardcoded — candidate for either API-backing or richer mock data during redesign.
+  * No testimonials or FAQ exist — if required by redesign brief, must be added as new sections (and ideally new API endpoints).
+
+---
+Task ID: VERIFY-MOCK-1
+Agent: Verify Agent
+Task: Verify no mock data remains in src/
+
+Work Log:
+- Read /home/z/my-project/worklog.md (1278 lines) — absorbed prior context (Infinity Legal SA platform, redesign of LandingPage.tsx to spatial UI + bento grid + liquid glass; EXPLORE-1 had catalogued 17 mock data locations including Mthembu/Ndlovu case list, faux bar chart heights [40,65,50,85,70], mock campaign cards, mock news articles, staticArticles fallback (6 articles), displayPlans fallback (3 plans), faux AI chat snippet).
+- Listed src/ structure (LS on /home/z/my-project/src) — confirmed 3 dead-code files from EXPLORE-1 have been DELETED: LandingServer.tsx (was 769 lines), LandingHydration.tsx (was 144 lines), LegalArticlesSection.tsx (was 335 lines, duplicate of staticArticles).
+- File-size delta on LandingPage.tsx: was 1521 lines, now 1164 lines (~357 lines removed).
+- Grep sweep 1 — SPECIFIC MOCK STRINGS (src/, excluding api/):
+  * "Mthembu|Ndlovu|Pty Ltd Contract" → only 1 hit: CasesView.tsx:616 (form placeholder "e.g. Mthembu — Unlawful Eviction Defence" — example formatting guidance, not mock data display).
+  * "staticArticles" → 0 hits.
+  * "displayPlans" → 0 hits.
+  * "Know Your Tenant Rights|Legal Peace of Mind|POPIA-Compliant Case Mgmt" → 0 hits.
+  * "In the news|In the News|Press & Media|Press Release" → 0 hits.
+  * "Tenant Rights|Subscription R99|MOCK" → 0 hits in src/ (only backend seed-articles reference, excluded per task scope).
+  * "caseTypes|trustIndicators|navLinks|CATEGORY_META" → only in LandingPage.tsx (the 3 explicitly-excluded UI config arrays; CATEGORY_META fully removed).
+- Grep sweep 2 — MOCK FILE PATTERNS:
+  * Glob src/**/*{mock,sample,fixture,dummy,fake,demo,simulation}* → 0 matches.
+  * "mock|sample|fixture|dummy|fake|simulation" (case-insensitive) → all hits are legitimate (CommunicationsView "Simulation Mode" badge for unconfigured SMTP/Twilio; sms-service.ts/email-service.ts simulation fallback strategy; LandingPage.tsx "no mock data" comments; shadcn input-otp.tsx hasFakeCaret animation; email-validation.ts disposable-email blocklist; local-auth.test.ts fake variable in unit test).
+  * "testimonial|Testimonial" → 0 hits.
+  * "barHeights|chartHeights|heights = [...]|data: [40,65,50,85,70]" → 0 hits.
+  * "mockData|mockCases|mockClients|mockArticles|mockPlans|mockLeads|mockMessages|mockTasks" → 0 hits.
+- Grep sweep 3 — LARGE HARDCODED ARRAYS (const X = [ / = [):
+  * Catalogued every `=\s*\[\s*$` declaration in non-api src/. Verified each is legitimate UI config:
+    - LandingPage.tsx (caseTypes, trustIndicators, navLinks) — explicitly excluded per task scope.
+    - LoginScreen.tsx heroSlides — 3 marketing carousel headlines, NOT mock domain objects.
+    - IntegrationsDashboard.tsx SERVICES — describes REAL third-party integrations (Sentry, Resend, Stripe, Clerk, Upstash, Pinecone, PostHog).
+    - WorkbenchView.tsx, AttorneyDashboard.tsx, AdminDashboard.tsx, ClientDashboard.tsx, LegalAdvisorDashboard.tsx, HomePageClient.tsx, DashboardShell.tsx: quickActions (action-button definitions), healthItems (firm-health feature labels backed by live firmHealth API), CASE_TYPES (form enum), suggestedQuestions (4 SA-legal sample prompts for AI chat).
+    - LeadsView.tsx, ConsultationsView.tsx, CasesView.tsx: VALID_CASE_TYPES, PIPELINE_STATUSES, STAFF_ROLES, STATUS_LABELS, statusColors (form/status enum config).
+    - MembershipCard.tsx PLAN_ACCENT, PricingView.tsx PLAN_STYLES, PaymentWall.tsx PLAN_STYLES — slug→style maps (UI config).
+    - AttorneyDashboard.tsx caseTypeGradientMap — CATEGORY_META-style color/label map for real chart data (excluded per task scope).
+- File-by-file inspection:
+  * src/components/LandingPage.tsx (1164 lines) — Read end-to-end. CLEAN. Pricing + Articles sections both fetch live API with error/empty states (no fallback mock). AIChatWidget + IntakeForm both call live APIs. Hero "live status grid" panel uses structural labels only (no fake metrics). Platform Bento cells describe REAL product features. Inline 4-step "How it works" timeline is workflow content (not mock data). Faux case list (Mthembu/Ndlovu/Pty Ltd) removed. Faux bar chart heights [40,65,50,85,70] removed. Mock campaign cards removed. Mock news articles removed. staticArticles fallback (6 fake articles) removed. displayPlans fallback (3 fake plans) removed. Faux AI chat snippet (Mthembu matter) removed — replaced with one-line welcome message only.
+  * src/components/HomePageClient.tsx (3577 lines) — Verified lines 400-444 (nav items builder), 945-960 (quickActions + healthItems), 1365-1384 (CASE_TYPES enum), 2928-2942 (task overview using live stats), 3175-3182 (AskInfinityBubble welcome), 3410-3412 (AskInfinityChat welcome), 3461-3466 (suggestedQuestions). CLEAN — all data is live API or UI config.
+  * src/app/page.tsx (73 lines) — Read in full. CLEAN. Only metadata + Suspense wrapper around <HomePageClient />.
+  * src/components/LandingIntakeForm.tsx (15 lines) — Read in full. CLEAN. Thin wrapper around IntakeForm from LandingPage.
+  * src/components/dashboard/AttorneyDashboard.tsx (375 lines) — Verified. CLEAN. All metrics come from real `stats`, `cases`, `consultations`, `tasks` API data. quickActions + healthItems are UI config.
+  * src/components/dashboard/AdminDashboard.tsx (359 lines) — Verified. CLEAN. Same pattern as Attorney.
+  * src/components/dashboard/ClientDashboard.tsx (327 lines) — Verified. CLEAN. Same pattern.
+  * src/components/dashboard/LegalAdvisorDashboard.tsx (375 lines) — Verified. CLEAN. Same pattern as Attorney.
+  * src/components/dashboard/MembershipCard.tsx (147 lines) — Read in full. CLEAN. All data via props (real subscription). PLAN_ACCENT is UI config.
+  * src/components/dashboard/AskInfinityBubble.tsx (188 lines) — Read in full. CLEAN. AI chat with welcome message + suggestedQuestions (3 prompts). Live /api/ai/chat integration.
+  * src/components/dashboard/ClientMessagesView.tsx (246 lines) — Read in full. CLEAN. Messages from /api/messages API.
+  * src/components/dashboard/ClientSubscriptionView.tsx (148 lines) — Read in full. CLEAN. Subscription + pricingPlans come from parent (API-fetched). Uses MembershipCard + PaymentWall components.
+  * src/components/dashboard/AdminClientsView.tsx (138 lines) — Read in full. CLEAN. Clients from /api/staff?role=client.
+  * src/components/dashboard/AdminSubscriptionsView.tsx (151 lines) — Read in full. CLEAN. Subscriptions from /api/subscriptions?admin=true. Summary cards compute from real subscription array.
+  * src/components/AIChatWidget.tsx (115 lines) — Read in full. CLEAN. AI chat with welcome message. Live /api/ai/chat integration.
+  * src/components/PricingView.tsx (149 lines) — Read in full. CLEAN. Plans via props. PLAN_STYLES slug→style map.
+  * src/components/PaymentWall.tsx (430 lines) — Verified first 100 lines. CLEAN. Fetches plans from /api/pricing. PLAN_STYLES slug→style map.
+  * src/components/LeadsView.tsx (1090 lines) — Verified constants section. CLEAN. All UI config / form enums.
+  * src/components/ConsultationsView.tsx (1237 lines) — Verified constants section. CLEAN. STAFF_ROLES, VALID_STATUSES, STATUS_LABELS, statusColors are UI config.
+  * src/components/CasesView.tsx (1126 lines) — Verified the placeholder at line 616 is a form input example. CLEAN.
+  * src/components/WorkbenchView.tsx (356 lines) — Verified quickActions + firm-health display. CLEAN. Uses live `stats` and `firmHealth`.
+  * src/components/IntegrationsDashboard.tsx (423 lines) — Verified SERVICES array (7 entries describing real third-party services). CLEAN.
+  * src/components/LoginScreen.tsx (341 lines) — Verified heroSlides (3 marketing taglines). CLEAN. Not mock domain objects.
+  * src/components/DashboardShell.tsx (3050 lines) — Verified quickActions (690), healthItems (700), and consultation form state init (1659, 1678). CLEAN. UI config + live API data. Note: line 1263 has form placeholder "e.g. Smith v. Johnson Property Dispute" (legitimate UI example).
+  * Other top-level components (AppShell, MiniStat, LoadingSkeleton, ErrorBoundary, OrgChartView, StaffPortal, SupabaseAuthProvider, AnalyticsView, CommunicationsView, DocumentsView, TasksView, AdminCRM, PaymentCancel, PaymentSuccess) — spot-checked via grep sweeps; all returned CLEAN.
+- Minor cosmetic note (NOT mock data, no action required):
+  * src/components/AppShell.tsx:38 — stale comment "// Listen for custom events from LandingHydration / LandingServer buttons" — both referenced files were deleted during redesign. The event listener still works for current dispatchers (HomePageClient dispatches same event). Cosmetic cleanup opportunity only.
+
+Stage Summary:
+- VERIFICATION RESULT: ✅ CLEAN — All simulation/mock data has been successfully removed from src/.
+- The redesign of LandingPage.tsx is complete and confirmed API-only:
+  * Pricing section fetches /api/pricing with loading/error/empty states (NO displayPlans fallback).
+  * Articles section fetches /api/articles?limit=6 with loading/error/empty states (NO staticArticles fallback).
+  * AI chat widget calls /api/ai/chat live.
+  * Intake form calls /api/ai/intake live.
+  * Hero "live status grid" panel uses structural labels only (no fake metrics).
+  * Platform Bento cells describe REAL product features (no faux case list, no faux chart heights).
+- All 17 mock data locations catalogued in EXPLORE-1 worklog have been resolved:
+  * 8 were inline mock content arrays (case list, bar chart, campaign cards, news articles, app features, app thumbnails, staticArticles, displayPlans) — ALL REMOVED.
+  * 4 were UI config (caseTypes, trustIndicators, navLinks, 4-step timeline) — correctly RETAINED (explicitly excluded per task scope).
+  * 3 were duplicate-of-LandingPage locations in LegalArticlesSection.tsx — FILE DELETED.
+  * 2 were AI chat welcome/suggested questions — RETAINED as legitimate UI content.
+  * CATEGORY_META — REMOVED (no longer in LandingPage.tsx; the dashboard's caseTypeGradientMap is a different color-label mapping for chart rendering, excluded per task scope as it operates on real chart data from API).
+  * LandingServer.tsx + LandingHydration.tsx — FILES DELETED (dead code, contained duplicate navLinks + trustIndicators).
+- Files NOT in src/ but worth noting for completeness:
+  * src/app/api/admin/seed-articles/route.ts contains 6 SA-legal articles as seed content (legitimate — this is the DB seeding route; articles are inserted into the real DB and served by /api/articles).
+  * src/app/api/admin/seed-pricing/route.ts contains 3 plan definitions (legitimate — DB seeding).
+  * src/app/api/pricing/route.ts has FALLBACK_PLANS (legitimate — minimal API fallback when DB query fails; frontend no longer depends on it).
+- NO remaining mock data needs removal. The redesign successfully eliminated all simulation data from the user-facing src/ folder (excluding backend src/app/api/ which legitimately contains DB seed/fallback content).
+
+---
+Task ID: REDESIGN-SPATIAL-BENTO-GLASS
+Agent: Main Agent
+Task: Redesign with spatial UI + bento grid + liquid glass design languages concurrently; remove ALL simulation/mock data from all pages and sections
+
+Work Log:
+- Deleted dead code: LandingServer.tsx (769 lines), LandingHydration.tsx (144 lines) — not imported anywhere.
+- Deleted LegalArticlesSection.tsx (335 lines) — dead code with DUPLICATE staticArticles mock (6 fake articles).
+- Added SPATIAL UI DESIGN SYSTEM to globals.css (+307 lines, total now 1597 lines):
+  * .spatial-depth-1/2/3/4 — z-axis depth shadows for layering
+  * .spatial-depth-glow — gold accent glow shadow
+  * .spatial-float / -slow / -delayed — floating animations (8-12s ease-in-out)
+  * .spatial-scene + .spatial-3d — perspective containers for 3D transforms
+  * .spatial-tilt — hover 3D rotation (rotateX/rotateY)
+  * .spatial-parallax — will-change transform for scroll parallax
+  * .spatial-light — dynamic specular highlight follows cursor (--mx/--my CSS vars)
+  * .spatial-orb + -gold/-navy/-ember/-teal — ambient floating light sources
+  * .spatial-glass / -dark — combines liquid glass + spatial depth
+  * .spatial-bento — bento cell with glass + depth + hover lift
+  * .spatial-sheen — liquid light sweep on hover
+  * .spatial-nav — floating glass pill navigation
+  * .spatial-rise / -pop — entrance animations
+  * .spatial-divider — depth divider
+  * Full prefers-reduced-motion + backdrop-filter fallback support
+- Rewrote LandingPage.tsx (1521 → 1164 lines) with concurrent spatial+bento+liquid glass:
+  * Spatial Nav: floating glass pill, spatial-depth, magnetic scroll shadow
+  * Hero: spatial-scene with parallax orbs (useParallax hook), floating glass dashboard panel (spatial-glass + spatial-float + spatial-depth-4), POPIA badge (spatial-glass-dark), trust indicators as glass pills
+  * Platform Bento: bento-grid with spatial-bento cells (varied sizes: bento-lg bento-tall, bento-md, bento-full), spatial-light + spatial-sheen effects. 6 real features: AI Legal Assistant, Case Management, Communications, Document Vault, Analytics, Built for SA
+  * AI Intake: spatial-glass form panel (spatial-depth-3), 4 process-step cards (spatial-bento spatial-rise)
+  * Ask AI: spatial-glass-dark chat widget (spatial-depth-3) on navy gradient with floating orbs
+  * Pricing: bento grid, LIVE /api/pricing ONLY (no fallback mock). Loading skeleton + error state + empty state. Monthly/Annual toggle.
+  * Articles: bento grid, LIVE /api/articles ONLY (no fallback mock). Loading skeleton + error + empty states.
+  * Security: spatial-bento cells for real features (POPIA, Encryption, Password Policy) + spatial-glass-dark audit trail banner
+  * Footer: liquid-glass-footer style with mt-auto sticky-bottom
+  * Custom hooks: useSpatialLight (cursor tracking for dynamic lighting), useParallax (scroll depth)
+- REMOVED ALL mock/simulation data:
+  * Faux case names (Mthembu v. Estate, Ndlovu Custody, Pty Ltd Contract) — GONE
+  * Faux bar chart heights [40,65,50,85,70] — GONE
+  * Faux AI chat snippet in bento — GONE
+  * Mock campaign cards (Know Your Tenant Rights, Legal Peace of Mind) — GONE
+  * Mock news articles (4 fake articles, no API) — GONE
+  * Mock app features + thumbnails — GONE
+  * staticArticles fallback (6 fake full-markdown articles) — GONE
+  * displayPlans fallback (3 fake pricing plans) — GONE
+  * CATEGORY_META duplicate — GONE (file deleted)
+- Fixed stale comment in AppShell.tsx:38 (referenced deleted LandingHydration/LandingServer)
+- ESLint: 0 errors, 0 warnings.
+- Browser-verified (agent-browser):
+  * Page renders all sections: Hero, Platform Bento, AI Intake, Ask AI, Pricing, Articles, Security, Footer
+  * Pricing loads REAL API data: Civil Legal Plan, Labour Legal Plan, Extensive Plan (from /api/pricing)
+  * Articles load REAL API data: "Understanding Your Rights Under POPIA", "Your Consumer Rights in South Africa", "Your Rights as a Tenant" (from /api/articles)
+  * Monthly/Annual billing toggle works
+  * AI intake form + AI chat widget render correctly
+  * ZERO console errors
+  * Full-page screenshot: 1.4MB (rich visual content)
+- Verified by subagent (VERIFY-MOCK-1): ALL 17 mock-data locations resolved. Zero mock strings remain in src/. Only legitimate UI config retained (caseTypes enum, trustIndicators real features, navLinks).
+
+Stage Summary:
+- 3 files deleted (LandingServer.tsx, LandingHydration.tsx, LegalArticlesSection.tsx) = 1248 lines of dead/mock code removed.
+- LandingPage.tsx rewritten: 1521 → 1164 lines (-357 lines, all mock data removed).
+- globals.css extended: 1290 → 1597 lines (+307 lines spatial UI system).
+- Three design languages running concurrently:
+  1. SPATIAL UI: depth shadows, parallax orbs, floating panels, 3D tilt, dynamic cursor lighting, perspective scenes
+  2. BENTO GRID: varied cell sizes (sm/md/lg/xl/full/tall), responsive 6-col grid, modular cards
+  3. LIQUID GLASS: backdrop-blur saturate, translucent gradients, specular highlights, sheen sweeps, glass pills
+- All data is now LIVE from APIs (pricing, articles, AI chat, AI intake) with graceful loading/error/empty states — ZERO simulation data.
+- Preview is LIVE and rendering correctly. Server stable via double-fork daemon.

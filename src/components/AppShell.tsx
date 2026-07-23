@@ -35,7 +35,7 @@ export default function AppShell() {
   const [showDashboard, setShowDashboard] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  // Listen for custom events from LandingHydration / LandingServer buttons
+  // Listen for custom events from LandingPage intake/signup buttons
   useEffect(() => {
     const handleShowLogin = () => {
       setShowSignup(false);
