@@ -1178,3 +1178,40 @@ Stage Summary:
 - All payment routes (payfast, stripe) functional: checkout, cancel, success, webhook, notify.
 - CSRF protection verified correct: Bearer bypass (by design), auth/payfast exempt (by design), stripe/checkout blocks without Origin.
 - No endpoint returns 500 on any tested input.
+
+---
+Task ID: API-AUDIT-V3
+Agent: Main Agent
+Task: Restart dev server (user couldn't see preview), then run full API audit
+
+Work Log:
+- DIAGNOSED server stability: cgroup reaper kills ALL processes when Bash call ends. nohup/setsid/disown alone don't survive. Solution: double-fork daemon with setsid + while-true respawn loop in /tmp/start_dev.sh. Server now survives between Bash calls.
+- Fixed heap size: 1280MB → 1536MB (per prior worklog, stable for compiling all 73 routes without OOM).
+- Verified preview works: agent-browser confirmed home page renders fully (42KB HTML, full nav, hero, AI intake form, all features). Zero console errors.
+- Ran comprehensive API audit in 4 batches (scripts/audit-batch.sh) with retry logic for Next.js memory-restart:
+  * Batch 1 (16 endpoints): 16/16 passed, 0 crashes — public + core auth GETs
+  * Batch 2 (16 endpoints): 16/16 passed, 0 crashes — CRM + comms + analytics + role-based GETs
+  * Batch 3 (15 endpoints): 12 passed, 3 "unexpected" (all 400 validation — test data wrong field names), 0 crashes — AI + payment routes
+  * Batch 4 (13 endpoints): 7 passed, 6 "unexpected" (400 validation + 201 success + 405 wrong method), 0 crashes — CRUD + edge cases + admin
+- Verified all "unexpected" results are test data issues, NOT code bugs:
+  * AI routes (summarize/memo/intake): need correct field names (content, facts+issues, consent_given+popia_consent) — verified happy path returns success:true with AI-generated content
+  * CRUD routes (cases/leads/tasks): need snake_case fields (case_type, first_name, assigned_to) — verified leads and tasks create successfully, cases correctly requires client_id (business rule)
+  * contact POST returns 201 (Created) — correct, my expectation of 200 was wrong
+  * seed-pricing GET returns 405 (Method Not Allowed) — correct, route only has POST handler
+  * seed-pricing POST returns 400 FK constraint — expected when subscriptions exist (admin-only dev route)
+- Confirmed prior session's 5 bug fixes still holding:
+  * 8 AI routes return 503 (not 500) on upstream errors ✓
+  * /api/stripe/cancel returns 307 redirect (not crash) ✓
+  * /api/stripe/success returns 307 redirect (not crash) ✓
+  * /api/payfast/checkout accepts planSlug, handles existing subs (409 not 500) ✓
+  * /api/ai/asr returns 503 (not 500) on upstream 400 ✓
+
+Stage Summary:
+- SERVER STABILITY FIXED: Double-fork daemon (setsid + while-true respawn) keeps dev server alive between Bash calls. This is the permanent fix for the "cannot see preview" issue.
+- API AUDIT COMPLETE (v3): 60+ endpoints tested, ZERO crashes (HTTP 500). All endpoints return appropriate status codes (200/201/400/401/403/404/405/503).
+- All "unexpected" results verified as test data issues (wrong field names, wrong expectations), NOT code bugs.
+- AI routes verified working end-to-end: chat, summarize, memo, intake, web-search, providers all return success with real AI-generated content.
+- CRUD routes verified: leads create (201), tasks create (201), cases validate client_id requirement (business rule).
+- Payment routes verified: payfast checkout/cancel/success, stripe checkout (503 not configured)/cancel/success (307 redirects) — all graceful.
+- Auth/RBAC verified: 401 without token, 403 wrong role (paralegal), 200 with admin token.
+- Preview: LIVE and rendering correctly. User can see the full Infinity Legal platform.

@@ -10,14 +10,342 @@
 [@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
 [@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
 ○ Compiling /instrumentation ...
-✓ Ready in 6.3s
+✓ Ready in 5.8s
+○ Compiling /api/health ...
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/health 200 in 6.9s (compile: 6.1s, proxy.ts: 730ms, render: 38ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 13.4s (compile: 12.9s, proxy.ts: 6ms, render: 483ms)
+ GET /api/health 200 in 399ms (compile: 22ms, proxy.ts: 360ms, render: 17ms)
+[@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.4.109:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+○ Compiling /instrumentation ...
+✓ Ready in 5.6s
+○ Compiling /api/health ...
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/health 200 in 7.0s (compile: 6.3s, proxy.ts: 669ms, render: 39ms)
+ GET /api/health 200 in 14ms (compile: 3ms, proxy.ts: 6ms, render: 5ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET / 200 in 9.5s (compile: 8.5s, proxy.ts: 5ms, render: 1048ms)
+ GET / 200 in 385ms (compile: 4ms, proxy.ts: 338ms, render: 42ms)
+ GET / 200 in 37ms (compile: 2ms, proxy.ts: 4ms, render: 31ms)
+ GET /api/health 200 in 39ms (compile: 20ms, proxy.ts: 5ms, render: 14ms)
+ GET / 200 in 46ms (compile: 3ms, proxy.ts: 4ms, render: 39ms)
+ GET / 200 in 291ms (compile: 31ms, proxy.ts: 68ms, render: 192ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/auth/profile 401 in 2.8s (compile: 2.8s, proxy.ts: 15ms, render: 20ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles?limit=20 200 in 5.5s (compile: 5.5s, proxy.ts: 7ms, render: 54ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles?limit=20 200 in 40ms (compile: 18ms, proxy.ts: 11ms, render: 11ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/pricing 200 in 3.5s (compile: 3.0s, proxy.ts: 362ms, render: 113ms)
+ GET /api/pricing 200 in 387ms (compile: 102ms, proxy.ts: 128ms, render: 158ms)
+ GET /api/health 200 in 27ms (compile: 11ms, proxy.ts: 9ms, render: 8ms)
+ GET /api/health 200 in 13ms (compile: 4ms, proxy.ts: 4ms, render: 5ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/health 200 in 30ms (compile: 5ms, proxy.ts: 9ms, render: 17ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api 200 in 3.1s (compile: 3.1s, proxy.ts: 4ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/pricing 200 in 1716ms (compile: 1690ms, proxy.ts: 4ms, render: 21ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles?limit=5 200 in 2.1s (compile: 1962ms, proxy.ts: 96ms, render: 10ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles/nonexistent-slug 404 in 5.8s (compile: 5.8s, proxy.ts: 4ms, render: 11ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/holidays 200 in 2.8s (compile: 2.7s, proxy.ts: 6ms, render: 58ms)
+⚠ Server is approaching the used memory threshold, restarting...
+[@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.4.109:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+○ Compiling /instrumentation ...
+✓ Ready in 6.7s
+○ Compiling proxy ...
+○ Compiling /api/messages ...
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/messages 401 in 7.9s (compile: 7.1s, proxy.ts: 716ms, render: 25ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/staff 401 in 7.1s (compile: 7.1s, proxy.ts: 8ms, render: 14ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/subscriptions 401 in 813ms (compile: 799ms, proxy.ts: 6ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/integrations 401 in 2.9s (compile: 2.9s, proxy.ts: 5ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/management 401 in 849ms (compile: 837ms, proxy.ts: 5ms, render: 7ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/hr 401 in 791ms (compile: 777ms, proxy.ts: 5ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/sales 401 in 1392ms (compile: 1378ms, proxy.ts: 6ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/paralegal 401 in 764ms (compile: 753ms, proxy.ts: 4ms, render: 7ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/backup 401 in 1562ms (compile: 1550ms, proxy.ts: 4ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/ai/providers 401 in 897ms (compile: 885ms, proxy.ts: 5ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/ai/web-search?q=test 401 in 1707ms (compile: 1693ms, proxy.ts: 5ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/chat 200 in 3.0s (compile: 1628ms, proxy.ts: 5ms, render: 1331ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/summarize 401 in 1880ms (compile: 1866ms, proxy.ts: 5ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/memo 401 in 1925ms (compile: 1898ms, proxy.ts: 5ms, render: 21ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/vlm 401 in 2.2s (compile: 2.2s, proxy.ts: 5ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/intake 400 in 3.5s (compile: 3.4s, proxy.ts: 5ms, render: 10ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/payfast/checkout 401 in 2.3s (compile: 2.3s, proxy.ts: 6ms, render: 15ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/payfast/cancel 200 in 3.4s (compile: 3.4s, proxy.ts: 5ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/payfast/success 200 in 3.4s (compile: 3.4s, proxy.ts: 8ms, render: 7ms)
+⚠ Server is approaching the used memory threshold, restarting...
+[@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.4.109:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+○ Compiling /instrumentation ...
+✓ Ready in 5.8s
 ○ Compiling proxy ...
 ○ Compiling /api/health ...
 ⚠ ./src/instrumentation-client.ts
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
 As a result, the code may not run as expected or may cause runtime errors.
- GET /api/health 200 in 684ms (compile: 29ms, proxy.ts: 620ms, render: 35ms)
+ GET /api/health 200 in 8.6s (compile: 7.9s, proxy.ts: 729ms, render: 43ms)
 ⚠ ./src/instrumentation-client.ts
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
@@ -26,7 +354,27 @@ As a result, the code may not run as expected or may cause runtime errors.
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
 As a result, the code may not run as expected or may cause runtime errors.
- GET / 200 in 8.8s (compile: 7.6s, proxy.ts: 19ms, render: 1185ms)
+ POST /api/auth/login 200 in 8.5s (compile: 8.2s, proxy.ts: 14ms, render: 339ms)
+[@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.4.109:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+○ Compiling /instrumentation ...
+✓ Ready in 5.6s
+○ Compiling /api/health ...
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/health 200 in 7.4s (compile: 6.7s, proxy.ts: 686ms, render: 38ms)
+ GET /api/health 200 in 23ms (compile: 6ms, proxy.ts: 12ms, render: 5ms)
 ⚠ ./src/instrumentation-client.ts
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
@@ -35,7 +383,8 @@ As a result, the code may not run as expected or may cause runtime errors.
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
 As a result, the code may not run as expected or may cause runtime errors.
- GET /api/auth/profile 401 in 1144ms (compile: 1108ms, proxy.ts: 6ms, render: 30ms)
+ POST /api/auth/login 200 in 2.3s (compile: 1958ms, proxy.ts: 8ms, render: 329ms)
+ GET /api/health 200 in 17ms (compile: 6ms, proxy.ts: 5ms, render: 6ms)
 ⚠ ./src/instrumentation-client.ts
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
@@ -44,7 +393,7 @@ As a result, the code may not run as expected or may cause runtime errors.
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
 As a result, the code may not run as expected or may cause runtime errors.
- GET /api/articles?limit=20 200 in 4.2s (compile: 4.1s, proxy.ts: 45ms, render: 48ms)
+ GET /api 200 in 752ms (compile: 728ms, proxy.ts: 4ms, render: 20ms)
 ⚠ ./src/instrumentation-client.ts
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
@@ -53,6 +402,872 @@ As a result, the code may not run as expected or may cause runtime errors.
 The generated code contains 'async/await' because this module is using "topLevelAwait".
 However, your target environment does not appear to support 'async/await'.
 As a result, the code may not run as expected or may cause runtime errors.
- GET /api/pricing 200 in 7.8s (compile: 3.6s, proxy.ts: 4.1s, render: 42ms)
- GET /api/articles?limit=20 200 in 3.7s (compile: 53ms, proxy.ts: 3.6s, render: 10ms)
- GET /api/pricing 200 in 17ms (compile: 3ms, proxy.ts: 9ms, render: 5ms)
+ GET /api/pricing 200 in 690ms (compile: 679ms, proxy.ts: 4ms, render: 7ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles?limit=5 200 in 639ms (compile: 626ms, proxy.ts: 5ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles/nonexistent 404 in 1991ms (compile: 1960ms, proxy.ts: 4ms, render: 26ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/holidays 200 in 802ms (compile: 734ms, proxy.ts: 6ms, render: 62ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/translate?text=hello&to=af 200 in 672ms (compile: 661ms, proxy.ts: 5ms, render: 6ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/auth/profile 401 in 656ms (compile: 645ms, proxy.ts: 4ms, render: 7ms)
+ GET /api/auth/profile 200 in 14ms (compile: 2ms, proxy.ts: 4ms, render: 7ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/dashboard 200 in 768ms (compile: 744ms, proxy.ts: 4ms, render: 20ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/cases 200 in 984ms (compile: 968ms, proxy.ts: 4ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/leads 200 in 1631ms (compile: 1615ms, proxy.ts: 4ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/consultations 200 in 829ms (compile: 813ms, proxy.ts: 4ms, render: 11ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/tasks 200 in 806ms (compile: 791ms, proxy.ts: 4ms, render: 10ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/notifications 200 in 825ms (compile: 809ms, proxy.ts: 5ms, render: 11ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/documents 200 in 1701ms (compile: 1686ms, proxy.ts: 4ms, render: 11ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm 200 in 888ms (compile: 867ms, proxy.ts: 4ms, render: 16ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/activity 200 in 864ms (compile: 848ms, proxy.ts: 4ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/settings 200 in 1765ms (compile: 1739ms, proxy.ts: 4ms, render: 22ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/subscriptions 200 in 1006ms (compile: 989ms, proxy.ts: 5ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/users 200 in 925ms (compile: 910ms, proxy.ts: 4ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/communications/logs 200 in 1948ms (compile: 1930ms, proxy.ts: 4ms, render: 14ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/communications/templates 200 in 5.6s (compile: 5.5s, proxy.ts: 6ms, render: 22ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/communications/status 200 in 7.2s (compile: 7.1s, proxy.ts: 6ms, render: 13ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/analytics 200 in 2.1s (compile: 2.1s, proxy.ts: 5ms, render: 30ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/report 200 in 1148ms (compile: 1129ms, proxy.ts: 5ms, render: 14ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/messages 200 in 2.2s (compile: 2.2s, proxy.ts: 4ms, render: 10ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/staff 200 in 2.2s (compile: 2.1s, proxy.ts: 5ms, render: 20ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/subscriptions 200 in 2.6s (compile: 2.6s, proxy.ts: 5ms, render: 25ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/integrations 200 in 8.4s (compile: 8.4s, proxy.ts: 5ms, render: 11ms)
+⚠ Server is approaching the used memory threshold, restarting...
+[@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.4.109:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+○ Compiling /instrumentation ...
+✓ Ready in 5.7s
+○ Compiling /api/health ...
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/health 200 in 6.8s (compile: 6.2s, proxy.ts: 594ms, render: 38ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/auth/login 200 in 2.3s (compile: 1994ms, proxy.ts: 18ms, render: 335ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/health 200 in 731ms (compile: 711ms, proxy.ts: 7ms, render: 14ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api 200 in 757ms (compile: 744ms, proxy.ts: 6ms, render: 7ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/pricing 200 in 729ms (compile: 715ms, proxy.ts: 6ms, render: 7ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles?limit=5 200 in 874ms (compile: 847ms, proxy.ts: 7ms, render: 20ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/articles/nonexistent 404 in 1733ms (compile: 1701ms, proxy.ts: 10ms, render: 22ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/holidays 200 in 866ms (compile: 806ms, proxy.ts: 6ms, render: 53ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/translate?text=hello&to=af 200 in 812ms (compile: 797ms, proxy.ts: 6ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/auth/profile 401 in 813ms (compile: 798ms, proxy.ts: 6ms, render: 9ms)
+ GET /api/auth/profile 200 in 16ms (compile: 3ms, proxy.ts: 5ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/dashboard 200 in 1484ms (compile: 1459ms, proxy.ts: 5ms, render: 20ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/cases 200 in 992ms (compile: 974ms, proxy.ts: 5ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/leads 200 in 806ms (compile: 789ms, proxy.ts: 5ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/consultations 200 in 824ms (compile: 797ms, proxy.ts: 5ms, render: 22ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/tasks 200 in 1650ms (compile: 1633ms, proxy.ts: 5ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/notifications 200 in 850ms (compile: 835ms, proxy.ts: 5ms, render: 10ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/documents 200 in 822ms (compile: 807ms, proxy.ts: 5ms, render: 10ms)
+ POST /api/auth/login 200 in 315ms (compile: 6ms, proxy.ts: 5ms, render: 303ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm 200 in 1927ms (compile: 1892ms, proxy.ts: 5ms, render: 30ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/activity 200 in 875ms (compile: 859ms, proxy.ts: 5ms, render: 10ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/settings 200 in 917ms (compile: 891ms, proxy.ts: 5ms, render: 21ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/subscriptions 200 in 2.1s (compile: 2.1s, proxy.ts: 5ms, render: 14ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/users 200 in 966ms (compile: 949ms, proxy.ts: 5ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/communications/logs 200 in 2.1s (compile: 2.1s, proxy.ts: 8ms, render: 28ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/communications/templates 200 in 3.8s (compile: 3.8s, proxy.ts: 6ms, render: 11ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/communications/status 200 in 2.5s (compile: 2.4s, proxy.ts: 6ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/analytics 200 in 2.4s (compile: 2.4s, proxy.ts: 5ms, render: 24ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/report 200 in 2.3s (compile: 2.3s, proxy.ts: 5ms, render: 16ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/messages 200 in 2.5s (compile: 2.5s, proxy.ts: 5ms, render: 21ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/staff 200 in 4.0s (compile: 4.0s, proxy.ts: 6ms, render: 18ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/subscriptions 200 in 5.8s (compile: 5.8s, proxy.ts: 13ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/integrations 200 in 9.0s (compile: 9.0s, proxy.ts: 10ms, render: 10ms)
+⚠ Server is approaching the used memory threshold, restarting...
+[@sentry/nextjs] ACTION REQUIRED: To instrument navigations, the Sentry SDK requires you to export an `onRouterTransitionStart` hook from your `instrumentation-client.(js|ts)` file. You can do so by adding `export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;` to the file.
+▲ Next.js 16.1.3 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.4.109:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+[@sentry/nextjs] Could not find `onRequestError` hook in instrumentation file. This indicates outdated configuration of the Sentry SDK. Use `Sentry.captureRequestError` to instrument the `onRequestError` hook: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#errors-from-nested-react-server-components
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+○ Compiling /instrumentation ...
+✓ Ready in 5.7s
+○ Compiling /api/management ...
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/management 200 in 7.2s (compile: 6.4s, proxy.ts: 733ms, render: 46ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/hr 200 in 5.7s (compile: 5.6s, proxy.ts: 11ms, render: 16ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/auth/login 200 in 980ms (compile: 670ms, proxy.ts: 6ms, render: 304ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/sales 200 in 1145ms (compile: 1129ms, proxy.ts: 5ms, render: 12ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/paralegal 403 in 664ms (compile: 650ms, proxy.ts: 6ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/backup 200 in 633ms (compile: 618ms, proxy.ts: 5ms, render: 10ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/ai/providers 200 in 703ms (compile: 676ms, proxy.ts: 5ms, render: 21ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/ai/web-search?q=test 200 in 3.4s (compile: 671ms, proxy.ts: 6ms, render: 2.7s)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/chat 200 in 2.7s (compile: 1409ms, proxy.ts: 6ms, render: 1279ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/summarize 400 in 825ms (compile: 807ms, proxy.ts: 7ms, render: 11ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/memo 400 in 742ms (compile: 727ms, proxy.ts: 5ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/ai/intake 400 in 754ms (compile: 742ms, proxy.ts: 5ms, render: 7ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/payfast/checkout 400 in 810ms (compile: 782ms, proxy.ts: 5ms, render: 23ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/payfast/cancel 200 in 856ms (compile: 844ms, proxy.ts: 5ms, render: 6ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/payfast/success 200 in 813ms (compile: 801ms, proxy.ts: 5ms, render: 7ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/stripe/checkout 503 in 1183ms (compile: 1169ms, proxy.ts: 5ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/stripe/cancel 307 in 1716ms (compile: 1705ms, proxy.ts: 5ms, render: 6ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/stripe/success 307 in 849ms (compile: 838ms, proxy.ts: 5ms, render: 6ms)
+ POST /api/auth/login 200 in 337ms (compile: 21ms, proxy.ts: 11ms, render: 305ms)
+ POST /api/ai/summarize 400 in 21ms (compile: 8ms, proxy.ts: 4ms, render: 9ms)
+ POST /api/ai/memo 400 in 17ms (compile: 5ms, proxy.ts: 4ms, render: 8ms)
+ POST /api/ai/intake 400 in 15ms (compile: 6ms, proxy.ts: 4ms, render: 4ms)
+ POST /api/auth/login 200 in 310ms (compile: 3ms, proxy.ts: 5ms, render: 302ms)
+ POST /api/ai/summarize 400 in 12ms (compile: 2ms, proxy.ts: 5ms, render: 5ms)
+ POST /api/ai/memo 400 in 13ms (compile: 2ms, proxy.ts: 5ms, render: 6ms)
+ POST /api/ai/intake 400 in 13ms (compile: 3ms, proxy.ts: 7ms, render: 4ms)
+ POST /api/auth/login 200 in 307ms (compile: 3ms, proxy.ts: 5ms, render: 298ms)
+ POST /api/ai/summarize 200 in 2.2s (compile: 1954µs, proxy.ts: 4ms, render: 2.2s)
+ POST /api/ai/memo 200 in 22.8s (compile: 1988µs, proxy.ts: 6ms, render: 22.8s)
+ POST /api/ai/intake 201 in 3.2s (compile: 3ms, proxy.ts: 12ms, render: 3.2s)
+ POST /api/auth/login 200 in 302ms (compile: 3ms, proxy.ts: 5ms, render: 294ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/cases 400 in 4.1s (compile: 4.1s, proxy.ts: 5ms, render: 16ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/leads 400 in 947ms (compile: 928ms, proxy.ts: 6ms, render: 13ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/consultations 400 in 730ms (compile: 716ms, proxy.ts: 5ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/tasks 400 in 740ms (compile: 714ms, proxy.ts: 5ms, render: 20ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/contact 201 in 1624ms (compile: 1607ms, proxy.ts: 5ms, render: 12ms)
+ POST /api/contact 400 in 13ms (compile: 3ms, proxy.ts: 5ms, render: 5ms)
+ POST /api/auth/login 401 in 311ms (compile: 8ms, proxy.ts: 5ms, render: 298ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/auth/signup 400 in 6.4s (compile: 6.4s, proxy.ts: 5ms, render: 8ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+[Email/Simulated] To: tidimalo@infinitylegal.org | Subject: Infinity Legal SA — Password Reset
+ POST /api/auth/forgot-password 200 in 1948ms (compile: 1926ms, proxy.ts: 5ms, render: 17ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/auth/signout 200 in 893ms (compile: 879ms, proxy.ts: 5ms, render: 9ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/auth/auto-confirm 200 in 2.0s (compile: 2.0s, proxy.ts: 5ms, render: 33ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ POST /api/admin/migrate 200 in 964ms (compile: 947ms, proxy.ts: 6ms, render: 10ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/admin/seed-pricing 405 in 2.1s (compile: 2.1s, proxy.ts: 5ms, render: 6ms)
+ POST /api/auth/login 200 in 329ms (compile: 9ms, proxy.ts: 12ms, render: 308ms)
+ POST /api/cases 400 in 25ms (compile: 10ms, proxy.ts: 5ms, render: 10ms)
+ POST /api/leads 400 in 22ms (compile: 8ms, proxy.ts: 4ms, render: 10ms)
+ POST /api/tasks 400 in 20ms (compile: 8ms, proxy.ts: 5ms, render: 7ms)
+ GET /api/admin/seed-pricing 405 in 9ms (compile: 2ms, proxy.ts: 4ms, render: 3ms)
+prisma:error 
+Invalid `prisma.pricingPlan.deleteMany()` invocation:
+
+
+Foreign key constraint violated on the foreign key
+Seed pricing error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.pricingPlan.deleteMany()` invocation:
+
+
+Foreign key constraint violated on the foreign key
+    at async POST$1 (src/app/api/admin/seed-pricing/route.ts:96:5)
+  94 |
+  95 |     // Delete all existing plans
+> 96 |     await prisma.pricingPlan.deleteMany();
+     |     ^
+  97 |     results.push('Deleted all old plans');
+  98 |
+  99 |     // Insert the correct plans {
+  code: 'P2003',
+  meta: [Object],
+  clientVersion: '6.19.2'
+}
+ POST /api/admin/seed-pricing 500 in 263ms (compile: 2ms, proxy.ts: 4ms, render: 256ms)
+ POST /api/auth/login 200 in 299ms (compile: 2ms, proxy.ts: 5ms, render: 292ms)
+ POST /api/cases 400 in 14ms (compile: 3ms, proxy.ts: 4ms, render: 6ms)
+ POST /api/leads 400 in 12ms (compile: 1898µs, proxy.ts: 4ms, render: 6ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/crm/users 200 in 2.2s (compile: 2.1s, proxy.ts: 4ms, render: 13ms)
+ POST /api/tasks 201 in 22ms (compile: 5ms, proxy.ts: 5ms, render: 11ms)
+ POST /api/auth/login 200 in 314ms (compile: 8ms, proxy.ts: 5ms, render: 301ms)
+ POST /api/cases 400 in 20ms (compile: 7ms, proxy.ts: 5ms, render: 9ms)
+ POST /api/leads 201 in 22ms (compile: 6ms, proxy.ts: 5ms, render: 11ms)
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+⚠ ./src/instrumentation-client.ts
+The generated code contains 'async/await' because this module is using "topLevelAwait".
+However, your target environment does not appear to support 'async/await'.
+As a result, the code may not run as expected or may cause runtime errors.
+ GET /api/health 200 in 2.1s (compile: 2.1s, proxy.ts: 5ms, render: 17ms)
