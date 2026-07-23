@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('ASR error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to transcribe audio' },
-      { status: 500 }
+      { success: false, error: 'Speech recognition service is temporarily unavailable. Please try again later.' },
+      { status: 503 }
     );
   }
 }

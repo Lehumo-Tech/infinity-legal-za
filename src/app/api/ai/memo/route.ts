@@ -65,6 +65,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Memo generation error:', error);
-    return apiError('Failed to generate legal memo. Please try again later.', 500, 'MEMO_ERROR');
+    return apiError('Legal memo service is temporarily unavailable. Please try again later.', 503, 'MEMO_ERROR');
   }
 }

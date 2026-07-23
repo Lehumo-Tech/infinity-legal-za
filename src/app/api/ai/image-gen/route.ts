@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Image generation error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to generate image' },
-      { status: 500 }
+      { success: false, error: 'Image generation service is temporarily unavailable. Please try again later.' },
+      { status: 503 }
     );
   }
 }

@@ -30,20 +30,26 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { planId, billingCycle } = body as { planId: string; billingCycle: BillingCycle };
+    const { planId, planSlug, billingCycle } = body as { planId?: string; planSlug?: string; billingCycle: BillingCycle };
 
-    if (!planId || !billingCycle) {
-      return apiError('planId and billingCycle are required', 400, 'MISSING_PARAMS');
+    // Accept either planId (UUID) or planSlug (e.g. 'civil', 'labour', 'extensive')
+    // for consistency with /api/stripe/checkout which uses planSlug.
+    const planIdentifier = planId || planSlug;
+    if (!planIdentifier || !billingCycle) {
+      return apiError('planId (or planSlug) and billingCycle are required', 400, 'MISSING_PARAMS');
     }
 
     if (!['monthly', 'annual'].includes(billingCycle)) {
       return apiError('billingCycle must be "monthly" or "annual"', 400, 'INVALID_BILLING_CYCLE');
     }
 
-    // Fetch the pricing plan
-    const plan = await db.pricingPlan.findUnique({
-      where: { id: planId },
-    });
+    // Fetch the pricing plan — look up by id if it looks like a UUID,
+    // otherwise by slug. This maintains backward compatibility with callers
+    // that send a UUID while also supporting slug-based lookups.
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planIdentifier);
+    const plan = isUuid
+      ? await db.pricingPlan.findUnique({ where: { id: planIdentifier } })
+      : await db.pricingPlan.findUnique({ where: { slug: planIdentifier } });
 
     if (!plan) {
       return apiError('Pricing plan not found', 404, 'PLAN_NOT_FOUND');
@@ -62,20 +68,25 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid plan amount', 400, 'INVALID_AMOUNT');
     }
 
-    // Check if user already has a client profile + active subscription
+    // Check if user already has a client profile + ANY subscription.
+    // UserSubscription.client_id is @unique, so a client can only have one
+    // subscription regardless of status (active, trial, cancelled, etc.).
     const clientProfile = await db.client.findUnique({
       where: { user_id: user.userId },
       include: {
         subscriptions: {
-          where: { status: 'active' },
-          select: { id: true },
+          select: { id: true, status: true },
           take: 1,
         },
       },
     });
 
     if (clientProfile && clientProfile.subscriptions.length > 0) {
-      return apiError('You already have an active subscription. Please cancel it first.', 409, 'SUBSCRIPTION_EXISTS');
+      const sub = clientProfile.subscriptions[0];
+      const msg = sub.status === 'trial'
+        ? 'You already have a pending subscription. Please complete payment or cancel it first.'
+        : 'You already have an active subscription. Please cancel it first.';
+      return apiError(msg, 409, 'SUBSCRIPTION_EXISTS');
     }
 
     // Fetch user details for PayFast
@@ -115,7 +126,7 @@ export async function POST(request: NextRequest) {
     const subscription = await db.userSubscription.create({
       data: {
         client_id: clientId,
-        plan_id: planId,
+        plan_id: plan.id,
         status: 'trial',
         current_period_start: periodStart,
         current_period_end: periodEnd,

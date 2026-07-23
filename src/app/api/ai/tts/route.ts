@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('TTS error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to generate speech' },
-      { status: 500 }
+      { success: false, error: 'Text-to-speech service is temporarily unavailable. Please try again later.' },
+      { status: 503 }
     );
   }
 }

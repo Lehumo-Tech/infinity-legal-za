@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Web search error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to search the web' },
-      { status: 500 }
+      { success: false, error: 'Web search service is temporarily unavailable. Please try again later.' },
+      { status: 503 }
     );
   }
 }

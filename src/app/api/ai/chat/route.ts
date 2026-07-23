@@ -118,9 +118,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'I encountered an error processing your request. Please try again shortly.',
+        error: 'AI assistant is temporarily unavailable. Please try again shortly.',
       },
-      { status: 500 }
+      { status: 503 }
     );
   }
 }

@@ -56,6 +56,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Document summarization error:', error);
-    return apiError('Failed to summarize document. Please try again later.', 500, 'SUMMARIZE_ERROR');
+    return apiError('Document summarization service is temporarily unavailable. Please try again later.', 503, 'SUMMARIZE_ERROR');
   }
 }

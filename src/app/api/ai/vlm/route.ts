@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('VLM error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to analyze image' },
-      { status: 500 }
+      { success: false, error: 'Image analysis service is temporarily unavailable. Please try again later.' },
+      { status: 503 }
     );
   }
 }

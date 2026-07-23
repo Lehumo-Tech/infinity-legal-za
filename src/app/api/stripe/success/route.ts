@@ -7,7 +7,9 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const sessionId = url.searchParams.get('session_id');
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || '/';
+  // Derive base URL from the request so this works even when
+  // NEXT_PUBLIC_APP_URL is not configured (e.g. in dev/preview).
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${url.protocol}//${url.host}`;
   // Redirect to home with a success flag so the UI can show a confirmation
   const redirect = new URL(appUrl);
   redirect.searchParams.set('payment', 'success');
