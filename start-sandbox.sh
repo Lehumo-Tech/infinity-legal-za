@@ -18,19 +18,27 @@
 # OOM during webpack compilation of large route trees.
 
 cd /home/z/my-project
-export NODE_OPTIONS="--max-old-space-size=1280 --max-semi-space-size=64"
+export NODE_OPTIONS="--max-old-space-size=2048 --max-semi-space-size=64"
 export NODE_ENV=development
+
+# Explicitly load .env so DATABASE_URL etc. are in the environment.
+# This prevents stale inherited env vars from overriding .env values.
+if [ -f .env ]; then
+  set -a
+  . ./.env
+  set +a
+fi
 
 # Kill any stale server on port 3000
 pkill -9 -f "next-server" 2>/dev/null
 pkill -9 -f "next dev" 2>/dev/null
 sleep 1
 
-echo "[$(date)] sandbox watchdog starting (heap=2048MB)..." >> keepalive.log
+echo "[$(date)] sandbox watchdog starting (heap=2048MB, turbopack)..." >> keepalive.log
 
 while true; do
-  echo "[$(date)] starting next dev --webpack..." >> keepalive.log
-  node node_modules/.bin/next dev -p 3000 --webpack >> dev.log 2>&1
+  echo "[$(date)] starting next dev (turbopack)..." >> keepalive.log
+  node node_modules/.bin/next dev -p 3000 >> dev.log 2>&1
   EXIT=$?
   echo "[$(date)] server exited with code $EXIT, restarting in 3s..." >> keepalive.log
   sleep 3

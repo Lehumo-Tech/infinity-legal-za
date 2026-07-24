@@ -13,7 +13,7 @@ export async function GET() {
 
     return apiResponse({
       status: 'healthy',
-      database: 'sqlite',
+      database: process.env.DATABASE_URL?.startsWith('postgres') ? 'postgresql' : 'sqlite',
       timestamp: new Date().toISOString(),
       services: {
         database: 'connected',
