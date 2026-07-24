@@ -29,3 +29,5 @@ $ next dev -p 3000
  GET /api/pricing 200 in 16ms (compile: 3ms, proxy.ts: 4ms, render: 9ms)
  GET /api/articles?limit=6 200 in 12ms (compile: 3ms, proxy.ts: 3ms, render: 6ms)
  GET /api/health 200 in 121ms (compile: 109ms, proxy.ts: 5ms, render: 8ms)
+ GET / 200 in 52ms (compile: 3ms, proxy.ts: 3ms, render: 46ms)
+ GET / 200 in 51ms (compile: 5ms, proxy.ts: 3ms, render: 42ms)
