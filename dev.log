@@ -31,3 +31,8 @@ $ next dev -p 3000
  GET /api/health 200 in 121ms (compile: 109ms, proxy.ts: 5ms, render: 8ms)
  GET / 200 in 52ms (compile: 3ms, proxy.ts: 3ms, render: 46ms)
  GET / 200 in 51ms (compile: 5ms, proxy.ts: 3ms, render: 42ms)
+ GET / 200 in 50ms (compile: 3ms, proxy.ts: 4ms, render: 43ms)
+ GET / 200 in 58ms (compile: 3ms, proxy.ts: 5ms, render: 50ms)
+  Reload env: .env
+✓ Compiled in 0ms
+ GET / 200 in 302ms (compile: 73ms, proxy.ts: 50ms, render: 179ms)
