@@ -7,7 +7,10 @@ $ next dev -p 3000
   · clientTraceMetadata
 
 ✓ Starting...
-✓ Ready in 2.2s
+✓ Ready in 1579ms
 ○ Compiling / ...
- GET / 200 in 6.3s (compile: 5.8s, proxy.ts: 153ms, render: 320ms)
- GET / 200 in 48ms (compile: 3ms, proxy.ts: 4ms, render: 41ms)
+ GET / 200 in 5.1s (compile: 4.7s, proxy.ts: 138ms, render: 333ms)
+ POST /api/auth/login 200 in 1106ms (compile: 707ms, proxy.ts: 7ms, render: 392ms)
+ GET /api/dashboard 200 in 162ms (compile: 140ms, proxy.ts: 4ms, render: 18ms)
+ GET /api/cases 200 in 463ms (compile: 446ms, proxy.ts: 3ms, render: 14ms)
+ GET /api/pricing 200 in 145ms (compile: 131ms, proxy.ts: 3ms, render: 11ms)

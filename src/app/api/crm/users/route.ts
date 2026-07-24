@@ -3,7 +3,7 @@
  * PATCH /api/crm/users - Update user role
  * DELETE /api/crm/users - Deactivate user (set is_active = false)
  *
- * Rewritten from Supabase to Prisma/SQLite.
+ * Backed by Prisma/SQLite.
  */
 
 import { NextRequest } from 'next/server';

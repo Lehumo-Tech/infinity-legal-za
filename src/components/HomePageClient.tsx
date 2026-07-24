@@ -203,7 +203,7 @@ export default function HomePageClient() {
 
   // Auth is handled by useAuth() hook - signIn/signOut are in the LoginScreen and topbar
   // The auth state (isAuthenticated, user, token) is derived from the auth context
-  // No more localStorage - sessions are managed via Supabase cookies
+  // Sessions are managed via the local auth-token cookie + Bearer token fallback
 
   // Loading timeout — prevent infinite loading spinner (8 second max)
   useEffect(() => {
@@ -360,8 +360,8 @@ export default function HomePageClient() {
     }
   };
 
-  // Session is now managed by Supabase cookies via the AuthProvider
-  // No need for localStorage session restoration
+  // Session is managed by the local auth-token cookie via the AuthProvider
+  // (Bearer token fallback is used inside cross-origin iframes)
 
   // Load data when view changes
   useEffect(() => {

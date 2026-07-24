@@ -1,7 +1,7 @@
 /**
  * Infinity Legal ZA - Audit & Analytics Library (Prisma/SQLite)
  *
- * Updated from Supabase to Prisma client for database operations.
+ * Uses Prisma client for database operations.
  * Uses the Prisma schema models: AuditLog, ConsentLog.
  * Note: api_analytics and error_logs tables don't exist in Prisma schema,
  * so trackApiEvent and logError are no-ops.

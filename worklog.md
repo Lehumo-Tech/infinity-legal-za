@@ -1857,3 +1857,43 @@ Stage Summary:
 - AiIntakeSession model KEPT (exists for future multi-step AI intake; currently /api/ai/intake stores data on IntakeSubmission directly).
 - QC: lint 0/0, unit tests 101/101, dev server healthy (all APIs 200), 12 new models + 30+ new fields verified accessible via Prisma client.
 - No existing data migrated or lost (all new fields optional/defaulted; db:push applied non-destructively).
+
+---
+Task ID: 9
+Agent: Main Agent
+Task: Fix broken preview (topLevelAwait) and migrate off Supabase by removing all dead Supabase fallback code
+
+Work Log:
+- Diagnosed broken preview: src/instrumentation-client.ts used `await import('../sentry.client.config')` (top-level await) which Next.js 16 webpack couldn't transpile for the preview iframe target → silently broke the client bundle (blank screen). Replaced with static `import` + added `onRouterTransitionStart` export. Preview immediately returned 200 with full 55KB content.
+- Surveyed Supabase footprint: 6 lib files (src/lib/supabase/*), 2 packages (@supabase/ssr, @supabase/supabase-js), 1 unused provider component (SupabaseAuthProvider.tsx), and references in 20+ files. Confirmed NO Supabase env vars set → all Supabase code paths were already dead (always returned null / early-exited).
+- Confirmed all 3 dead helper functions had ZERO external callers: isSupabaseConfigured (db.ts), isSupabaseReachable (local-auth.ts), getUserFromTokenSync (auth.ts).
+- Confirmed SupabaseAuthProvider was NOT mounted in any layout/component (safe to delete).
+- Rewrote src/proxy.ts (Next.js 16 middleware): removed `@supabase/ssr` import + entire Supabase session-refresh block (was dead code that early-exited when env vars absent). Kept: local auth-token cookie detection, Bearer token fallback, security headers, CORS, public route allow-list, 401 edge-block. Removed `https://*.supabase.co` from CSP connect-src.
+- Rewrote src/lib/middleware.ts requireAuth(): removed getAuthUser import (supabase) + cookie-based Supabase session strategy + redundant double-validateLocalToken. Now a single clean Bearer→validateLocalToken path. Updated header comments.
+- Cleaned src/lib/auth.ts: updated header + section comments (Supabase → Local JWT), removed dead getUserFromTokenSync function, kept getUserFromToken (wraps validateLocalToken).
+- Cleaned src/lib/local-auth.ts: removed dead isSupabaseReachable function + updated header comment.
+- Cleaned src/lib/db.ts: removed dead isSupabaseConfigured function + updated header comment.
+- Cleaned src/lib/audit.ts: updated header comment.
+- Cleaned src/hooks/useAuth.tsx: updated header comment (removed "Supabase is no longer used" line).
+- Cleaned src/components/types.ts: "Aligned with deployed Supabase schema" → "Aligned with Prisma schema".
+- Cleaned src/components/HomePageClient.tsx: 2 comments (session management).
+- Cleaned comment-only API routes: backup, crm/route, crm/users, crm/subscriptions, crm/activity, auth/verify.
+- Rewrote src/app/api/auth/clerk-webhook/route.ts: removed `createClient` import from supabase/server + `supabase.auth.exchangeCodeForSession` call. Now a simple safe-redirect (matching auth/callback/route.ts pattern).
+- Cleaned src/app/api/auth/signout/route.ts: kept legacy sb-* cookie clearing (good hygiene) but updated comments to not say "Supabase".
+- DELETED: src/lib/supabase/ directory (6 files: server.ts, auth-helpers.ts, types.ts, api-client.ts, middleware.ts, browser.ts) + src/components/SupabaseAuthProvider.tsx.
+- Cleaned .env.example: removed Supabase section (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY).
+- Uninstalled packages: `bun remove @supabase/ssr @supabase/supabase-js` (2 packages removed).
+- Verified zero remaining imports of supabase libs/paths/functions (rg returned empty).
+- Restarted dev server. Verified:
+  * `bun run lint` → 0 errors, 0 warnings.
+  * `bun test src/lib/__tests__/` → 101/101 pass, 359 expect() calls, 0 fail.
+  * Preview: HTTP 200, 55873 bytes, real content renders ("Infinity Legal", "Legal Services", "Premier"), proxy.ts 138ms, no errors.
+  * E2E auth: login (tidimalo@infinitylegal.org) → 308-char JWT issued; /api/dashboard + /api/cases with Bearer → 200; unauthenticated /api/dashboard → 401 (edge-blocked); public /api/pricing → 200.
+
+Stage Summary:
+- Preview FIXED: root cause was top-level `await import()` in instrumentation-client.ts breaking the client bundle. Now uses static import.
+- Supabase FULLY REMOVED: 6 lib files + 1 provider component deleted, 2 packages uninstalled, ~20 files cleaned of references, env example cleaned. Zero supabase imports remain (verified by rg).
+- Auth simplified to single clean path: Bearer token → validateLocalToken (local JWT, Prisma/SQLite User table). No more dead dual-provider fallback code.
+- Security preserved: proxy.ts still edge-blocks unauthenticated requests to protected API routes, CORS + CSP + security headers intact (minus the now-unneeded supabase.co CSP entry).
+- Zero functional regression: all 101 unit tests pass, lint clean, preview renders real content, full auth flow works end-to-end (login → protected API → 401 on unauth → public API).
+- Backend remains Prisma + SQLite + local JWT (unchanged). This was a safe dead-code removal, not a backend swap.

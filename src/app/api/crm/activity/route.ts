@@ -1,6 +1,6 @@
 /**
  * GET /api/crm/activity - Paginated activity log with filter
- * Rewritten from Supabase to Prisma/SQLite.
+ * Backed by Prisma/SQLite.
  */
 
 import { NextRequest, NextResponse } from 'next/server';

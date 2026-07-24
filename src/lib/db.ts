@@ -3,9 +3,6 @@
  *
  * Provides a Prisma Client singleton for server-side Route Handlers.
  * Uses SQLite as the database backend.
- *
- * Also provides backward-compatible exports for code that imports
- * from this module (e.g., isSupabaseConfigured).
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -27,17 +24,6 @@ if (process.env.NODE_ENV !== 'production') {
  */
 export function isDbConfigured(): boolean {
   return true;
-}
-
-/**
- * Check if Supabase is properly configured.
- * Checks for required environment variables.
- * Kept for backward compatibility with existing code that imports this.
- */
-export function isSupabaseConfigured(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return !!(url && key && url !== 'https://placeholder.supabase.co');
 }
 
 /**

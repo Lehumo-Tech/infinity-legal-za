@@ -3,7 +3,7 @@
  * GET /api/backup - List backup records
  *
  * Note: On Vercel/serverless, direct filesystem backup is not possible.
- * Managed database backups are handled by the database provider (e.g. Neon, Supabase).
+ * Managed database backups are handled by the database provider.
  * This endpoint tracks backup records as AuditLog entries (action=CREATE_BACKUP / action=LIST_BACKUPS)
  * since the Prisma schema doesn't have a dedicated backup_records table.
  */

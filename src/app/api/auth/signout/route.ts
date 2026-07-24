@@ -1,7 +1,7 @@
 /**
  * POST /api/auth/signout - Sign out user
  *
- * Clears the local auth cookie (auth-token) and any legacy Supabase cookies.
+ * Clears the local auth cookie (auth-token) and any legacy session cookies.
  * Does NOT require authentication — a user with an expired session
  * still needs to be able to sign out and clear stale cookies.
  */
@@ -42,14 +42,14 @@ export async function POST(request: NextRequest) {
   // Clear local auth cookie
   response.cookies.delete('auth-token');
 
-  // Clear legacy Supabase cookies
+  // Clear any legacy session cookies (from previous auth providers)
   response.cookies.delete('sb-access-token');
   response.cookies.delete('sb-refresh-token');
 
-  // Also clear any other Supabase cookie patterns
+  // Also clear any other legacy cookie patterns
   const allCookies = request.cookies.getAll();
   for (const cookie of allCookies) {
-    if (cookie.name.startsWith('sb-') || cookie.name.includes('supabase')) {
+    if (cookie.name.startsWith('sb-')) {
       response.cookies.delete(cookie.name);
     }
   }

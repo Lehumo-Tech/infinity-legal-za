@@ -1,7 +1,7 @@
 /**
  * GET /api/crm - CRM Overview Metrics
  * Returns key metrics, user growth, subscription breakdown, lead funnel, case status, and recent activity.
- * Rewritten from Supabase to Prisma/SQLite.
+ * Backed by Prisma/SQLite.
  */
 
 import { NextRequest } from 'next/server';

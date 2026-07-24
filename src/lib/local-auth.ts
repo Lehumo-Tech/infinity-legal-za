@@ -2,8 +2,7 @@
  * Infinity Legal ZA - Local Authentication Utility
  *
  * Provides password hashing, JWT token generation/validation,
- * and local auth functions using Prisma/SQLite as a fallback
- * when Supabase is unreachable.
+ * and local auth functions using Prisma/SQLite.
  *
  * Uses bcryptjs for password hashing and crypto for JWT (HMAC-SHA256).
  * Works with the existing Prisma User model in the SQLite schema.
@@ -329,32 +328,6 @@ export async function validateLocalToken(token: string): Promise<{ userId: strin
     };
   } catch {
     return null;
-  }
-}
-
-/**
- * Check if Supabase is reachable by attempting a lightweight request.
- * Returns true if Supabase is reachable, false otherwise.
- */
-export async function isSupabaseReachable(): Promise<boolean> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') {
-    return false;
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-
-    const response = await fetch(`${supabaseUrl}/auth/v1/health`, {
-      method: 'GET',
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
-    return response.ok || response.status < 500;
-  } catch {
-    return false;
   }
 }
 

@@ -3,7 +3,7 @@
  *
  * Uses the local Prisma/SQLite auth system via /api/auth/login.
  * Issues an httpOnly `auth-token` cookie (HMAC-SHA256 JWT) that all
- * API routes read via getAuthUser().
+ * API routes read via requireAuth().
  *
  * CROSS-ORIGIN IFRAME SUPPORT:
  * Cookies with SameSite=Lax are blocked in cross-origin iframes (e.g. the
@@ -14,9 +14,7 @@
  * cookie, so auth works in both normal and iframe contexts. See
  * src/lib/auth-fetch.ts for the transport details.
  *
- * This is the single source of truth for client-side auth. Supabase
- * is no longer used for authentication (only the DB may be used for
- * other features if configured).
+ * This is the single source of truth for client-side auth.
  */
 
 'use client';

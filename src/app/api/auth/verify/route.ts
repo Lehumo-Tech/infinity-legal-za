@@ -1,7 +1,7 @@
 /**
  * GET /api/auth/verify - Verify authentication token
  *
- * Supports both Supabase and local JWT tokens.
+ * Validates the local JWT token via requireAuth().
  * Used by the client to verify if a stored token is still valid.
  */
 

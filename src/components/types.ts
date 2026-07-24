@@ -1,6 +1,6 @@
 // ============================================
 // SHARED TYPES FOR INFINITY LEGAL SA
-// Aligned with deployed Supabase schema
+// Aligned with Prisma schema
 // ============================================
 
 export type View = 'dashboard' | 'workbench' | 'cases' | 'leads' | 'documents' | 'consultations' | 'tasks' | 'staff' | 'analytics' | 'pricing' | 'org-chart' | 'subscription' | 'communications' | 'messages' | 'clients' | 'subscriptions' | 'home' | 'login' | 'signup';

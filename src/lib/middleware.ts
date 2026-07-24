@@ -1,16 +1,14 @@
 /**
- * Infinity Legal ZA - API Middleware (Supabase)
+ * Infinity Legal ZA - API Middleware (Local JWT auth)
  * Auth validation, rate limiting, input validation, audit tracking
  *
- * SECURITY: Auth now checks BOTH cookie-based Supabase session AND Bearer token.
- * Cookie-based auth is preferred (set by root middleware.ts session refresh).
- * This ensures RLS policies are enforced when using the cookie-based client.
+ * SECURITY: Auth uses Bearer token (local JWT, validated against the SQLite
+ * User table via validateLocalToken). Supabase has been removed.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromToken, hasPermission, type RoleKey, type PermissionKey } from '@/lib/auth';
+import { hasPermission, type RoleKey, type PermissionKey } from '@/lib/auth';
 import { apiRateLimiter, sanitizeObject } from '@/lib/security';
-import { getAuthUser } from '@/lib/supabase/auth-helpers';
 import { validateLocalToken } from '@/lib/local-auth';
 
 // ============================================
@@ -85,53 +83,21 @@ type AuthResult = AuthSuccess | AuthFailure;
 // ============================================
 
 /**
- * Require authentication — checks cookie-based Supabase session first,
- * then falls back to Bearer token auth.
- *
- * Cookie-based auth is preferred because:
- * 1. It works with the root middleware session refresh
- * 2. It enables RLS enforcement when using cookie-based Supabase client
- * 3. It's more secure (no token in Authorization header to leak)
+ * Require authentication — validates the Bearer token (local JWT) against the
+ * SQLite User table via validateLocalToken.
  */
 export async function requireAuth(request: NextRequest): Promise<AuthResult> {
-  // Strategy 1: Cookie-based Supabase session (preferred)
-  try {
-    const authUser = await getAuthUser();
-    if (authUser) {
-      return {
-        authenticated: true,
-        user: {
-          userId: authUser.id,
-          email: authUser.email,
-          role: authUser.role,
-          department: undefined,
-        },
-        error: null,
-      };
-    }
-  } catch {
-    // Cookie-based auth failed, try Bearer token
-  }
-
-  // Strategy 2: Bearer token auth — try Supabase JWT first, then local JWT
   const authHeader = request.headers.get('Authorization');
   if (authHeader?.startsWith('Bearer ')) {
-    // Try Supabase JWT verification first
-    const supabasePayload = await getUserFromToken(authHeader);
-    if (supabasePayload) {
-      return { authenticated: true, user: supabasePayload, error: null };
-    }
-
-    // Fallback: Try local JWT token validation
     const token = authHeader.substring(7);
-    const localPayload = await validateLocalToken(token);
-    if (localPayload) {
+    const payload = await validateLocalToken(token);
+    if (payload) {
       return {
         authenticated: true,
         user: {
-          userId: localPayload.userId,
-          email: localPayload.email,
-          role: localPayload.role,
+          userId: payload.userId,
+          email: payload.email,
+          role: payload.role,
           department: undefined,
         },
         error: null,

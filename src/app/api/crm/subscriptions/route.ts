@@ -1,6 +1,6 @@
 /**
  * GET /api/crm/subscriptions - List all subscriptions with summary
- * Rewritten from Supabase to Prisma/SQLite.
+ * Backed by Prisma/SQLite.
  */
 
 import { NextRequest } from 'next/server';

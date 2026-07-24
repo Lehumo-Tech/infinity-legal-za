@@ -1,8 +1,7 @@
 /**
- * Infinity Legal ZA - Authentication Library (Supabase)
- * 
- * Uses Supabase Auth for authentication, with RBAC roles
- * stored in the profiles table.
+ * Infinity Legal ZA - Authentication Library (Local JWT + RBAC)
+ *
+ * Uses local JWT auth (Prisma/SQLite User table) with RBAC roles.
  */
 
 import { validateLocalToken } from '@/lib/local-auth';
@@ -218,7 +217,7 @@ export function isAdmin(role: RoleKey): boolean { return ROLE_GROUPS.ADMIN_STAFF
 export function isStaff(role: RoleKey): boolean { return ROLE_GROUPS.ALL_STAFF.includes(role); }
 
 // ============================================
-// SUPABASE AUTH - TOKEN VERIFICATION
+// LOCAL JWT - TOKEN VERIFICATION
 // ============================================
 
 export interface TokenPayload {
@@ -230,7 +229,7 @@ export interface TokenPayload {
 
 /**
  * Verify a JWT token from the Authorization header.
- * Tries local JWT validation (Prisma/SQLite auth) — Supabase is no longer used.
+ * Validates against the local JWT issued by lib/local-auth.ts.
  * Returns the user payload with role from the User table.
  */
 export async function getUserFromToken(authHeader: string | null): Promise<TokenPayload | null> {
@@ -249,18 +248,6 @@ export async function getUserFromToken(authHeader: string | null): Promise<Token
   } catch {
     return null;
   }
-}
-
-/**
- * Synchronous version for middleware compatibility.
- * Uses Supabase Auth admin to verify JWT tokens.
- */
-export function getUserFromTokenSync(authHeader: string | null): TokenPayload | null {
-  // For Supabase, we need async verification.
-  // The sync version will be used only in cases where we can't await.
-  // In practice, all API routes use the async version.
-  if (!authHeader?.startsWith('Bearer ')) return null;
-  return null; // Must use async getUserFromToken instead
 }
 
 // ============================================
