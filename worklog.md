@@ -1765,3 +1765,95 @@ Stage Summary:
 - Browser-verified: Tidimalo dashboard shows 100% real API data across Workbench, Leads, Cases, Documents, Analytics. Zero mock data. Zero errors.
 - All backend functionality works: dashboard, leads (CRUD), cases (CRUD), documents (list + upload), tasks (CRUD), consultations, staff, subscriptions (GET + cancel), notifications, pricing, CRM (overview/users/subscriptions/activity/settings), communications (logs/status/templates), analytics, integrations, auth (login/signup/profile).
 - Mock data status: ZERO mock/simulation data remaining in src/. All UI renders live API data. All APIs query the real SQLite DB via Prisma. The only "test-looking" data (Audit Case, QC Test Case, etc.) are real DB rows created by prior audit scripts — not mock data.
+
+---
+Task ID: 2
+Agent: Explore
+Task: Survey all API routes and frontend views to enumerate schema needs for comprehensive redesign
+
+Work Log:
+- Read worklog.md (1,767 lines) and full prisma/schema.prisma (765 lines, 22 models)
+- Surveyed ALL 50+ API routes under src/app/api/** — read every route.ts file completely:
+  * Auth: login, signup, signout, verify, profile, forgot-password, reset-password, auto-confirm, callback, clerk-webhook (legacy)
+  * Webhooks: /webhooks/clerk (active Clerk user sync)
+  * Core entities: cases, documents, tasks, consultations, messages, intake, leads (+[id]/convert), notifications, subscriptions, staff, pricing, articles
+  * Portals: dashboard, analytics, hr, sales, management, paralegal, crm (+users, +subscriptions, +activity, +settings), integrations
+  * AI: chat, intake, memo, vlm, tts, asr, image-gen, web-search, summarize, providers
+  * Communications: send, welcome, verify, logs, status, templates
+  * Payments: payfast/{checkout,notify,success,cancel}, stripe/{checkout,webhook,success,cancel}
+  * Utility: contact, backup, report, holidays, translate, health, route (root)
+  * Admin: seed-staff, seed-pricing, seed-articles, migrate
+- Surveyed lib files: stripe.ts (155 lines), audit.ts (183), email-service.ts (382), sms-service.ts (234), auth.ts (279), middleware.ts (347), local-auth.ts (372), llm-service.ts (399), llm-providers.ts (partial), payfast.ts (376), holidays.ts (175)
+- Surveyed frontend: HomePageClient.tsx (3,556 lines — all major views: WorkbenchView, CasesView, LeadsView, DocumentsView, ConsultationsView, TasksView, StaffPortal, OrgChartView, AnalyticsView, PricingView, AskInfinityBubble, AskInfinityChat), types.ts (101), AIChatWidget.tsx (115), CommunicationsView.tsx (1,082), PaymentWall.tsx (430), LandingPage.tsx (1,163), LandingIntakeForm.tsx (15)
+- Grep-verified: all db.<model> calls, fetch('/api/...') calls from frontend, schema model list, PayFast references (confirmed still active in PaymentWall.tsx:118 + HomePageClient.tsx:3009), contingency_fee usage, opposing_party/court_name/case_number/retainer_amount usage
+- Identified 12 NEW models needed (6 HIGH + 6 MEDIUM priority), 17 EXISTING models with missing fields, 6 composite indexes for webhook performance, 12 composite indexes for dashboard query optimization
+- Compiled comprehensive 6-section report (A: per-route model table, B: confirmed gaps with justifications, C: missing fields per model, D: fields to keep/remove, E: recommended 34-model final list, F: index recommendations)
+
+Stage Summary:
+- The current 22-model schema covers ~70% of features. Six HIGH-priority models are explicitly acknowledged as missing in route code comments: BackupRecord, ContactMessage, AiChatSession+AiChatMessage, LegalMemo, WebhookEvent. Each is currently worked around by overloading AuditLog, CommunicationLog, or in-memory Maps.
+- Six MEDIUM-priority models would significantly improve data quality: Department (real org chart), CaseParty (structured parties), TimeEntry (billable hours), Invoice (Stripe invoicing — currently renewals are LOST from PaymentRecord), Refund, DocumentShare.
+- Critical bugs found: (1) /api/documents/upload endpoint called by frontend but doesn't exist; (2) Stripe webhook doesn't create PaymentRecord on invoice.payment_succeeded (renewal payments invisible); (3) Consultation.client_id references User.id, not Client.id (inconsistent with every other model); (4) stats.totalAttorneys vs stats.totalLegalAdvisors naming mismatch (renders 0); (5) IntakeSubmission.status CHECK comment lists 6 values but code uses 12; (6) Role enum comment lists 6 roles but auth.ts defines 17.
+- PayFast should NOT be deprecated — it is still actively used by PaymentWall.tsx and HomePageClient.tsx PricingView. Both PayFast and Stripe coexist as alternative providers.
+- Critical missing indexes: UserSubscription.stripe_subscription_id and stripe_customer_id (webhook does updateMany on these unindexed columns), PaymentRecord.payfast_payment_id (ITN webhook does findFirst on unindexed column). These cause full table scans on every webhook delivery.
+- Recommended final schema: 22 existing + 6 HIGH-priority new + 6 MEDIUM-priority new = 34 models. Defer 9 LOW-priority models (Leave, PerformanceReview, OpenPosition, Approval, SavedReport, SalesTarget, SecurityEvent, ApiAnalytics, ErrorLog) until their features are built.
+- Full detailed report with file:line references was returned to the orchestrator in the chat (sections A-F).
+
+---
+Task ID: 8
+Agent: Main Agent
+Task: Design/tailor a comprehensive Prisma backend schema that accounts for ALL application functionality and covers ALL features
+
+Work Log:
+- Read full prisma/schema.prisma (765 lines, 22 existing models) to establish baseline.
+- Dispatched Explore subagent (Task ID: 2) to comprehensively survey ALL API routes (src/app/api/**) and frontend views (HomePageClient.tsx + components) + lib files. Survey produced a 6-section report:
+  * Section A: per-route model usage table (every route mapped to models read/written + gaps)
+  * Section B: 6 HIGH-priority + 6 MEDIUM-priority NEW models needed (with justifications + source file:line)
+  * Section C: fields missing from existing models (30+ field gaps with sources)
+  * Section D: fields to keep/remove (PayFast confirmed STILL ACTIVE — kept all payfast_* fields)
+  * Section E: recommended final model list (34 models)
+  * Section F: 29 index recommendations (composite indexes for query patterns)
+- Designed comprehensive schema organized into 10 logical sections.
+- Wrote updated prisma/schema.prisma (1100+ lines, 34 models).
+- Fixed 3 Prisma validation errors during iteration:
+  1. Field name collision: User had both `department String?` (legacy) and `department Department?` relation → renamed relation field to `departmentOrg`.
+  2. Ambiguous relation: Refund→User had unnamed `processor` relation conflicting with auto-generated `user` → added `@relation("RefundProcessor")` name.
+  3. Optional relation mismatch: LegalMemo.case was non-optional but case_id is nullable → changed to `Case?`.
+- Ran `bunx prisma format` + `bunx prisma validate` → schema valid.
+- Ran `bun run db:push` → database in sync, Prisma Client regenerated (v6.19.2).
+- Verified all 12 new models accessible via Prisma client (count queries all return 0 — empty tables, ready for use).
+- Verified new fields on existing models present (User.manager_id, Case.contingency_fee confirmed on real rows).
+- Ran `bun run lint` → 0 errors, 0 warnings.
+- Ran unit tests (`bun test src/lib/__tests__/`) → 101/101 pass, 359 expect() calls, 0 fail.
+- Checked dev.log → server healthy, all APIs returning 200 after schema change + Prisma client regeneration.
+
+Stage Summary:
+- Schema expanded from 22 → 34 models (12 NEW models added):
+  * HIGH-priority (6): BackupRecord, ContactMessage, AiChatSession, AiChatMessage, LegalMemo, WebhookEvent
+  * MEDIUM-priority (6): Invoice, Department, CaseParty, TimeEntry, Refund, DocumentShare
+- 30+ new fields added to existing models (all optional or defaulted — zero data migration risk):
+  * User: +department_id, +manager_id, +employment_start_date, +employment_end_date, +employment_type, +emergency_contact, +next_of_kin, +notification_preferences
+  * Client: +date_of_birth, +referred_by, +referrer_user_id
+  * Case: +paralegal_id, +contingency_fee, +closed_reason
+  * IntakeSubmission: +first_name, +last_name, +source, +lead_score, +assigned_to, +next_follow_up, +notes, +converted_at (all promoted from JSON to queryable top-level columns)
+  * Consultation: +cancellation_reason, +reminder_sent_at, +fee_paid, +payment_id
+  * Task: +estimated_minutes, +actual_minutes, +parent_task_id, +tags
+  * Document: +file_hash, +download_count, +expires_at
+  * Message: +edited_at, +deleted_at, +attachments
+  * Notification: +category, +priority, +expires_at
+  * PaymentRecord: +stripe_event_id, +stripe_invoice_id, +invoice_id, +tax_amount, +fee_amount, +discount_amount, +refund_amount, +refund_reason, +refunded_at
+  * UserSubscription: +cancelled_at, +cancellation_reason
+  * AuditLog: +severity, +session_id
+  * CommunicationLog: +is_inbound, +opened_at, +clicked_at
+  * EmailTemplate: +language
+  * OtpVerification: +purpose
+  * LegalArticle: +view_count (author_id now a real FK to User)
+- 29 composite indexes added for real query patterns (webhook idempotency, dashboard filters, lead pipeline, auth flows). Redundant standalone indexes kept for back-compat.
+- PayFast fields KEPT (provider still actively used — /api/payfast/* routes + PaymentWall.tsx both call it). Stripe fields also kept. Both providers coexist.
+- Clerk fields KEPT (conditionally enabled auth provider).
+- IntakeSubmission status enum comment expanded from 6 → 13 values (added the 7 lead-pipeline statuses the API already validates: new, contacted, qualified, consultation_scheduled, retained, lost, nurturing).
+- User.role CHECK comment expanded to document all 17 roles from src/lib/auth.ts.
+- Consultation.client_id semantic clarified with comment (references User.id, not Client.id — matches existing /api/consultations implementation; NOT renamed to avoid breaking code).
+- AdminSession model KEPT (reserved for future token store; JWT is primary auth).
+- AiIntakeSession model KEPT (exists for future multi-step AI intake; currently /api/ai/intake stores data on IntakeSubmission directly).
+- QC: lint 0/0, unit tests 101/101, dev server healthy (all APIs 200), 12 new models + 30+ new fields verified accessible via Prisma client.
+- No existing data migrated or lost (all new fields optional/defaulted; db:push applied non-destructively).
