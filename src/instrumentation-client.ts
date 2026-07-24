@@ -5,7 +5,11 @@
  * Loads the Sentry client config on app boot.
  *
  * Activates only when SENTRY_DSN / NEXT_PUBLIC_SENTRY_DSN is set.
+ *
+ * NOTE: A static import is used (not `await import(...)`) because top-level
+ * await in this file causes Next.js 16 webpack to emit code the preview iframe
+ * target cannot evaluate, breaking the client bundle (blank preview).
  */
-export {};
+import '../sentry.client.config';
 
-await import('../sentry.client.config');
+export const onRouterTransitionStart = () => {};
