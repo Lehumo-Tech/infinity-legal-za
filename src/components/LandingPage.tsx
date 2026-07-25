@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useScrollReveal } from '@/lib/gsap';
+import { useScrollReveal, useMagneticButton } from '@/lib/gsap';
 
 // ============================================
 // TYPES
@@ -138,6 +138,8 @@ export function LandingPage({ onLoginClick, onSignUp, isAuthenticated, onBackToD
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const revealRef = useScrollReveal();
+  // Cursor-following specular highlight on the nav pill
+  const navRef = useSpatialLight<HTMLDivElement>();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -152,7 +154,7 @@ export function LandingPage({ onLoginClick, onSignUp, isAuthenticated, onBackToD
       {/* ===== SPATIAL NAV (floating glass pill) ===== */}
       <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? 'py-2.5' : 'py-4'}`}>
         <nav className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className={`spatial-nav rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between transition-all duration-500 ${scrolled ? 'spatial-depth-2' : 'spatial-depth-1'}`}>
+          <div ref={navRef} className={`spatial-nav spatial-light rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between transition-all duration-500 ${scrolled ? 'spatial-depth-2' : 'spatial-depth-1'}`}>
             {/* Brand */}
             <a href="#" className="flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0c1e3c] to-[#1a3358] flex items-center justify-center spatial-depth-1 group-hover:scale-105 transition-transform">
@@ -320,6 +322,8 @@ function HeroSection() {
   const orbRef1 = useParallax(0.08);
   const orbRef2 = useParallax(0.12);
   const panelRef = useParallax(0.05);
+  // Magnetic pointer-attraction on the primary CTA
+  const ctaRef = useMagneticButton(0.25) as React.RefObject<HTMLAnchorElement>;
 
   return (
     <section className="relative pt-32 sm:pt-40 pb-20 sm:pb-28 px-4 sm:px-6 overflow-hidden spatial-scene">
@@ -347,7 +351,7 @@ function HeroSection() {
               AI-powered legal practice management built for South African law firms. POPIA-compliant case management, conveyancing, labour law, CCMA representation, and civil litigation — all in one platform.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#intake" className="inline-flex items-center bg-gradient-to-br from-[#c9a84c] to-[#a88832] text-[#0c1e3c] hover:from-[#dfc475] hover:to-[#c9a84c] rounded-xl h-12 px-6 text-[14px] font-bold spatial-depth-2 transition-all hover:scale-[1.02]">
+              <a ref={ctaRef} href="#intake" className="inline-flex items-center bg-gradient-to-br from-[#c9a84c] to-[#a88832] text-[#0c1e3c] hover:from-[#dfc475] hover:to-[#c9a84c] rounded-xl h-12 px-6 text-[14px] font-bold spatial-depth-2 transition-all hover:scale-[1.02]">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Free AI Intake
               </a>
@@ -370,7 +374,7 @@ function HeroSection() {
 
           {/* Right: Spatial floating glass panel */}
           <div ref={panelRef} className="spatial-parallax relative spatial-rise" style={{ animationDelay: '0.15s' }}>
-            <div className="spatial-glass spatial-depth-4 p-6 sm:p-8 spatial-float">
+            <div className="spatial-glass spatial-depth-4 p-6 sm:p-8 spatial-float spatial-3d spatial-tilt">
               {/* Floating mini dashboard preview (structural UI, no fake data) */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2.5">
@@ -608,9 +612,9 @@ function PricingSection({ onSignUp }: { onSignUp?: (email?: string, name?: strin
 
         {/* Loading state */}
         {loading && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bento-grid">
             {[1, 2, 3].map(i => (
-              <div key={i} className="spatial-glass p-7 spatial-depth-2 animate-pulse">
+              <div key={i} className="bento-cell bento-md spatial-glass p-7 spatial-depth-2 animate-pulse">
                 <div className="h-5 w-24 bg-slate-200 rounded mb-4" />
                 <div className="h-8 w-20 bg-slate-200 rounded mb-5" />
                 <div className="space-y-2.5">
@@ -633,9 +637,9 @@ function PricingSection({ onSignUp }: { onSignUp?: (email?: string, name?: strin
 
         {/* Plans bento grid (live data) */}
         {!loading && !error && plans.length > 0 && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bento-grid">
             {plans.map((plan, i) => (
-              <div key={plan.id} className={`spatial-bento spatial-light p-7 spatial-rise ${plan.is_popular ? 'spatial-depth-glow ring-2 ring-[#c9a84c]/30' : 'spatial-depth-2'}`} style={{ animationDelay: `${i * 0.1}s` }}>
+              <div key={plan.id} className={`bento-cell ${plan.is_popular ? 'bento-lg bento-tall spatial-sheen' : 'bento-md'} spatial-bento spatial-light p-7 spatial-rise ${plan.is_popular ? 'spatial-depth-glow ring-2 ring-[#c9a84c]/30' : 'spatial-depth-2'}`} style={{ animationDelay: `${i * 0.1}s` }}>
                 {plan.is_popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#c9a84c] to-[#a88832] text-[#0c1e3c] text-[10px] font-bold px-3 py-1 rounded-full tracking-wide spatial-depth-1">
                     MOST POPULAR
@@ -710,7 +714,11 @@ function ArticlesSection() {
   }, []);
 
   return (
-    <section id="articles" className="relative py-24 sm:py-32 px-4 sm:px-6 bg-gradient-to-b from-[#f4f6fa] to-white">
+    <section id="articles" className="relative py-24 sm:py-32 px-4 sm:px-6 bg-gradient-to-b from-[#f4f6fa] to-white overflow-hidden">
+      {/* Ambient spatial orb (top-right ambient glow) */}
+      <div className="absolute inset-0 -z-10">
+        <div className="spatial-orb spatial-orb-gold spatial-float-slow" style={{ width: 450, height: 450, top: '15%', right: '-8%' }} />
+      </div>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 spatial-glass px-3 py-1.5 rounded-full mb-5 spatial-depth-1">
@@ -727,9 +735,9 @@ function ArticlesSection() {
 
         {/* Loading state */}
         {loading && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bento-grid">
             {[1, 2, 3].map(i => (
-              <div key={i} className="spatial-glass p-6 spatial-depth-2 animate-pulse">
+              <div key={i} className="bento-cell bento-md spatial-glass p-6 spatial-depth-2 animate-pulse">
                 <div className="h-3 w-20 bg-slate-200 rounded mb-4" />
                 <div className="h-5 w-full bg-slate-200 rounded mb-2" />
                 <div className="h-3 w-full bg-slate-200 rounded mb-1" />
@@ -759,9 +767,9 @@ function ArticlesSection() {
 
         {/* Articles bento grid (live data) */}
         {!loading && !error && articles.length > 0 && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bento-grid">
             {articles.map((article, i) => (
-              <a key={article.id} href="#" className="spatial-bento spatial-light p-6 spatial-rise group block" style={{ animationDelay: `${i * 0.08}s` }}>
+              <a key={article.id} href="#" className={`bento-cell ${i === 0 ? 'bento-lg bento-tall spatial-sheen' : 'bento-md'} spatial-bento spatial-light p-6 spatial-rise group block`} style={{ animationDelay: `${i * 0.08}s` }}>
                 {article.category && (
                   <span className="inline-block px-2.5 py-1 rounded-md bg-[#c9a84c]/10 text-[10px] font-bold text-[#a88832] tracking-wide mb-3">
                     {article.category}
@@ -855,11 +863,11 @@ function SecuritySection() {
 // ============================================
 function FooterSection() {
   return (
-    <footer className="relative bg-gradient-to-b from-[#0c1e3c] to-[#081428] text-white pt-16 pb-8 px-4 sm:px-6 mt-auto">
+    <footer className="liquid-glass-footer relative text-white pt-16 pb-8 px-4 sm:px-6 mt-auto">
       <div className="max-w-7xl mx-auto">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div className="bento-grid mb-12">
           {/* Brand */}
-          <div className="lg:col-span-1">
+          <div className="bento-cell bento-md spatial-glass-dark">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-9 h-9 rounded-xl bg-[#c9a84c]/20 flex items-center justify-center">
                 <Scale className="w-4.5 h-4.5 text-[#c9a84c]" />
@@ -875,7 +883,7 @@ function FooterSection() {
           </div>
 
           {/* Platform links */}
-          <div>
+          <div className="bento-cell bento-sm spatial-glass-dark">
             <h4 className="text-[11px] font-bold tracking-wider text-[#c9a84c] mb-4">PLATFORM</h4>
             <ul className="space-y-2.5">
               {navLinks.map(link => (
@@ -885,7 +893,7 @@ function FooterSection() {
           </div>
 
           {/* Practice areas */}
-          <div>
+          <div className="bento-cell bento-sm spatial-glass-dark">
             <h4 className="text-[11px] font-bold tracking-wider text-[#c9a84c] mb-4">PRACTICE AREAS</h4>
             <ul className="space-y-2.5">
               {caseTypes.slice(0, 6).map(t => (
@@ -895,7 +903,7 @@ function FooterSection() {
           </div>
 
           {/* Contact */}
-          <div>
+          <div className="bento-cell bento-sm spatial-glass-dark">
             <h4 className="text-[11px] font-bold tracking-wider text-[#c9a84c] mb-4">CONTACT</h4>
             <ul className="space-y-2.5">
               <li className="flex items-center gap-2 text-[12px] text-[#8fa4c4]"><Phone className="w-3.5 h-3.5 text-[#c9a84c]" /> 068 127 6038</li>

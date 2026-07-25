@@ -11,8 +11,13 @@
 //   Knowledge Base (legal articles).
 //
 // Provider notes:
-//   - Database: SQLite (no native arrays → use Json; no enforced CHECK →
-//     enums are documented as comments and validated in the API layer).
+//   - Database: PostgreSQL (Neon serverless). Supports native arrays and
+//     enums. Some Json fields are retained for backward compatibility with
+//     API code that uses Prisma.JsonNull / Prisma.InputJsonValue — these are
+//     marked "was String[] in PG" and can be migrated to String[] in a
+//     coordinated schema + API refactor.
+//   - Enum-like String fields use /// CHECK: comments (validated in the API
+//     layer). Native Postgres enums can be adopted in a future migration.
 //   - Payment providers: Stripe AND PayFast coexist (selectable per
 //     deployment). Both `stripe_*` and `payfast_*` fields are kept.
 //   - Auth: Local JWT (primary) + Clerk (conditional, env-driven).
@@ -50,7 +55,7 @@ model User {
   ///       "Legal Advisor". See src/lib/auth.ts for the canonical role list.
   role                     String    @default("client")
   department               String? // legacy free-text department (kept for back-compat)
-  department_id            String? // FK → Department (org chart / hierarchy)
+  department_id            String? // FK → Department (org chart / hierarchy) — relation field below
   manager_id               String? // FK → User (self-ref, reporting line for org chart)
   id_number                String?
   company                  String?
@@ -80,7 +85,7 @@ model User {
 
   // Reverse relations
   client_profile            Client?
-  departmentOrg             Department?        @relation("DepartmentMembers", fields: [departmentId], references: [id])
+  departmentOrg             Department?        @relation("DepartmentMembers", fields: [department_id], references: [id])
   department_head           Department[]       @relation("DepartmentHead")
   manager                   User?              @relation("UserManager", fields: [manager_id], references: [id])
   direct_reports            User[]             @relation("UserManager")
@@ -114,7 +119,8 @@ model User {
   refunds_processed         Refund[]           @relation("RefundProcessor")
   webhook_events            WebhookEvent[]
   articles_authored         LegalArticle[]     @relation("ArticleAuthor")
-  departmentId              String?
+  referred_clients          Client[]           @relation("ClientReferrer")
+  settings_updated          SystemSetting[]    @relation("SystemSettingUpdater")
 
   @@index([role])
   @@index([email])
@@ -185,6 +191,7 @@ model OtpVerification {
   verified_at  DateTime?
   expires_at   DateTime
   created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now()) @updatedAt
 
   @@index([email, status, expires_at])
   @@index([otp_code, status, expires_at])
@@ -223,6 +230,7 @@ model Client {
 
   user               User               @relation(fields: [user_id], references: [id])
   plan               PricingPlan?       @relation(fields: [plan_id], references: [id])
+  referrer           User?              @relation("ClientReferrer", fields: [referrer_user_id], references: [id])
   cases              Case[]
   intake_submissions IntakeSubmission[] @relation("IntakeClient")
   subscriptions      UserSubscription[]
@@ -363,12 +371,14 @@ model PaymentRecord {
   invoice_id          String? // FK → Invoice (proper relation)
   paid_at             DateTime?
   created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
 
-  subscription UserSubscription? @relation(fields: [subscription_id], references: [id])
-  case         Case?             @relation(fields: [case_id], references: [id])
-  client       Client            @relation(fields: [client_id], references: [id])
-  invoice      Invoice?          @relation(fields: [invoice_id], references: [id])
-  refunds      Refund[]
+  subscription   UserSubscription? @relation(fields: [subscription_id], references: [id])
+  case           Case?             @relation(fields: [case_id], references: [id])
+  client         Client            @relation(fields: [client_id], references: [id])
+  invoice        Invoice?          @relation(fields: [invoice_id], references: [id])
+  refunds        Refund[]
+  consultations Consultation[]    @relation("ConsultationPayment")
 
   @@index([subscription_id])
   @@index([case_id])
@@ -409,6 +419,7 @@ model Invoice {
   subscription    UserSubscription? @relation(fields: [subscription_id], references: [id])
   client          Client            @relation(fields: [client_id], references: [id])
   payment_records PaymentRecord[]
+  time_entries    TimeEntry[]       @relation("TimeEntryInvoice")
 
   @@index([client_id, status, issued_at])
   @@index([subscription_id])
@@ -432,12 +443,14 @@ model Refund {
   processed_at      DateTime?
   metadata          Json?
   created_at        DateTime  @default(now())
+  updated_at        DateTime  @default(now()) @updatedAt
 
   payment   PaymentRecord @relation(fields: [payment_id], references: [id])
   processor User          @relation("RefundProcessor", fields: [processed_by], references: [id])
 
   @@index([payment_id])
   @@index([status])
+  @@index([processed_by])
   @@index([stripe_refund_id])
   @@index([created_at])
 }
@@ -549,6 +562,7 @@ model CaseTimeline {
 
   @@index([case_id])
   @@index([event_type])
+  @@index([performed_by])
   @@index([created_at])
 }
 
@@ -598,15 +612,17 @@ model Consultation {
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
 
-  case     Case? @relation(fields: [case_id], references: [id])
-  client   User  @relation("ConsultationClient", fields: [client_id], references: [id])
-  attorney User? @relation("ConsultationAttorney", fields: [attorney_id], references: [id])
+  case     Case?           @relation(fields: [case_id], references: [id])
+  client   User            @relation("ConsultationClient", fields: [client_id], references: [id])
+  attorney User?           @relation("ConsultationAttorney", fields: [attorney_id], references: [id])
+  payment  PaymentRecord?  @relation("ConsultationPayment", fields: [payment_id], references: [id])
 
   @@index([case_id])
   @@index([client_id, scheduled_at, status])
   @@index([attorney_id, scheduled_at, status])
   @@index([scheduled_at])
   @@index([status])
+  @@index([payment_id])
 }
 
 // ------------------------------------
@@ -667,15 +683,17 @@ model TimeEntry {
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
 
-  case Case? @relation(fields: [case_id], references: [id])
-  task Task? @relation(fields: [task_id], references: [id])
-  user User  @relation(fields: [user_id], references: [id])
+  case    Case?    @relation(fields: [case_id], references: [id])
+  task    Task?    @relation(fields: [task_id], references: [id])
+  user    User     @relation(fields: [user_id], references: [id])
+  invoice Invoice? @relation("TimeEntryInvoice", fields: [invoice_id], references: [id])
 
   @@index([user_id, case_id, started_at])
   @@index([case_id])
   @@index([task_id])
   @@index([billable, billed])
   @@index([started_at])
+  @@index([invoice_id])
 }
 
 // ------------------------------------
@@ -814,6 +832,7 @@ model IntakeSubmission {
   @@index([source, status])
   @@index([lead_score])
   @@index([next_follow_up])
+  @@index([reviewed_by])
   @@index([created_at])
 }
 
@@ -849,6 +868,7 @@ model ContactMessage {
   @@index([email])
   @@index([assigned_to])
   @@index([client_id])
+  @@index([resolved_by])
   @@index([created_at])
 }
 
@@ -908,6 +928,7 @@ model Notification {
   expires_at DateTime? // Auto-expire stale notifications
   metadata   Json?
   created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
 
   user User @relation(fields: [user_id], references: [id])
 
@@ -948,6 +969,8 @@ model AiIntakeSession {
 
   @@index([session_token])
   @@index([status])
+  @@index([client_id])
+  @@index([intake_submission_id])
 }
 
 // ------------------------------------
@@ -983,6 +1006,8 @@ model AiAnalysis {
   @@index([case_id])
   @@index([analysis_type])
   @@index([status])
+  @@index([intake_id])
+  @@index([requested_by])
   @@index([created_at])
 }
 
@@ -1181,12 +1206,14 @@ model WebhookEvent {
   error_message String?
   processed_at  DateTime @default(now())
   created_at    DateTime @default(now())
-  user          User?    @relation(fields: [userId], references: [id])
-  userId        String?
+  updated_at    DateTime @default(now()) @updatedAt
+  user_id       String?
+  user          User?    @relation(fields: [user_id], references: [id])
 
   @@unique([provider, event_id])
   @@index([provider, event_type])
   @@index([status])
+  @@index([user_id])
   @@index([created_at])
 }
 
@@ -1232,7 +1259,10 @@ model SystemSetting {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  updater User? @relation("SystemSettingUpdater", fields: [updated_by], references: [id])
+
   @@index([key])
+  @@index([updated_by])
 }
 
 // ============================================================================
