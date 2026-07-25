@@ -1,23 +1,36 @@
 /**
- * SMS Service — Twilio + Simulation Fallback
+ * SMS Service — Africa's Talking + Simulation Fallback
  *
- * Sends SMS messages via Twilio API.
- * When TWILIO credentials are not configured, operates in simulation mode.
+ * Sends SMS messages via the Africa's Talking API.
+ * Optimized for South African numbers (+27).
+ * When AT credentials are not configured, operates in simulation mode.
  *
  * Setup:
- * 1. Create a Twilio account at https://www.twilio.com
- * 2. Get your Account SID, Auth Token, and a phone number
- * 3. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER to .env
+ * 1. Create an Africa's Talking account at https://africastalking.com
+ * 2. From your dashboard, copy your API key (Settings → API Key)
+ * 3. Use your Africa's Talking username (the one you registered with)
+ *    - Use "sandbox" as the username for testing in the sandbox environment
+ * 4. (Optional) Register an alphanumeric Sender ID, e.g. "INFINITY"
+ * 5. Add to .env:
+ *    AFRICASTALKING_API_KEY=atsk_xxx
+ *    AFRICASTALKING_USERNAME=infinitylegal
+ *    AFRICASTALKING_SENDER_ID=INFINITY
  *
- * For South African numbers, use format: +27XXXXXXXXX
+ * South African number format: +27XXXXXXXXX (e.g. +27681276038)
  */
 
 import { db } from '@/lib/db';
 
-const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
-const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
-const IS_CONFIGURED = !!(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER);
+const AT_API_KEY = process.env.AFRICASTALKING_API_KEY;
+const AT_USERNAME = process.env.AFRICASTALKING_USERNAME;
+const AT_SENDER_ID = process.env.AFRICASTALKING_SENDER_ID; // optional
+const IS_CONFIGURED = !!(AT_API_KEY && AT_USERNAME);
+
+// Africa's Talking endpoints
+const AT_SMS_URL = 'https://api.africastalking.com/version1/messaging';
+const AT_SANDBOX_SMS_URL = 'https://api.sandbox.africastalking.com/version1/messaging';
+
+const IS_SANDBOX = (AT_USERNAME || '').toLowerCase() === 'sandbox';
 
 export interface SendSmsParams {
   to: string;
@@ -30,14 +43,15 @@ export interface SendSmsParams {
 export interface SmsResult {
   success: boolean;
   messageId?: string;
-  provider: 'twilio' | 'simulated';
+  provider: 'africas_talking' | 'simulated';
   error?: string;
 }
 
 /**
- * Format a South African phone number to E.164 format
+ * Format a South African phone number to E.164 format without leading +
+ * Africa's Talking expects the international format WITHOUT the leading +.
  * Accepts: 0681276038, 27681276038, +27681276038
- * Returns: +27681276038
+ * Returns: 27681276038
  */
 export function formatSaPhone(phone: string): string | null {
   if (!phone) return null;
@@ -56,12 +70,12 @@ export function formatSaPhone(phone: string): string | null {
 
   // Already has country code: 27XXXXXXXXX
   if (cleaned.startsWith('27') && cleaned.length === 11) {
-    return '+' + cleaned;
+    return cleaned;
   }
 
-  // Already in E.164
+  // Already in E.164 (just digits)
   if (cleaned.length >= 10 && cleaned.length <= 15) {
-    return '+' + cleaned;
+    return cleaned;
   }
 
   return null;
@@ -75,7 +89,7 @@ export function isValidPhone(phone: string): boolean {
 }
 
 /**
- * Send an SMS via Twilio API (or simulate if not configured)
+ * Send an SMS via Africa's Talking API (or simulate if not configured)
  */
 export async function sendSms(params: SendSmsParams): Promise<SmsResult> {
   const { to, message, category = 'custom', userId, recipientName } = params;
@@ -89,27 +103,33 @@ export async function sendSms(params: SendSmsParams): Promise<SmsResult> {
       category,
       content: message,
       status: 'failed',
-      provider: 'twilio',
+      provider: 'africas_talking',
       errorMessage: 'Invalid phone number format',
     });
-    return { success: false, provider: 'twilio', error: 'Invalid phone number format' };
+    return { success: false, provider: 'africas_talking', error: 'Invalid phone number format' };
   }
 
   if (IS_CONFIGURED) {
     try {
-      const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
+      const endpoint = IS_SANDBOX ? AT_SANDBOX_SMS_URL : AT_SMS_URL;
 
       const body = new URLSearchParams({
-        To: formattedPhone,
-        From: TWILIO_PHONE_NUMBER!,
-        Body: message,
+        username: AT_USERNAME!,
+        to: formattedPhone,
+        message,
       });
 
-      const response = await fetch(url, {
+      // Sender ID is optional — only include if configured
+      if (AT_SENDER_ID) {
+        body.append('from', AT_SENDER_ID);
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64'),
+          apiKey: AT_API_KEY!,
           'Content-Type': 'application/x-www-form-urlencoded',
+          Accept: 'application/json',
         },
         body: body.toString(),
       });
@@ -117,7 +137,7 @@ export async function sendSms(params: SendSmsParams): Promise<SmsResult> {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error('[SMS] Twilio API error:', data);
+        console.error('[SMS] Africa\'s Talking API error:', data);
         await logSmsCommunication({
           userId,
           recipientPhone: formattedPhone,
@@ -125,10 +145,32 @@ export async function sendSms(params: SendSmsParams): Promise<SmsResult> {
           category,
           content: message,
           status: 'failed',
-          provider: 'twilio',
-          errorMessage: data.message || 'Twilio API error',
+          provider: 'africas_talking',
+          errorMessage: data.error || data.message || `HTTP ${response.status}`,
         });
-        return { success: false, provider: 'twilio', error: data.message || 'Failed to send SMS' };
+        return { success: false, provider: 'africas_talking', error: data.error || data.message || 'Failed to send SMS' };
+      }
+
+      // Africa's Talking returns SMSMessageData.recipients[] with status per recipient
+      const recipients = data?.SMSMessageData?.recipients || [];
+      const firstRecipient = recipients[0];
+      const messageId = firstRecipient?.messageId || data?.SMSMessageData?.MessageId || `at_${Date.now()}`;
+      const recipientStatus = (firstRecipient?.status || '').toLowerCase();
+
+      // "Sent" means queued for delivery — actual delivery confirmation comes via webhook
+      if (recipientStatus.includes('fail') || recipientStatus.includes('invalid') || recipientStatus.includes('reject')) {
+        await logSmsCommunication({
+          userId,
+          recipientPhone: formattedPhone,
+          recipientName,
+          category,
+          content: message,
+          status: 'failed',
+          provider: 'africas_talking',
+          providerId: messageId,
+          errorMessage: firstRecipient?.status || 'Recipient rejected',
+        });
+        return { success: false, provider: 'africas_talking', error: firstRecipient?.status || 'Recipient rejected' };
       }
 
       await logSmsCommunication({
@@ -138,13 +180,13 @@ export async function sendSms(params: SendSmsParams): Promise<SmsResult> {
         category,
         content: message,
         status: 'sent',
-        provider: 'twilio',
-        providerId: data.sid,
+        provider: 'africas_talking',
+        providerId: messageId,
       });
 
-      return { success: true, messageId: data.sid, provider: 'twilio' };
+      return { success: true, messageId, provider: 'africas_talking' };
     } catch (error: any) {
-      console.error('[SMS] Twilio error:', error);
+      console.error('[SMS] Africa\'s Talking error:', error);
       await logSmsCommunication({
         userId,
         recipientPhone: formattedPhone,
@@ -152,10 +194,10 @@ export async function sendSms(params: SendSmsParams): Promise<SmsResult> {
         category,
         content: message,
         status: 'failed',
-        provider: 'twilio',
+        provider: 'africas_talking',
         errorMessage: error.message || 'Network error',
       });
-      return { success: false, provider: 'twilio', error: error.message };
+      return { success: false, provider: 'africas_talking', error: error.message };
     }
   }
 
@@ -224,10 +266,12 @@ export function isSmsConfigured(): boolean {
 export function getSmsServiceStatus() {
   return {
     configured: IS_CONFIGURED,
-    provider: IS_CONFIGURED ? 'Twilio' : 'Simulation',
-    phoneNumber: IS_CONFIGURED ? TWILIO_PHONE_NUMBER : 'Not configured',
+    provider: IS_CONFIGURED ? "Africa's Talking" : 'Simulation',
+    username: IS_CONFIGURED ? AT_USERNAME : 'Not configured',
+    senderId: AT_SENDER_ID || 'Default (Africa\'s Talking shared)',
+    environment: IS_SANDBOX ? 'Sandbox' : (IS_CONFIGURED ? 'Production' : '-'),
     message: IS_CONFIGURED
-      ? 'SMS service is active and ready to send.'
-      : 'SMS service is in simulation mode. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER to your .env to enable real sending.',
+      ? `SMS service is active via Africa's Talking (${IS_SANDBOX ? 'sandbox' : 'production'}).`
+      : "SMS service is in simulation mode. Add AFRICASTALKING_API_KEY and AFRICASTALKING_USERNAME to your .env to enable real sending.",
   };
 }

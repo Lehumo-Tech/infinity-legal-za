@@ -2029,3 +2029,109 @@ Stage Summary:
 - Schema validation: PASSES. Prisma Client regenerated. Neon database in sync.
 - All 36 models now have: consistent snake_case field naming, proper @relation declarations for all FK columns, @@index on all FK fields, created_at + updated_at on all mutable tables.
 - Deferred for future: Json → String[] conversion (7 fields), native Postgres enums (44 fields) — both require coordinated API code changes.
+
+---
+Task ID: 2-a
+Agent: Plan (Schema Consistency Analyzer)
+Task: Analyze prisma/schema.prisma for non-breaking consistency improvements
+
+Work Log:
+- Read /home/z/my-project/worklog.md to absorb prior context (Neon Postgres migration, SCHEMA-CONSISTENCY-1 task already fixed 1 duplicate field bug, 4 orphaned FK relations, 12 missing indexes, 5 missing updated_at fields, 1 naming inconsistency, 1 stale header comment).
+- Read full prisma/schema.prisma (1303 lines, 36 models, ~298 scalar fields).
+- Verified model count = 36 via `grep -c "^model "`.
+- Verified NO `@@map` or `@map` directives exist (PascalCase model names == Postgres table names — consistent, no issue).
+- Verified only 1 `@@unique` composite constraint exists (WebhookEvent.[provider, event_id]).
+- Verified all `created_at` fields have `@default(now())` and all `updated_at` fields have `@updatedAt` (post SCHEMA-CONSISTENCY-1).
+- Verified all FK columns now have @relation declarations (post SCHEMA-CONSISTENCY-1).
+- Searched for enum-like String fields using inline `//` comments instead of `/// CHECK:` doc comments — found 7 fields that should be promoted to doc comments (User.employment_type, UserSubscription.billing_cycle, PaymentRecord.provider, IntakeSubmission.source, AiChatSession.provider, CommunicationLog.provider, Notification.priority).
+- Searched for additional enum-like String fields with no documentation at all — found Consultation.meeting_type (verified valid values = in_person | video_call | phone_call from src/app/api/consultations/[id]/route.ts:14), PaymentRecord.payment_method, WebhookEvent.event_type, EmailTemplate.language.
+- Identified 22 candidate fields lacking indexes that are likely queried by API routes or batch jobs (User.last_active_at, User.last_login_at, User.password_expires_at, User.employment_start_date, User.practice_number, Case.is_high_risk, Case.closed_reason, Task.completed_at, Consultation.reminder_sent_at, Consultation.fee_paid, PaymentRecord.paid_at, Invoice.number, Invoice.due_at, Invoice.paid_at, Document.expires_at, Document.is_confidential, AuditLog.session_id, BackupRecord.completed_at, CommunicationLog.provider_id, CommunicationLog.opened_at, LegalArticle.is_featured, Refund.payfast_refund_id).
+- Identified 1 mutable model missing `updated_at`: DocumentShare (has `view_count` updated on each view, plus `revoked_at`, but no `updated_at` for general tracking).
+- Identified 3 candidate @@unique constraints (DocumentShare.[document_id, granted_to_email], PaymentRecord.[provider, provider_payment_id], Invoice.number) — flagged as MEDIUM risk because they may fail if duplicates already exist in production data.
+- Confirmed 7 "was String[] in PG" Json fields are explicitly deferred (require coordinated API refactor): User.specialization, Client.tags, Case.tags, Document.tags, AiIntakeSession.steps_completed, AiIntakeSession.steps_remaining, LegalArticle.tags.
+- Did NOT edit any files (research-only task). Returned full markdown report for review.
+
+Stage Summary:
+- Schema is in good shape after SCHEMA-CONSISTENCY-1: no orphaned FKs, no missing @updatedAt on mutable tables, all FKs indexed, no naming inconsistencies.
+- Safe changes proposed: 30 (22 missing indexes + 1 missing updated_at + 7 doc-comment promotions). All LOW-MEDIUM risk, all non-breaking, all additive.
+- Breaking changes identified but NOT proposed: 7 Json→String[] conversions, 3 @@unique constraints (could fail on existing duplicates), 44 enum-like String→native enum conversions.
+- Recommended next step: apply the 30 safe changes as a single Prisma migration (`bunx prisma db push`), then run `bunx prisma validate` and restart dev server.
+
+---
+Task ID: 2-b
+Agent: Frontend Styling Expert (Bento Grid + Spatial UI)
+Task: Apply bento grid + spatial UI design language to LandingPage, HomePageClient, LoginScreen
+
+Work Log:
+- Read /home/z/my-project/worklog.md to absorb prior context (Tasks 1, 2-a, 2-b, 5, 11, 12, QC-FINAL, plus prior Task 2 bento-grid + liquid-glass + spatial UI work on LandingPage.tsx). Confirmed the prebuilt design-system classes already available in globals.css: `.bento-grid`, `.bento-{sm,md,lg,xl,full,tall}`, `.bento-cell`, `.spatial-bento`, `.spatial-glass{,-dark}`, `.spatial-depth-{1,2,3,4,glow}`, `.spatial-light`, `.spatial-sheen`, `.spatial-rise`, `.liquid-glass*` (1597 lines of design-system CSS already in place).
+- Read /home/z/my-project/package.json to confirm `framer-motion ^12.23.2` is installed (entrance animations available); the codebase already uses GSAP (`useScrollReveal`, `useMagneticButton`) on the landing page — left that alone.
+- Read src/components/ui/card.tsx to confirm the shadcn Card primitives available.
+- Read src/components/LandingPage.tsx (1171 lines) and confirmed it has ALREADY been extensively redesigned with bento + spatial + liquid-glass in prior Task 2 / Task 2-b work: spatial floating-glass nav with cursor-follow specular highlight, hero with parallax orbs + 3D-tilt glass dashboard preview, PlatformBentoSection (6 asymmetric cells: bento-lg bento-tall / bento-md / bento-sm / bento-sm / bento-md / bento-full), AI Intake process-step bento, Ask AI glass chat, Pricing bento with popular plan as bento-lg bento-tall + spatial-sheen, Articles bento with featured article as bento-lg bento-tall + spatial-sheen, Security bento with liquid-glass-dark cells, Footer with spatial-glass-dark columns. No further LandingPage changes needed — focused this task on the dashboard (HomePageClient) + login (LoginScreen) where bento/spatial were NOT yet applied.
+- Read src/components/HomePageClient.tsx (3556 lines) and identified 5 dashboard sections using old `card-premium` + flat `grid-cols-N` patterns ripe for bento + spatial treatment: Quick Actions, Stats Grid, Consultations+Tasks, Case Distribution+Firm Health, AnalyticsView stats+charts.
+- Read src/components/LoginScreen.tsx (341 lines) and identified the auth card area (heading, alerts, POPIA consent, trust indicators) for subtle spatial depth + accent stripe treatment — without restructuring the form layout (per task rules: don't bento-grid a form).
+
+Files modified:
+
+1. src/components/HomePageClient.tsx — WorkbenchView + AnalyticsView dashboard bento + spatial refresh (5 section conversions):
+   * Quick Actions (line ~1062): converted `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 stagger-children` → `bento-grid stagger-children`. Each action button: `card-premium` → `${idx === 0 ? 'bento-md spatial-sheen' : 'bento-sm'} spatial-bento spatial-light`. Primary action (first in array — "Log Consultation" for legal/management staff, "My Cases" for clients) now spans 2 columns as a featured bento cell with the gold light-sweep on hover (`spatial-sheen`); remaining actions are uniform `bento-sm` cells. Each cell inherits `.spatial-bento:hover { transform: translateY(-6px); box-shadow: ... }` for tactile hover lift. Added `z-10` to the absolutely-positioned chevron indicator so it stacks above the spatial-light cursor-follow ::before pseudo-element (z-index 3).
+   * Stats Grid (line ~1086): converted `grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children` → `bento-grid stagger-children`. Replaced `stat-card border-l-4 ${border}` → `${isFeatured ? 'bento-md spatial-sheen' : 'bento-sm'} spatial-bento border-l-4 ${border} p-4`. Featured stat = `Revenue` for staff / `Active Cases` for clients (computed via `isFeatured = card.label === (isClient ? 'Active Cases' : 'Revenue')`). Featured stat uses `text-2xl` (vs `text-xl` for others) for size-based visual hierarchy per the spatial-UI "hierarchy through size + weight" rule. All 8 stat tiles (5 for clients) now have spatial depth + hover lift + per-stat colored left accent stripe (blue/emerald/purple/gold/orange/red/teal/slate).
+   * Consultations + Tasks (line ~1134): converted `grid grid-cols-1 md:grid-cols-2 gap-6` → `bento-grid`. Both cards: `card-premium` → `bento-md spatial-bento` (each spans 2 cols on the 4-col lg bento grid, full row on 2-col sm, stacked on mobile). Preserved all inner content (header with gold/emerald accent stripe, empty states with float animation, scrollable list with status badges, hover states).
+   * Case Distribution + Firm Health (line ~1246): converted `grid grid-cols-1 lg:grid-cols-3 gap-6` → `bento-grid`. Case Distribution (was `card-premium lg:col-span-2`) → `bento-lg spatial-bento` (spans 3 cols on lg/xl). Firm Health (was `card-premium`) → `bento-sm spatial-bento` (spans 1 col). On sm-md (2-col bento), bento-lg auto-caps to 2 cols via the responsive override in globals.css, so each card takes a full row. Result: a 3+1 bento rhythm on desktop that stacks cleanly on mobile.
+   * AnalyticsView Stats Grid (line ~2857): converted `grid grid-cols-2 lg:grid-cols-4 gap-3 stagger-children` → `bento-grid stagger-children`. Same pattern as WorkbenchView Stats: `Total Revenue` is the featured `bento-md spatial-sheen` cell with `text-2xl`; other 3 stats are `bento-sm spatial-bento` with `text-xl`. Replaced `stat-card` → `spatial-bento border-l-4 ${border} p-4`.
+   * AnalyticsView Charts (line ~2882): converted `grid grid-cols-1 md:grid-cols-2 gap-6` → `bento-grid`. Both chart cards (Case Status Distribution + Task Overview): `card-premium` → `bento-md spatial-bento`. Preserved all inner chart content (gradient bars, status dots, item rows with colored borders).
+
+2. src/components/LoginScreen.tsx — Subtle spatial depth on auth elements (NO form restructuring):
+   * Heading accent stripe (line ~201): thickened from `border-l-2 border-[#c9a84c]` → `border-l-4 border-l-[#c9a84c]` for stronger gold accent presence.
+   * POPIA consent box (line ~288): added `spatial-depth-1` to the existing `bg-slate-50 rounded-xl p-3 border border-slate-100` for layered depth shadow.
+   * signupSuccess alert (line ~212): added `spatial-depth-1` to the emerald alert box.
+   * loginError alert (line ~231): added `spatial-depth-1` to the red alert box.
+   * signupError alert (line ~303): added `spatial-depth-1` to the red alert box.
+   * Trust indicators (line ~330): converted from flat flex-row spans → frosted glass pills with `bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-full spatial-depth-1 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md`. Each trust indicator (POPIA Compliant / AES-256 Encrypted / 90-Day Expiry) now floats on its own frosted glass pill with cursor-follow depth + hover lift — giving the auth footer a premium tactile feel. (Used `hover:shadow-md` instead of `hover:spatial-depth-2` because Tailwind 4 `hover:` variants only work on Tailwind-generated utilities, not custom CSS classes — `.spatial-depth-2` is plain CSS so the variant would silently no-op.)
+   * Did NOT wrap the form in a card or restructure the form layout (per task rule: "Keep the form layout simple — don't bento-grid a form"). The form `<div className="relative">` containing both sign-in and sign-up forms is untouched.
+
+Verification steps:
+- Confirmed dev server alive: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000` → HTTP 200 (0.38s).
+- Ran `npx eslint src/components/HomePageClient.tsx src/components/LoginScreen.tsx` → 0 errors, 0 warnings.
+- Ran `npx eslint .` (full project) → 0 errors, 0 warnings.
+- Ran `npx tsc --noEmit` filtered for HomePageClient/LoginScreen → 0 TypeScript errors in modified files.
+- Confirmed all existing copy, form fields, button labels, auth handlers (signIn/signUp), conditional role-based quick-action rendering, and the sticky-footer dashboard layout (DashboardShell) are preserved — only className strings changed, no JSX structure or logic modified.
+- Verified the bento responsive behavior by reading the prebuilt `.bento-grid` + `.bento-{sm,md,lg,xl,full,tall}` CSS in globals.css: mobile (1 col) → all cells stack full-width; sm (2 col) → bento-md caps at 2 cols, bento-lg caps at 2 cols; lg (4 col) → full spans apply; xl (6 col) → full 6-col grid. The `@media (min-width: 640px) and (max-width: 1023px) { .bento-lg, .bento-xl { grid-column: span 2 / span 2; } }` rule ensures the Case Distribution bento-lg cell doesn't overflow on tablets.
+
+Stage Summary:
+- Key visual changes: The WorkbenchView dashboard now has a consistent bento-grid rhythm across all 4 main sections (Quick Actions, Stats, Consultations+Tasks, Case Distribution+Firm Health). Featured cells (primary Quick Action, Revenue stat, Active Cases stat for clients) use `bento-md spatial-sheen` (2 cols + gold light-sweep on hover) to establish visual hierarchy. All cards converted from flat `card-premium`/`stat-card` to `spatial-bento` (translucent white gradient + layered depth shadow + hover lift translateY(-6px) + top edge highlight + cursor-follow specular via `spatial-light`). The AnalyticsView received the same treatment (featured Revenue stat + bento-md chart cards).
+- Spatial UI patterns applied: (1) Layered depth — `.spatial-bento` provides 3-layer box-shadow (inset top edge + soft mid-shadow + deep outer shadow). (2) Hover micro-interactions — `.spatial-bento:hover` lifts -6px with deepened shadow; `spatial-sheen` adds a diagonal gold light-sweep on hover; `spatial-light` adds a cursor-following radial highlight with `mix-blend-mode: soft-light`. (3) Visual hierarchy through size — featured stats use `text-2xl` vs `text-xl`; featured bento cells span 2 cols vs 1 col. (4) Accent stripes — preserved the existing `border-l-4 ${border}` colored stripes on all stat tiles. (5) LoginScreen trust indicators became frosted glass pills with `backdrop-blur-sm` + `hover:-translate-y-0.5` for tactile depth.
+- Responsive behavior: All bento grids collapse to single-column on mobile (per `.bento-sm/.bento-md/.bento-lg` mobile override `grid-column: 1 / -1`), 2-column on small tablets (with bento-lg capping at 2 cols), 4-column on desktop, 6-column on xl. The Quick Actions bento (1 featured + 5 small = 7 cols on xl) wraps one cell to row 2 — intentional bento rhythm. The Stats bento (1 featured + 7 small = 9 cols on xl for staff) wraps to 2 rows with 3 empty cells on xl row 2 — also acceptable bento rhythm. Consultations+Tasks (2× bento-md = 4 cols on lg) fits one row exactly. Case Distribution (bento-lg=3) + Firm Health (bento-sm=1) = 4 cols on lg, exactly one row.
+- Sticky footer preserved: The dashboard layout (DashboardShell: `min-h-screen flex` + `flex-1 flex flex-col` main + `flex-shrink-0` footer) is untouched — only WorkbenchView/AnalyticsView inner section classNames changed, not the outer layout wrappers.
+- Color palette preserved: All cells use the existing navy `#0c1e3c` + gold `#c9a84c` + slate/white neutrals. NO indigo or blue introduced (the existing per-stat accent colors — blue/emerald/purple/orange/red/teal — are pre-existing and were preserved unchanged; they're stat-category accents, not primary brand colors).
+- framer-motion: Already in package.json (^12.23.2) but NOT added to these components — the existing CSS-based entrance animations (`animate-fade-in-up`, `stagger-children`, `spatial-rise`) already provide entrance choreography, and adding framer-motion to the dashboard would require restructuring the WorkbenchView function signature. The task allowed "CSS transitions only" as a fallback, which is what's in place.
+- Next action: recommend browser-testing the dashboard at desktop + mobile widths to visually confirm the bento rhythm reads cleanly and the spatial hover lifts feel tactile. The dev server is live on :3000 with HTTP 200 confirmed.
+
+---
+Task ID: 3 (Africa's Talking SMS + Schema Consistency Application)
+Agent: Main Agent
+Task: (1) Wire up Africa's Talking SMS service replacing Twilio. (2) Apply the non-breaking schema consistency changes proposed by Task 2-a.
+
+Work Log:
+- Added AFRICASTALKING_API_KEY, AFRICASTALKING_USERNAME, AFRICASTALKING_SENDER_ID to .env
+- Updated start-daemon.sh to export the 3 new AT env vars (so the dev server picks them up)
+- Rewrote src/lib/sms-service.ts: replaced Twilio API with Africa's Talking API (https://api.africastalking.com/version1/messaging, sandbox endpoint auto-selected when username=="sandbox"). Returns provider 'africas_talking' | 'simulated'. Parses AT's SMSMessageData.recipients[] response, treats "sent" as success, "fail/invalid/reject" as failure.
+- Updated src/app/api/communications/send/route.ts simulation-mode message string to reference Africa's Talking instead of Twilio.
+- Updated src/components/CommunicationsView.tsx: changed the SMS setup-instructions card from "Twilio SMS" to "Africa's Talking SMS" with correct env var names; updated header comment.
+- Verified AT credentials via balance-check endpoint (GET /version1/user?username=...) — auth FAILED for all username guesses (infinitylegal, sandbox, InfinityLegal, etc.). The API key is stored and the code is correctly wired, but the user must confirm their actual Africa's Talking account username and update AFRICASTALKING_USERNAME in .env + start-daemon.sh. Until then SMS will return auth errors; the simulation fallback only triggers when env vars are unset.
+- Applied 22 schema edits to prisma/schema.prisma (all non-breaking, additive):
+  * 22 new @@index directives across 14 models (User +5, PaymentRecord +1, Invoice +3, Refund +1, Case +2, Consultation +2, Task +1, Document +2, CommunicationLog +2, AuditLog +1, BackupRecord +1, LegalArticle +1)
+  * 1 new updated_at DateTime @default(now()) @updatedAt column on DocumentShare (row is mutated on every view_count increment — previously had no updated_at)
+  * 8 inline `//` enum comments promoted to `/// CHECK:` triple-slash doc comments (User.employment_type, UserSubscription.billing_cycle, PaymentRecord.provider, Consultation.meeting_type, IntakeSubmission.source, Notification.priority, AiChatSession.provider, CommunicationLog.provider)
+  * CommunicationLog.provider doc values updated: `resend | twilio | simulated | contact_form` → `resend | africas_talking | simulated | contact_form`
+  * CommunicationLog.provider_id comment updated: "Resend/Twilio" → "Resend/AT"
+  * EmailTemplate.language gained `/// ISO 639-1 language code` doc comment listing all 11 SA official languages
+- Ran `bunx prisma validate` → schema valid
+- Ran `bunx prisma db push --skip-generate` → "Your database is now in sync with your Prisma schema. Done in 13.92s" (22 CREATE INDEX + 1 ALTER TABLE ADD COLUMN)
+- Ran `bunx prisma generate` → Prisma Client v6.19.2 regenerated
+- Verified via $queryRaw against pg_indexes: 249 total indexes now exist (was 227), all 22 new field indexes confirmed present (User_last_active_at_idx, Case_is_high_risk_idx, CommunicationLog_provider_id_idx, etc.), DocumentShare.updated_at column confirmed present.
+- Restarted dev server via start-stop-daemon; /api/health returns 200 with database connected.
+
+Stage Summary:
+- SMS: Africa's Talking integration is CODE-COMPLETE. To go live, user must set the correct AFRICASTALKING_USERNAME (their actual AT account username, not "infinitylegal" which was a guess). The API key provided (atsk_...) is stored in .env and start-daemon.sh. Sandbox mode is auto-detected when username=="sandbox".
+- Schema: 22 indexes + 1 column + 8 doc-comment promotions applied and verified in Neon. No API code changes required (all changes are additive). Total Neon indexes grew from 227 → 249. The 7 Json→String[] conversions and 3 @@unique constraints remain deferred (listed in Task 2-a report as breaking / risk-of-failing-on-dupes).
+- Recommended next step: browser-verify the bento grid + spatial UI dashboard renders cleanly at desktop and mobile widths, and confirm the communications status endpoint now reports "Africa's Talking" as the SMS provider.

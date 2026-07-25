@@ -4,7 +4,7 @@
  * CommunicationsView — Email & SMS Dashboard
  *
  * Features:
- * - Service status overview (SMTP/Resend/Twilio connection)
+ * - Service status overview (Resend email + Africa's Talking SMS connection)
  * - Send email or SMS with template support
  * - Communication logs with filtering
  * - Quick actions (welcome, verification, test)
@@ -822,14 +822,15 @@ export function CommunicationsView({ token, user, staff }: CommunicationsViewPro
               <div className="p-4 rounded-lg bg-slate-50 border">
                 <h4 className="font-semibold text-sm text-[#0c1e3c] mb-2 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  Twilio SMS
+                  Africa&apos;s Talking SMS
                 </h4>
-                <p className="text-xs text-slate-500 mb-3">Industry-standard SMS API — supports South African numbers (+27)</p>
+                <p className="text-xs text-slate-500 mb-3">Pan-African SMS provider — native support for South African numbers (+27), competitive local rates.</p>
                 <div className="bg-[#0c1e3c] rounded-lg p-4 font-mono text-xs text-emerald-400 space-y-1">
-                  <p className="text-slate-500"># Twilio Configuration</p>
-                  <p>TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxx</p>
-                  <p>TWILIO_AUTH_TOKEN=your-auth-token</p>
-                  <p>TWILIO_PHONE_NUMBER=+1XXXXXXXXXX</p>
+                  <p className="text-slate-500"># Africa&apos;s Talking Configuration</p>
+                  <p>AFRICASTALKING_API_KEY=atsk_xxxxxxxxxxxxxxxx</p>
+                  <p>AFRICASTALKING_USERNAME=infinitylegal</p>
+                  <p>AFRICASTALKING_SENDER_ID=INFINITY</p>
+                  <p className="text-slate-500 pt-1"># Use &quot;sandbox&quot; as username for testing</p>
                 </div>
               </div>
 

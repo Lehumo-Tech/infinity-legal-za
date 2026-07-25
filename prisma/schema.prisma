@@ -76,7 +76,8 @@ model User {
   // --- HR fields ---
   employment_start_date    DateTime? // Tenure tracking (/api/hr)
   employment_end_date      DateTime? // When staff left (separate from is_active soft-delete)
-  employment_type          String? // permanent | contract | intern | consultant
+  /// CHECK: permanent | contract | intern | consultant
+  employment_type          String?
   emergency_contact        Json? // { name, phone, relationship }
   next_of_kin              Json? // { name, phone, relationship }
   notification_preferences Json? // { email, sms, push, categories: {...}, quiet_hours }
@@ -127,6 +128,11 @@ model User {
   @@index([is_active])
   @@index([department_id])
   @@index([manager_id])
+  @@index([last_active_at])
+  @@index([last_login_at])
+  @@index([password_expires_at])
+  @@index([employment_start_date])
+  @@index([practice_number])
 }
 
 // ------------------------------------
@@ -306,7 +312,8 @@ model UserSubscription {
   plan_id                String
   /// CHECK: active | past_due | cancelled | expired | trial
   status                 String    @default("active")
-  billing_cycle          String?   @default("monthly") // monthly | annual
+  /// CHECK: monthly | annual
+  billing_cycle          String?   @default("monthly")
   current_period_start   DateTime?
   current_period_end     DateTime?
   cancel_at_period_end   Boolean   @default(false)
@@ -355,7 +362,8 @@ model PaymentRecord {
   description         String?
   metadata            Json?
   // Unified provider fields
-  provider            String?   @default("payfast") // payfast | stripe
+  /// CHECK: payfast | stripe
+  provider            String?   @default("payfast")
   provider_payment_id String? // Stripe session/charge ID or PayFast mPaymentId
   // Stripe-specific
   stripe_event_id     String? // For webhook idempotency
@@ -389,6 +397,7 @@ model PaymentRecord {
   @@index([stripe_event_id])
   @@index([stripe_invoice_id])
   @@index([invoice_id])
+  @@index([paid_at])
   @@index([created_at])
 }
 
@@ -425,6 +434,9 @@ model Invoice {
   @@index([subscription_id])
   @@index([status])
   @@index([issued_at])
+  @@index([number])
+  @@index([due_at])
+  @@index([paid_at])
 }
 
 // ------------------------------------
@@ -452,6 +464,7 @@ model Refund {
   @@index([status])
   @@index([processed_by])
   @@index([stripe_refund_id])
+  @@index([payfast_refund_id])
   @@index([created_at])
 }
 
@@ -517,6 +530,8 @@ model Case {
   @@index([attorney_id, status])
   @@index([paralegal_id])
   @@index([closed_at])
+  @@index([is_high_risk])
+  @@index([closed_reason])
   @@index([created_at])
 }
 
@@ -599,6 +614,7 @@ model Consultation {
   status              String    @default("scheduled")
   scheduled_at        DateTime
   duration_minutes    Int       @default(60)
+  /// CHECK: in_person | video_call | phone_call
   meeting_type        String?
   meeting_link        String?
   location            String?
@@ -622,6 +638,8 @@ model Consultation {
   @@index([attorney_id, scheduled_at, status])
   @@index([scheduled_at])
   @@index([status])
+  @@index([reminder_sent_at])
+  @@index([fee_paid])
   @@index([payment_id])
 }
 
@@ -661,6 +679,7 @@ model Task {
   @@index([due_date])
   @@index([priority])
   @@index([parent_task_id])
+  @@index([completed_at])
 }
 
 // ------------------------------------
@@ -738,6 +757,8 @@ model Document {
   @@index([status])
   @@index([uploaded_by])
   @@index([file_hash])
+  @@index([is_confidential])
+  @@index([expires_at])
   @@index([created_at])
 }
 
@@ -757,6 +778,7 @@ model DocumentShare {
   revoked_at         DateTime?
   metadata           Json?
   created_at         DateTime  @default(now())
+  updated_at         DateTime  @default(now()) @updatedAt
 
   document Document @relation(fields: [document_id], references: [id])
   grantor  User     @relation("DocumentShareGrantor", fields: [granted_by], references: [id])
@@ -797,7 +819,8 @@ model IntakeSubmission {
   // --- Lead management (top-level columns for queryability) ---
   first_name          String? // Extracted from personal_info.full_name
   last_name           String? // Extracted from personal_info.full_name
-  source              String? // web | referral | social | walk_in | partner | other
+  /// CHECK: web | referral | social | walk_in | partner | other
+  source              String?
   lead_score          Int? // 0-100 score for prioritization
   assigned_to         String? // FK → User (lead owner)
   next_follow_up      DateTime? // Scheduled follow-up
@@ -922,7 +945,8 @@ model Notification {
   type       String    @default("info")
   /// CHECK: case_update | task_assigned | task_status_update | new_message | payment | consultation | system | billing | other
   category   String    @default("other")
-  priority   String    @default("normal") // low | normal | high | urgent
+  /// CHECK: low | normal | high | urgent
+  priority   String    @default("normal")
   link       String?
   is_read    Boolean   @default(false)
   expires_at DateTime? // Auto-expire stale notifications
@@ -1021,7 +1045,8 @@ model AiChatSession {
   /// CHECK: active | cleared | archived
   status          String    @default("active")
   title           String? // Optional conversation title
-  provider        String? // openai | anthropic | glm | etc.
+  /// CHECK: openai | anthropic | glm | etc.
+  provider        String?
   model           String?
   total_tokens    Int       @default(0)
   message_count   Int       @default(0)
@@ -1114,8 +1139,9 @@ model CommunicationLog {
   content         String
   /// CHECK: pending | sent | delivered | failed | bounced
   status          String    @default("pending")
-  provider_id     String? // External provider message ID (Resend/Twilio)
-  provider        String? // resend | twilio | simulated | contact_form
+  provider_id     String? // External provider message ID (Resend/AT)
+  /// CHECK: resend | africas_talking | simulated | contact_form
+  provider        String?
   opened_at       DateTime? // Email open tracking
   clicked_at      DateTime? // Email click tracking
   error_message   String?
@@ -1131,6 +1157,8 @@ model CommunicationLog {
   @@index([status])
   @@index([category])
   @@index([is_inbound])
+  @@index([provider_id])
+  @@index([opened_at])
   @@index([created_at])
 }
 
@@ -1144,7 +1172,8 @@ model EmailTemplate {
   channel    String   @default("email")
   /// CHECK: welcome | verification | consultation_reminder | case_update | payment_confirmation | marketing | notification | custom
   category   String   @default("custom")
-  language   String   @default("en") // SA has 11 official languages
+  /// ISO 639-1 language code (e.g. en, af, zu, xh, st, tn, ts, ss, ve, nr, nso)
+  language   String   @default("en")
   subject    String? // Email subject line (null for SMS)
   body_html  String? // HTML template for emails
   body_text  String? // Plain text template (for SMS or email fallback)
@@ -1188,6 +1217,7 @@ model AuditLog {
   @@index([user_id, created_at])
   @@index([resource_type, resource_id])
   @@index([severity])
+  @@index([session_id])
   @@index([created_at])
 }
 
@@ -1242,6 +1272,7 @@ model BackupRecord {
   @@index([status, created_at])
   @@index([backup_type])
   @@index([initiated_by])
+  @@index([completed_at])
   @@index([created_at])
 }
 
@@ -1298,6 +1329,7 @@ model LegalArticle {
   @@index([slug])
   @@index([category])
   @@index([is_published])
+  @@index([is_featured])
   @@index([published_at])
   @@index([author_id])
 }

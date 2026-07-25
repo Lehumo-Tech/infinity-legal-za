@@ -198,7 +198,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
           </div>
 
           <div className="mb-8">
-            <div className="border-l-2 border-[#c9a84c] pl-4">
+            <div className="border-l-4 border-l-[#c9a84c] pl-4">
               <h1 className="text-2xl font-bold text-[#0c1e3c] tracking-tight">
                 {isSignup ? 'Create your account' : 'Welcome back'}
               </h1>
@@ -209,7 +209,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
           </div>
 
           {signupSuccess && (
-            <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-[13px] flex items-center gap-2.5 animate-scale-in">
+            <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-[13px] flex items-center gap-2.5 animate-scale-in spatial-depth-1">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
               {signupSuccess}
             </div>
@@ -228,7 +228,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
                   <Input id="login-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" className="mt-1.5 h-10 input-premium transition-all duration-200" onKeyDown={e => e.key === 'Enter' && handleSignIn()} />
                 </div>
                 {loginError && (
-                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[13px] flex items-start gap-2.5 animate-scale-in">
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[13px] flex items-start gap-2.5 animate-scale-in spatial-depth-1">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span>{loginError}</span>
                   </div>
@@ -285,7 +285,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
                 </div>
 
                 {/* POPIA consent with card treatment */}
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 spatial-depth-1">
                   <label className="flex items-start gap-2.5 cursor-pointer">
                     <input
                       type="checkbox"
@@ -300,7 +300,7 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
                 </div>
 
                 {signupError && (
-                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[13px] flex items-start gap-2.5 animate-scale-in">
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[13px] flex items-start gap-2.5 animate-scale-in spatial-depth-1">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span>{signupError}</span>
                   </div>
@@ -328,11 +328,11 @@ export function LoginScreen({ onLogin, loading, error, initialSignup, onBackToHo
 
           {/* Trust indicators - refined horizontal layout with separators */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] text-slate-400">
-            <span className="flex items-center gap-1.5 px-3 py-1"><Shield className="w-3 h-3" /> POPIA Compliant</span>
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 backdrop-blur-sm border border-slate-200/60 spatial-depth-1 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"><Shield className="w-3 h-3" /> POPIA Compliant</span>
             <span className="w-px h-3 bg-slate-200 hidden sm:block" />
-            <span className="flex items-center gap-1.5 px-3 py-1"><Lock className="w-3 h-3" /> AES-256 Encrypted</span>
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 backdrop-blur-sm border border-slate-200/60 spatial-depth-1 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"><Lock className="w-3 h-3" /> AES-256 Encrypted</span>
             <span className="w-px h-3 bg-slate-200 hidden sm:block" />
-            <span className="flex items-center gap-1.5 px-3 py-1"><KeyRound className="w-3 h-3" /> 90-Day Expiry</span>
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 backdrop-blur-sm border border-slate-200/60 spatial-depth-1 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"><KeyRound className="w-3 h-3" /> 90-Day Expiry</span>
           </div>
         </div>
       </div>

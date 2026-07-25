@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
       }
 
       return apiResponse({
-        message: isSmsConfigured() ? 'SMS sent successfully' : 'SMS simulated (configure Twilio for real sending)',
+        message: isSmsConfigured() ? 'SMS sent successfully' : "SMS simulated (configure Africa's Talking for real sending)",
         channel: 'sms',
         messageId: result.messageId,
         provider: result.provider,

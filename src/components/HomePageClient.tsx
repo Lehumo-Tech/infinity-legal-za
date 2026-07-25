@@ -1059,19 +1059,19 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
           ═══════════════════════════════════════════ */}
       <div>
         <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Quick Actions</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 stagger-children">
-          {quickActions.map(action => (
+        <div className="bento-grid stagger-children">
+          {quickActions.map((action, idx) => (
             <button
               key={action.label}
               onClick={() => onViewChange(action.view)}
-              className="card-premium flex flex-col items-center gap-2.5 p-4 text-center group relative"
+              className={`${idx === 0 ? 'bento-md spatial-sheen' : 'bento-sm'} spatial-bento spatial-light flex flex-col items-center gap-2.5 p-4 text-center group relative`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${action.color} transition-all duration-300 group-hover:scale-110 ${action.accent}`}>
                 <action.icon className="w-5 h-5" />
               </div>
               <span className="text-xs font-medium text-slate-700">{action.label}</span>
               {/* Arrow indicator on hover */}
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                 <ChevronRight className="w-3.5 h-3.5 text-[#c9a84c]" />
               </div>
             </button>
@@ -1083,7 +1083,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
           STATS GRID — Premium Stat Cards
           ═══════════════════════════════════════════ */}
       {stats ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
+        <div className="bento-grid stagger-children">
           {[
             { label: 'Total Cases', value: stats.totalCases, icon: FolderKanban, color: 'text-blue-600 bg-blue-50', border: 'border-l-blue-500' },
             { label: 'Active Cases', value: stats.activeCases, icon: Activity, color: 'text-emerald-600 bg-emerald-50', border: 'border-l-emerald-500' },
@@ -1097,19 +1097,22 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
               { label: 'Clients', value: stats.totalClients, icon: Users, color: 'text-teal-600 bg-teal-50', border: 'border-l-teal-500' },
             ] : []),
             { label: 'Documents', value: stats.totalDocuments, icon: FileText, color: 'text-slate-600 bg-slate-100', border: 'border-l-slate-400' },
-          ].map(card => (
-            <div key={card.label} className={`stat-card border-l-4 ${card.border}`}>
-              <div className="flex items-start justify-between">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
-                  <card.icon className="w-4 h-4" />
+          ].map(card => {
+            const isFeatured = card.label === (isClient ? 'Active Cases' : 'Revenue');
+            return (
+              <div key={card.label} className={`${isFeatured ? 'bento-md spatial-sheen' : 'bento-sm'} spatial-bento border-l-4 ${card.border} p-4`}>
+                <div className="flex items-start justify-between">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
+                    <card.icon className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className={`font-bold text-[#0c1e3c] ${isFeatured ? 'text-2xl' : 'text-xl'}`} style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">{card.label}</div>
                 </div>
               </div>
-              <div className="mt-3">
-                <div className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
-                <div className="text-[11px] text-slate-500 mt-0.5">{card.label}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
@@ -1128,9 +1131,9 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
       {/* ═══════════════════════════════════════════
           CONSULTATIONS & TASKS — Premium Cards
           ═══════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="bento-grid">
         {/* Upcoming Consultations */}
-        <div className="card-premium">
+        <div className="bento-md spatial-bento">
           <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
@@ -1184,7 +1187,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
         </div>
 
         {/* My Tasks */}
-        <div className="card-premium">
+        <div className="bento-md spatial-bento">
           <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-5 rounded-full bg-emerald-500" />
@@ -1240,9 +1243,9 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
       {/* ═══════════════════════════════════════════
           CASE DISTRIBUTION + FIRM HEALTH
           ═══════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="bento-grid">
         {/* Case Distribution — Elegant gradient bars */}
-        <div className="card-premium lg:col-span-2">
+        <div className="bento-lg spatial-bento">
           <div className="p-4 pb-3 border-b border-slate-100/80">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-5 rounded-full bg-[#0c1e3c]" />
@@ -1301,7 +1304,7 @@ function WorkbenchView({ stats, user, cases, consultations, tasks, token, onView
 
         {/* Firm Health — Status indicators */}
         {!isClient && (
-          <div className="card-premium">
+          <div className="bento-sm spatial-bento">
             <div className="p-4 pb-3 border-b border-slate-100/80">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -2850,32 +2853,35 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
 
       {stats && (
         <>
-          {/* Stats overview grid — stat-card */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger-children">
+          {/* Stats overview grid — bento + spatial */}
+          <div className="bento-grid stagger-children">
             {[
               { label: 'Total Revenue', value: formatRevenue(stats.totalRevenue), icon: DollarSign, color: 'text-[#a88832] bg-[#c9a84c]/10', border: 'border-l-[#c9a84c]' },
               { label: 'Active Cases', value: stats.activeCases, icon: FolderKanban, color: 'text-emerald-700 bg-emerald-50', border: 'border-l-emerald-500' },
               { label: 'New Leads', value: stats.newLeads, icon: UserPlus, color: 'text-purple-700 bg-purple-50', border: 'border-l-purple-500' },
               { label: 'Total Clients', value: stats.totalClients, icon: Users, color: 'text-blue-700 bg-blue-50', border: 'border-l-blue-500' },
-            ].map(card => (
-              <div key={card.label} className={`stat-card border-l-4 ${card.border}`}>
-                <div className="flex items-start justify-between">
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
-                    <card.icon className="w-4 h-4" />
+            ].map(card => {
+              const isFeatured = card.label === 'Total Revenue';
+              return (
+                <div key={card.label} className={`${isFeatured ? 'bento-md spatial-sheen' : 'bento-sm'} spatial-bento border-l-4 ${card.border} p-4`}>
+                  <div className="flex items-start justify-between">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.color}`}>
+                      <card.icon className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <div className={`font-bold text-[#0c1e3c] ${isFeatured ? 'text-2xl' : 'text-xl'}`} style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">{card.label}</div>
                   </div>
                 </div>
-                <div className="mt-3">
-                  <div className="text-xl font-bold text-[#0c1e3c]" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{card.value}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">{card.label}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Charts area */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bento-grid">
             {/* Case Status Distribution — refined horizontal bars */}
-            <div className="card-premium">
+            <div className="bento-md spatial-bento">
               <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
@@ -2909,7 +2915,7 @@ function AnalyticsView({ token, stats }: { token: string | null; stats: Stats | 
             </div>
 
             {/* Task Overview */}
-            <div className="card-premium">
+            <div className="bento-md spatial-bento">
               <div className="p-4 pb-3 flex items-center justify-between border-b border-slate-100/80">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-5 rounded-full bg-[#c9a84c]" />
