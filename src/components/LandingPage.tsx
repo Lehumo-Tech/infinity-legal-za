@@ -4,14 +4,17 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   FolderKanban, FileText, BookOpen, CheckCircle2, Shield,
   Lock, KeyRound, ArrowRight, Menu, X, Send, Bot, Sparkles,
-  Scale, MessageSquare, Zap, Globe, Smartphone,
+  MessageSquare, Zap, Globe, Smartphone,
   AlertTriangle, RefreshCw, LayoutDashboard, Phone, Mail, MapPin,
   TrendingUp, Landmark, Gavel, Users, Bell, Database,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ReactMarkdown from 'react-markdown';
 import { useScrollReveal, useMagneticButton } from '@/lib/gsap';
+import Image from 'next/image';
 
 // ============================================
 // TYPES
@@ -52,10 +55,12 @@ interface Article {
   slug: string;
   title: string;
   subtitle: string;
-  excerpt?: string;
+  summary?: string;
+  content?: string;
   category?: string;
   published_at?: string;
-  reading_time?: number;
+  reading_time_min?: number;
+  reading_time?: number; // legacy alias
 }
 
 // ============================================
@@ -157,9 +162,7 @@ export function LandingPage({ onLoginClick, onSignUp, isAuthenticated, onBackToD
           <div ref={navRef} className={`spatial-nav spatial-light rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between transition-all duration-500 ${scrolled ? 'spatial-depth-2' : 'spatial-depth-1'}`}>
             {/* Brand */}
             <a href="#" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0c1e3c] to-[#1a3358] flex items-center justify-center spatial-depth-1 group-hover:scale-105 transition-transform">
-                <Scale className="w-4.5 h-4.5 text-[#c9a84c]" />
-              </div>
+              <Image src="/logo.svg" alt="Infinity Legal SA" width={36} height={36} className="rounded-lg spatial-depth-1 group-hover:scale-105 transition-transform" />
               <div className="hidden sm:block">
                 <span className="text-[15px] font-bold tracking-tight text-[#0c1e3c]">Infinity Legal</span>
                 <span className="block text-[9px] tracking-[0.2em] text-[#c9a84c] font-semibold -mt-0.5">SOUTH AFRICA</span>
@@ -689,6 +692,9 @@ function ArticlesSection() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [fullArticle, setFullArticle] = useState<Article | null>(null);
+  const [articleLoading, setArticleLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -712,6 +718,29 @@ function ArticlesSection() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // Fetch full article when one is selected
+  useEffect(() => {
+    if (!selectedSlug) { setFullArticle(null); return; }
+    let cancelled = false;
+    setArticleLoading(true);
+    setFullArticle(null);
+    (async () => {
+      try {
+        const res = await fetch(`/api/articles/${selectedSlug}`);
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.success && data.data) {
+          setFullArticle(data.data);
+        }
+      } catch {
+        if (!cancelled) { /* silently fail — modal stays open with error state */ }
+      } finally {
+        if (!cancelled) setArticleLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedSlug]);
 
   return (
     <section id="articles" className="relative py-24 sm:py-32 px-4 sm:px-6 bg-gradient-to-b from-[#f4f6fa] to-white overflow-hidden">
@@ -768,8 +797,16 @@ function ArticlesSection() {
         {/* Articles bento grid (live data) */}
         {!loading && !error && articles.length > 0 && (
           <div className="bento-grid">
-            {articles.map((article, i) => (
-              <a key={article.id} href="#" className={`bento-cell ${i === 0 ? 'bento-lg bento-tall spatial-sheen' : 'bento-md'} spatial-bento spatial-light p-6 spatial-rise group block`} style={{ animationDelay: `${i * 0.08}s` }}>
+            {articles.map((article, i) => {
+              const rt = article.reading_time_min || article.reading_time;
+              return (
+              <button
+                key={article.id}
+                type="button"
+                onClick={() => setSelectedSlug(article.slug)}
+                className={`bento-cell ${i === 0 ? 'bento-lg bento-tall spatial-sheen' : 'bento-md'} spatial-bento spatial-light p-6 spatial-rise group block text-left cursor-pointer`}
+                style={{ animationDelay: `${i * 0.08}s` }}
+              >
                 {article.category && (
                   <span className="inline-block px-2.5 py-1 rounded-md bg-[#c9a84c]/10 text-[10px] font-bold text-[#a88832] tracking-wide mb-3">
                     {article.category}
@@ -782,15 +819,77 @@ function ArticlesSection() {
                   <p className="text-[12px] text-[#3a4a66] mt-2 leading-relaxed line-clamp-2">{article.subtitle}</p>
                 )}
                 <div className="mt-4 flex items-center gap-2 text-[11px] text-[#7a8fb0]">
-                  {article.reading_time && <span>{article.reading_time} min read</span>}
-                  {article.reading_time && article.published_at && <span>·</span>}
+                  {rt && <span>{rt} min read</span>}
+                  {rt && article.published_at && <span>·</span>}
                   {article.published_at && <span>{new Date(article.published_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })}</span>}
                 </div>
-              </a>
-            ))}
+              </button>
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Article Reader Modal */}
+      <Dialog open={!!selectedSlug} onOpenChange={(open) => { if (!open) setSelectedSlug(null); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col bg-white">
+          <DialogHeader className="flex-shrink-0 border-b border-slate-100 pb-4">
+            {fullArticle && fullArticle.category && (
+              <span className="inline-block self-start px-2.5 py-1 rounded-md bg-[#c9a84c]/10 text-[10px] font-bold text-[#a88832] tracking-wide mb-2">
+                {fullArticle.category}
+              </span>
+            )}
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-[#0c1e3c] leading-tight">
+              {articleLoading ? 'Loading…' : (fullArticle?.title || 'Article')}
+            </DialogTitle>
+            {fullArticle && (
+              <DialogDescription className="text-[13px] text-[#3a4a66]">
+                {fullArticle.subtitle}
+                {(fullArticle.reading_time_min || fullArticle.reading_time) && (
+                  <span className="ml-2">· {fullArticle.reading_time_min || fullArticle.reading_time} min read</span>
+                )}
+                {fullArticle.published_at && (
+                  <span className="ml-2">· {new Date(fullArticle.published_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                )}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto px-1 py-4 pr-6 article-reader">
+            {articleLoading && (
+              <div className="space-y-3 animate-pulse">
+                <div className="h-4 w-full bg-slate-200 rounded" />
+                <div className="h-4 w-full bg-slate-200 rounded" />
+                <div className="h-4 w-3/4 bg-slate-200 rounded" />
+                <div className="h-4 w-full bg-slate-200 rounded mt-6" />
+                <div className="h-4 w-full bg-slate-200 rounded" />
+                <div className="h-4 w-5/6 bg-slate-200 rounded" />
+              </div>
+            )}
+            {!articleLoading && fullArticle?.content && (
+              <ReactMarkdown
+                components={{
+                  h1: ({children}) => <h1 className="text-2xl font-bold text-[#0c1e3c] mb-4 mt-6 first:mt-0">{children}</h1>,
+                  h2: ({children}) => <h2 className="text-xl font-bold text-[#0c1e3c] mb-3 mt-8">{children}</h2>,
+                  h3: ({children}) => <h3 className="text-lg font-semibold text-[#0c1e3c] mb-2 mt-6">{children}</h3>,
+                  p: ({children}) => <p className="text-[15px] text-[#3a4a66] leading-relaxed mb-4">{children}</p>,
+                  ul: ({children}) => <ul className="list-disc list-inside text-[15px] text-[#3a4a66] leading-relaxed mb-4 space-y-1">{children}</ul>,
+                  ol: ({children}) => <ol className="list-decimal list-inside text-[15px] text-[#3a4a66] leading-relaxed mb-4 space-y-1">{children}</ol>,
+                  strong: ({children}) => <strong className="font-semibold text-[#0c1e3c]">{children}</strong>,
+                  em: ({children}) => <em className="text-[#3a4a66] italic">{children}</em>,
+                  code: ({children}) => <code className="bg-slate-100 text-[#0c1e3c] px-1.5 py-0.5 rounded text-[13px] font-mono">{children}</code>,
+                  blockquote: ({children}) => <blockquote className="border-l-4 border-[#c9a84c] pl-4 py-1 my-4 text-[14px] text-[#3a4a66] italic bg-[#c9a84c]/5 rounded-r">{children}</blockquote>,
+                  hr: () => <hr className="border-slate-200 my-6" />,
+                }}
+              >
+                {fullArticle.content}
+              </ReactMarkdown>
+            )}
+            {!articleLoading && !fullArticle?.content && (
+              <p className="text-[14px] text-[#7a8fb0] text-center py-8">Unable to load article content. Please try again later.</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
@@ -869,9 +968,7 @@ function FooterSection() {
           {/* Brand */}
           <div className="bento-cell bento-md spatial-glass-dark">
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-[#c9a84c]/20 flex items-center justify-center">
-                <Scale className="w-4.5 h-4.5 text-[#c9a84c]" />
-              </div>
+              <Image src="/logo_legal_white.png" alt="Infinity Legal SA" width={36} height={36} className="rounded-lg flex-shrink-0" />
               <div>
                 <span className="text-[15px] font-bold tracking-tight">Infinity Legal</span>
                 <span className="block text-[9px] tracking-[0.2em] text-[#c9a84c] font-semibold -mt-0.5">SOUTH AFRICA</span>

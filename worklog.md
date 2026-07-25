@@ -2135,3 +2135,49 @@ Stage Summary:
 - SMS: Africa's Talking integration is CODE-COMPLETE. To go live, user must set the correct AFRICASTALKING_USERNAME (their actual AT account username, not "infinitylegal" which was a guess). The API key provided (atsk_...) is stored in .env and start-daemon.sh. Sandbox mode is auto-detected when username=="sandbox".
 - Schema: 22 indexes + 1 column + 8 doc-comment promotions applied and verified in Neon. No API code changes required (all changes are additive). Total Neon indexes grew from 227 → 249. The 7 Json→String[] conversions and 3 @@unique constraints remain deferred (listed in Task 2-a report as breaking / risk-of-failing-on-dupes).
 - Recommended next step: browser-verify the bento grid + spatial UI dashboard renders cleanly at desktop and mobile widths, and confirm the communications status endpoint now reports "Africa's Talking" as the SMS provider.
+
+---
+Task ID: 4 (Articles Crash Fix + Demo Data Cleanup + Logo)
+Agent: Main Agent
+Task: (1) Fix articles crash when clicking to read. (2) Remove all demo/simulation data from database. (3) Fix the logo on the landing page.
+
+Work Log:
+- DIAGNOSED articles crash: article cards in LandingPage.tsx used `href="#"` — clicking jumped to page top instead of opening the article. There was NO article reader UI at all.
+- Built article reader modal in ArticlesSection():
+  * Added Dialog/DialogContent from shadcn/ui + ReactMarkdown (already in package.json ^10.1.0)
+  * Added selectedSlug state; clicking an article card sets it
+  * useEffect fetches full article from GET /api/articles/[slug] when selectedSlug changes
+  * Modal renders markdown content with custom component mapping (h1/h2/h3/p/ul/ol/strong/em/blockquote/code/hr) styled with brand navy/gold palette
+  * Loading skeleton + error fallback state
+  * Changed article cards from `<a href="#">` to `<button onClick>` for accessibility
+  * Fixed Article interface: added `summary`, `content`, `reading_time_min` fields to match API response (was using `excerpt`, `reading_time` which don't exist in the API)
+- CLEANED UP demo/test data from Neon database:
+  * Audited: found 77 users (76 test + 1 admin), 75 test clients, 44 "QC Test Case" cases, 53 "QC Lead" leads, 138 simulated comm logs, 22 test tasks, 17 test consultations, 2 test payments, 2 test subscriptions
+  * Test users included: audit-*@example.com, lead-*@example.com, qc-*@example.com, brian@infinitylegal.org, tshepo@infinitylegal.org, neon-test-*, welcome-test-*, final-test-*, launch-test-*, jane.doe.test@example.com, etc.
+  * Wrote and executed cleanup script (scripts/cleanup-test-data.mjs, then deleted) that deleted in FK-safe order:
+    - 138 simulated CommunicationLog + 12 test-user logs
+    - 22 Tasks, 17 Consultations, 3 Documents, 69 CaseTimelines
+    - 2 Payments, 2 Subscriptions, 44 Cases, 53 IntakeSubmissions
+    - 104 ConsentLogs, 19 OtpVerifications, 93 AuditLogs (test user), 1 Notification
+    - 75 Clients, 76 Users (all except admin)
+  * KEPT: admin user (tidimalo@infinitylegal.org), 6 published articles, 3 pricing plans, 10 system settings, 408 admin audit logs, 37 admin notifications
+  * Post-cleanup DB state: users=1, clients=0, cases=0, leads=0, tasks=0, consultations=0, documents=0, commLogs=0, payments=0, subscriptions=0
+  * Dashboard API confirmed returning all-zero stats
+- FIXED logo on LandingPage:
+  * Navbar: replaced generic Scale lucide icon (in gradient box) with `<Image src="/logo.svg" .../>` (the actual brand logo SVG with navy/gold colors, 512×512 viewBox)
+  * Footer: replaced Scale icon with `<Image src="/logo_legal_white.png" .../>` (white version for dark footer background)
+  * Removed unused `Scale` import from lucide-react
+  * Logo already correctly used in HomePageClient.tsx (dashboard sidebar), LoginScreen.tsx, sign-in/sign-up pages, layout.tsx metadata — no changes needed there
+- Verified with agent-browser:
+  * Homepage loads 200, no console errors
+  * Logo image visible in navbar (VLM confirmed: "dark navy square icon with gold accents")
+  * Article click opens Dialog modal with full markdown content rendered (VLM confirmed: title, headings, paragraphs visible)
+  * Article API endpoint GET /api/articles/[slug] returns 200
+  * Login as admin → dashboard loads with empty states ("No consultations scheduled", "All caught up!", "No case data available")
+  * VLM confirmed: no test/demo entries, logo visible in sidebar
+  * bun run lint: 0 errors
+
+Stage Summary:
+- Articles: FIXED. Clicking an article now opens a modal with the full rendered markdown content (previously did nothing — `href="#"` jump-to-top).
+- Demo data: PURGED. 76 test users, 75 test clients, 44 QC test cases, 53 QC leads, 138 simulated comm logs, and all associated child records deleted from Neon. Only real data remains (admin user, 6 articles, 3 pricing plans, system settings). Dashboard now shows empty states instead of fake data.
+- Logo: FIXED on landing page navbar (logo.svg) and footer (logo_legal_white.png). Was using a generic Scale icon; now uses the actual brand logo.
