@@ -1935,3 +1935,25 @@ Stage Summary:
 - Resend email integration is correctly wired but BLOCKED on domain verification: infinitylegal.org is registered in Resend but DNS not verified. Until verified, Resend only allows sends from onboarding@resend.dev to the account owner (jaytmokwena@gmail.com). User must add 3 DNS records (MX + SPF TXT + DKIM TXT) at their DNS provider, then click Verify in Resend dashboard.
 - All 3 real users (tidimalo@, brian@, tshepo@infinitylegal.org) safely migrated with their bcrypt password hashes intact — no accounts lost.
 - Test signup user (neon-test-@infinitylegal.org) created on Neon as proof the signup flow works end-to-end on the new database.
+
+---
+Task ID: RESEND-DOMAIN-VERIFIED
+Agent: Main Agent
+Task: Flip EMAIL_FROM to info@infinitylegal.org after user verified DNS records, and confirm welcome emails deliver
+
+Work Log:
+- User confirmed DNS records for infinitylegal.org are verified in Resend.
+- Verified via Resend API (GET /domains): status="verified", capabilities.sending="enabled" for infinitylegal.org.
+- Discovered .env had been reset to old SQLite DATABASE_URL — restored full Neon config with EMAIL_FROM="Infinity Legal SA <info@infinitylegal.org>".
+- Found root cause of prior signup email failures: start-daemon.sh had EMAIL_FROM="onboarding@resend.dev" HARDCODED, which overrode the .env value. Fixed start-daemon.sh to export info@infinitylegal.org.
+- Confirmed src/lib/email-service.ts line 43 correctly uses process.env.EMAIL_FROM (was just being overridden by the daemon script).
+- Direct Resend API test: sent email from info@infinitylegal.org TO jaytmokwena@gmail.com → SUCCESS (message ID: e7e20663-c86e-4219-8acc-da2240c81bb3).
+- Restarted server with fixed EMAIL_FROM.
+- Ran real signup test: final-test-@infinitylegal.org → user created on Neon ✓, welcome email status="sent" ✓, sent_at populated ✓, NO error_message ✓ (previously failed with "testing emails only" error).
+- Sent confirmation email directly to jaytmokwena@gmail.com from info@infinitylegal.org so user can verify in their inbox.
+
+Stage Summary:
+- RESEND IS FULLY LIVE. Domain infinitylegal.org verified, from address flipped to info@infinitylegal.org, welcome emails now deliver to every new signup.
+- Bug fixed: start-daemon.sh was hardcoding the old sandbox from address (onboarding@resend.dev), overriding .env. Now exports info@infinitylegal.org.
+- End-to-end signup flow on Neon Postgres + Resend email is now PRODUCTION-READY: signup → user created → client profile created → 2 consent logs → audit log → welcome email SENT via Resend → welcome SMS simulated (Twilio not yet wired).
+- Remaining for full production launch: (1) payment provider (Stripe/PayFast), (2) SMS provider (Twilio/Africa's Talking), (3) deploy to Vercel or VPS.

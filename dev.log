@@ -1,40 +1,12 @@
-[Fri Jul 24 19:02:54 UTC 2026] Starting next dev (Neon Postgres, heap=2048MB)...
+[Sat Jul 25 12:32:29 UTC 2026] Starting next dev (Neon Postgres, heap=2048MB)...
 ▲ Next.js 16.1.3 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.8.210:3000
+- Network:       http://21.0.19.173:3000
 - Environments: .env
 - Experiments (use with caution):
   · clientTraceMetadata
 
 ✓ Starting...
-✓ Ready in 1412ms
- GET /api/health 200 in 1977ms (compile: 110ms, proxy.ts: 105ms, render: 1762ms)
- GET /api/health 200 in 229ms (compile: 4ms, proxy.ts: 5ms, render: 220ms)
- GET /api/health 200 in 448ms (compile: 6ms, proxy.ts: 7ms, render: 435ms)
- GET /api/health 200 in 229ms (compile: 3ms, proxy.ts: 5ms, render: 222ms)
-○ Compiling / ...
- GET / 200 in 6.1s (compile: 5.8s, proxy.ts: 35ms, render: 349ms)
- GET /api/auth/profile 401 in 73ms (compile: 38ms, proxy.ts: 5ms, render: 29ms)
- GET /api/pricing 200 in 692ms (compile: 40ms, proxy.ts: 5ms, render: 648ms)
- GET /api/pricing 200 in 223ms (compile: 2ms, proxy.ts: 3ms, render: 218ms)
- GET /api/articles?limit=6 200 in 2.0s (compile: 59ms, proxy.ts: 4ms, render: 1971ms)
- GET /api/articles?limit=6 200 in 709ms (compile: 4ms, proxy.ts: 3ms, render: 701ms)
- POST /api/auth/login 200 in 1992ms (compile: 48ms, proxy.ts: 11ms, render: 1933ms)
- GET /api/auth/profile 200 in 952ms (compile: 3ms, proxy.ts: 9ms, render: 940ms)
- GET /api/notifications?perPage=20 200 in 2.3s (compile: 104ms, proxy.ts: 90ms, render: 2.1s)
- GET /api/subscriptions 200 in 3.1s (compile: 136ms, proxy.ts: 89ms, render: 2.9s)
- GET /api/dashboard 200 in 5.8s (compile: 54ms, proxy.ts: 3ms, render: 5.8s)
- GET /api/cases?page=1&perPage=10&search= 200 in 1759ms (compile: 128ms, proxy.ts: 6ms, render: 1625ms)
- GET / 200 in 73ms (compile: 4ms, proxy.ts: 7ms, render: 62ms)
- GET /api/auth/profile 200 in 712ms (compile: 10ms, proxy.ts: 3ms, render: 699ms)
- GET /api/notifications?perPage=20 200 in 1437ms (compile: 10ms, proxy.ts: 6ms, render: 1421ms)
- GET /api/subscriptions 200 in 2.1s (compile: 9ms, proxy.ts: 7ms, render: 2.1s)
- GET /api/dashboard 200 in 3.6s (compile: 7ms, proxy.ts: 6ms, render: 3.6s)
- GET /api/health 200 in 445ms (compile: 3ms, proxy.ts: 5ms, render: 438ms)
- GET /api/health 200 in 446ms (compile: 4ms, proxy.ts: 3ms, render: 439ms)
- GET / 200 in 55ms (compile: 3ms, proxy.ts: 3ms, render: 49ms)
-prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
-prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
-prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
-prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
-prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+✓ Ready in 1372ms
+ GET /api/health 200 in 2.1s (compile: 118ms, proxy.ts: 115ms, render: 1881ms)
+ GET /api/health 200 in 242ms (compile: 3ms, proxy.ts: 5ms, render: 234ms)

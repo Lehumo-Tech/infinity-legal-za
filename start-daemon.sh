@@ -6,7 +6,7 @@ cd /home/z/my-project
 
 export DATABASE_URL="postgresql://neondb_owner:npg_u06rdIGapCcL@ep-calm-night-apefp276-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 export RESEND_API_KEY="re_jXNLgzGB_Ep9E4iba3FfPrY1qmGzukFtn"
-export EMAIL_FROM="Infinity Legal SA <onboarding@resend.dev>"
+export EMAIL_FROM="Infinity Legal SA <info@infinitylegal.org>"
 export NODE_OPTIONS="--max-old-space-size=2048"
 export NODE_ENV=development
 
