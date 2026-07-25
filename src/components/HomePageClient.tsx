@@ -511,7 +511,7 @@ export default function HomePageClient() {
           title="Visit Homepage"
         >
           <div className="relative">
-            <Image src="/logo_legal.png" alt="Infinity Legal SA" width={48} height={27} className="flex-shrink-0 object-contain" />
+            <Image src="/logo_legal_dark.png" alt="Infinity Legal SA" width={48} height={27} className="flex-shrink-0 object-contain" />
             <div className="absolute -inset-2 bg-[#c9a84c]/0 group-hover:bg-[#c9a84c]/5 rounded-lg transition-all duration-300" />
           </div>
           {sidebarOpen && (
@@ -610,7 +610,7 @@ export default function HomePageClient() {
           </SheetHeader>
           {/* Same nav content as sidebar but always expanded */}
           <div className="p-4 flex items-center gap-3 border-b border-[#c9a84c]/20 cursor-pointer" onClick={() => { setShowLanding(true); setMobileMenuOpen(false); }}>
-            <Image src="/logo_legal.png" alt="Infinity Legal SA" width={48} height={27} className="flex-shrink-0 object-contain" />
+            <Image src="/logo_legal_dark.png" alt="Infinity Legal SA" width={48} height={27} className="flex-shrink-0 object-contain" />
             <div>
               <span className="font-bold text-lg tracking-tight">Infinity Legal</span>
               <p className="text-[10px] text-[#7a8fb0] uppercase tracking-widest">Intranet Portal</p>

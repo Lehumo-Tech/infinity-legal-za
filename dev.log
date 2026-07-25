@@ -138,3 +138,52 @@ prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
  GET /api/notifications?perPage=20 200 in 1979ms (compile: 15ms, proxy.ts: 13ms, render: 1950ms)
  GET /api/dashboard 200 in 3.2s (compile: 10ms, proxy.ts: 13ms, render: 3.2s)
  GET /api/health 200 in 673ms (compile: 3ms, proxy.ts: 6ms, render: 664ms)
+ GET / 200 in 56ms (compile: 5ms, proxy.ts: 3ms, render: 48ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ GET / 200 in 58ms (compile: 5ms, proxy.ts: 5ms, render: 48ms)
+✓ Compiled in 217ms
+✓ Compiled in 423ms
+✓ Compiled in 405ms
+ GET / 200 in 770ms (compile: 161ms, proxy.ts: 17ms, render: 592ms)
+ GET /api/auth/profile 401 in 16ms (compile: 8ms, proxy.ts: 3ms, render: 5ms)
+ GET /api/pricing 200 in 1846ms (compile: 4ms, proxy.ts: 5ms, render: 1837ms)
+ GET /api/pricing 200 in 236ms (compile: 5ms, proxy.ts: 4ms, render: 228ms)
+ GET /api/articles?limit=6 200 in 2.2s (compile: 7ms, proxy.ts: 4ms, render: 2.1s)
+ GET /api/articles?limit=6 200 in 458ms (compile: 3ms, proxy.ts: 3ms, render: 452ms)
+✓ Compiled in 296ms
+✓ Compiled in 193ms
+✓ Compiled in 572ms
+✓ Compiled in 129ms
+ GET / 200 in 465ms (compile: 81ms, proxy.ts: 6ms, render: 378ms)
+ GET /api/auth/profile 401 in 50ms (compile: 33ms, proxy.ts: 9ms, render: 8ms)
+ GET /api/pricing 200 in 471ms (compile: 3ms, proxy.ts: 9ms, render: 458ms)
+ GET /api/articles?limit=6 200 in 720ms (compile: 8ms, proxy.ts: 10ms, render: 702ms)
+ GET /api/pricing 200 in 1829ms (compile: 11ms, proxy.ts: 10ms, render: 1808ms)
+ GET /api/articles?limit=6 200 in 2.1s (compile: 13ms, proxy.ts: 11ms, render: 2.1s)
+ GET /api/articles/understanding-your-rights-under-popia 200 in 776ms (compile: 75ms, proxy.ts: 5ms, render: 697ms)
+ POST /api/auth/login 200 in 2.0s (compile: 6ms, proxy.ts: 5ms, render: 1996ms)
+ GET /api/auth/profile 200 in 953ms (compile: 11ms, proxy.ts: 3ms, render: 939ms)
+ GET /api/notifications?perPage=20 200 in 1798ms (compile: 19ms, proxy.ts: 43ms, render: 1736ms)
+ GET /api/subscriptions 200 in 1969ms (compile: 65ms, proxy.ts: 26ms, render: 1879ms)
+ GET /api/dashboard 200 in 4.4s (compile: 36ms, proxy.ts: 5ms, render: 4.3s)
+ GET / 200 in 219ms (compile: 7ms, proxy.ts: 13ms, render: 198ms)
+ GET /api/auth/profile 200 in 892ms (compile: 7ms, proxy.ts: 9ms, render: 877ms)
+ GET /api/subscriptions 200 in 1183ms (compile: 17ms, proxy.ts: 13ms, render: 1152ms)
+ GET /api/notifications?perPage=20 200 in 1428ms (compile: 12ms, proxy.ts: 14ms, render: 1402ms)
+ GET /api/dashboard 200 in 2.6s (compile: 4ms, proxy.ts: 7ms, render: 2.6s)
+ GET / 200 in 157ms (compile: 4ms, proxy.ts: 11ms, render: 142ms)
+ GET /api/auth/profile 401 in 33ms (compile: 3ms, proxy.ts: 25ms, render: 5ms)
+ GET /api/pricing 200 in 512ms (compile: 40ms, proxy.ts: 36ms, render: 437ms)
+ GET /api/pricing 200 in 1951ms (compile: 36ms, proxy.ts: 11ms, render: 1904ms)
+ GET /api/articles?limit=6 200 in 2.1s (compile: 31ms, proxy.ts: 35ms, render: 1995ms)
+ GET /api/articles?limit=6 200 in 2.1s (compile: 31ms, proxy.ts: 24ms, render: 2.0s)
+ GET / 200 in 56ms (compile: 7ms, proxy.ts: 5ms, render: 45ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }

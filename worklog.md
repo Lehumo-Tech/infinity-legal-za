@@ -2181,3 +2181,51 @@ Stage Summary:
 - Articles: FIXED. Clicking an article now opens a modal with the full rendered markdown content (previously did nothing — `href="#"` jump-to-top).
 - Demo data: PURGED. 76 test users, 75 test clients, 44 QC test cases, 53 QC leads, 138 simulated comm logs, and all associated child records deleted from Neon. Only real data remains (admin user, 6 articles, 3 pricing plans, system settings). Dashboard now shows empty states instead of fake data.
 - Logo: FIXED on landing page navbar (logo.svg) and footer (logo_legal_white.png). Was using a generic Scale icon; now uses the actual brand logo.
+
+---
+Task ID: 5 (Logo Wiring + Verification of Articles Fix & Demo Data Purge)
+Agent: Main Agent
+Task: Wire up the user's uploaded logo (logo_legal.png) across the entire app, verify the articles crash fix from Task 4, and confirm the demo data purge from Task 4.
+
+Work Log:
+- Read worklog.md to absorb prior context. Confirmed Task 4 (Articles Crash Fix + Demo Data Cleanup + Logo) was already completed by a previous agent: articles reader modal built in ArticlesSection, 76 test users + 75 test clients + 44 QC cases + 53 QC leads + 138 simulated comm logs purged from Neon, navbar/footer swapped from Scale icon to logo.svg/logo_legal_white.png.
+- User uploaded a NEW logo file: /home/z/my-project/upload/logo_legal.png (1664×928 PNG, 1.6MB). Verified via md5sum that this is IDENTICAL to the existing /home/z/my-project/public/logo_legal.png (same file, already in public/).
+- Analyzed the uploaded logo via VLM (z-ai vision CLI): It is a vertical/stacked lockup — infinity-symbol-with-classical-column icon ON TOP, "INFINITYLEGAL" wordmark BELOW. Colors: deep navy blue + metallic gold + off-white/cream SOLID background (NOT transparent). Aspect ratio ~1.79:1 (landscape).
+- Analyzed existing logo variants via VLM:
+  * logo_legal_white.png: WHITE solid background (NOT suitable for dark backgrounds — shows as white rectangle)
+  * logo_legal_transparent.png: Also WHITE solid background (misnamed — NOT actually transparent)
+  * logo.svg: Icon-only (infinity+column), 512×512, transparent, navy+gold. Used in navbar.
+- Audited all logo references across src/ (12 files). Found the user's uploaded logo_legal.png was already used in: HomePageClient (sidebar, mobile sheet, loading), LoginScreen (left panel, mobile), sign-in/sign-up pages, layout.tsx (metadata/icons), page.tsx (JSON-LD). The ONLY places NOT using the user's logo were: LandingPage navbar (used logo.svg) and LandingPage footer (used logo_legal_white.png).
+- PROBLEM IDENTIFIED: logo_legal.png has a solid cream background. On dark navy backgrounds (footer, dashboard sidebar, login left panel), it renders as an awkward white/cream rectangle. VLM confirmed: "creates a distinct floating card effect against the dark navy footer... can appear as an awkward white rectangle."
+- SOLUTION: Created a dark-optimized transparent version of the logo using Python/PIL:
+  * Wrote /tmp/make-dark-logo.py that: (1) makes near-white/cream pixels (R>210, G>200, B>180) transparent, (2) recolors dark navy pixels (R<90, G<90, B<130, B>R) → white (#f5f5f5), (3) recolors near-black text (R<80, G<80, B<80) → white (#f0f0f0), (4) keeps gold pixels unchanged.
+  * Saved as /home/z/my-project/public/logo_legal_dark.png (1664×928 RGBA, transparent background, white+gold elements).
+  * Verified via VLM on a simulated navy background: "background is transparent... logo elements clearly visible... white and gold... text INFINITYLEGAL highly readable."
+- LOGO WIRING EDITS (5 files, 7 logo references updated):
+  * LandingPage.tsx navbar (line 165): logo.svg → logo_legal.png, size 92×52, added loading="eager" (LCP optimization per Next.js warning), ring-1 ring-black/5 for subtle definition, removed redundant "Infinity Legal / SOUTH AFRICA" text spans (logo already contains the wordmark).
+  * LandingPage.tsx footer (line 967): logo_legal_white.png → logo_legal_dark.png, size 140×78, transparent on dark navy, removed redundant text spans.
+  * HomePageClient.tsx sidebar (line 514): logo_legal.png → logo_legal_dark.png, 48×27, transparent on dark navy sidebar.
+  * HomePageClient.tsx mobile sheet (line 613): logo_legal.png → logo_legal_dark.png, 48×27, transparent on dark navy sheet.
+  * LoginScreen.tsx left panel (line 141): logo_legal.png → logo_legal_dark.png, 96×54, transparent on dark navy gradient panel.
+  * LoginScreen.tsx mobile (line 197): kept logo_legal.png (on light form panel), added rounded-lg, size 104×58.
+  * sign-in/sign-up pages: kept logo_legal.png (on light from-white gradient) — no change needed.
+  * HomePageClient loading screen (line 457): kept logo_legal.png (on white bg) — no change needed.
+- VERIFIED ARTICLES CRASH FIX (from Task 4): Confirmed ArticlesSection in LandingPage.tsx has the full reader modal — Dialog/DialogContent + ReactMarkdown + selectedSlug state + useEffect fetching /api/articles/[slug]. Browser-tested: clicked "Understanding Your Rights Under POPIA" article card → modal opened with full rendered markdown (title, headings, paragraphs, metadata: category/reading-time/date). No crash, no errors. VLM confirmed: "proper article reader... no error messages or blank screens."
+- VERIFIED DEMO DATA PURGE (from Task 4): Ran Prisma count queries against Neon. Confirmed: users=1 (admin only), clients=0, cases=0, leads=0, tasks=0, consultations=0, documents=0, commLogs=0, payments=0, subscriptions=0, articles=6 (real published), pricing=3 (real plans). Test-pattern users (email contains test/example.com/demo/qc): 0. Simulated comm logs: 0. Dashboard confirmed showing real zeros (not demo data) + real admin user "Tidimalo Tsatsi, Managing Director."
+- BROWSER VERIFICATION (agent-browser + VLM, desktop + mobile):
+  * Navbar (desktop): logo_legal.png renders clean on glass-white nav — VLM: "infinity symbol in navy blue and gold... INFINITYLEGAL text... clean and professional."
+  * Navbar (mobile iPhone 14): logo_legal.png properly sized, no overflow — VLM: "clearly visible... clean, sharp, appropriately sized for mobile... fully responsive with no horizontal overflow."
+  * Footer (desktop): logo_legal_dark.png transparent on navy — VLM: "clean and professional... no awkward white or cream rectangle... blends seamlessly with the dark card... gold symbol + white INFINITYLEGAL text."
+  * Article modal: full content rendered, no crash — VLM: "proper article reader... title, headings, paragraphs, metadata... no errors."
+  * Login screen left panel: logo_legal_dark.png transparent on navy — VLM: "clean... transparent background... no white rectangle... gold infinity symbol + INFINITYLEGAL text."
+  * Dashboard sidebar: logo_legal_dark.png transparent on navy — VLM: "logo at top of sidebar... clean... no visible white rectangle... text is white/light gray."
+  * Dashboard data: real zeros, real admin user — VLM: "specific data points rather than placeholder text or empty skeleton screens."
+  * Console: no errors/crashes/unhandled exceptions across all pages.
+- Lint: `bun run lint` → 0 errors, 0 warnings.
+- Dev log: no errors, no prisma connection issues, all API routes returning 200.
+
+Stage Summary:
+- LOGO: The user's uploaded logo (logo_legal.png) is now wired across the ENTIRE app. Two variants are used intelligently based on background: logo_legal.png (original, cream bg) on LIGHT backgrounds (navbar, login form, sign-in/up, loading screen); logo_legal_dark.png (newly created, transparent + white/gold elements) on DARK backgrounds (footer, dashboard sidebar, mobile sidebar, login left panel). Created logo_legal_dark.png via Python/PIL by making the cream background transparent and recoloring navy→white so elements are visible on dark navy. VLM-verified clean on all surfaces, desktop + mobile.
+- ARTICLES CRASH: Confirmed FIXED (Task 4). Article click opens a Dialog modal with full ReactMarkdown-rendered content. No crash.
+- DEMO DATA: Confirmed PURGED (Task 4). Neon DB has only real data: 1 admin user, 6 articles, 3 pricing plans, 10 system settings. Zero test users, zero test clients, zero simulated comm logs. Dashboard shows real zeros.
+- No schema changes needed this turn. No new packages installed. Lint clean. Dev server healthy on :3000.

@@ -161,12 +161,8 @@ export function LandingPage({ onLoginClick, onSignUp, isAuthenticated, onBackToD
         <nav className="max-w-7xl mx-auto px-4 sm:px-6">
           <div ref={navRef} className={`spatial-nav spatial-light rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between transition-all duration-500 ${scrolled ? 'spatial-depth-2' : 'spatial-depth-1'}`}>
             {/* Brand */}
-            <a href="#" className="flex items-center gap-2.5 group">
-              <Image src="/logo.svg" alt="Infinity Legal SA" width={36} height={36} className="rounded-lg spatial-depth-1 group-hover:scale-105 transition-transform" />
-              <div className="hidden sm:block">
-                <span className="text-[15px] font-bold tracking-tight text-[#0c1e3c]">Infinity Legal</span>
-                <span className="block text-[9px] tracking-[0.2em] text-[#c9a84c] font-semibold -mt-0.5">SOUTH AFRICA</span>
-              </div>
+            <a href="#" className="flex items-center group">
+              <Image src="/logo_legal.png" alt="Infinity Legal SA" width={92} height={52} loading="eager" className="rounded-lg object-contain ring-1 ring-black/5 group-hover:scale-105 transition-transform" />
             </a>
 
             {/* Desktop nav */}
@@ -967,12 +963,8 @@ function FooterSection() {
         <div className="bento-grid mb-12">
           {/* Brand */}
           <div className="bento-cell bento-md spatial-glass-dark">
-            <div className="flex items-center gap-2.5 mb-4">
-              <Image src="/logo_legal_white.png" alt="Infinity Legal SA" width={36} height={36} className="rounded-lg flex-shrink-0" />
-              <div>
-                <span className="text-[15px] font-bold tracking-tight">Infinity Legal</span>
-                <span className="block text-[9px] tracking-[0.2em] text-[#c9a84c] font-semibold -mt-0.5">SOUTH AFRICA</span>
-              </div>
+            <div className="mb-4">
+              <Image src="/logo_legal_dark.png" alt="Infinity Legal SA" width={140} height={78} className="object-contain" />
             </div>
             <p className="text-[12px] text-[#8fa4c4] leading-relaxed">
               South Africa&apos;s premier AI-powered legal practice platform. POPIA-compliant, secure, and built for local legal practice.
