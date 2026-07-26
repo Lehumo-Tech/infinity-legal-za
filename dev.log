@@ -587,3 +587,5 @@ Articles DB error (list, serving fallback): Error: DB_QUERY_TIMEOUT
  GET /api/notifications?perPage=20 200 in 3.5s (compile: 9ms, proxy.ts: 6ms, render: 3.5s)
  GET /api/subscriptions 200 in 3.5s (compile: 5ms, proxy.ts: 14ms, render: 3.5s)
  GET /api/dashboard 200 in 11.4s (compile: 10ms, proxy.ts: 13ms, render: 11.4s)
+ GET / 200 in 56ms (compile: 3ms, proxy.ts: 4ms, render: 50ms)
+ GET / 200 in 54ms (compile: 3ms, proxy.ts: 3ms, render: 48ms)
