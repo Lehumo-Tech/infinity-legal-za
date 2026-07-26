@@ -611,12 +611,12 @@ function PricingSection({ onSignUp }: { onSignUp?: (email?: string, name?: strin
 
         {/* Loading state */}
         {loading && (
-          <div className="bento-grid">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch max-w-6xl mx-auto">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bento-cell bento-md spatial-glass p-7 spatial-depth-2 animate-pulse">
+              <div key={i} className="spatial-glass p-7 spatial-depth-2 animate-pulse rounded-2xl flex flex-col">
                 <div className="h-5 w-24 bg-slate-200 rounded mb-4" />
                 <div className="h-8 w-20 bg-slate-200 rounded mb-5" />
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 flex-1">
                   {[1, 2, 3, 4].map(j => <div key={j} className="h-3 bg-slate-200 rounded" style={{ width: `${80 - j * 8}%` }} />)}
                 </div>
                 <div className="h-10 bg-slate-200 rounded-xl mt-6" />
@@ -634,13 +634,17 @@ function PricingSection({ onSignUp }: { onSignUp?: (email?: string, name?: strin
           </div>
         )}
 
-        {/* Plans bento grid (live data) */}
+        {/* Plans grid (live data) — clean equal-height 3-column layout */}
         {!loading && !error && plans.length > 0 && (
-          <div className="bento-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch max-w-6xl mx-auto">
             {plans.map((plan, i) => (
-              <div key={plan.id} className={`bento-cell ${plan.is_popular ? 'bento-lg bento-tall spatial-sheen' : 'bento-md'} spatial-bento spatial-light p-7 spatial-rise ${plan.is_popular ? 'spatial-depth-glow ring-2 ring-[#c9a84c]/30' : 'spatial-depth-2'}`} style={{ animationDelay: `${i * 0.1}s` }}>
+              <div
+                key={plan.id}
+                className={`relative flex flex-col spatial-bento spatial-light spatial-glass p-7 spatial-rise rounded-2xl ${plan.is_popular ? 'spatial-sheen spatial-depth-glow ring-2 ring-[#c9a84c]/40 lg:-mt-3 lg:mb-3' : 'spatial-depth-2'}`}
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
                 {plan.is_popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#c9a84c] to-[#a88832] text-[#0c1e3c] text-[10px] font-bold px-3 py-1 rounded-full tracking-wide spatial-depth-1">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#c9a84c] to-[#a88832] text-[#0c1e3c] text-[10px] font-bold px-3 py-1 rounded-full tracking-wide spatial-depth-1 whitespace-nowrap">
                     MOST POPULAR
                   </div>
                 )}
@@ -657,7 +661,7 @@ function PricingSection({ onSignUp }: { onSignUp?: (email?: string, name?: strin
                   <p className="text-[10px] text-[#c9a84c] font-semibold mt-1">Billed {plan.currency} {plan.price_annual}/year</p>
                 )}
                 <div className="my-5 spatial-divider" />
-                <ul className="space-y-2.5">
+                <ul className="space-y-2.5 flex-1">
                   {plan.features.map((f, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c] flex-shrink-0 mt-0.5" />

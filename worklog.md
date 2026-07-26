@@ -2313,3 +2313,30 @@ Work Log:
 Stage Summary:
 - GITHUB: Pushed 3 commits total (b28f251, 67ad225, 1d38378) to https://github.com/Lehumo-Tech/infinity-legal-za. No secrets exposed. Repo is clean and public-ready.
 - SEO: Comprehensive upgrade complete. The site now has: dynamic sitemap with article URLs, dynamic robots with bot rules, 5 JSON-LD structured data blocks (LegalService + Organization + WebSite + FAQPage + BreadcrumbList), 2 dynamically-generated social share images (OG 1200×630 + Twitter 1200×600), hreflang + geo meta tags, local-SEO keywords, and a search engine submission API. IndexNow submission succeeded (Bing/Yandex/Naver). For Google indexing, the user should add the site to Google Search Console (https://search.google.com/search-console) and submit https://infinitylegal.org/sitemap.xml manually, plus add the site to Bing Webmaster Tools (https://www.bing.com/webmasters).
+
+---
+Task ID: 8 (Pricing Cards UI Fix)
+Agent: Main Agent
+Task: Fix contorted pricing cards UI. User explicitly said: leave the prices as is, only fix the UI/layout.
+
+Work Log:
+- ROOT CAUSE: The PricingSection used the asymmetric `.bento-grid` system. The popular plan was `bento-lg bento-tall` (3 cols × 2 rows) while the other two were `bento-md` (2 cols × 1 row). On a 4-col (lg) or 6-col (xl) grid, 2+3+2 = 7 cols doesn't fit cleanly → cards wrapped awkwardly, the popular card was both wider AND taller than the others, and the row had uneven heights/gaps → the "contorted" look.
+- FIX (layout only, NO price/data changes):
+  1. Replaced `<div className="bento-grid">` with `<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch max-w-6xl mx-auto">` for both the live plans grid AND the loading skeleton grid.
+  2. Removed all bento sizing classes from the cards: `bento-cell`, `bento-lg`, `bento-tall`, `bento-md`. Kept the visual styling classes (`spatial-bento`, `spatial-light`, `spatial-glass`, `spatial-rise`, `spatial-sheen`, `spatial-depth-glow`, `ring-2 ring-[#c9a84c]/40`).
+  3. Each card now uses `relative flex flex-col ... rounded-2xl` so all three are equal-width and stretch to equal height via `items-stretch` on the parent + `flex-1` on the feature `<ul>`. The "Get Started" button is pinned to the bottom of every card regardless of feature-list length.
+  4. Popular card gets a subtle `lg:-mt-3 lg:mb-3` lift so its "MOST POPULAR" badge (positioned `-top-3`) doesn't get clipped by the section above, WITHOUT making the card a different size.
+  5. Added `whitespace-nowrap` to the badge so it never wraps awkwardly.
+- PRESERVED (per user instruction): all price logic, `billing` monthly/annual toggle, price_monthly/price_annual math, currency display, "Billed ZAR X/year" line, feature lists, "Get Started" CTA, and the popular-card gold gradient styling. Only the grid container + card sizing classes changed.
+- VERIFICATION (agent-browser + VLM):
+  * Desktop 1440×900: VLM confirmed "all the same width/size, aligned in a clean row of 3, not contorted or stretched oddly... prices clearly visible and readable... 'MOST POPULAR' badge sitting correctly on top of the middle card... feature lists and 'Get Started' buttons aligned across all 3 cards." ✓
+  * Mobile 390×844: VLM confirmed "cards stack vertically in a single column... full width with appropriate padding, not squished or distorted... 'MOST POPULAR' gold badge clearly visible, positioned cleanly at the top of the card, not cut off or floating awkwardly." ✓
+  * Annual toggle: clicking "Annual -15%" updates prices to monthly-equivalent (ZAR 83/mo) and shows "Billed ZAR X/year" line under each price; 3-column layout stays clean. ✓
+  * Prices intact: ZAR 99 / ZAR 99 / ZAR 139 (monthly) — matches the user's database data. ✓
+  * Browser console: zero pricing-related errors. Only pre-existing GSAP warnings + image LCP hint. ✓
+- Lint: `bun run lint` → 0 errors, 0 warnings ✓
+
+Stage Summary:
+- PRICING CARDS FIXED: Replaced the asymmetric bento-grid (which made the popular card 3×2 and the others 2×1, causing the contorted look) with a clean, standard, equal-height 3-column grid (`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch`). All three cards are now the same width and height, with the popular card visually highlighted only by its gold ring/glow/sheen and a slight vertical lift for the badge — not by a different size.
+- NO PRICE CHANGES: All price values, currency, billing toggle logic, annual calculation, and feature lists are exactly as before. Only the layout container and card sizing classes were touched.
+- VERIFIED: Desktop + mobile + annual-toggle all VLM-confirmed clean and not contorted. Lint clean. No console errors.

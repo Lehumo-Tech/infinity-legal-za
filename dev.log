@@ -428,3 +428,45 @@ Failed to load dynamic font for ∞✓ . Error: Error: Failed to download dynami
  GET /api/articles?limit=6 200 in 1721ms (compile: 89ms, proxy.ts: 15ms, render: 1616ms)
  GET /api/pricing 200 in 1079ms (compile: 2ms, proxy.ts: 3ms, render: 1074ms)
  GET /api/articles?limit=6 200 in 1160ms (compile: 2ms, proxy.ts: 3ms, render: 1155ms)
+ GET / 200 in 61ms (compile: 8ms, proxy.ts: 3ms, render: 50ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ GET /api/pricing 200 in 3.1s (compile: 3ms, proxy.ts: 11ms, render: 3.1s)
+ GET /api/articles?limit=6 200 in 3.3s (compile: 6ms, proxy.ts: 6ms, render: 3.3s)
+ GET /api/pricing 200 in 1113ms (compile: 3ms, proxy.ts: 4ms, render: 1107ms)
+ GET /api/articles?limit=6 200 in 1362ms (compile: 3ms, proxy.ts: 4ms, render: 1356ms)
+ GET / 200 in 51ms (compile: 3ms, proxy.ts: 4ms, render: 45ms)
+✓ Compiled in 436ms
+✓ Compiled in 293ms
+ GET / 200 in 643ms (compile: 104ms, proxy.ts: 3ms, render: 536ms)
+ GET / 200 in 183ms (compile: 47ms, proxy.ts: 17ms, render: 118ms)
+ GET /api/auth/profile 401 in 10ms (compile: 4ms, proxy.ts: 2ms, render: 4ms)
+ GET /api/pricing 200 in 2.5s (compile: 12ms, proxy.ts: 3ms, render: 2.4s)
+ GET /api/articles?limit=6 200 in 2.8s (compile: 3ms, proxy.ts: 15ms, render: 2.8s)
+ GET /api/pricing 200 in 1103ms (compile: 2ms, proxy.ts: 3ms, render: 1097ms)
+ GET /api/articles?limit=6 200 in 1167ms (compile: 2ms, proxy.ts: 7ms, render: 1158ms)
+ GET / 200 in 120ms (compile: 5ms, proxy.ts: 10ms, render: 105ms)
+ GET /api/auth/profile 401 in 34ms (compile: 24ms, proxy.ts: 8ms, render: 3ms)
+ GET /api/pricing 200 in 1413ms (compile: 12ms, proxy.ts: 14ms, render: 1386ms)
+ GET /api/articles?limit=6 200 in 1579ms (compile: 20ms, proxy.ts: 16ms, render: 1542ms)
+ GET /api/pricing 200 in 2.7s (compile: 22ms, proxy.ts: 17ms, render: 2.6s)
+ GET /api/articles?limit=6 200 in 2.7s (compile: 24ms, proxy.ts: 18ms, render: 2.6s)
+ GET / 200 in 387ms (compile: 15ms, proxy.ts: 4ms, render: 368ms)
+ GET /api/auth/profile 401 in 60ms (compile: 44ms, proxy.ts: 8ms, render: 8ms)
+ GET /api/pricing 200 in 1338ms (compile: 26ms, proxy.ts: 8ms, render: 1304ms)
+ GET /api/pricing 200 in 1336ms (compile: 11ms, proxy.ts: 16ms, render: 1309ms)
+ GET /api/articles?limit=6 200 in 1636ms (compile: 8ms, proxy.ts: 16ms, render: 1611ms)
+ GET /api/articles?limit=6 200 in 2.4s (compile: 13ms, proxy.ts: 16ms, render: 2.4s)
+ GET / 200 in 56ms (compile: 3ms, proxy.ts: 4ms, render: 49ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ GET / 200 in 48ms (compile: 6ms, proxy.ts: 4ms, render: 38ms)
