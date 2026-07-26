@@ -48,10 +48,10 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/logo_legal.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: "Infinity Legal – South Africa's Premier Legal Services Platform",
+        alt: "Infinity Legal — South Africa's Premier Legal Services Platform",
       },
     ],
   },
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title: "Infinity Legal | South Africa's Premier Legal Services Platform",
     description:
       'POPIA-compliant case management, conveyancing, labour law, CCMA, civil litigation & AI-powered legal practice management for South Africa.',
-    images: ['/logo_legal.png'],
+    images: ['/twitter-image'],
   },
 };
 

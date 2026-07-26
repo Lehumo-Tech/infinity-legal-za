@@ -1,6 +1,6 @@
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://infinitylegal.org';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,9 +8,18 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/'],
+        disallow: ['/api/', '/_next/', '/sign-in/', '/sign-up/'],
+      },
+      {
+        userAgent: 'GPTBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'Googlebot',
+        allow: '/',
       },
     ],
     sitemap: `${APP_URL}/sitemap.xml`,
-  }
+    host: APP_URL,
+  };
 }
