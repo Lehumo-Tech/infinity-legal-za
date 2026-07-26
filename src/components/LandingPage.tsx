@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import ReactMarkdown from 'react-markdown';
 import { useScrollReveal, useMagneticButton } from '@/lib/gsap';
 import Image from 'next/image';
+import { MarketingCarousel } from '@/components/MarketingCarousel';
 
 // ============================================
 // TYPES
@@ -219,6 +220,9 @@ export function LandingPage({ onLoginClick, onSignUp, isAuthenticated, onBackToD
       <main id="main" ref={revealRef}>
         {/* ===== HERO (spatial scene with parallax + floating glass) ===== */}
         <HeroSection />
+
+        {/* ===== MARKETING CAROUSEL (GSAP-animated, high-converting) ===== */}
+        <MarketingCarouselSection />
 
         {/* ===== PLATFORM BENTO (spatial bento grid, no mock data) ===== */}
         <PlatformBentoSection />
@@ -429,6 +433,31 @@ function HeroSection() {
             </div>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================
+// MARKETING CAROUSEL SECTION (GSAP-animated, high-converting)
+// ============================================
+function MarketingCarouselSection() {
+  return (
+    <section className="relative py-16 sm:py-20 px-4 sm:px-6 overflow-hidden">
+      <div className="absolute inset-0 -z-10">
+        <div className="spatial-orb spatial-orb-gold spatial-float-slow" style={{ width: 380, height: 380, top: '30%', right: '-6%' }} />
+      </div>
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-8 sm:mb-10">
+          <div className="inline-flex items-center gap-2 spatial-glass px-3 py-1.5 rounded-full mb-4 spatial-depth-1">
+            <Sparkles className="w-3.5 h-3.5 text-[#c9a84c]" />
+            <span className="text-[11px] font-semibold tracking-wide text-[#0c1e3c]">WHY INFINITY LEGAL</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#0c1e3c] leading-[1.15]">
+            Legal expertise, <span className="text-[#a88832]">supercharged by AI.</span>
+          </h2>
+        </div>
+        <MarketingCarousel />
       </div>
     </section>
   );
