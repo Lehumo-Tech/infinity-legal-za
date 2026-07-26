@@ -589,3 +589,5 @@ Articles DB error (list, serving fallback): Error: DB_QUERY_TIMEOUT
  GET /api/dashboard 200 in 11.4s (compile: 10ms, proxy.ts: 13ms, render: 11.4s)
  GET / 200 in 56ms (compile: 3ms, proxy.ts: 4ms, render: 50ms)
  GET / 200 in 54ms (compile: 3ms, proxy.ts: 3ms, render: 48ms)
+ GET / 200 in 53ms (compile: 5ms, proxy.ts: 3ms, render: 45ms)
+ GET / 200 in 53ms (compile: 3ms, proxy.ts: 3ms, render: 46ms)
