@@ -2,33 +2,54 @@
  * GET /api/articles/[slug] - Single published article (public)
  * PATCH /api/articles/[slug] - Update article (admin only)
  * DELETE /api/articles/[slug] - Delete article (admin only)
+ *
+ * Resilience: GET tries the database first (3s timeout). On ANY error
+ * (DB unreachable, Neon cold-start, missing DATABASE_URL on serverless),
+ * falls back to the real published article so the article is ALWAYS
+ * readable when a visitor clicks a card.
  */
 
 import { NextRequest } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
 import { apiResponse, apiError, requireAuth } from '@/lib/middleware';
+import { findFallbackArticle } from '@/lib/article-fallback';
+
+export const dynamic = 'force-dynamic';
+
+const DB_TIMEOUT_MS = 3000;
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const { slug } = await params;
+
+  // Try the database first (with a 3s timeout so a dead connection
+  // doesn't block the article modal).
   try {
-    const { slug } = await params;
-
-    const article = await db.legalArticle.findFirst({
-      where: { slug, is_published: true },
-    });
-
-    if (!article) {
-      return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
+    const article = await Promise.race([
+      db.legalArticle.findFirst({
+        where: { slug, is_published: true },
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('DB_QUERY_TIMEOUT')), DB_TIMEOUT_MS),
+      ),
+    ]);
+    if (article) {
+      return apiResponse(article);
     }
-
-    return apiResponse(article);
-  } catch (error) {
-    console.error('Article fetch error:', error);
-    return apiError('Failed to load article', 500, 'ARTICLE_ERROR');
+  } catch (dbErr) {
+    console.error('Article DB error (serving fallback for slug:', slug + '):', dbErr);
   }
+
+  // Fallback: find the article in the static set so it is always readable
+  const fallback = findFallbackArticle(slug);
+  if (fallback) {
+    return apiResponse(fallback);
+  }
+
+  return apiError('Article not found', 404, 'ARTICLE_NOT_FOUND');
 }
 
 export async function PATCH(
