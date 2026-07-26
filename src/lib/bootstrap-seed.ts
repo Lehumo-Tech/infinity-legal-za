@@ -213,25 +213,54 @@ export async function ensureBootstrapUsers(): Promise<boolean> {
 
       const passwordHash = await hashPassword(account.password);
 
-      const user = await db.user.create({
-        data: {
-          email: account.email.toLowerCase(),
-          password: passwordHash,
-          full_name: account.full_name,
-          phone: account.phone,
-          role: account.role,
-          department: account.department,
-          practice_number: account.practice_number || null,
-          specialization: account.specialization
-            ? JSON.stringify(account.specialization)
-            : null,
-          is_active: true,
-          email_verified: true,
-          popi_consent: true,
-          password_expires_at: passwordExpiry,
-          last_password_change: new Date(),
-        },
-      });
+      // Try the full insert (all fields). If the production database schema
+      // is stale (missing newer columns like password_expires_at or
+      // specialization), this will fail. Fall back to a minimal insert with
+      // only the core auth fields so login still works — the missing fields
+      // are optional and don't affect authentication.
+      let user;
+      try {
+        user = await db.user.create({
+          data: {
+            email: account.email.toLowerCase(),
+            password: passwordHash,
+            full_name: account.full_name,
+            phone: account.phone,
+            role: account.role,
+            department: account.department,
+            practice_number: account.practice_number || null,
+            specialization: account.specialization
+              ? JSON.stringify(account.specialization)
+              : null,
+            is_active: true,
+            email_verified: true,
+            popi_consent: true,
+            password_expires_at: passwordExpiry,
+            last_password_change: new Date(),
+          },
+        });
+      } catch (fullInsertErr) {
+        // Schema mismatch (stale prod DB) — retry with minimal core fields.
+        console.warn('[BootstrapSeed] Full insert failed for', account.email, '— retrying with minimal fields:', (fullInsertErr as Error).message);
+        try {
+          user = await db.user.create({
+            data: {
+              email: account.email.toLowerCase(),
+              password: passwordHash,
+              full_name: account.full_name,
+              phone: account.phone,
+              role: account.role,
+              is_active: true,
+              email_verified: true,
+              popi_consent: true,
+            },
+          });
+          console.log('[BootstrapSeed] Minimal insert succeeded for', account.email);
+        } catch (minimalErr) {
+          console.error('[BootstrapSeed] Minimal insert ALSO failed for', account.email, ':', (minimalErr as Error).message);
+          continue; // skip this account, try the next one
+        }
+      }
 
       if (firstUserId === null) firstUserId = user.id;
       createdCount++;
