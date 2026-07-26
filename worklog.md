@@ -2426,3 +2426,41 @@ Stage Summary:
 - HIGH-CONVERTING: Bold headline with gold highlight, clear description, gradient gold CTA button, slide counter, and dot navigation — all designed to drive clicks to the intake/ask-ai/pricing sections.
 - PROFESSIONAL: On-brand navy + gold aesthetic, glassmorphic navigation, ambient gold orb, consistent with the rest of the site's spatial design language.
 - ACCESSIBLE + RESPONSIVE: Full keyboard nav, aria roles, reduced-motion support, mobile-optimized layout.
+
+---
+Task ID: 12 (Language compliance: use "legal advisor" instead of attorney/advocate)
+Agent: Main Agent
+Task: "we have to be careful the language we use in this website so i need you to use the term 'legal advisor' instead of attorney or advocate. please and also amend it on the image carousel"
+
+Work Log:
+- RATIONALE: "Attorney" and "advocate" are regulated professional titles under the South African Legal Practice Act. The platform must use "legal advisor" in all visitor/client-facing language to avoid unauthorized practice concerns.
+- AUDIT: Grepped all src/ for "attorney|advocate" — found 22 files. Categorized each match as either USER-FACING COPY (must change) or CODE/DB IDENTIFIER (must NOT change — tied to Prisma schema, role enums, API contracts).
+- CHANGED (user-facing copy):
+  * MarketingCarousel.tsx: slide 1 highlight 'legal advocates' -> 'legal advisors'; slide 1 description 'our attorneys' -> 'our legal advisors'; slide 1 + slide 3 image alt text 'attorney' -> 'legal advisor'. (Image filename slide-1-attorney.png left as-is — not user-visible.)
+  * llm-service.ts: 8 replacements across all AI system prompts (LEGAL_CHAT, INTAKE, MEMO, NEXT_STEPS) — "replacement for an attorney" -> "replacement for a legal advisor", "consultation with an Infinity Legal attorney" -> "...legal advisor", "consulting an attorney" -> "consulting a legal advisor", "consult with an attorney" -> "consult with a legal advisor", "reviewed by a qualified attorney" -> "reviewed by a qualified legal advisor", "(client, attorney, both)" -> "(client, legal advisor, both)", "consultation with an attorney" -> "consultation with a legal advisor", "Consult with an attorney" -> "Consult with a legal advisor".
+  * layout.tsx: SEO keyword "Johannesburg attorney" -> "Johannesburg legal advisor".
+  * cases/[id]/route.ts: API error "Attorney not found" -> "Legal advisor not found".
+  * consultations/route.ts: API error "Attorney not found" -> "Legal advisor not found".
+  * report/route.ts (HTML report): "Attorney-client privilege notes" -> "Legal advisor-client privilege notes"; "Attorney-specific profile" -> "Legal advisor-specific profile".
+  * HomePageClient.tsx: code comment "attorneys/admins" -> "legal advisors/admins".
+  * seed-staff/route.ts: comment "attorney (Legal Advisor)" -> "attorney role (Legal Advisor)" for clarity.
+- NOT CHANGED (tied to DB schema / code contract — changing would require a Prisma migration and break the frontend):
+  * Prisma field names: attorney_id, attorney relation (Case model)
+  * Role enum values: 'attorney', 'candidate_attorney' (stored in DB, used in permission checks)
+  * API response keys: attorneys, attorney_performance, lead_attorney, totalAttorneys
+  * Template variables: {{attorney_name}} (used in email/SMS templates)
+  * Variable names: attorneyExists, attorneyId, attorneys (local vars)
+  * Test files: reference the 'attorney' role enum
+  * auth.ts role key: `attorney: { label: 'Legal Advisor' }` — the KEY is 'attorney' (enum), the LABEL is already 'Legal Advisor' (display). This pattern is already correct.
+  * HomePageClient.tsx already has `attorney: 'Legal Advisor'` in the role-to-label mapping (line 61, 2577, 2725) — display was already correct.
+  * communication-templates.ts: display text already says "Legal Advisor" (line 272); {{attorney_name}} is the template var that inserts the person's name.
+- VERIFICATION:
+  * Lint: 0 errors, 0 warnings ✓
+  * Browser: carousel headline confirmed via DOM: "South Africa's trusted legal advisors" ✓
+  * VLM: confirmed "legal advisors" (not "advocates" or "attorneys") and "our legal advisors" in description ✓
+  * Grep: zero remaining "attorney|advocate" in MarketingCarousel.tsx, LandingPage.tsx, article-fallback.ts, llm-service.ts user-facing prompts ✓
+- COMMIT: 37ec8d4 pushed to origin/main.
+
+Stage Summary:
+- LANGUAGE COMPLIANCE: All user-facing copy on the website now uses "legal advisor" instead of "attorney" or "advocate". This includes the marketing carousel (slide headline, description, image alt text), all AI assistant prompts (legal chat, intake, memo, next-steps), SEO keywords, API error messages, and the HTML report. The codebase already had the correct pattern (role enum 'attorney' maps to display label 'Legal Advisor') — this task completed the remaining user-facing strings.
+- NO CODE/DB BREAKAGE: All Prisma field names (attorney_id), role enum values ('attorney'), API response keys (attorneys, attorney_performance), and template variables ({{attorney_name}}) are unchanged. No schema migration needed. No API contract changes. The frontend role-to-label mapping (attorney -> 'Legal Advisor') was already in place.
