@@ -2273,3 +2273,43 @@ Stage Summary:
 - DB/SCHEMA UPDATED: Schema valid, DB in sync (36 models, 249 indexes), Prisma Client regenerated. Data is clean (1 admin, 6 articles, 3 pricing plans, 0 demo data).
 - QC PASSED: Lint 0 errors, 9 pre-existing TS errors (none new), browser E2E all green (homepage, login, dashboard, articles, logo, footer, responsive).
 - Artifacts: /home/z/my-project/start-detached.py (double-fork daemon launcher), updated .env, start-daemon.sh, src/lib/db.ts.
+
+---
+Task ID: 7 (GitHub Push + Comprehensive SEO Upgrade)
+Agent: Main Agent
+Task: Push to GitHub (user provided valid PAT) and run quick SEO for visibility.
+
+Work Log:
+- GITHUB PUSH: User provided a valid GitHub PAT (github_pat_11BTBZW3Y0...). Updated remote URL with the token and pushed 2 commits (b28f251 sanitization + e71deb2 prior work) to origin/main. Verified NO secrets (DB password, API keys, PAT itself) exist in any tracked file on the remote — all credentials live in .env (gitignored).
+- SEO AUDIT: Found existing groundwork (LegalService JSON-LD, metadata, static robots.txt + sitemap.xml from May 2026). Gaps identified: stale static sitemap (no articles), no OG/Twitter social share images (using logo_legal.png as fallback), no FAQ/Breadcrumb/Organization/WebSite structured data, no hreflang, no geo meta tags beyond region, no search engine submission endpoint.
+- DYNAMIC SITEMAP: Created src/app/sitemap.ts that queries published articles from Neon and generates a fresh sitemap every hour (revalidate=3600). Removed stale public/sitemap.xml. New sitemap includes the homepage (priority 1.0, daily) + all 6 published articles (priority 0.8, monthly).
+- DYNAMIC ROBOTS: Created src/app/robots.ts with per-bot rules — * allowed except /api/, /_next/, /sign-in/, /sign-up/; GPTBot and Googlebot explicitly allowed. Includes Host directive + sitemap reference. Removed static public/robots.txt.
+- STRUCTURED DATA: Added 4 new JSON-LD blocks alongside the existing LegalService in layout.tsx:
+  * Organization: founding date, email, telephone, logo, address, sameAs
+  * WebSite + SearchAction: enables Google sitelinks search box
+  * FAQPage: 5 SA-specific Q&As (POPIA compliance, practice areas, pricing, location, AI tools)
+  * BreadcrumbList: home breadcrumb
+  All 5 blocks verified rendering in <head> via agent-browser.
+- SOCIAL SHARE IMAGES: Created src/app/opengraph-image.tsx (1200×630) and src/app/twitter-image.tsx (1200×600) using Next.js OG image convention with @vercel/og (ImageResponse, edge runtime). Both render a navy gradient background with gold "IL" brand mark, "INFINITY LEGAL / SOUTH AFRICA" wordmark, "Your Rights, Reinforced." headline, and trust badges (POPIA Compliant, 256-bit Encryption). VLM-verified on-brand and professional. Fixed two Satori rendering issues: (1) explicit display:flex required on all multi-child divs, (2) emoji/symbol chars (∞ ✓ 🔒) fail dynamic font download — replaced with "IL" text and plain text badges.
+- METADATA UPGRADES (layout.tsx + page.tsx):
+  * OG/Twitter images now point to /opengraph-image and /twitter-image (dynamic)
+  * Added hreflang alternates (en-ZA, en, x-default) in metadata.alternates.languages
+  * Added geo meta tags: geo.region=ZA-GP, geo.placename=Sandton, geo.position, ICBM
+  * Added content-language=en-ZA, revisit-after=7 days, rating=general, distribution=global
+  * Added 5 new local-SEO keywords: Sandton lawyer, Johannesburg attorney, property transfer, deceased estates, divorce lawyer
+  * Removed placeholder google-site-verification code (verification is done via Search Console DNS/tag, not a hardcoded fake code)
+  * Added 3 hreflang <link rel="alternate"> tags + canonical in <head>
+- SEARCH ENGINE SUBMISSION: Created src/app/api/seo/submit/route.ts (admin-only POST). Pings Google, Bing, and IndexNow. Created public/infinitylegalorgseo2026.txt (IndexNow key verification file). Tested: IndexNow submitted successfully (Bing/Yandex/Naver). Google ping endpoint returned 404 and Bing returned 410 — both engines retired their ping endpoints; modern indexing is via Google Search Console and Bing Webmaster Tools (manual sitemap submission). The endpoint still works for IndexNow and is ready for future engines.
+- VERIFICATION:
+  * /sitemap.xml: returns dynamic XML with homepage + 6 article URLs ✓
+  * /robots.txt: returns bot rules + Host + Sitemap directives ✓
+  * /opengraph-image: returns 1200×630 PNG, VLM-confirmed on-brand ✓
+  * /twitter-image: returns 1200×600 PNG ✓
+  * 5 JSON-LD blocks render in <head> (LegalService, Organization, WebSite, FAQPage, BreadcrumbList) ✓
+  * All meta tags render: OG, Twitter, geo, hreflang, robots, content-language ✓
+  * Lint clean, 0 errors ✓
+  * Pushed to GitHub: 1d38378 → origin/main ✓
+
+Stage Summary:
+- GITHUB: Pushed 3 commits total (b28f251, 67ad225, 1d38378) to https://github.com/Lehumo-Tech/infinity-legal-za. No secrets exposed. Repo is clean and public-ready.
+- SEO: Comprehensive upgrade complete. The site now has: dynamic sitemap with article URLs, dynamic robots with bot rules, 5 JSON-LD structured data blocks (LegalService + Organization + WebSite + FAQPage + BreadcrumbList), 2 dynamically-generated social share images (OG 1200×630 + Twitter 1200×600), hreflang + geo meta tags, local-SEO keywords, and a search engine submission API. IndexNow submission succeeded (Bing/Yandex/Naver). For Google indexing, the user should add the site to Google Search Console (https://search.google.com/search-console) and submit https://infinitylegal.org/sitemap.xml manually, plus add the site to Bing Webmaster Tools (https://www.bing.com/webmasters).
