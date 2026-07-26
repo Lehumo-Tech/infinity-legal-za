@@ -481,3 +481,29 @@ prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
  GET /api/pricing 200 in 1062ms (compile: 3ms, proxy.ts: 3ms, render: 1057ms)
  GET /api/articles?limit=6 200 in 2.6s (compile: 3ms, proxy.ts: 2ms, render: 2.6s)
  GET /api/articles?limit=6 200 in 1371ms (compile: 4ms, proxy.ts: 7ms, render: 1359ms)
+ GET / 200 in 51ms (compile: 3ms, proxy.ts: 3ms, render: 45ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ GET / 200 in 81ms (compile: 5ms, proxy.ts: 6ms, render: 71ms)
+ GET /api/articles 200 in 3.4s (compile: 4ms, proxy.ts: 4ms, render: 3.4s)
+ GET /api/articles 200 in 1408ms (compile: 3ms, proxy.ts: 3ms, render: 1401ms)
+ GET /api/articles 200 in 1640ms (compile: 2ms, proxy.ts: 4ms, render: 1634ms)
+Articles DB error (list, serving fallback): Error: DB_QUERY_TIMEOUT
+    at Timeout._onTimeout (src/app/api/articles/route.ts:84:35)
+  82 |         ]),
+  83 |         new Promise<never>((_, reject) =>
+> 84 |           setTimeout(() => reject(new Error('DB_QUERY_TIMEOUT')), DB_TIMEOUT_MS),
+     |                                   ^
+  85 |         ),
+  86 |       ]);
+  87 |
+ GET /api/articles 200 in 3.3s (compile: 248ms, proxy.ts: 4ms, render: 3.0s)
+ GET /api/articles/your-consumer-rights-in-south-africa 200 in 2.1s (compile: 939ms, proxy.ts: 3ms, render: 1159ms)
+ GET / 200 in 408ms (compile: 20ms, proxy.ts: 6ms, render: 382ms)
+ GET /api/auth/profile 401 in 19ms (compile: 11ms, proxy.ts: 4ms, render: 4ms)
+ GET /api/articles?limit=6 200 in 1386ms (compile: 2ms, proxy.ts: 4ms, render: 1379ms)
+ GET /api/pricing 200 in 2.4s (compile: 15ms, proxy.ts: 3ms, render: 2.4s)
+ GET /api/articles?limit=6 200 in 1158ms (compile: 3ms, proxy.ts: 4ms, render: 1151ms)
+ GET /api/pricing 200 in 1067ms (compile: 2ms, proxy.ts: 10ms, render: 1055ms)
+ GET /api/articles/your-consumer-rights-in-south-africa 200 in 1481ms (compile: 90ms, proxy.ts: 4ms, render: 1387ms)
