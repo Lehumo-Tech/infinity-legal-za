@@ -33,12 +33,12 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     image: '/images/carousel/slide-1-attorney.png',
-    imageAlt: 'Infinity Legal attorney reviewing case documents in a modern Johannesburg office',
+    imageAlt: 'Infinity Legal legal advisor reviewing case documents in a modern Johannesburg office',
     eyebrow: 'EXPERT LEGAL REPRESENTATION',
     title: 'South Africa\u2019s trusted',
-    highlight: 'legal advocates',
+    highlight: 'legal advisors',
     description:
-      'From CCMA referrals to civil litigation and conveyancing — our attorneys fight for your rights with precision and care.',
+      'From CCMA referrals to civil litigation and conveyancing — our legal advisors fight for your rights with precision and care.',
     cta: { label: 'Get a Free AI Intake', href: '#intake' },
     icon: Shield,
     accent: 'gold',
@@ -57,7 +57,7 @@ const SLIDES: Slide[] = [
   },
   {
     image: '/images/carousel/slide-3-clients.png',
-    imageAlt: 'Happy South African clients shaking hands with an Infinity Legal attorney',
+    imageAlt: 'Happy South African clients shaking hands with an Infinity Legal legal advisor',
     eyebrow: 'RESULTS THAT MATTER',
     title: 'Real outcomes for',
     highlight: 'real people',

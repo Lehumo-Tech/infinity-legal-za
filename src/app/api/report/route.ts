@@ -1116,8 +1116,8 @@ export async function GET(request: NextRequest) {
           <span><code>Message</code> — Case messages &amp; notes</span>
           <span><code>Notification</code> — User notifications</span>
           <span><code>CaseTimeline</code> — Case audit trail</span>
-          <span><code>PrivilegedNote</code> — Attorney-client privilege notes</span>
-          <span><code>Attorney</code> — Attorney-specific profile</span>
+          <span><code>PrivilegedNote</code> — Legal advisor-client privilege notes</span>
+          <span><code>Attorney</code> — Legal advisor-specific profile</span>
           <span><code>IntakeSubmission</code> — Client intake form data</span>
           <span><code>ApiAnalytic</code> — API call tracking</span>
           <span><code>ErrorLog</code> — Error tracking and resolution</span>

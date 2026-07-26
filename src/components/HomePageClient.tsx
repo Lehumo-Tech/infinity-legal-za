@@ -2648,7 +2648,7 @@ function StaffPortal({ staff, user }: { staff: StaffMember[]; user: User | null 
             {members.map(m => (
               <div key={m.id} className="card-premium p-4 group relative">
                 <div className="flex items-start gap-3">
-                  {/* Avatar with gold ring for attorneys/admins */}
+                  {/* Avatar with gold ring for legal advisors/admins */}
                   <div className={`relative flex-shrink-0 ${hasGoldRing(m.role) ? 'ring-2 ring-[#c9a84c]/40 ring-offset-2 ring-offset-white rounded-full' : ''}`}>
                     <Avatar className="w-11 h-11">
                       <AvatarFallback className={`text-xs font-bold ${

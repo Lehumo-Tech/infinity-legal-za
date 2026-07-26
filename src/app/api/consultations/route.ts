@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
         where: { id: attorney_id },
       });
       if (!attorney) {
-        return apiError('Attorney not found', 404, 'ATTORNEY_NOT_FOUND');
+        return apiError('Legal advisor not found', 404, 'ATTORNEY_NOT_FOUND');
       }
     }
 

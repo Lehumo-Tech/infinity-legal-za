@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     "candidate legal advisor",
     "legal tech",
     "Sandton lawyer",
-    "Johannesburg attorney",
+    "Johannesburg legal advisor",
     "property transfer",
     "deceased estates",
     "divorce lawyer",

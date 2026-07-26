@@ -155,7 +155,7 @@ export async function PUT(
         select: { id: true },
       });
       if (!attorneyExists) {
-        return apiError('Attorney not found', 404, 'ATTORNEY_NOT_FOUND');
+        return apiError('Legal advisor not found', 404, 'ATTORNEY_NOT_FOUND');
       }
     }
 

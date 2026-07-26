@@ -7,7 +7,7 @@
  * Staff accounts:
  * 1. Tidimalo Tsatsi  — managing_director (Head Legal Advisor / MD)
  * 2. Brian Mokwena    — systems_admin (IT Department & Support / Director)
- * 3. Tshepo Rametse   — attorney (Legal Advisor)
+ * 3. Tshepo Rametse   — attorney role (Legal Advisor)
  */
 
 import { NextRequest } from 'next/server';

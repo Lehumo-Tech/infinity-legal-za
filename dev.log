@@ -538,3 +538,44 @@ prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
  GET /api/articles?limit=6 200 in 1658ms (compile: 5ms, proxy.ts: 3ms, render: 1650ms)
  GET /api/pricing 200 in 1162ms (compile: 3ms, proxy.ts: 11ms, render: 1149ms)
  GET /api/articles?limit=6 200 in 1420ms (compile: 3ms, proxy.ts: 3ms, render: 1414ms)
+ GET / 200 in 60ms (compile: 6ms, proxy.ts: 3ms, render: 50ms)
+ GET / 200 in 54ms (compile: 7ms, proxy.ts: 3ms, render: 44ms)
+✓ Compiled in 218ms
+✓ Compiled in 241ms
+ GET / 200 in 155ms (compile: 107ms, proxy.ts: 4ms, render: 45ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ GET / 200 in 614ms (compile: 6ms, proxy.ts: 3ms, render: 605ms)
+ GET / 200 in 169ms (compile: 36ms, proxy.ts: 15ms, render: 118ms)
+ GET /api/auth/profile 401 in 19ms (compile: 6ms, proxy.ts: 7ms, render: 7ms)
+Pricing DB error (serving fallback): Error: DB_QUERY_TIMEOUT
+    at Timeout._onTimeout (src/app/api/pricing/route.ts:117:24)
+  115 |       new Promise<never>((_, reject) =>
+  116 |         setTimeout(
+> 117 |           () => reject(new Error('DB_QUERY_TIMEOUT')),
+      |                        ^
+  118 |           DB_TIMEOUT_MS,
+  119 |         ),
+  120 |       ),
+ GET /api/pricing 200 in 3.0s (compile: 8ms, proxy.ts: 3ms, render: 3.0s)
+Articles DB error (list, serving fallback): Error: DB_QUERY_TIMEOUT
+    at Timeout._onTimeout (src/app/api/articles/route.ts:84:35)
+  82 |         ]),
+  83 |         new Promise<never>((_, reject) =>
+> 84 |           setTimeout(() => reject(new Error('DB_QUERY_TIMEOUT')), DB_TIMEOUT_MS),
+     |                                   ^
+  85 |         ),
+  86 |       ]);
+  87 |
+ GET /api/articles?limit=6 200 in 3.0s (compile: 2ms, proxy.ts: 8ms, render: 3.0s)
+ GET /api/pricing 200 in 2.4s (compile: 4ms, proxy.ts: 5ms, render: 2.4s)
+ GET /api/articles?limit=6 200 in 2.6s (compile: 6ms, proxy.ts: 5ms, render: 2.6s)
