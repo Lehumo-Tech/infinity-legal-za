@@ -1,15 +1,18 @@
 #!/bin/bash
 # Daemon wrapper for Next.js dev server with proper logging.
-# Started via start-stop-daemon --background for true process detachment.
+# Started via start-stop-daemon --background / double-fork for true process detachment.
+#
+# Secrets are loaded from .env (gitignored) — never hardcode credentials here.
 
 cd /home/z/my-project
 
-export DATABASE_URL="postgresql://neondb_owner:npg_u06rdIGapCcL@ep-calm-night-apefp276-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require&pgbouncer=true&connect_timeout=15&pool_timeout=15&connection_limit=5"
-export RESEND_API_KEY="re_jXNLgzGB_Ep9E4iba3FfPrY1qmGzukFtn"
-export EMAIL_FROM="Infinity Legal SA <info@infinitylegal.org>"
-export AFRICASTALKING_API_KEY="atsk_113ed4ef28880bd0f3f91ee1156d5ca8a73baed73a1391b0eb0ee795344c314c23440e06"
-export AFRICASTALKING_USERNAME="infinitylegal"
-export AFRICASTALKING_SENDER_ID="INFINITY"
+# Load all environment variables from .env (gitignored, holds secrets)
+set -a
+# shellcheck disable=SC1091
+source .env
+set +a
+
+# Non-secret runtime config
 export NODE_OPTIONS="--max-old-space-size=2048"
 export NODE_ENV=development
 

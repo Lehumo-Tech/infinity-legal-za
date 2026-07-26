@@ -1,12 +1,16 @@
 #!/bin/bash
-# Dev server keepalive with explicit Postgres DATABASE_URL
+# Dev server keepalive with Postgres DATABASE_URL loaded from .env.
 # Ensures the env var is always correct regardless of shell inheritance.
-
-export DATABASE_URL="postgresql://neondb_owner:npg_u06rdIGapCcL@ep-calm-night-apefp276-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-export RESEND_API_KEY="re_jXNLgzGB_Ep9E4iba3FfPrY1qmGzukFtn"
-export EMAIL_FROM="Infinity Legal SA <onboarding@resend.dev>"
+#
+# Secrets are loaded from .env (gitignored) — never hardcode credentials here.
 
 cd /home/z/my-project
+
+# Load all environment variables from .env (gitignored, holds secrets)
+set -a
+# shellcheck disable=SC1091
+source .env
+set +a
 
 LOG_FILE="/home/z/my-project/dev.log"
 PID_FILE="/home/z/my-project/dev.pid"
