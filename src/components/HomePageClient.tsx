@@ -654,7 +654,7 @@ export default function HomePageClient() {
       {/* Main content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="glass-nav h-14 flex items-center justify-between px-3 sm:px-6 flex-shrink-0">
+        <header className="glass-nav h-14 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 relative z-40">
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 -ml-1 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Open menu">
               <Menu className="w-5 h-5 text-slate-600" />

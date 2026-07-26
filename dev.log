@@ -591,3 +591,56 @@ Articles DB error (list, serving fallback): Error: DB_QUERY_TIMEOUT
  GET / 200 in 54ms (compile: 3ms, proxy.ts: 3ms, render: 48ms)
  GET / 200 in 53ms (compile: 5ms, proxy.ts: 3ms, render: 45ms)
  GET / 200 in 53ms (compile: 3ms, proxy.ts: 3ms, render: 46ms)
+ GET / 200 in 58ms (compile: 7ms, proxy.ts: 3ms, render: 48ms)
+ GET / 200 in 49ms (compile: 3ms, proxy.ts: 3ms, render: 44ms)
+ GET /api/pricing 200 in 2.4s (compile: 3ms, proxy.ts: 4ms, render: 2.4s)
+ GET /api/articles?limit=6 200 in 2.8s (compile: 3ms, proxy.ts: 4ms, render: 2.8s)
+ GET /api/articles?limit=6 200 in 1286ms (compile: 3ms, proxy.ts: 4ms, render: 1279ms)
+ GET /api/pricing 200 in 1099ms (compile: 3ms, proxy.ts: 3ms, render: 1093ms)
+ GET /api/pricing 200 in 1316ms (compile: 4ms, proxy.ts: 4ms, render: 1309ms)
+ GET /api/articles?limit=6 200 in 1495ms (compile: 2ms, proxy.ts: 3ms, render: 1490ms)
+ GET /api/pricing 200 in 1096ms (compile: 3ms, proxy.ts: 3ms, render: 1090ms)
+ GET /api/articles?limit=6 200 in 1283ms (compile: 2ms, proxy.ts: 3ms, render: 1277ms)
+ POST /api/auth/login 401 in 3.6s (compile: 4ms, proxy.ts: 7ms, render: 3.6s)
+ POST /api/auth/login 200 in 3.8s (compile: 4ms, proxy.ts: 3ms, render: 3.8s)
+✓ Compiled in 484ms
+ POST /api/auth/login 200 in 3.8s (compile: 7ms, proxy.ts: 4ms, render: 3.8s)
+ POST /api/auth/login 200 in 3.6s (compile: 2ms, proxy.ts: 5ms, render: 3.6s)
+ POST /api/auth/login 200 in 3.6s (compile: 3ms, proxy.ts: 4ms, render: 3.6s)
+[Sun Jul 26 17:54:49 UTC 2026] next dev exited (code 0), restarting in 3s...
+[Sun Jul 26 17:54:52 UTC 2026] Starting next dev (Neon Postgres, heap=2048MB)...
+▲ Next.js 16.1.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.4.27:3000
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+✓ Starting...
+✓ Ready in 3.7s
+○ Compiling / ...
+ GET / 200 in 7.6s (compile: 6.8s, proxy.ts: 250ms, render: 513ms)
+ GET /api/auth/profile 401 in 206ms (compile: 186ms, proxy.ts: 7ms, render: 13ms)
+ GET /api/pricing 200 in 2.6s (compile: 91ms, proxy.ts: 5ms, render: 2.5s)
+Articles DB error (list, serving fallback): Error: DB_QUERY_TIMEOUT
+    at Timeout._onTimeout (src/app/api/articles/route.ts:84:35)
+  82 |         ]),
+  83 |         new Promise<never>((_, reject) =>
+> 84 |           setTimeout(() => reject(new Error('DB_QUERY_TIMEOUT')), DB_TIMEOUT_MS),
+     |                                   ^
+  85 |         ),
+  86 |       ]);
+  87 |
+ GET /api/articles?limit=6 200 in 3.2s (compile: 173ms, proxy.ts: 15ms, render: 3.0s)
+ GET /api/pricing 200 in 1090ms (compile: 3ms, proxy.ts: 5ms, render: 1082ms)
+ GET /api/articles?limit=6 200 in 2.8s (compile: 4ms, proxy.ts: 4ms, render: 2.8s)
+ POST /api/auth/login 200 in 3.8s (compile: 58ms, proxy.ts: 5ms, render: 3.7s)
+ GET /api/auth/profile 200 in 2.3s (compile: 10ms, proxy.ts: 6ms, render: 2.3s)
+ GET /api/subscriptions 200 in 3.6s (compile: 214ms, proxy.ts: 49ms, render: 3.3s)
+ GET /api/notifications?perPage=20 200 in 4.5s (compile: 257ms, proxy.ts: 47ms, render: 4.2s)
+ GET /api/dashboard 200 in 10.1s (compile: 165ms, proxy.ts: 14ms, render: 9.9s)
+ GET / 200 in 85ms (compile: 5ms, proxy.ts: 8ms, render: 72ms)
+ GET /api/auth/profile 200 in 2.4s (compile: 9ms, proxy.ts: 4ms, render: 2.4s)
+ GET /api/subscriptions 200 in 2.2s (compile: 9ms, proxy.ts: 11ms, render: 2.2s)
+ GET /api/notifications?perPage=20 200 in 4.3s (compile: 12ms, proxy.ts: 11ms, render: 4.3s)
+ GET /api/dashboard 200 in 10.6s (compile: 10ms, proxy.ts: 11ms, render: 10.6s)
