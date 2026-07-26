@@ -2340,3 +2340,26 @@ Stage Summary:
 - PRICING CARDS FIXED: Replaced the asymmetric bento-grid (which made the popular card 3×2 and the others 2×1, causing the contorted look) with a clean, standard, equal-height 3-column grid (`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch`). All three cards are now the same width and height, with the popular card visually highlighted only by its gold ring/glow/sheen and a slight vertical lift for the badge — not by a different size.
 - NO PRICE CHANGES: All price values, currency, billing toggle logic, annual calculation, and feature lists are exactly as before. Only the layout container and card sizing classes were touched.
 - VERIFIED: Desktop + mobile + annual-toggle all VLM-confirmed clean and not contorted. Lint clean. No console errors.
+
+---
+Task ID: 9 (Fix pricing not loading on live site)
+Agent: Main Agent
+Task: "on the live site the pricing does not load. fix that now"
+
+Work Log:
+- DIAGNOSED: Live site https://infinitylegal.org/api/pricing returned HTTP 500 `{"success":false,"error":{"message":"Failed to load pricing plans","code":"PRICING_ERROR"}}`. Local dev returned 200 with full data. Root cause: the live Vercel deployment's database connection is BROKEN — `/api/health` returns `{"success":false,"error":{"message":"Database connection unhealthy","code":"DB_UNHEALTHY"}}`. The `/api/articles` endpoint masks the same DB failure by catching the error and returning `{"articles":[],"total":0}` (empty but 200), while `/api/pricing` surfaced the error as 500.
+- ROOT CAUSE: The Vercel project's `DATABASE_URL` environment variable is either not set, set to the old SQLite URL, or set to the Neon direct (non-pooler) endpoint that times out from serverless functions. Cannot fix Vercel env vars from the sandbox — only code-level fixes are possible.
+- FIX: Made `/api/pricing` resilient with a real-price fallback:
+  1. Try the DB first via `db.pricingPlan.findMany` — but wrap it in `Promise.race` with a 3-second timeout (`DB_TIMEOUT_MS = 3000`) so a dead/hanging connection doesn't block the page.
+  2. On ANY error (DB unreachable, timeout, missing DATABASE_URL, Neon cold-start failure), catch the error, log it (`console.error`), and return HTTP 200 with `FALLBACK_PLANS` — NOT a 500.
+  3. `FALLBACK_PLANS` contains the 3 real, authoritative pricing plans (same values as the seed-pricing script and the DB): Civil R99/mo (R999/yr, 5 features), Labour R99/mo (R999/yr, 5 features, popular=true), Extensive R139/mo (R1399/yr, 6 features). NO price changes — the fallback values are the exact real prices.
+  4. Added `export const dynamic = 'force-dynamic'` to prevent stale ISR caching of fallback data.
+- VERIFICATION:
+  * Local: `bun run lint` → 0 errors ✓. Local API returns 200 with DB data (Civil 99, Labour 99 popular, Extensive 139) ✓. Browser VLM confirmed 3 equal cards, correct prices, MOST POPULAR on Labour Legal ✓.
+  * Live (after Vercel auto-deploy ~2.5 min post-push): `curl https://infinitylegal.org/api/pricing` → HTTP 200 with all 3 plans (fallback IDs `fallback-civil/labour/extensive`, correct prices/features) ✓. VLM on live screenshot: "3 pricing cards fully visible and rendered... Civil ZAR 99/mo, Labour ZAR 99/mo, Extensive ZAR 139/mo... MOST POPULAR badge on Labour Legal Plan... cards equal size in clean horizontal row" ✓.
+- COMMIT: ba91810 pushed to origin/main. Vercel auto-deployed and the live site now shows pricing.
+
+Stage Summary:
+- PRICING NOW LOADS ON LIVE: The pricing section on https://infinitylegal.org now renders all 3 plans with correct prices (R99/R99/R139) and features, even though the Vercel DATABASE_URL is still misconfigured. The route tries the DB first (3s timeout) and falls back to the real prices on any error.
+- NO PRICE CHANGES: The fallback values are the exact same prices and features as the database/seed script. When the Vercel DATABASE_URL is eventually fixed, the DB query will succeed and serve live data (including any admin edits).
+- REMAINING (user action needed): The Vercel project's `DATABASE_URL` environment variable needs to be set to the Neon pooler URL with pgbouncer params: `postgresql://...@ep-xxx-pooler...neon.tech/infinitylegal?sslmode=require&pgbouncer=true&connect_timeout=15&pool_timeout=15&connection_limit=5`. This is a Vercel dashboard setting (Project → Settings → Environment Variables), not a code change. Once fixed, the health endpoint will recover and the pricing route will serve from the DB instead of the fallback.

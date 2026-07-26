@@ -470,3 +470,14 @@ prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
 prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
 prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
  GET / 200 in 48ms (compile: 6ms, proxy.ts: 4ms, render: 38ms)
+ GET / 200 in 55ms (compile: 9ms, proxy.ts: 3ms, render: 43ms)
+ GET / 200 in 53ms (compile: 3ms, proxy.ts: 3ms, render: 47ms)
+ GET /api/pricing 200 in 3.0s (compile: 3ms, proxy.ts: 3ms, render: 3.0s)
+ GET /api/pricing 200 in 1089ms (compile: 2ms, proxy.ts: 3ms, render: 1084ms)
+ GET /api/pricing 200 in 2.7s (compile: 292ms, proxy.ts: 3ms, render: 2.4s)
+ GET / 200 in 104ms (compile: 6ms, proxy.ts: 4ms, render: 94ms)
+ GET /api/auth/profile 401 in 36ms (compile: 5ms, proxy.ts: 27ms, render: 4ms)
+ GET /api/pricing 200 in 1068ms (compile: 4ms, proxy.ts: 5ms, render: 1059ms)
+ GET /api/pricing 200 in 1062ms (compile: 3ms, proxy.ts: 3ms, render: 1057ms)
+ GET /api/articles?limit=6 200 in 2.6s (compile: 3ms, proxy.ts: 2ms, render: 2.6s)
+ GET /api/articles?limit=6 200 in 1371ms (compile: 4ms, proxy.ts: 7ms, render: 1359ms)
