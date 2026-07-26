@@ -15,6 +15,7 @@ import { authRateLimiter, isValidEmail } from '@/lib/security';
 import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF } from '@/lib/middleware';
 import { createAuditLog } from '@/lib/audit';
 import { authenticateLocalUser } from '@/lib/local-auth';
+import { ensureBootstrapUsers } from '@/lib/bootstrap-seed';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,6 +53,13 @@ export async function POST(request: NextRequest) {
     if (password.length > 128) {
       return apiError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
+
+    // ─── Self-healing first-run seed ────────────────────────────────────
+    // If the database has ZERO users (e.g. a fresh production deployment),
+    // seed the bootstrap admin + staff accounts before authenticating.
+    // This is a no-op once any user exists, so it adds at most one COUNT
+    // query to every login on a populated DB. Safe + idempotent.
+    await ensureBootstrapUsers();
 
     // Authenticate via local Prisma/SQLite
     const localResult = await authenticateLocalUser(email, password);

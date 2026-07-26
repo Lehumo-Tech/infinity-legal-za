@@ -20,6 +20,7 @@ import { signupRateLimiter, isValidEmail, sanitizeString } from '@/lib/security'
 import { apiResponse, apiError, checkRateLimit, validateBodySize, validateCSRF } from '@/lib/middleware';
 import { createAuditLog, logConsent } from '@/lib/audit';
 import { createLocalUser } from '@/lib/local-auth';
+import { ensureBootstrapUsers } from '@/lib/bootstrap-seed';
 import { db } from '@/lib/db';
 import { sendEmail } from '@/lib/email-service';
 import { sendSms, formatSaPhone } from '@/lib/sms-service';
@@ -86,6 +87,11 @@ export async function POST(request: NextRequest) {
     const ipAddress = request.headers.get('x-forwarded-for') || undefined;
     const userAgent = request.headers.get('user-agent') || undefined;
     const normalizedEmail = email.toLowerCase().trim();
+
+    // ─── Self-healing first-run seed ────────────────────────────────────
+    // Ensure staff accounts exist on a fresh production database before
+    // allowing self-signup. No-op once any user exists.
+    await ensureBootstrapUsers();
 
     // Create user via local auth helper (handles email uniqueness check + password hashing)
     const localResult = await createLocalUser({

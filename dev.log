@@ -691,3 +691,17 @@ prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
 prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
 prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
  POST /api/auth/signout 200 in 3.0s (compile: 3ms, proxy.ts: 4ms, render: 3.0s)
+ GET / 200 in 52ms (compile: 4ms, proxy.ts: 3ms, render: 45ms)
+ GET / 200 in 48ms (compile: 4ms, proxy.ts: 3ms, render: 40ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ POST /api/auth/login 200 in 5.6s (compile: 3ms, proxy.ts: 4ms, render: 5.6s)
+ GET /api/auth/profile 200 in 3.5s (compile: 2ms, proxy.ts: 4ms, render: 3.5s)
+ GET /api/communications/status 200 in 4.6s (compile: 10ms, proxy.ts: 3ms, render: 4.5s)
+ GET /api/communications/logs?page=1&limit=20 200 in 5.7s (compile: 2ms, proxy.ts: 5ms, render: 5.7s)
+ GET /api/notifications?perPage=20 200 in 5.2s (compile: 3ms, proxy.ts: 4ms, render: 5.2s)
+ GET /api/subscriptions 200 in 5.7s (compile: 2ms, proxy.ts: 2ms, render: 5.7s)
+ GET /api/communications/status 200 in 2.3s (compile: 12ms, proxy.ts: 4ms, render: 2.3s)
+ GET /api/communications/logs?page=1&limit=20 200 in 4.2s (compile: 2ms, proxy.ts: 3ms, render: 4.2s)
+ POST /api/auth/login 200 in 4.1s (compile: 3ms, proxy.ts: 3ms, render: 4.1s)
+✓ Compiled in 1126ms
+ POST /api/auth/login 200 in 6.0s (compile: 81ms, proxy.ts: 3ms, render: 5.9s)
