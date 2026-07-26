@@ -507,3 +507,34 @@ Articles DB error (list, serving fallback): Error: DB_QUERY_TIMEOUT
  GET /api/articles?limit=6 200 in 1158ms (compile: 3ms, proxy.ts: 4ms, render: 1151ms)
  GET /api/pricing 200 in 1067ms (compile: 2ms, proxy.ts: 10ms, render: 1055ms)
  GET /api/articles/your-consumer-rights-in-south-africa 200 in 1481ms (compile: 90ms, proxy.ts: 4ms, render: 1387ms)
+ GET / 200 in 51ms (compile: 4ms, proxy.ts: 3ms, render: 43ms)
+ GET / 200 in 58ms (compile: 11ms, proxy.ts: 4ms, render: 43ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+✓ Compiled in 421ms
+✓ Compiled in 195ms
+✓ Compiled in 238ms
+✓ Compiled in 541ms
+ GET /api/notifications?perPage=20 200 in 5.0s (compile: 21ms, proxy.ts: 11ms, render: 5.0s)
+ GET /api/subscriptions 200 in 4.8s (compile: 9ms, proxy.ts: 4ms, render: 4.8s)
+ GET /api/dashboard 200 in 12.8s (compile: 8ms, proxy.ts: 3ms, render: 12.8s)
+ GET / 200 in 727ms (compile: 109ms, proxy.ts: 3ms, render: 615ms)
+ GET / 200 in 125ms (compile: 12ms, proxy.ts: 4ms, render: 109ms)
+ GET /api/auth/profile 401 in 18ms (compile: 4ms, proxy.ts: 10ms, render: 5ms)
+ GET /api/pricing 200 in 2.4s (compile: 13ms, proxy.ts: 7ms, render: 2.4s)
+ GET /api/articles?limit=6 200 in 2.7s (compile: 17ms, proxy.ts: 7ms, render: 2.7s)
+ GET /api/pricing 200 in 1071ms (compile: 4ms, proxy.ts: 4ms, render: 1063ms)
+ GET /api/articles?limit=6 200 in 1340ms (compile: 9ms, proxy.ts: 9ms, render: 1322ms)
+ GET / 200 in 135ms (compile: 4ms, proxy.ts: 10ms, render: 121ms)
+ GET /api/auth/profile 401 in 25ms (compile: 9ms, proxy.ts: 5ms, render: 11ms)
+ GET /api/pricing 200 in 1332ms (compile: 38ms, proxy.ts: 14ms, render: 1280ms)
+ GET /api/articles?limit=6 200 in 1611ms (compile: 60ms, proxy.ts: 16ms, render: 1534ms)
+ GET /api/pricing 200 in 2.6s (compile: 56ms, proxy.ts: 28ms, render: 2.5s)
+ GET /api/articles?limit=6 200 in 2.7s (compile: 34ms, proxy.ts: 54ms, render: 2.6s)
+ GET /api/pricing 200 in 1390ms (compile: 6ms, proxy.ts: 4ms, render: 1380ms)
+ GET /api/articles?limit=6 200 in 1658ms (compile: 5ms, proxy.ts: 3ms, render: 1650ms)
+ GET /api/pricing 200 in 1162ms (compile: 3ms, proxy.ts: 11ms, render: 1149ms)
+ GET /api/articles?limit=6 200 in 1420ms (compile: 3ms, proxy.ts: 3ms, render: 1414ms)

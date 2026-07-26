@@ -2387,3 +2387,42 @@ Stage Summary:
 - RESILIENCE: Both /api/articles and /api/articles/[slug] try the DB first (3s timeout) then fall back to the real articles with full content on any error. The articles section will NEVER appear empty and articles will ALWAYS be readable when clicked, even when the Vercel DATABASE_URL is broken.
 - NO CONTENT CHANGES: The fallback articles are the exact real published articles from the database (same titles, subtitles, summaries, full markdown content, categories, tags, reading times). When the Vercel DATABASE_URL is fixed, the DB query will succeed and serve live data instead.
 - REMAINING (user action, same as Task 9): Set DATABASE_URL on Vercel (Settings → Environment Variables) to the Neon pooler URL with pgbouncer=true. Once fixed, health recovers and both pricing + articles serve from the live DB.
+
+---
+Task ID: 11 (Marketing image carousel with GSAP smooth animations)
+Agent: Main Agent
+Task: "please create a marketing image carousel and will smoothly drive the point home to site visitors and clients. use smooth animations like GSAP and keep everything looking professional and high converting"
+
+Work Log:
+- PLACEMENT: Inserted a new MarketingCarouselSection immediately after the Hero section (before PlatformBentoSection) so visitors see the value proposition right after the hero — the highest-converting position on the page.
+- IMAGES: Generated 3 professional, on-brand marketing images via Image Generation skill (1344x768 each, saved to public/images/carousel/):
+  * slide-1-attorney.png — Black female attorney in navy suit reviewing documents in modern Johannesburg office, golden hour light, editorial corporate photography.
+  * slide-2-technology.png — AI-powered legal dashboard on laptop, navy/gold glass-morphism UI, minimalist desk, bright contemporary office.
+  * slide-3-clients.png — Diverse South African clients shaking hands with attorney across glass conference table, warm natural light, trust and relief.
+- COMPONENT: Created src/components/MarketingCarousel.tsx — self-contained, GSAP-animated carousel:
+  * GSAP timeline per slide: Ken Burns zoom-in on image (1.2s, power2.out) + staggered text reveal (eyebrow, title, description, CTA — 0.09 stagger, 0.7s, power3.out).
+  * Crossfade between slides (0.9s cubic-bezier) via opacity transition.
+  * Auto-advance every 6s with progress bar (50ms tick, resets on manual nav).
+  * Pauses on hover, focus, and touch (mobile-friendly).
+  * Prev/next circular arrows (glassmorphic) + dot navigation (active dot = wider gold pill).
+  * Slide counter (01 / 03) with tabular-nums.
+  * Marketing copy overlay: eyebrow pill with icon, bold headline with gold-gradient highlight, description, gold gradient CTA button.
+  * Gradient overlay (left-dark + bottom-dark) for text legibility on any image.
+  - Accessibility: aria-roledescription=carousel, slide roles, aria-label per slide, keyboard ArrowLeft/Right nav, focus-visible rings, prefers-reduced-motion respected (disables GSAP + auto-advance).
+  - Responsive: 16:9 aspect ratio, object-cover images, mobile-optimized text sizes (text-3xl on mobile → text-[3.4rem] on xl), all nav elements tappable.
+- WIRING: Added MarketingCarouselSection() to LandingPage.tsx with a "WHY INFINITY LEGAL" eyebrow + "Legal expertise, supercharged by AI." heading, ambient gold orb, and the carousel below. Imported MarketingCarousel into LandingPage.
+- VERIFICATION (agent-browser + VLM):
+  * Desktop 1440x900: Slide 1 "South Africa's trusted legal advocates" with "EXPERT LEGAL REPRESENTATION" eyebrow + "Get a Free AI Intake" gold CTA. Arrows + dots visible. VLM: "highly professional and high-converting... clean layout, high-quality photography, strong typography hierarchy, distinct CTA." ✓
+  * Auto-advance: After 6s, advanced to slide 3 "Real outcomes for real people" / "View Pricing" — confirmed working. ✓
+  * Dot navigation: Clicked slide 2 dot → "Your case, analysed in seconds" / "Ask Infinity AI" appeared, slide 2 dot became wider gold pill, counter showed "02". ✓
+  * Mobile 390x844: VLM "image visible and properly sized, text fully readable, no overflow, arrows clearly tappable, dots visible with active gold state, highly professional... well-optimized for mobile." ✓
+  * Footer: Still sticky at bottom of long page (not floating, not overlapping). ✓
+  * Console: zero errors. Lint: 0 errors, 0 warnings. ✓
+- COMMIT: 0310393 pushed to origin/main.
+
+Stage Summary:
+- MARKETING CAROUSEL LIVE: A professional, GSAP-animated, 3-slide marketing carousel now sits right below the hero on the homepage. Each slide drives a key value proposition (Expert Representation → AI-Powered → Accessible Pricing) with a high-converting CTA (Free AI Intake → Ask AI → View Pricing).
+- SMOOTH ANIMATIONS: GSAP powers a Ken Burns zoom + staggered text reveal on each slide entry, with a smooth crossfade between slides and an animated progress bar. Auto-advances every 6s, pauses on interaction.
+- HIGH-CONVERTING: Bold headline with gold highlight, clear description, gradient gold CTA button, slide counter, and dot navigation — all designed to drive clicks to the intake/ask-ai/pricing sections.
+- PROFESSIONAL: On-brand navy + gold aesthetic, glassmorphic navigation, ambient gold orb, consistent with the rest of the site's spatial design language.
+- ACCESSIBLE + RESPONSIVE: Full keyboard nav, aria roles, reduced-motion support, mobile-optimized layout.
