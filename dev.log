@@ -705,3 +705,10 @@ prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
  POST /api/auth/login 200 in 4.1s (compile: 3ms, proxy.ts: 3ms, render: 4.1s)
 ✓ Compiled in 1126ms
  POST /api/auth/login 200 in 6.0s (compile: 81ms, proxy.ts: 3ms, render: 5.9s)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ POST /api/auth/login 200 in 10.8s (compile: 51ms, proxy.ts: 6ms, render: 10.7s)

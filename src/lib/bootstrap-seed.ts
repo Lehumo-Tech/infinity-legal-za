@@ -156,42 +156,60 @@ async function ensurePricingPlans(): Promise<void> {
 }
 
 /**
- * Ensure the bootstrap admin + staff accounts exist if the DB is empty.
+ * Ensure the bootstrap admin + staff accounts exist.
  *
- * This is the CRITICAL self-healing hook: on a fresh production database
- * (e.g. new Vercel deployment with an empty Neon Postgres), the first
- * login attempt triggers this, creates the staff accounts, and then
- * authentication proceeds normally.
+ * This is the CRITICAL self-healing hook. It checks each bootstrap staff
+ * account by email and creates any that are missing. This handles two
+ * scenarios:
+ *   1. A fresh/empty production database (new Vercel deployment) — all
+ *      staff accounts are created on the first login attempt.
+ *   2. A production database that has OTHER users but is missing the
+ *      documented staff accounts (e.g. the prod DB was seeded with
+ *      different credentials in the past) — only the missing staff
+ *      accounts are created, existing users are NEVER touched.
  *
- * Returns true if a seed was performed, false if the DB was already
- * populated (or the seed failed — login should still proceed so the
- * caller returns its normal error).
+ * SAFETY:
+ * - Idempotent: checks by email before creating. Existing accounts are
+ *   never overwritten or re-passworded.
+ * - Only creates accounts with the exact emails in BOOTSTRAP_ACCOUNTS —
+ *   no role escalation for arbitrary emails.
+ * - On a populated DB where all staff exist, this adds 3 fast findUnique
+ *   queries per login (covered by Neon's pool). Acceptable cost for
+ *   self-healing.
+ *
+ * Returns true if any account was created, false otherwise (including on
+ * failure — login should still proceed so the caller returns its normal
+ * 401 and the user can retry).
  */
 export async function ensureBootstrapUsers(): Promise<boolean> {
   try {
+    // Fast path: if the DB is completely empty, seed everything (plans +
+    // all staff). This is the fresh-deployment case.
     const userCount = await db.user.count();
-    if (userCount > 0) {
-      // DB already has users — nothing to do. This branch runs on every
-      // subsequent login after the first seed, so it must be fast (single
-      // COUNT query) and silent.
-      return false;
+    const dbIsEmpty = userCount === 0;
+
+    if (dbIsEmpty) {
+      console.log('[BootstrapSeed] Database has zero users — seeding all bootstrap accounts...');
+      // Seed pricing plans first (non-blocking on failure).
+      await ensurePricingPlans();
     }
-
-    console.log('[BootstrapSeed] Database has zero users — seeding bootstrap accounts...');
-
-    // Seed pricing plans first (non-blocking on failure).
-    await ensurePricingPlans();
 
     const passwordExpiry = new Date();
     passwordExpiry.setDate(passwordExpiry.getDate() + 90);
 
     let firstUserId: string | null = null;
+    let createdCount = 0;
 
     for (const account of BOOTSTRAP_ACCOUNTS) {
       const existing = await db.user.findUnique({
         where: { email: account.email.toLowerCase() },
+        select: { id: true },
       });
-      if (existing) continue;
+      if (existing) {
+        // Account already exists — never touch it. This is the key safety
+        // property: we cannot reset or overwrite an existing account.
+        continue;
+      }
 
       const passwordHash = await hashPassword(account.password);
 
@@ -216,10 +234,16 @@ export async function ensureBootstrapUsers(): Promise<boolean> {
       });
 
       if (firstUserId === null) firstUserId = user.id;
+      createdCount++;
       console.log('[BootstrapSeed] Created:', account.email, '| role:', account.role);
     }
 
-    // POPIA consent log for the bootstrap admin (mirrors prisma/seed.ts).
+    // If nothing was created, all staff accounts already exist — fast no-op.
+    if (createdCount === 0) {
+      return false;
+    }
+
+    // POPIA consent log for the first created account (mirrors prisma/seed.ts).
     if (firstUserId) {
       const existingConsent = await db.consentLog.findFirst({
         where: { user_id: firstUserId, consent_type: 'popi_act' },
@@ -242,13 +266,13 @@ export async function ensureBootstrapUsers(): Promise<boolean> {
       await createAuditLog({
         action: 'BOOTSTRAP_SEED_PERFORMED',
         resource_type: 'user',
-        details: { account_count: BOOTSTRAP_ACCOUNTS.length },
+        details: { accounts_created: createdCount },
       });
     } catch {
       // ignore audit log failures
     }
 
-    console.log('[BootstrapSeed] Seeding complete — staff accounts are now available.');
+    console.log(`[BootstrapSeed] Seeding complete — ${createdCount} account(s) created.`);
     return true;
   } catch (error) {
     // NEVER let a seed failure block the login flow — log and return false
