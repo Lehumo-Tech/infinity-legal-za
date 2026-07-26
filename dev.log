@@ -303,3 +303,7 @@ prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
  GET / 200 in 6.6s (compile: 6.2s, proxy.ts: 104ms, render: 358ms)
  GET /api/health 200 in 2.8s (compile: 137ms, proxy.ts: 4ms, render: 2.7s)
  GET / 200 in 58ms (compile: 4ms, proxy.ts: 6ms, render: 48ms)
+ GET / 200 in 59ms (compile: 3ms, proxy.ts: 8ms, render: 48ms)
+ GET /api/auth/profile 200 in 2.6s (compile: 45ms, proxy.ts: 5ms, render: 2.6s)
+ GET /api/notifications?perPage=20 200 in 3.8s (compile: 75ms, proxy.ts: 8ms, render: 3.8s)
+ GET /api/subscriptions 200 in 5.0s (compile: 105ms, proxy.ts: 4ms, render: 4.9s)
